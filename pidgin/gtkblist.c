@@ -46,7 +46,6 @@
 #include "pidgin/pidgindebug.h"
 #include "pidgin/pidginmooddialog.h"
 #include "pidgin/pidginplugininfo.h"
-#include "pidgin/pidginstylecontext.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
