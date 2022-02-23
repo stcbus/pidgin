@@ -1279,7 +1279,6 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 /**************************************************************************
  * Accounts Dialog
  **************************************************************************/
-
 /* This still exists because gtkprivacy calls it to add the privacy ui ops */
 static PurpleAccountUiOps ui_ops = {};
 
