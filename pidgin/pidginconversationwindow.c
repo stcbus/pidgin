@@ -371,7 +371,7 @@ pidgin_conversation_window_key_pressed_cb(GtkEventControllerKey *controller,
 	}
 
 	/* If ALT (or whatever) was held down... */
-	else if (state & GDK_MOD1_MASK) {
+	else if (state & GDK_ALT_MASK) {
 		if ('1' <= keyval && keyval <= '9') {
 			guint switchto = keyval - '1';
 			pidgin_conversation_window_select_nth(window, switchto);
@@ -424,7 +424,6 @@ pidgin_conversation_window_dispose(GObject *obj) {
 
 static void
 pidgin_conversation_window_init(PidginConversationWindow *window) {
-	GtkEventController *key = NULL;
 	GtkTreeIter iter;
 
 	gtk_widget_init_template(GTK_WIDGET(window));
@@ -510,6 +509,9 @@ pidgin_conversation_window_class_init(PidginConversationWindowClass *klass) {
 
 	gtk_widget_class_bind_template_callback(widget_class,
 	                                        pidgin_conversation_window_selection_changed);
+
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        pidgin_conversation_window_key_pressed_cb);
 }
 
 /******************************************************************************
@@ -564,11 +566,11 @@ pidgin_conversation_window_add(PidginConversationWindow *window,
 
 		if(GTK_IS_WIDGET(parent)) {
 			g_object_ref(gtkconv->tab_cont);
-			gtk_container_remove(GTK_CONTAINER(parent), gtkconv->tab_cont);
+			gtk_widget_unparent(gtkconv->tab_cont);
 		}
 
 		gtk_stack_add_named(GTK_STACK(window->stack), gtkconv->tab_cont, markup);
-		gtk_widget_show_all(gtkconv->tab_cont);
+		gtk_widget_show(gtkconv->tab_cont);
 
 		if(GTK_IS_WIDGET(parent)) {
 			g_object_unref(gtkconv->tab_cont);
@@ -590,7 +592,7 @@ pidgin_conversation_window_add(PidginConversationWindow *window,
 
 
 	if(!gtk_widget_is_visible(GTK_WIDGET(window))) {
-		gtk_widget_show_all(GTK_WIDGET(window));
+		gtk_widget_show(GTK_WIDGET(window));
 	}
 }
 
@@ -646,16 +648,16 @@ pidgin_conversation_window_remove(PidginConversationWindow *window,
 
 guint
 pidgin_conversation_window_get_count(PidginConversationWindow *window) {
-	GList *children = NULL;
+	GtkSelectionModel *model = NULL;
 	guint count = 0;
 
 	g_return_val_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window), 0);
 
-	children = gtk_container_get_children(GTK_CONTAINER(window));
-	while(children != NULL) {
-		children = g_list_delete_link(children, children);
-		count++;
-	}
+	model = gtk_stack_get_pages(GTK_STACK(window->stack));
+
+	count = g_list_model_get_n_items(G_LIST_MODEL(model));
+
+	g_object_unref(model);
 
 	return count;
 }
