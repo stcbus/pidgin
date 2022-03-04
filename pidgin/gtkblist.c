@@ -665,10 +665,10 @@ static void gtk_blist_renderer_editing_started_cb(GtkCellRenderer *renderer,
 	else
 		g_return_if_reached();
 
-	if (GTK_IS_ENTRY (editable)) {
-		GtkEntry *entry = GTK_ENTRY (editable);
-		gtk_entry_set_text(entry, text);
+	if(GTK_IS_EDITABLE(editable)) {
+		gtk_editable_set_text(GTK_EDITABLE(editable), text);
 	}
+
 	editing_blist = TRUE;
 }
 
@@ -865,7 +865,7 @@ do_join_chat(PidginChatData *data)
 			{
 				g_hash_table_replace(components,
 					g_strdup(g_object_get_data(tmp->data, "identifier")),
-					g_strdup(gtk_entry_get_text(tmp->data)));
+					g_strdup(gtk_editable_get_text(GTK_EDITABLE(tmp->data))));
 			}
 		}
 
@@ -918,7 +918,7 @@ set_sensitive_if_input_chat_cb(GtkWidget *entry, gpointer user_data)
 		if (!g_object_get_data(tmp->data, "is_spin"))
 		{
 			required = GPOINTER_TO_INT(g_object_get_data(tmp->data, "required"));
-			text = gtk_entry_get_text(tmp->data);
+			text = gtk_editable_get_text(GTK_EDITABLE(tmp->data));
 			if (required && (*text == '\0'))
 				sensitive = FALSE;
 		}
@@ -1103,8 +1103,9 @@ rebuild_chat_entries(PidginChatData *data, const char *default_chat_name)
 			input = gtk_entry_new();
 			gtk_entry_set_activates_default(GTK_ENTRY(input), TRUE);
 			value = g_hash_table_lookup(defaults, pce->identifier);
-			if (value != NULL)
-				gtk_entry_set_text(GTK_ENTRY(input), value);
+			if(value != NULL) {
+				gtk_editable_set_text(GTK_EDITABLE(input), value);
+			}
 			if (pce->secret)
 			{
 				gtk_entry_set_visibility(GTK_ENTRY(input), FALSE);
