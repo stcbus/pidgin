@@ -27,7 +27,7 @@
 #include "pidgin/pidginnotificationconnectionerror.h"
 
 struct _PidginNotificationConnectionError {
-	HdyActionRow parent;
+	AdwActionRow parent;
 
 	PurpleNotification *notification;
 
@@ -44,7 +44,7 @@ enum {
 static GParamSpec *properties[N_PROPERTIES] = { NULL, };
 
 G_DEFINE_TYPE(PidginNotificationConnectionError,
-              pidgin_notification_connection_error, HDY_TYPE_ACTION_ROW)
+              pidgin_notification_connection_error, ADW_TYPE_ACTION_ROW)
 
 /******************************************************************************
  * Helpers
@@ -59,11 +59,11 @@ pidgin_notification_connection_error_update(PidginNotificationConnectionError *e
 	g_return_if_fail(PIDGIN_IS_NOTIFICATION_CONNECTION_ERROR(error));
 
 	if(!PURPLE_IS_NOTIFICATION(error->notification)) {
-		hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(error),
+		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(error),
 		                              _("Notification missing"));
 
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(error), NULL);
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(error), NULL);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(error), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(error), NULL);
 
 		gtk_widget_hide(error->reconnect);
 		gtk_widget_hide(error->reenable);
@@ -74,11 +74,11 @@ pidgin_notification_connection_error_update(PidginNotificationConnectionError *e
 
 	account = purple_notification_get_account(error->notification);
 	if(!PURPLE_IS_ACCOUNT(account)) {
-		hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(error),
+		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(error),
 		                              _("Notification is missing an account"));
 
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(error), NULL);
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(error), NULL);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(error), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(error), NULL);
 
 		gtk_widget_hide(error->reconnect);
 		gtk_widget_hide(error->reenable);
@@ -99,19 +99,19 @@ pidgin_notification_connection_error_update(PidginNotificationConnectionError *e
 	/* Set the icon name if one was specified. */
 	icon_name = purple_notification_get_icon_name(error->notification);
 	if(icon_name != NULL) {
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(error), icon_name);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(error), icon_name);
 	}
 
 	enabled = purple_account_get_enabled(account);
 
 	title = purple_notification_get_title(error->notification);
-	hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(error), title);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(error), title);
 
 	info = purple_notification_get_data(error->notification);
 	if(info != NULL) {
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(error), info->description);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(error), info->description);
 	} else {
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(error), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(error), NULL);
 	}
 
 	/* If the account is still enabled, reconnect should be visible, otherwise
