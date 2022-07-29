@@ -941,12 +941,17 @@ silcpurple_attrs_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 }
 
 static void
-silcpurple_attrs(PurpleProtocolAction *action)
+silcpurple_attrs(G_GNUC_UNUSED GSimpleAction *action,
+                 GVariant *parameter,
+                 G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	SilcPurple sg = purple_connection_get_protocol_data(gc);
-	SilcClient client = sg->client;
-	SilcClientConnection conn = sg->conn;
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *gc = NULL;
+	SilcPurple sg = NULL;
+	SilcClient client = NULL;
+	SilcClientConnection conn = NULL;
 	PurpleRequestFields *fields;
 	PurpleRequestFieldGroup *g;
 	PurpleRequestField *f;
@@ -963,9 +968,22 @@ silcpurple_attrs(PurpleProtocolAction *action)
 #endif
 	char status[1024], tz[16];
 
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("SILC attrs action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	gc = purple_account_get_connection(account);
+
 	sg = purple_connection_get_protocol_data(gc);
 	if (!sg)
 		return;
+
+	client = sg->client;
+	conn = sg->conn;
 
 	memset(status, 0, sizeof(status));
 
@@ -1100,16 +1118,33 @@ silcpurple_attrs(PurpleProtocolAction *action)
 }
 
 static void
-silcpurple_detach(PurpleProtocolAction *action)
+silcpurple_detach(G_GNUC_UNUSED GSimpleAction *action,
+                  GVariant *parameter,
+                  G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	SilcPurple sg;
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	SilcPurple sg = NULL;
 
-	if (!gc)
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("SILC detach action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+	if (!connection) {
 		return;
-	sg = purple_connection_get_protocol_data(gc);
-	if (!sg)
+	}
+
+	sg = purple_connection_get_protocol_data(connection);
+	if (!sg) {
 		return;
+	}
 
 	/* Call DETACH */
 	silc_client_command_call(sg->client, sg->conn, "DETACH");
@@ -1117,28 +1152,45 @@ silcpurple_detach(PurpleProtocolAction *action)
 }
 
 static void
-silcpurple_view_motd(PurpleProtocolAction *action)
+silcpurple_view_motd(G_GNUC_UNUSED GSimpleAction *action,
+                     GVariant *parameter,
+                     G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	SilcPurple sg;
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	SilcPurple sg = NULL;
 	char *tmp;
 
-	if (!gc)
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("SILC view MOTD action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+	if (!connection) {
 		return;
-	sg = purple_connection_get_protocol_data(gc);
-	if (!sg)
+	}
+
+	sg = purple_connection_get_protocol_data(connection);
+	if (!sg) {
 		return;
+	}
 
 	if (!sg->motd) {
-		purple_notify_error(gc, _("Message of the Day"), _("No Message "
+		purple_notify_error(connection, _("Message of the Day"), _("No Message "
 			"of the Day available"), _("There is no Message of the "
 			"Day associated with this connection"),
-			purple_request_cpar_from_connection(gc));
+			purple_request_cpar_from_connection(connection));
 		return;
 	}
 
 	tmp = g_markup_escape_text(sg->motd, -1);
-	purple_notify_formatted(gc, NULL, _("Message of the Day"), NULL,
+	purple_notify_formatted(connection, NULL, _("Message of the Day"), NULL,
 			      tmp, NULL, NULL);
 	g_free(tmp);
 }
@@ -1243,10 +1295,14 @@ silcpurple_create_keypair_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 }
 
 static void
-silcpurple_create_keypair(PurpleProtocolAction *action)
+silcpurple_create_keypair(G_GNUC_UNUSED GSimpleAction *action,
+                          GVariant *parameter,
+                          G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	SilcPurple sg = purple_connection_get_protocol_data(gc);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
 	PurpleRequestFields *fields;
 	PurpleRequestFieldGroup *g;
 	PurpleRequestField *f;
@@ -1254,19 +1310,29 @@ silcpurple_create_keypair(PurpleProtocolAction *action)
 	char *hostname, **u;
 	char tmp[256], pkd[256], pkd2[256], prd[256], prd2[256];
 
-	username = purple_account_get_username(sg->account);
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("SILC create keypair action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
+	username = purple_account_get_username(account);
 	u = g_strsplit(username, "@", 2);
 	username = u[0];
-	realname = purple_account_get_user_info(sg->account);
+	realname = purple_account_get_user_info(account);
 	hostname = silc_net_localhost();
 	g_snprintf(tmp, sizeof(tmp), "%s@%s", username, hostname);
 
 	g_snprintf(pkd2, sizeof(pkd2), "%s" G_DIR_SEPARATOR_S"public_key.pub", silcpurple_silcdir());
 	g_snprintf(prd2, sizeof(prd2), "%s" G_DIR_SEPARATOR_S"private_key.prv", silcpurple_silcdir());
 	g_snprintf(pkd, sizeof(pkd) - 1, "%s",
-		   purple_account_get_string(purple_connection_get_account(gc), "public-key", pkd2));
+	           purple_account_get_string(account, "public-key", pkd2));
 	g_snprintf(prd, sizeof(prd) - 1, "%s",
-		   purple_account_get_string(purple_connection_get_account(gc), "private-key", prd2));
+	           purple_account_get_string(account, "private-key", prd2));
 
 	fields = purple_request_fields_new();
 
@@ -1303,21 +1369,35 @@ silcpurple_create_keypair(PurpleProtocolAction *action)
 	purple_request_field_group_add_field(g, f);
 	purple_request_fields_add_group(fields, g);
 
-	purple_request_fields(gc, _("Create New SILC Key Pair"),
+	purple_request_fields(connection, _("Create New SILC Key Pair"),
 			      _("Create New SILC Key Pair"), NULL, fields,
 			      _("Generate Key Pair"), G_CALLBACK(silcpurple_create_keypair_cb),
 			      _("Cancel"), G_CALLBACK(silcpurple_create_keypair_cancel),
-			      purple_request_cpar_from_connection(gc), gc);
+			      purple_request_cpar_from_connection(connection), connection);
 
 	g_strfreev(u);
 	silc_free(hostname);
 }
 
 static void
-silcpurple_change_pass(PurpleProtocolAction *action)
+silcpurple_change_pass(G_GNUC_UNUSED GSimpleAction *action,
+                       GVariant *parameter,
+                       G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	purple_account_request_change_password(purple_connection_get_account(gc));
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("SILC change password action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+
+	purple_account_request_change_password(account);
 }
 
 static void
@@ -1331,10 +1411,24 @@ silcpurple_change_passwd(PurpleProtocolServer *protocol_server, PurpleConnection
 }
 
 static void
-silcpurple_show_set_info(PurpleProtocolAction *action)
+silcpurple_show_set_info(G_GNUC_UNUSED GSimpleAction *action,
+                         GVariant *parameter,
+                         G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	purple_account_request_change_user_info(purple_connection_get_account(gc));
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("SILC change password action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+
+	purple_account_request_change_user_info(account);
 }
 
 static void
@@ -1342,37 +1436,104 @@ silcpurple_set_info(PurpleProtocolServer *protocol_server, PurpleConnection *gc,
 {
 }
 
-static GList *
-silcpurple_get_actions(PurpleProtocolClient *client, PurpleConnection *gc)
+static const gchar *
+silcpurple_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return "prpl-silc";
+}
+
+static GActionGroup *
+silcpurple_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                             PurpleConnection *connection)
 {
-	GList *list = NULL;
-	PurpleProtocolAction *act;
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "attrs",
+			.activate = silcpurple_attrs,
+			.parameter_type = "s",
+		},
+		{
+			.name = "detach",
+			.activate = silcpurple_detach,
+			.parameter_type = "s",
+		},
+		{
+			.name = "view-motd",
+			.activate = silcpurple_view_motd,
+			.parameter_type = "s",
+		},
+		{
+			.name = "create-keypair",
+			.activate = silcpurple_create_keypair,
+			.parameter_type = "s",
+		},
+		{
+			.name = "change-password",
+			.activate = silcpurple_change_pass,
+			.parameter_type = "s",
+		},
+		{
+			.name = "set-user-info",
+			.activate = silcpurple_show_set_info,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
 
-	act = purple_protocol_action_new(_("Online Status"),
-			silcpurple_attrs);
-	list = g_list_append(list, act);
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                connection);
 
-	act = purple_protocol_action_new(_("Detach From Server"),
-			silcpurple_detach);
-	list = g_list_append(list, act);
+	return G_ACTION_GROUP(group);
+}
 
-	act = purple_protocol_action_new(_("View Message of the Day"),
-			silcpurple_view_motd);
-	list = g_list_append(list, act);
+static GMenu *
+silcpurple_protocol_actions_get_menu(PurpleProtocolActions *actions)
+{
+	GMenu *menu = NULL;
+	GMenuItem *item = NULL;
 
-	act = purple_protocol_action_new(_("Create SILC Key Pair..."),
-			silcpurple_create_keypair);
-	list = g_list_append(list, act);
+	menu = g_menu_new();
 
-	act = purple_protocol_action_new(_("Change Password..."),
-			silcpurple_change_pass);
-	list = g_list_append(list, act);
+	item = g_menu_item_new(_("Online Status"), "prpl-silc.attrs");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
 
-	act = purple_protocol_action_new(_("Set User Info..."),
-			silcpurple_show_set_info);
-	list = g_list_append(list, act);
+	item = g_menu_item_new(_("Detach From Server"), "prpl-silc.detach");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
 
-	return list;
+	item = g_menu_item_new(_("View Message of the Day"), "prpl-silc.view-motd");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Create SILC Key Pair..."),
+	                       "prpl-silc.create-keypair");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Change Password..."),
+	                       "prpl-silc.change-password");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Set User Info..."), "prpl-silc.set-user-info");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	return menu;
 }
 
 
@@ -2264,9 +2425,16 @@ silcpurple_protocol_class_finalize(G_GNUC_UNUSED SilcProtocolClass *klass)
 }
 
 static void
+silcpurple_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = silcpurple_protocol_actions_get_prefix;
+	iface->get_action_group = silcpurple_protocol_actions_get_action_group;
+	iface->get_menu = silcpurple_protocol_actions_get_menu;
+}
+
+static void
 silcpurple_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-	client_iface->get_actions     = silcpurple_get_actions;
 	client_iface->status_text     = silcpurple_status_text;
 	client_iface->tooltip_text    = silcpurple_tooltip_text;
 	client_iface->blist_node_menu = silcpurple_blist_node_menu;
@@ -2321,6 +2489,9 @@ silcpurple_protocol_xfer_iface_init(PurpleProtocolXferInterface *xfer_iface)
 
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         SilcProtocol, silcpurple_protocol, PURPLE_TYPE_PROTOCOL, 0,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      silcpurple_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       silcpurple_protocol_client_iface_init)
