@@ -1600,9 +1600,27 @@ static void zephyr_unregister_slash_commands(void)
 
 /* Resubscribe to the in-memory list of subscriptions and also unsubscriptions */
 static void
-zephyr_action_resubscribe(PurpleProtocolAction *action)
+zephyr_action_resubscribe(G_GNUC_UNUSED GSimpleAction *action,
+                          GVariant *parameter,
+                          G_GNUC_UNUSED gpointer data)
 {
-	zephyr_account *zephyr = purple_connection_get_protocol_data(action->connection);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	zephyr_account *zephyr = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("Zephyr resubscribe action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+		return;
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+	zephyr = purple_connection_get_protocol_data(connection);
 
 	for (GSList *s = zephyr->subscrips; s; s = s->next) {
 		zephyr_triple *zt = s->data;
@@ -1613,26 +1631,86 @@ zephyr_action_resubscribe(PurpleProtocolAction *action)
 }
 
 
-static void zephyr_action_get_subs_from_server(PurpleProtocolAction *action)
+static void
+zephyr_action_get_subs_from_server(G_GNUC_UNUSED GSimpleAction *action,
+                                   GVariant *parameter,
+                                   G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
-	zephyr_account *zephyr = purple_connection_get_protocol_data(gc);
-	zephyr->get_subs_from_server(zephyr, gc);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	zephyr_account *zephyr = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("Zephyr get subscriptions action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+		return;
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+	zephyr = purple_connection_get_protocol_data(connection);
+
+	zephyr->get_subs_from_server(zephyr, connection);
 }
 
 
-static GList *
-zephyr_get_actions(PurpleProtocolClient *client, PurpleConnection *gc) {
-	GList *list = NULL;
-	PurpleProtocolAction *act = NULL;
+static const gchar *
+zephyr_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return "prpl-zephyr";
+}
 
-	act = purple_protocol_action_new(_("Resubscribe"), zephyr_action_resubscribe);
-	list = g_list_append(list, act);
+static GActionGroup *
+zephyr_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                         G_GNUC_UNUSED PurpleConnection *connection)
+{
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "resubscribe",
+			.activate = zephyr_action_resubscribe,
+			.parameter_type = "s",
+		},
+		{
+			.name = "get-subcriptions",
+			.activate = zephyr_action_get_subs_from_server,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
 
-	act = purple_protocol_action_new(_("Retrieve subscriptions from server"), zephyr_action_get_subs_from_server);
-	list = g_list_append(list,act);
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
 
-	return list;
+	return G_ACTION_GROUP(group);
+}
+
+
+static GMenu *
+zephyr_protocol_actions_get_menu(PurpleProtocolActions *actions) {
+	GMenu *menu = NULL;
+	GMenuItem *item = NULL;
+
+	menu = g_menu_new();
+
+	item = g_menu_item_new(_("Resubscribe"), "prpl-zephyr.resubscribe");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Retrieve subscriptions from server"),
+	                       "prpl-zephyr.get-subscriptions");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	return menu;
 }
 
 
@@ -1663,9 +1741,16 @@ zephyr_protocol_class_finalize(G_GNUC_UNUSED ZephyrProtocolClass *klass)
 
 
 static void
+zephyr_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = zephyr_protocol_actions_get_prefix;
+	iface->get_action_group = zephyr_protocol_actions_get_action_group;
+	iface->get_menu = zephyr_protocol_actions_get_menu;
+}
+
+static void
 zephyr_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-	client_iface->get_actions     = zephyr_get_actions;
 	client_iface->normalize       = zephyr_normalize;
 	client_iface->find_blist_chat = zephyr_find_blist_chat;
 }
@@ -1706,6 +1791,9 @@ zephyr_protocol_chat_iface_init(PurpleProtocolChatInterface *chat_iface)
 
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         ZephyrProtocol, zephyr_protocol, PURPLE_TYPE_PROTOCOL, 0,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      zephyr_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       zephyr_protocol_client_iface_init)
