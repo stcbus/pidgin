@@ -175,25 +175,54 @@ static void ggp_callback_buddylist_load_ok(PurpleConnection *gc, gchar *file)
 }
 /* }}} */
 
-/*
- */
-/* static void ggp_action_buddylist_save(PurpleProtocolAction *action) {{{ */
-static void ggp_action_buddylist_save(PurpleProtocolAction *action)
+static void
+ggp_action_buddylist_save(G_GNUC_UNUSED GSimpleAction *action,
+                          GVariant *parameter,
+                          G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("GG save buddylist action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
 
 	purple_request_file(action, _("Save buddylist..."), NULL, TRUE,
 		G_CALLBACK(ggp_callback_buddylist_save_ok), NULL,
-		purple_request_cpar_from_connection(gc), gc);
+		purple_request_cpar_from_connection(connection), connection);
 }
 
-static void ggp_action_buddylist_load(PurpleProtocolAction *action)
+static void
+ggp_action_buddylist_load(G_GNUC_UNUSED GSimpleAction *action,
+                          GVariant *parameter,
+                          G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("GG load buddylist action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
 
 	purple_request_file(action, _("Load buddylist from file..."), NULL,
 		FALSE, G_CALLBACK(ggp_callback_buddylist_load_ok), NULL,
-		purple_request_cpar_from_connection(gc), gc);
+		purple_request_cpar_from_connection(connection), connection);
 }
 
 /* ----- BLOCK BUDDIES -------------------------------------------------- */
@@ -996,60 +1025,200 @@ ggp_keepalive(PurpleProtocolServer *protocol_server, PurpleConnection *gc) {
 	}
 }
 
-static void ggp_action_multilogon(PurpleProtocolAction *action)
+static void
+ggp_action_multilogon(G_GNUC_UNUSED GSimpleAction *action,
+                      GVariant *parameter,
+                      G_GNUC_UNUSED gpointer data)
 {
-	ggp_multilogon_dialog(action->connection);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("GG multilogin action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
+	ggp_multilogon_dialog(connection);
 }
 
-static void ggp_action_status_broadcasting(PurpleProtocolAction *action)
+static void
+ggp_action_status_broadcasting(G_GNUC_UNUSED GSimpleAction *action,
+                               GVariant *parameter,
+                               G_GNUC_UNUSED gpointer data)
 {
-	ggp_status_broadcasting_dialog(action->connection);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("GG broadcast action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
+	ggp_status_broadcasting_dialog(connection);
 }
 
-static void ggp_action_search(PurpleProtocolAction *action)
+static void
+ggp_action_search(G_GNUC_UNUSED GSimpleAction *action,
+                  GVariant *parameter,
+                  G_GNUC_UNUSED gpointer data)
 {
-	ggp_pubdir_search(action->connection, NULL);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("GG search action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
+	ggp_pubdir_search(connection, NULL);
 }
 
-static void ggp_action_set_info(PurpleProtocolAction *action)
+static void
+ggp_action_set_info(G_GNUC_UNUSED GSimpleAction *action,
+                    GVariant *parameter,
+                    G_GNUC_UNUSED gpointer data)
 {
-	ggp_pubdir_set_info(action->connection);
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("GG set info action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
+	ggp_pubdir_set_info(connection);
 }
 
-static GList *
-ggp_get_actions(PurpleProtocolClient *client, PurpleConnection *gc) {
-	GList *m = NULL;
-	PurpleProtocolAction *act;
+static const gchar *
+ggp_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return "prpl-gg";
+}
 
-	act = purple_protocol_action_new(_("Show other sessions"),
-		ggp_action_multilogon);
-	m = g_list_append(m, act);
+static GActionGroup *
+ggp_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                      G_GNUC_UNUSED PurpleConnection *connection)
+{
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "multilogon",
+			.activate = ggp_action_multilogon,
+			.parameter_type = "s",
+		},
+		{
+			.name = "broadcasting",
+			.activate = ggp_action_status_broadcasting,
+			.parameter_type = "s",
+		},
+		{
+			.name = "search",
+			.activate = ggp_action_search,
+			.parameter_type = "s",
+		},
+		{
+			.name = "set-info",
+			.activate = ggp_action_set_info,
+			.parameter_type = "s",
+		},
+		{
+			.name = "save-buddylist",
+			.activate = ggp_action_buddylist_save,
+			.parameter_type = "s",
+		},
+		{
+			.name = "load-buddylist",
+			.activate = ggp_action_buddylist_load,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
 
-	act = purple_protocol_action_new(_("Show status only for buddies"),
-		ggp_action_status_broadcasting);
-	m = g_list_append(m, act);
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
 
-	m = g_list_append(m, NULL);
+	return G_ACTION_GROUP(group);
+}
 
-	act = purple_protocol_action_new(_("Find buddies..."),
-		ggp_action_search);
-	m = g_list_append(m, act);
+static GMenu *
+ggp_protocol_actions_get_menu(PurpleProtocolActions *actions) {
+	GMenu *menu = NULL, *submenu = NULL;
+	GMenuItem *item = NULL;
 
-	act = purple_protocol_action_new(_("Set User Info"),
-		ggp_action_set_info);
-	m = g_list_append(m, act);
+	menu = g_menu_new();
 
-	m = g_list_append(m, NULL);
+	item = g_menu_item_new(_("Show other sessions"), "prpl-gg.multilogon");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
 
-	act = purple_protocol_action_new(_("Save buddylist to file..."),
-		ggp_action_buddylist_save);
-	m = g_list_append(m, act);
+	item = g_menu_item_new(_("Show status only for buddies"),
+	                       "prpl-gg.broadcasting");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
 
-	act = purple_protocol_action_new(_("Load buddylist from file..."),
-		ggp_action_buddylist_load);
-	m = g_list_append(m, act);
+	item = g_menu_item_new(_("Find buddies..."), "prpl-gg.search");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
 
-	return m;
+	item = g_menu_item_new(_("Set User Info"), "prpl-gg.set-info");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	/* Buddy list management. */
+	submenu = g_menu_new();
+
+	item = g_menu_item_new(_("Save to file..."), "prpl-gg.save-buddylist");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Load from file..."), "prpl-gg.load-buddylist");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	g_menu_append_submenu(menu, _("Buddy list"), G_MENU_MODEL(submenu));
+	g_object_unref(submenu);
+
+	return menu;
 }
 
 static const char *
@@ -1112,9 +1281,16 @@ ggp_protocol_class_finalize(G_GNUC_UNUSED GGPProtocolClass *klass)
 }
 
 static void
+ggp_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = ggp_protocol_actions_get_prefix;
+	iface->get_action_group = ggp_protocol_actions_get_action_group;
+	iface->get_menu = ggp_protocol_actions_get_menu;
+}
+
+static void
 ggp_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-	client_iface->get_actions            = ggp_get_actions;
 	client_iface->list_emblem            = ggp_list_emblem;
 	client_iface->status_text            = ggp_status_buddy_text;
 	client_iface->tooltip_text           = ggp_tooltip_text;
@@ -1183,6 +1359,9 @@ ggp_protocol_xfer_iface_init(PurpleProtocolXferInterface *xfer_iface)
 
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         GGPProtocol, ggp_protocol, PURPLE_TYPE_PROTOCOL, 0,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      ggp_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       ggp_protocol_client_iface_init)
