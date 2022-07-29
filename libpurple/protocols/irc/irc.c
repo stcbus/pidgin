@@ -42,7 +42,6 @@ static void irc_ison_buddy_init(char *name, struct irc_buddy *ib, GList **list);
 
 static const char *irc_blist_icon(PurpleAccount *a, PurpleBuddy *b);
 static GList *irc_status_types(PurpleAccount *account);
-static GList *irc_get_actions(PurpleProtocolClient *client, PurpleConnection *gc);
 /* static GList *irc_chat_info(PurpleConnection *gc); */
 static void irc_login(PurpleAccount *account);
 static void irc_login_cb(GObject *source, GAsyncResult *res, gpointer user_data);
@@ -204,11 +203,27 @@ irc_uri_handler(const gchar *scheme, const gchar *uri, GHashTable *params)
 	return FALSE;
 }
 
-static void irc_view_motd(PurpleProtocolAction *action)
+static void
+irc_view_motd(G_GNUC_UNUSED GSimpleAction *action,
+              GVariant *parameter,
+              G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = action->connection;
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *gc = NULL;
 	struct irc_conn *irc;
 	char *title, *body;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("IRC View MOTD action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	gc = purple_account_get_connection(account);
 
 	if (gc == NULL || purple_connection_get_protocol_data(gc) == NULL) {
 		purple_debug_error("irc", "got MOTD request for NULL gc");
@@ -442,15 +457,48 @@ static GList *irc_status_types(PurpleAccount *account)
 	return types;
 }
 
-static GList *
-irc_get_actions(PurpleProtocolClient *client, PurpleConnection *gc) {
-	GList *list = NULL;
-	PurpleProtocolAction *act = NULL;
+static const gchar *
+irc_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return "prpl-irc";
+}
 
-	act = purple_protocol_action_new(_("View MOTD"), irc_view_motd);
-	list = g_list_append(list, act);
+static GActionGroup *
+irc_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                      PurpleConnection *connection)
+{
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "view-motd",
+			.activate = irc_view_motd,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
 
-	return list;
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
+
+	return G_ACTION_GROUP(group);
+}
+
+static GMenu *
+irc_protocol_actions_get_menu(PurpleProtocolActions *actions) {
+	GMenu *menu = NULL;
+	GMenuItem *item = NULL;
+
+	menu = g_menu_new();
+
+	item = g_menu_item_new(_("View MOTD"), "prpl-irc.view-motd");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+
+	g_object_unref(item);
+
+
+	return menu;
 }
 
 static GList *
@@ -1074,9 +1122,16 @@ irc_protocol_class_finalize(G_GNUC_UNUSED IRCProtocolClass *klass)
 }
 
 static void
+irc_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = irc_protocol_actions_get_prefix;
+	iface->get_action_group = irc_protocol_actions_get_action_group;
+	iface->get_menu = irc_protocol_actions_get_menu;
+}
+
+static void
 irc_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-	client_iface->get_actions          = irc_get_actions;
 	client_iface->normalize            = irc_normalize;
 	client_iface->get_max_message_size = irc_get_max_message_size;
 }
@@ -1127,6 +1182,9 @@ irc_protocol_xfer_iface_init(PurpleProtocolXferInterface *xfer_iface)
 
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         IRCProtocol, irc_protocol, PURPLE_TYPE_PROTOCOL, 0,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      irc_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       irc_protocol_client_iface_init)
