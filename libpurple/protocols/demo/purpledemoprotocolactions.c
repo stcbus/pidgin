@@ -35,6 +35,7 @@
 
 static gboolean
 purple_demo_protocol_failure_tick(gpointer data,
+                                  PurpleConnectionError error_code,
                                   const gchar *tick_str,
                                   const gchar *tick_plural_str,
                                   const gchar *disconnect_str)
@@ -61,8 +62,7 @@ purple_demo_protocol_failure_tick(gpointer data,
 	}
 
 	message = g_strdup_printf(_(disconnect_str), REAPER_BUDDY_NAME);
-	purple_connection_error(connection, PURPLE_CONNECTION_ERROR_OTHER_ERROR,
-	                        message);
+	purple_connection_error(connection, error_code, message);
 	g_free(message);
 
 	return G_SOURCE_REMOVE;
@@ -71,6 +71,7 @@ purple_demo_protocol_failure_tick(gpointer data,
 static gboolean
 purple_demo_protocol_fatal_failure_cb(gpointer data) {
 	return purple_demo_protocol_failure_tick(data,
+	                                         PURPLE_CONNECTION_ERROR_CUSTOM_FATAL,
 	                                         FATAL_TICK_STR,
 	                                         FATAL_TICK_PLURAL_STR,
 	                                         FATAL_DISCONNECT_STR);
@@ -79,6 +80,7 @@ purple_demo_protocol_fatal_failure_cb(gpointer data) {
 static gboolean
 purple_demo_protocol_temporary_failure_cb(gpointer data) {
 	return purple_demo_protocol_failure_tick(data,
+	                                         PURPLE_CONNECTION_ERROR_CUSTOM_TEMPORARY,
 	                                         TEMPORARY_TICK_STR,
 	                                         TEMPORARY_TICK_PLURAL_STR,
 	                                         TEMPORARY_DISCONNECT_STR);

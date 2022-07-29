@@ -187,11 +187,14 @@ typedef enum
 	PURPLE_CONNECTION_ERROR_CERT_SELF_SIGNED = 14,
 	PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR = 15,
 
+	PURPLE_CONNECTION_ERROR_CUSTOM_TEMPORARY = 16,
+	PURPLE_CONNECTION_ERROR_CUSTOM_FATAL = 17,
+
 	/* purple_connection_error() in connection.c uses the fact that
 	 * this is the last member of the enum when sanity-checking; if other
 	 * reasons are added after it, the check must be updated.
 	 */
-	PURPLE_CONNECTION_ERROR_OTHER_ERROR = 16
+	PURPLE_CONNECTION_ERROR_OTHER_ERROR = 18
 } PurpleConnectionError;
 
 /**
