@@ -26,6 +26,8 @@
 
 #include "pidginaccountsenabledmenu.h"
 
+#include "pidginapplication.h"
+
 struct _PidginAccountsEnabledMenu {
 	GMenuModel parent;
 
@@ -70,12 +72,33 @@ static void
 pidgin_accounts_enabled_menu_connected_cb(PurpleAccount *account, gpointer data)
 {
 	PidginAccountsEnabledMenu *menu = data;
+	PurpleProtocol *protocol = NULL;
 	gint index = -1;
 
 	index = g_queue_index(menu->accounts, account);
 	if(index >= 0) {
 		/* Tell the model that the account needs to be updated. */
 		g_menu_model_items_changed(G_MENU_MODEL(menu), index, 0, 0);
+	}
+
+	/* If the protocol has actions add them to the application windows. */
+	protocol = purple_account_get_protocol(account);
+	if(PURPLE_IS_PROTOCOL_ACTIONS(protocol)) {
+		PurpleProtocolActions *actions = PURPLE_PROTOCOL_ACTIONS(protocol);
+		PurpleConnection *connection = NULL;
+		GActionGroup *action_group = NULL;
+
+		connection = purple_account_get_connection(account);
+		action_group = purple_protocol_actions_get_action_group(actions,
+		                                                        connection);
+		if(G_IS_ACTION_GROUP(action_group)) {
+			GApplication *application = g_application_get_default();
+			const gchar *prefix = purple_protocol_get_id(protocol);
+
+			pidgin_application_add_action_group(PIDGIN_APPLICATION(application),
+			                                    prefix, action_group);
+			g_object_unref(action_group);
+		}
 	}
 }
 
@@ -84,12 +107,46 @@ pidgin_accounts_enabled_menu_disconnected_cb(PurpleAccount *account,
                                              gpointer data)
 {
 	PidginAccountsEnabledMenu *menu = data;
+	PurpleProtocol *protocol = NULL;
 	gint index = -1;
 
 	index = g_queue_index(menu->accounts, account);
 	if(index >= 0) {
 		/* Tell the model that the account needs to be updated. */
 		g_menu_model_items_changed(G_MENU_MODEL(menu), index, 0, 0);
+	}
+
+	/* Figure out if this is the last connected account for this protocol, and
+	 * if so, remove the action group from the application windows.
+	 */
+	protocol = purple_account_get_protocol(account);
+	if(PURPLE_IS_PROTOCOL_ACTIONS(protocol)) {
+		PurpleAccountManager *manager = NULL;
+		GList *enabled_accounts = NULL;
+		gboolean found = FALSE;
+
+		manager = purple_account_manager_get_default();
+		enabled_accounts = purple_account_manager_get_enabled(manager);
+
+		while(enabled_accounts != NULL) {
+			PurpleAccount *account2 = PURPLE_ACCOUNT(enabled_accounts->data);
+			PurpleProtocol *protocol2 = purple_account_get_protocol(account2);
+
+			if(!found && protocol2 == protocol) {
+				found = TRUE;
+			}
+
+			enabled_accounts = g_list_delete_link(enabled_accounts,
+			                                      enabled_accounts);
+		}
+
+		if(!found) {
+			GApplication *application = g_application_get_default();
+			const gchar *prefix = purple_protocol_get_id(protocol);
+
+			pidgin_application_add_action_group(PIDGIN_APPLICATION(application),
+			                                    prefix, NULL);
+		}
 	}
 }
 
@@ -167,6 +224,7 @@ pidgin_accounts_enabled_menu_get_item_links(GMenuModel *model, gint index,
 	PidginAccountsEnabledMenu *menu = PIDGIN_ACCOUNTS_ENABLED_MENU(model);
 	PurpleAccount *account = NULL;
 	PurpleConnection *connection = NULL;
+	PurpleProtocol *protocol = NULL;
 	GApplication *application = g_application_get_default();
 	GMenu *submenu = NULL, *template = NULL;
 	const gchar *account_id = NULL, *connection_id = NULL;
@@ -191,6 +249,19 @@ pidgin_accounts_enabled_menu_get_item_links(GMenuModel *model, gint index,
 	template = gtk_application_get_menu_by_id(GTK_APPLICATION(application),
 	                                          "enabled-account");
 	submenu = purple_menu_copy(G_MENU_MODEL(template));
+
+	/* Add the account actions if we have any. */
+	protocol = purple_account_get_protocol(account);
+	if(PURPLE_IS_PROTOCOL_ACTIONS(protocol)) {
+		PurpleProtocolActions *actions = PURPLE_PROTOCOL_ACTIONS(protocol);
+		GMenu *protocol_menu = NULL;
+
+		protocol_menu = purple_protocol_actions_get_menu(actions);
+		if(G_IS_MENU(protocol_menu)) {
+			g_menu_insert_section(submenu, 1, NULL,
+			                      G_MENU_MODEL(protocol_menu));
+		}
+	}
 
 	purple_menu_populate_dynamic_targets(submenu,
 	                                     "account", account_id,
