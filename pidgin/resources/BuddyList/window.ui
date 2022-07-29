@@ -61,14 +61,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                 </child>
               </object>
             </child>
-            <child>
-              <object class="GtkMenuItem" id="accounts">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">_Accounts</property>
-                <property name="use-underline">True</property>
-              </object>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -79,8 +71,4 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
       </object>
     </child>
   </template>
-  <object class="PidginAccountsMenu" id="accounts_menu">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-  </object>
 </interface>

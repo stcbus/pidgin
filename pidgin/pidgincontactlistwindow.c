@@ -31,9 +31,6 @@ struct _PidginContactListWindow {
 
 	GtkWidget *menu_bar;
 	GtkWidget *sort_buddies;
-
-	GtkWidget *accounts;
-	GtkWidget *accounts_menu;
 };
 
 G_DEFINE_TYPE(PidginContactListWindow, pidgin_contact_list_window,
@@ -54,9 +51,6 @@ pidgin_contact_list_window_init(PidginContactListWindow *contact_list) {
 	group = pidgin_action_group_new();
 	gtk_widget_insert_action_group(GTK_WIDGET(contact_list), "blist",
 	                               G_ACTION_GROUP(group));
-
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(contact_list->accounts),
-	                          contact_list->accounts_menu);
 }
 
 static void
@@ -74,10 +68,6 @@ pidgin_contact_list_window_class_init(PidginContactListWindowClass *klass) {
 	                                     menu_bar);
 	gtk_widget_class_bind_template_child(widget_class, PidginContactListWindow,
 	                                     sort_buddies);
-	gtk_widget_class_bind_template_child(widget_class, PidginContactListWindow,
-	                                     accounts);
-	gtk_widget_class_bind_template_child(widget_class, PidginContactListWindow,
-	                                     accounts_menu);
 }
 
 /******************************************************************************
