@@ -206,24 +206,71 @@ static void report_status_change(PurpleConnection *from, PurpleConnection *to,
 /*
  * UI callbacks
  */
-static void null_input_user_info(PurpleProtocolAction *action)
+static void
+null_input_user_info(G_GNUC_UNUSED GSimpleAction *action,
+                     GVariant *parameter,
+                     G_GNUC_UNUSED gpointer data)
 {
-  PurpleConnection *gc = action->connection;
-  PurpleAccount *acct = purple_connection_get_account(gc);
-  purple_debug_info("nullprpl", "showing 'Set User Info' dialog for %s\n",
-                    purple_account_get_username(acct));
+	const gchar *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
 
-  purple_account_request_change_user_info(acct);
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("null set info action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+
+	purple_debug_info("nullprpl", "showing 'Set User Info' dialog for %s",
+	                  purple_account_get_username(account));
+
+	purple_account_request_change_user_info(account);
 }
 
 /*
  * Protocol functions
  */
-static GList *
-null_get_actions(PurpleProtocolClient *client, PurpleConnection *gc) {
-  PurpleProtocolAction *action = purple_protocol_action_new(
-    _("Set User Info..."), null_input_user_info);
-  return g_list_append(NULL, action);
+static const gchar *
+null_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return "prpl-null";
+}
+
+static GActionGroup *
+null_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                       G_GNUC_UNUSED PurpleConnection *connection)
+{
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "set-info",
+			.activate = null_input_user_info,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
+
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
+
+	return G_ACTION_GROUP(group);
+}
+
+static GMenu *
+null_protocol_actions_get_menu(PurpleProtocolActions *actions) {
+	GMenu *menu = g_menu_new();
+	GMenuItem *item = NULL;
+
+	item = g_menu_item_new(_("Set User Info..."), "prpl-null.set-info");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	return menu;
 }
 
 static const char *null_list_icon(PurpleAccount *acct, PurpleBuddy *buddy)
@@ -1187,9 +1234,16 @@ null_protocol_class_finalize(G_GNUC_UNUSED NullProtocolClass *klass)
 }
 
 static void
+null_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = null_protocol_actions_get_prefix;
+	iface->get_action_group = null_protocol_actions_get_action_group;
+	iface->get_menu = null_protocol_actions_get_menu;
+}
+
+static void
 null_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-  client_iface->get_actions     = null_get_actions;
   client_iface->status_text     = null_status_text;
   client_iface->tooltip_text    = null_tooltip_text;
   client_iface->blist_node_menu = null_blist_node_menu;
@@ -1265,6 +1319,9 @@ null_protocol_roomlist_iface_init(PurpleProtocolRoomlistInterface *roomlist_ifac
  */
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         NullProtocol, null_protocol, PURPLE_TYPE_PROTOCOL, 0,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      null_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       null_protocol_client_iface_init)
