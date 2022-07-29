@@ -84,6 +84,19 @@ void purple_menu_walk(GMenuModel *model, PurpleMenuWalkFunc func, gpointer data)
  */
 void purple_menu_populate_dynamic_targets(GMenu *menu, const gchar *first_property, ...) G_GNUC_NULL_TERMINATED;
 
+/**
+ * purple_menu_copy:
+ * @model: The [class@Gio.MenuModel] instance to copy.
+ *
+ * Creates a full copy of @model as a new [class@Gio.Menu]. If @model was not
+ * a [class@Gio.Menu] instance, any additional functionality will be lost.
+ *
+ * Returns: (transfer full): The new menu.
+ *
+ * Since: 3.0.0
+ */
+GMenu *purple_menu_copy(GMenuModel *model);
+
 G_END_DECLS
 
 #endif /* PURPLE_MENU_H */

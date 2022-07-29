@@ -121,7 +121,7 @@ pidgin_application_init_plugins(void) {
 
 static void
 pidgin_application_populate_dynamic_menus(PidginApplication *application) {
-	GMenu *source = NULL, *target = NULL;
+	GMenu *target = NULL;
 	GMenuModel *model = NULL;
 
 	/* Link the AccountsDisabledMenu into its proper location. */
@@ -131,10 +131,10 @@ pidgin_application_populate_dynamic_menus(PidginApplication *application) {
 	g_menu_append_section(target, NULL, model);
 
 	/* Link the AccountsEnabledMenu into its proper location. */
-	source = pidgin_accounts_enabled_menu_new();
+	model = pidgin_accounts_enabled_menu_new();
 	target = gtk_application_get_menu_by_id(GTK_APPLICATION(application),
 	                                        "enabled-accounts");
-	g_menu_append_section(target, NULL, G_MENU_MODEL(source));
+	g_menu_append_section(target, NULL, model);
 
 	/* Link the PluginsMenu into its proper location. */
 	model = pidgin_plugins_menu_new();

@@ -35,16 +35,29 @@
 G_BEGIN_DECLS
 
 /**
+ * PidginAccountsEnabledMenu:
+ *
+ * A [class@Gio.MenuModel] that automatically updates itself based on what
+ * accounts are enabled.
+ *
+ * Since: 3.0.0
+ */
+
+#define PIDGIN_TYPE_ACCOUNTS_ENABLED_MENU (pidgin_accounts_enabled_menu_get_type())
+G_DECLARE_FINAL_TYPE(PidginAccountsEnabledMenu, pidgin_accounts_enabled_menu,
+                     PIDGIN, ACCOUNTS_ENABLED_MENU, GMenuModel)
+
+/**
  * pidgin_accounts_enabled_menu_new:
  *
- * Creates a [class@Gio.Menu] that will automatically update itself to include
- * accounts that are enabled in libpurple.
+ * Creates a [class@Gio.MenuModel] that will automatically update itself to
+ * include accounts that are enabled in libpurple.
  *
  * Returns: (transfer full): The new menu instance.
  *
  * Since: 3.0.0
  */
-GMenu *pidgin_accounts_enabled_menu_new(void);
+GMenuModel *pidgin_accounts_enabled_menu_new(void);
 
 G_END_DECLS
 

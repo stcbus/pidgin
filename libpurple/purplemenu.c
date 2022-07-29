@@ -57,6 +57,49 @@ purple_menu_populate_dynamic_targets_func(GMenuModel *model, gint index,
 	}
 }
 
+static void
+purple_menu_copy_helper(GMenuModel *source, GMenu *destination) {
+	gint index = 0;
+
+	for(index = 0; index < g_menu_model_get_n_items(source); index++) {
+		GMenuItem *item = NULL;
+		GMenuAttributeIter *attr_iter = NULL;
+		GMenuLinkIter *link_iter = NULL;
+
+		item = g_menu_item_new(NULL, NULL);
+
+		attr_iter = g_menu_model_iterate_item_attributes(source, index);
+		while(g_menu_attribute_iter_next(attr_iter)) {
+			const gchar *name = g_menu_attribute_iter_get_name(attr_iter);
+			GVariant *value = g_menu_attribute_iter_get_value(attr_iter);
+
+			if(value != NULL) {
+				g_menu_item_set_attribute_value(item, name, value);
+				g_variant_unref(value);
+			}
+		}
+		g_clear_object(&attr_iter);
+
+		link_iter = g_menu_model_iterate_item_links(source, index);
+		while(g_menu_link_iter_next(link_iter)) {
+			GMenuModel *link_source = g_menu_link_iter_get_value(link_iter);
+			GMenu *link_destination = g_menu_new();
+
+			purple_menu_copy_helper(link_source, link_destination);
+
+			g_menu_item_set_link(item, g_menu_link_iter_get_name(link_iter),
+			                     G_MENU_MODEL(link_destination));
+
+			g_clear_object(&link_source);
+			g_clear_object(&link_destination);
+		}
+		g_clear_object(&link_iter);
+
+		g_menu_append_item(destination, item);
+		g_clear_object(&item);
+	}
+}
+
 /******************************************************************************
  * Public API
  *****************************************************************************/
@@ -117,4 +160,17 @@ purple_menu_populate_dynamic_targets(GMenu *menu, const gchar *first_property,
 	                 purple_menu_populate_dynamic_targets_func, table);
 
 	g_hash_table_unref(table);
+}
+
+GMenu *
+purple_menu_copy(GMenuModel *model) {
+	GMenu *menu = NULL;
+
+	g_return_val_if_fail(G_IS_MENU_MODEL(model), NULL);
+
+	menu = g_menu_new();
+
+	purple_menu_copy_helper(model, menu);
+
+	return menu;
 }

@@ -26,118 +26,222 @@
 
 #include "pidginaccountsenabledmenu.h"
 
-#include "pidgincore.h"
+struct _PidginAccountsEnabledMenu {
+	GMenuModel parent;
 
-/******************************************************************************
- * Helpers
- *****************************************************************************/
-static void
-pidgin_accounts_enabled_menu_refresh_helper(PurpleAccount *account,
-                                            gpointer data)
-{
-	GApplication *application = g_application_get_default();
-	GMenu *menu = data;
+	GQueue *accounts;
+};
 
-	if(purple_account_get_enabled(account)) {
-		PurpleConnection *connection = purple_account_get_connection(account);
-		GMenu *submenu = NULL;
-		gchar *label = NULL;
-		const gchar *account_name = purple_account_get_username(account);
-		const gchar *protocol_name = purple_account_get_protocol_name(account);
-		const gchar *account_id = purple_account_get_id(account);
-		const gchar *connection_id = NULL;
-
-		submenu = gtk_application_get_menu_by_id(GTK_APPLICATION(application),
-		                                         "enabled-account");
-
-		if(PURPLE_IS_CONNECTION(connection)) {
-			connection_id = purple_connection_get_id(connection);
-		}
-
-		purple_menu_populate_dynamic_targets(submenu,
-		                                     "account", account_id,
-		                                     "connection", connection_id,
-		                                     NULL);
-
-		/* translators: This format string is intended to contain the account
-		 * name followed by the protocol name to uniquely identify a specific
-		 * account.
-		 */
-		label = g_strdup_printf(_("%s (%s)"), account_name, protocol_name);
-
-		g_menu_append_submenu(menu, label, G_MENU_MODEL(submenu));
-
-		g_free(label);
-	}
-}
-
-static void
-pidgin_accounts_enabled_menu_refresh(GMenu *menu) {
-	PurpleAccountManager *manager = NULL;
-
-	g_menu_remove_all(menu);
-
-	manager = purple_account_manager_get_default();
-	purple_account_manager_foreach(manager,
-	                               pidgin_accounts_enabled_menu_refresh_helper,
-	                               menu);
-}
+G_DEFINE_TYPE(PidginAccountsEnabledMenu, pidgin_accounts_enabled_menu,
+              G_TYPE_MENU_MODEL)
 
 /******************************************************************************
  * Callbacks
  *****************************************************************************/
 static void
-pidgin_accounts_enabled_menu_enabled_cb(G_GNUC_UNUSED PurpleAccount *account,
-                                        gpointer data)
-{
-	pidgin_accounts_enabled_menu_refresh(data);
+pidgin_accounts_enabled_menu_enabled_cb(PurpleAccount *account, gpointer data) {
+	PidginAccountsEnabledMenu *menu = data;
+
+	/* Add the account to the start of the list. */
+	g_queue_push_head(menu->accounts, g_object_ref(account));
+
+	/* Tell everyone our model added a new item at position 0. */
+	g_menu_model_items_changed(G_MENU_MODEL(menu), 0, 0, 1);
 }
 
 static void
-pidgin_accounts_enabled_menu_disabled_cb(G_GNUC_UNUSED PurpleAccount *account,
-                                         gpointer data)
+pidgin_accounts_enabled_menu_disabled_cb(PurpleAccount *account, gpointer data)
 {
-	pidgin_accounts_enabled_menu_refresh(data);
+	PidginAccountsEnabledMenu *menu = data;
+	gint index = -1;
+
+	index = g_queue_index(menu->accounts, account);
+	if(index >= 0) {
+		g_queue_pop_nth(menu->accounts, index);
+
+		/* Tell the model that we removed one item at the given index. */
+		g_menu_model_items_changed(G_MENU_MODEL(menu), index, 1, 0);
+
+		g_object_unref(account);
+	}
 }
 
 static void
-pidgin_accounts_enabled_menu_connected_cb(G_GNUC_UNUSED PurpleAccount *account,
-                                          gpointer data)
+pidgin_accounts_enabled_menu_connected_cb(PurpleAccount *account, gpointer data)
 {
-	pidgin_accounts_enabled_menu_refresh(data);
+	PidginAccountsEnabledMenu *menu = data;
+	gint index = -1;
+
+	index = g_queue_index(menu->accounts, account);
+	if(index >= 0) {
+		/* Tell the model that the account needs to be updated. */
+		g_menu_model_items_changed(G_MENU_MODEL(menu), index, 0, 0);
+	}
 }
 
 static void
-pidgin_accounts_enabled_menu_disconnected_cb(G_GNUC_UNUSED PurpleAccount *account,
+pidgin_accounts_enabled_menu_disconnected_cb(PurpleAccount *account,
                                              gpointer data)
 {
-	pidgin_accounts_enabled_menu_refresh(data);
-}
+	PidginAccountsEnabledMenu *menu = data;
+	gint index = -1;
 
-static void
-pidgin_accounts_enabled_menu_weak_notify_cb(G_GNUC_UNUSED gpointer data,
-                                            GObject *obj)
-{
-	purple_signals_disconnect_by_handle(obj);
+	index = g_queue_index(menu->accounts, account);
+	if(index >= 0) {
+		/* Tell the model that the account needs to be updated. */
+		g_menu_model_items_changed(G_MENU_MODEL(menu), index, 0, 0);
+	}
 }
 
 /******************************************************************************
- * Public API
+ * GMenuModel Implementation
  *****************************************************************************/
-GMenu *
-pidgin_accounts_enabled_menu_new(void) {
-	GMenu *menu = NULL;
+static gboolean
+pidgin_accounts_enabled_menu_is_mutable(GMenuModel *model) {
+	return TRUE;
+}
+
+static gint
+pidgin_accounts_enabled_menu_get_n_items(GMenuModel *model) {
+	PidginAccountsEnabledMenu *menu = PIDGIN_ACCOUNTS_ENABLED_MENU(model);
+
+	return g_queue_get_length(menu->accounts);
+}
+
+static void
+pidgin_accounts_enabled_menu_get_item_attributes(GMenuModel *model, gint index,
+                                                 GHashTable **attributes)
+{
+	PidginAccountsEnabledMenu *menu = PIDGIN_ACCOUNTS_ENABLED_MENU(model);
+	PurpleAccount *account = NULL;
+	PurpleProtocol *protocol = NULL;
+	GVariant *value = NULL;
+	gchar *label = NULL;
+	const gchar *account_name = NULL, *protocol_name = NULL, *icon_name = NULL;
+
+	/* Create our hash table of attributes to return. This must always be
+	 * populated.
+	 */
+	*attributes = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
+	                                    (GDestroyNotify)g_variant_unref);
+
+	/* Get the account the caller is interested in. */
+	account = g_queue_peek_nth(menu->accounts, index);
+	if(!PURPLE_IS_ACCOUNT(account)) {
+		return;
+	}
+
+	account_name = purple_account_get_username(account);
+
+	/* Get the protocol from the account. */
+	protocol = purple_account_get_protocol(account);
+	if(PURPLE_IS_PROTOCOL(protocol)) {
+		protocol_name = purple_protocol_get_name(protocol);
+		icon_name = purple_protocol_get_icon_name(protocol);
+	}
+
+	/* Add the label. */
+
+	/* translators: This format string is intended to contain the account
+	 * name followed by the protocol name to uniquely identify a specific
+	 * account.
+	 */
+	label = g_strdup_printf(_("%s (%s)"), account_name, protocol_name);
+	value = g_variant_new_string(label);
+	g_free(label);
+	g_hash_table_insert(*attributes, G_MENU_ATTRIBUTE_LABEL,
+	                    g_variant_ref_sink(value));
+
+	/* Add the icon if we have one. */
+	if(icon_name != NULL) {
+		value = g_variant_new_string(icon_name);
+		g_hash_table_insert(*attributes, G_MENU_ATTRIBUTE_ICON,
+		                    g_variant_ref_sink(value));
+	}
+}
+
+static void
+pidgin_accounts_enabled_menu_get_item_links(GMenuModel *model, gint index,
+                                            GHashTable **links)
+{
+	PidginAccountsEnabledMenu *menu = PIDGIN_ACCOUNTS_ENABLED_MENU(model);
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	GApplication *application = g_application_get_default();
+	GMenu *submenu = NULL, *template = NULL;
+	const gchar *account_id = NULL, *connection_id = NULL;
+
+	/* Create our hash table for links, this must always be populated. */
+	*links = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
+	                               g_object_unref);
+
+	account = g_queue_peek_nth(menu->accounts, index);
+	if(!PURPLE_IS_ACCOUNT(account)) {
+		return;
+	}
+
+	account_id = purple_account_get_id(account);
+
+	connection = purple_account_get_connection(account);
+	if(PURPLE_IS_CONNECTION(connection)) {
+		connection_id = purple_connection_get_id(connection);
+	}
+
+	/* Create a copy of our template menu. */
+	template = gtk_application_get_menu_by_id(GTK_APPLICATION(application),
+	                                          "enabled-account");
+	submenu = purple_menu_copy(G_MENU_MODEL(template));
+
+	purple_menu_populate_dynamic_targets(submenu,
+	                                     "account", account_id,
+	                                     "connection", connection_id,
+	                                     NULL);
+
+	g_hash_table_insert(*links, G_MENU_LINK_SUBMENU, submenu);
+}
+
+/******************************************************************************
+ * GObject Implementation
+ *****************************************************************************/
+static void
+pidgin_accounts_enabled_menu_dispose(GObject *obj) {
+	PidginAccountsEnabledMenu *menu = PIDGIN_ACCOUNTS_ENABLED_MENU(obj);
+
+	if(menu->accounts != NULL) {
+		g_queue_free_full(menu->accounts, g_object_unref);
+		menu->accounts = NULL;
+	}
+
+	G_OBJECT_CLASS(pidgin_accounts_enabled_menu_parent_class)->dispose(obj);
+
+}
+
+static void
+pidgin_accounts_enabled_menu_constructed(GObject *obj) {
+	PidginAccountsEnabledMenu *menu = PIDGIN_ACCOUNTS_ENABLED_MENU(obj);
+	PurpleAccountManager *manager = NULL;
+	GList *enabled = NULL, *l = NULL;
+	gint count = 0;
+
+	G_OBJECT_CLASS(pidgin_accounts_enabled_menu_parent_class)->constructed(obj);
+
+	manager = purple_account_manager_get_default();
+	enabled = purple_account_manager_get_enabled(manager);
+
+	for(l = enabled; l != NULL; l = l->next) {
+		g_queue_push_head(menu->accounts, g_object_ref(l->data));
+		count++;
+	}
+	g_list_free(enabled);
+
+	g_menu_model_items_changed(G_MENU_MODEL(obj), 0, 0, count);
+}
+
+static void
+pidgin_accounts_enabled_menu_init(PidginAccountsEnabledMenu *menu) {
 	gpointer handle = NULL;
 
-	/* Create the menu and set our instance as data on it so it'll be freed
-	 * when the menu is destroyed.
-	 */
-	menu = g_menu_new();
-	g_object_weak_ref(G_OBJECT(menu),
-	                  pidgin_accounts_enabled_menu_weak_notify_cb, NULL);
-
-	/* Populate ourselves with any accounts that are already enabled. */
-	pidgin_accounts_enabled_menu_refresh(menu);
+	menu->accounts = g_queue_new();
 
 	/* Wire up the purple signals we care about. */
 	handle = purple_accounts_get_handle();
@@ -157,6 +261,26 @@ pidgin_accounts_enabled_menu_new(void) {
 	purple_signal_connect(handle, "account-signed-off", menu,
 	                      G_CALLBACK(pidgin_accounts_enabled_menu_disconnected_cb),
 	                      menu);
+}
 
-	return menu;
+static void
+pidgin_accounts_enabled_menu_class_init(PidginAccountsEnabledMenuClass *klass) {
+	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
+	GMenuModelClass *model_class = G_MENU_MODEL_CLASS(klass);
+
+	obj_class->constructed = pidgin_accounts_enabled_menu_constructed;
+	obj_class->dispose = pidgin_accounts_enabled_menu_dispose;
+
+	model_class->is_mutable = pidgin_accounts_enabled_menu_is_mutable;
+	model_class->get_n_items = pidgin_accounts_enabled_menu_get_n_items;
+	model_class->get_item_attributes = pidgin_accounts_enabled_menu_get_item_attributes;
+	model_class->get_item_links = pidgin_accounts_enabled_menu_get_item_links;
+}
+
+/******************************************************************************
+ * Public API
+ *****************************************************************************/
+GMenuModel *
+pidgin_accounts_enabled_menu_new(void) {
+	return g_object_new(PIDGIN_TYPE_ACCOUNTS_ENABLED_MENU, NULL);
 }
