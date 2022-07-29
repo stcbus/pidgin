@@ -22,7 +22,7 @@ if get_option('doc')
 			'--no-namespace-dir',
 			'--content-dir=@0@'.format(meson.current_source_dir()),
 			'--add-include-path=@0@'.format(meson.global_build_root() / 'subprojects/gplugin/gplugin'),
-			'--add-include-path=@0@'.format(meson.build_root() / 'libpurple'),
+			'--add-include-path=@0@'.format(meson.global_build_root() / 'libpurple'),
 			'@INPUT1@'
 		],
 		depends: [ libpurple_gir[0] ],
