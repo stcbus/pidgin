@@ -21,6 +21,7 @@
 #include <glib/gi18n-lib.h>
 
 #include "purpledemoprotocol.h"
+#include "purpledemoprotocolactions.h"
 #include "purpledemoprotocolclient.h"
 #include "purpledemoprotocolim.h"
 
@@ -78,6 +79,8 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(
 	purple_demo_protocol,
 	PURPLE_TYPE_PROTOCOL,
 	0,
+	G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+	                              purple_demo_protocol_actions_init)
 	G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
 	                              purple_demo_protocol_client_init)
 	G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_IM,
