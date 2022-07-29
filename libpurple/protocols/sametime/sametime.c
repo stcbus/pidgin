@@ -4803,13 +4803,27 @@ static void st_import_action_cb(PurpleConnection *gc, char *filename) {
 
 
 /** prompts for a file to import blist from */
-static void st_import_action(PurpleProtocolAction *act) {
-  PurpleConnection *gc;
-  PurpleAccount *account;
+static void
+st_import_action(G_GNUC_UNUSED GSimpleAction *action,
+                 GVariant *parameter,
+                 G_GNUC_UNUSED gpointer data)
+{
+  const gchar *account_id = NULL;
+  PurpleAccountManager *manager = NULL;
+  PurpleAccount *account = NULL;
+  PurpleConnection *gc = NULL;
   char *title;
 
-  gc = act->connection;
-  account = purple_connection_get_account(gc);
+  if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+    g_critical("Sametime import action parameter is of incorrect type %s",
+               g_variant_get_type_string(parameter));
+  }
+
+  account_id = g_variant_get_string(parameter, NULL);
+  manager = purple_account_manager_get_default();
+  account = purple_account_manager_find_by_id(manager, account_id);
+  gc = purple_account_get_connection(account);
+
   title = g_strdup_printf(_("Import Sametime List for Account %s"),
 			  purple_account_get_username(account));
 
@@ -4843,13 +4857,27 @@ static void st_export_action_cb(PurpleConnection *gc, char *filename) {
 
 
 /** prompts for a file to export blist to */
-static void st_export_action(PurpleProtocolAction *act) {
-  PurpleConnection *gc;
-  PurpleAccount *account;
+static void
+st_export_action(G_GNUC_UNUSED GSimpleAction *action,
+                 GVariant *parameter,
+                 G_GNUC_UNUSED gpointer data)
+{
+  const gchar *account_id = NULL;
+  PurpleAccountManager *manager = NULL;
+  PurpleAccount *account = NULL;
+  PurpleConnection *gc = NULL;
   char *title;
 
-  gc = act->connection;
-  account = purple_connection_get_account(gc);
+  if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+    g_critical("Sametime export action parameter is of incorrect type %s",
+               g_variant_get_type_string(parameter));
+  }
+
+  account_id = g_variant_get_string(parameter, NULL);
+  manager = purple_account_manager_get_default();
+  account = purple_account_manager_find_by_id(manager, account_id);
+  gc = purple_account_get_connection(account);
+
   title = g_strdup_printf(_("Export Sametime List for Account %s"),
 			  purple_account_get_username(account));
 
@@ -5070,12 +5098,27 @@ static void remote_group_action_cb(PurpleConnection *gc, const char *name) {
 }
 
 
-static void remote_group_action(PurpleProtocolAction *act) {
-  PurpleConnection *gc;
+static void
+remote_group_action(G_GNUC_UNUSED GSimpleAction *action,
+                    GVariant *parameter,
+                    G_GNUC_UNUSED gpointer data)
+{
+  const gchar *account_id = NULL;
+  PurpleAccountManager *manager = NULL;
+  PurpleAccount *account = NULL;
+  PurpleConnection *gc = NULL;
   const char *msgA;
   const char *msgB;
 
-  gc = act->connection;
+  if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+    g_critical("Sametime export action parameter is of incorrect type %s",
+               g_variant_get_type_string(parameter));
+  }
+
+  account_id = g_variant_get_string(parameter, NULL);
+  manager = purple_account_manager_get_default();
+  account = purple_account_manager_find_by_id(manager, account_id);
+  gc = purple_account_get_connection(account);
 
   msgA = _("Notes Address Book Group");
   msgB = _("Enter the name of a Notes Address Book group in the field below"
@@ -5196,12 +5239,28 @@ static void search_action_cb(PurpleConnection *gc, const char *name) {
 }
 
 
-static void search_action(PurpleProtocolAction *act) {
-  PurpleConnection *gc;
+static void
+search_action(G_GNUC_UNUSED GSimpleAction *action,
+              GVariant *parameter,
+              G_GNUC_UNUSED gpointer data)
+{
+  const gchar *account_id = NULL;
+  PurpleAccountManager *manager = NULL;
+  PurpleAccount *account = NULL;
+  PurpleConnection *gc = NULL;
   const char *msgA;
   const char *msgB;
 
-  gc = act->connection;
+  if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+    g_critical("Sametime export action parameter is of incorrect type %s",
+               g_variant_get_type_string(parameter));
+  }
+
+  account_id = g_variant_get_string(parameter, NULL);
+  manager = purple_account_manager_get_default();
+  account = purple_account_manager_find_by_id(manager, account_id);
+  gc = purple_account_get_connection(account);
+
 
   msgA = _("Search for a user");
   msgB = _("Enter a name or partial ID in the field below to search"
@@ -5216,28 +5275,82 @@ static void search_action(PurpleProtocolAction *act) {
 }
 
 
-static GList *
-mw_protocol_get_actions(PurpleProtocolClient *client, PurpleConnection *gc) {
-  PurpleProtocolAction *act;
-  GList *l = NULL;
+static const gchar *
+mw_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return PLUGIN_ID;
+}
 
-  act = purple_protocol_action_new(_("Import Sametime List..."),
-			       st_import_action);
-  l = g_list_append(l, act);
+static GActionGroup *
+mw_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                     PurpleConnection *connection)
+{
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "import",
+			.activate = st_import_action,
+			.parameter_type = "s",
+		},
+		{
+			.name = "export",
+			.activate = st_export_action,
+			.parameter_type = "s",
+		},
+		{
+			.name = "notes",
+			.activate = remote_group_action,
+			.parameter_type = "s",
+		},
+		{
+			.name = "search",
+			.activate = search_action,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
 
-  act = purple_protocol_action_new(_("Export Sametime List..."),
-			       st_export_action);
-  l = g_list_append(l, act);
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
 
-  act = purple_protocol_action_new(_("Add Notes Address Book Group..."),
-			       remote_group_action);
-  l = g_list_append(l, act);
+	return G_ACTION_GROUP(group);
+}
 
-  act = purple_protocol_action_new(_("User Search..."),
-			       search_action);
-  l = g_list_append(l, act);
+static GMenu *
+mw_protocol_actions_get_menu(PurpleProtocolActions *actions) {
+	GMenu *menu = NULL;
+	GMenuItem *item = NULL;
 
-  return l;
+	menu = g_menu_new();
+
+	item = g_menu_item_new(_("Import Sametime List..."),
+	                       PLUGIN_ID ".import");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Export Sametime List..."),
+	                       PLUGIN_ID ".export");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Add Notes Address Book Group..."),
+	                       PLUGIN_ID ".notes");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("User Search..."), PLUGIN_ID ".search");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	return menu;
 }
 
 
@@ -5292,9 +5405,16 @@ mw_protocol_class_finalize(G_GNUC_UNUSED mwProtocolClass *klass)
 
 
 static void
+mw_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = mw_protocol_actions_get_prefix;
+	iface->get_action_group = mw_protocol_actions_get_action_group;
+	iface->get_menu = mw_protocol_actions_get_menu;
+}
+
+static void
 mw_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-  client_iface->get_actions     = mw_protocol_get_actions;
   client_iface->list_emblem     = mw_protocol_list_emblem;
   client_iface->status_text     = mw_protocol_status_text;
   client_iface->tooltip_text    = mw_protocol_tooltip_text;
@@ -5365,6 +5485,9 @@ mw_protocol_xfer_iface_init(PurpleProtocolXferInterface *xfer_iface)
 
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         mwProtocol, mw_protocol, PURPLE_TYPE_PROTOCOL, 0,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      mw_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       mw_protocol_client_iface_init)
