@@ -35,6 +35,24 @@ purple_protocol_actions_default_init(PurpleProtocolActionsInterface *iface) {
 /******************************************************************************
  * Public API
  *****************************************************************************/
+const gchar *
+purple_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	PurpleProtocolActionsInterface *iface = NULL;
+
+	g_return_val_if_fail(PURPLE_IS_PROTOCOL_ACTIONS(actions), NULL);
+
+	iface = PURPLE_PROTOCOL_ACTIONS_GET_IFACE(actions);
+	if(iface != NULL) {
+		if(iface->get_prefix != NULL) {
+			return iface->get_prefix(actions);
+		} else {
+			return purple_protocol_get_id(PURPLE_PROTOCOL(actions));
+		}
+	}
+
+	return NULL;
+}
+
 GActionGroup *
 purple_protocol_actions_get_action_group(PurpleProtocolActions *actions,
                                          PurpleConnection *connection)

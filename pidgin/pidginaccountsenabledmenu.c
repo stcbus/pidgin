@@ -93,7 +93,7 @@ pidgin_accounts_enabled_menu_connected_cb(PurpleAccount *account, gpointer data)
 		                                                        connection);
 		if(G_IS_ACTION_GROUP(action_group)) {
 			GApplication *application = g_application_get_default();
-			const gchar *prefix = purple_protocol_get_id(protocol);
+			const gchar *prefix = purple_protocol_actions_get_prefix(actions);
 
 			pidgin_application_add_action_group(PIDGIN_APPLICATION(application),
 			                                    prefix, action_group);
@@ -122,6 +122,7 @@ pidgin_accounts_enabled_menu_disconnected_cb(PurpleAccount *account,
 	protocol = purple_account_get_protocol(account);
 	if(PURPLE_IS_PROTOCOL_ACTIONS(protocol)) {
 		PurpleAccountManager *manager = NULL;
+		PurpleProtocolActions *actions = PURPLE_PROTOCOL_ACTIONS(protocol);
 		GList *enabled_accounts = NULL;
 		gboolean found = FALSE;
 
@@ -142,7 +143,7 @@ pidgin_accounts_enabled_menu_disconnected_cb(PurpleAccount *account,
 
 		if(!found) {
 			GApplication *application = g_application_get_default();
-			const gchar *prefix = purple_protocol_get_id(protocol);
+			const gchar *prefix = purple_protocol_actions_get_prefix(actions);
 
 			pidgin_application_add_action_group(PIDGIN_APPLICATION(application),
 			                                    prefix, NULL);

@@ -153,6 +153,11 @@ purple_demo_protocol_fatal_failure_action_activate(GSimpleAction *action,
 /******************************************************************************
  * PurpleProtocolActions Implementation
  *****************************************************************************/
+static const gchar *
+purple_demo_protocol_get_prefix(G_GNUC_UNUSED PurpleProtocolActions *actions) {
+	return "prpl-demo";
+}
+
 static GActionGroup *
 purple_demo_protocol_get_action_group(PurpleProtocolActions *actions,
                                       PurpleConnection *connection)
@@ -206,6 +211,7 @@ purple_demo_protocol_get_menu(PurpleProtocolActions *actions)
 
 void
 purple_demo_protocol_actions_init(PurpleProtocolActionsInterface *iface) {
+	iface->get_prefix = purple_demo_protocol_get_prefix;
 	iface->get_action_group = purple_demo_protocol_get_action_group;
 	iface->get_menu = purple_demo_protocol_get_menu;
 }

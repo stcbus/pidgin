@@ -48,6 +48,8 @@ G_DECLARE_INTERFACE(PurpleProtocolActions, purple_protocol_actions, PURPLE,
 
 /**
  * PurpleProtocolActionsInterface:
+ * @get_prefix: The prefix used for the actions in the group. If this isn't
+ *              implemented, the id of the protocol will be used instead.
  * @get_action_group: Returns the actions the protocol can perform. If actions
  *                    depend on connectivity, connect to the relevant signals
  *                    on the @connection and signal the action has changed with
@@ -67,6 +69,8 @@ struct _PurpleProtocolActionsInterface {
 	GTypeInterface parent;
 
 	/*< public >*/
+	const gchar *(*get_prefix)(PurpleProtocolActions *actions);
+
 	GActionGroup *(*get_action_group)(PurpleProtocolActions *actions, PurpleConnection *connection);
 
 	GMenu *(*get_menu)(PurpleProtocolActions *actions);
@@ -76,6 +80,18 @@ struct _PurpleProtocolActionsInterface {
 };
 
 G_BEGIN_DECLS
+
+/**
+ * purple_protocol_actions_get_prefix:
+ * @actions: The PurpleProtocolActions instance.
+ *
+ * The prefix that should be used when inserting the action group into widgets.
+ *
+ * Returns: Gets the prefix for the name of the actions in @actions.
+ *
+ * Since: 3.0.0
+ */
+const gchar *purple_protocol_actions_get_prefix(PurpleProtocolActions *actions);
 
 /**
  * purple_protocol_actions_get_action_group:
