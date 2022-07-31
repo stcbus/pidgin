@@ -583,22 +583,11 @@ void xmpp_disco_service_register(XmppDiscoService *service)
 }
 
 static void
-create_dialog(PurplePluginAction *action)
+create_dialog(G_GNUC_UNUSED GSimpleAction *action,
+              G_GNUC_UNUSED GVariant *parameter,
+              G_GNUC_UNUSED gpointer data)
 {
 	pidgin_disco_dialog_new();
-}
-
-static GList *
-actions(PurplePlugin *plugin)
-{
-	GList *l = NULL;
-	PurplePluginAction *action = NULL;
-
-	action = purple_plugin_action_new(_("XMPP Service Discovery"),
-	                                  create_dialog);
-	l = g_list_prepend(l, action);
-
-	return l;
 }
 
 static void
@@ -614,10 +603,25 @@ signed_off_cb(PurpleConnection *pc, gpointer unused)
 static GPluginPluginInfo *
 xmpp_disco_query(GError **error)
 {
+	GActionEntry entries[] = {
+		{
+			.name = "dialog",
+			.activate = create_dialog,
+		}
+	};
+	GMenu *menu = NULL;
+	GSimpleActionGroup *group = NULL;
 	const gchar * const authors[] = {
 		"Paul Aurich <paul@darkrain42.org>",
 		NULL
 	};
+
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries,
+	                                G_N_ELEMENTS(entries), NULL);
+
+	menu = g_menu_new();
+	g_menu_append(menu, _("XMPP Service Discovery"), "dialog");
 
 	return pidgin_plugin_info_new(
 		"id",           PLUGIN_ID,
@@ -630,7 +634,8 @@ xmpp_disco_query(GError **error)
 		"authors",      authors,
 		"website",      PURPLE_WEBSITE,
 		"abi-version",  PURPLE_ABI_VERSION,
-		"actions-cb",   actions,
+		"action-group", group,
+		"action-menu",  menu,
 		NULL
 	);
 }
