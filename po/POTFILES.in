@@ -334,7 +334,6 @@ pidgin/gtkxfer.c
 pidgin/libpidgin.c
 pidgin/minidialog.c
 pidgin/pidginabout.c
-pidgin/pidginaccountactionsmenu.c
 pidgin/pidginaccountchooser.c
 pidgin/pidginaccountfilterconnected.c
 pidgin/pidginaccountfilterprotocol.c
@@ -396,7 +395,6 @@ pidgin/prefs/pidginprefs.c
 pidgin/prefs/pidginproxyprefs.c
 pidgin/prefs/pidginvvprefs.c
 pidgin/resources/About/about.ui
-pidgin/resources/Accounts/actionsmenu.ui
 pidgin/resources/Accounts/chooser.ui
 pidgin/resources/Accounts/manager.ui
 pidgin/resources/Avatar/avatar.ui
