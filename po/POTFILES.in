@@ -341,7 +341,6 @@ pidgin/pidginaccountfilterprotocol.c
 pidgin/pidginaccountmanager.c
 pidgin/pidginaccountsdisabledmenu.c
 pidgin/pidginaccountsenabledmenu.c
-pidgin/pidginaccountsmenu.c
 pidgin/pidginaccountstore.c
 pidgin/pidginactiongroup.c
 pidgin/pidginapplication.c
@@ -400,7 +399,6 @@ pidgin/resources/About/about.ui
 pidgin/resources/Accounts/actionsmenu.ui
 pidgin/resources/Accounts/chooser.ui
 pidgin/resources/Accounts/manager.ui
-pidgin/resources/Accounts/menu.ui
 pidgin/resources/Avatar/avatar.ui
 pidgin/resources/Avatar/menu.ui
 pidgin/resources/BuddyList/window.ui
