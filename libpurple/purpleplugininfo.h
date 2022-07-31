@@ -89,17 +89,6 @@ struct _PurplePluginInfoClass {
 typedef GList *(*PurplePluginActionsCb)(PurplePlugin *plugin);
 
 /**
- * PurplePluginExtraCb:
- * @plugin: the plugin associated with this callback.
- *
- * Gives extra information about the plguin.
- *
- * Returns: a newly allocated string denoting extra information
- * about a plugin.
- */
-typedef gchar *(*PurplePluginExtraCb)(PurplePlugin *plugin);
-
-/**
  * PurplePluginPrefFrameCb:
  * @plugin: the plugin associated with this callback.
  *
@@ -255,10 +244,6 @@ G_BEGIN_DECLS
  *     <entry>(#PurplePluginActionsCb) Callback that returns a list of
  *       actions the plugin can perform.</entry>
  *   </row>
- *   <row><entry><literal>"extra-cb"</literal></entry>
- *     <entry>(#PurplePluginExtraCb) Callback that returns a newly
- *       allocated string denoting extra information about a plugin.</entry>
- *   </row>
  *   <row><entry><literal>"pref-frame-cb"</literal></entry>
  *     <entry>(#PurplePluginPrefFrameCb) Callback that returns a
  *       preferences frame for the plugin.</entry>
@@ -295,19 +280,6 @@ GPluginPluginInfo *purple_plugin_info_new(const char *first_property, ...) G_GNU
  * Since: 3.0.0
  */
 PurplePluginActionsCb purple_plugin_info_get_actions_cb(PurplePluginInfo *info);
-
-/**
- * purple_plugin_info_get_extra_cb:
- * @info: The plugin info to get extra information from.
- *
- * Returns a callback that gives extra information about a plugin. You must
- * free the string returned by this callback.
- *
- * Returns: (transfer none): The callback that returns extra information about a plugin.
- *
- * Since: 3.0.0
- */
-PurplePluginExtraCb purple_plugin_info_get_extra_cb(PurplePluginInfo *info);
 
 /**
  * purple_plugin_info_get_pref_frame_cb:

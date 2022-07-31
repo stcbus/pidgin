@@ -1396,35 +1396,37 @@ ggp_protocol_new(void) {
 		NULL));
 }
 
-static gchar *
-plugin_extra(PurplePlugin *plugin)
-{
-	return g_strdup_printf("Using libgadu version %s", gg_libgadu_version());
-}
-
 static GPluginPluginInfo *
 gg_query(GError **error)
 {
+	GPluginPluginInfo *info = NULL;
+	gchar *description = NULL;
 	const gchar * const authors[] = {
 		"boler@sourceforge.net",
 		NULL
 	};
 
-	return purple_plugin_info_new(
+	description = g_strdup_printf(N_("Polish popular IM\nlibgadu version %s"),
+	                              gg_libgadu_version());
+
+	info = purple_plugin_info_new(
 		"id",           "prpl-gg",
 		"name",         "Gadu-Gadu Protocol",
 		"version",      DISPLAY_VERSION,
 		"category",     N_("Protocol"),
 		"summary",      N_("Gadu-Gadu Protocol Plugin"),
-		"description",  N_("Polish popular IM"),
+		"description",  description,
 		"authors",      authors,
 		"website",      PURPLE_WEBSITE,
 		"abi-version",  PURPLE_ABI_VERSION,
-		"extra-cb",     plugin_extra,
 		"flags",        PURPLE_PLUGIN_INFO_FLAGS_INTERNAL |
 		                PURPLE_PLUGIN_INFO_FLAGS_AUTO_LOAD,
 		NULL
 	);
+
+	g_free(description);
+
+	return info;
 }
 
 static gboolean

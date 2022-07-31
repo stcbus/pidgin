@@ -34,9 +34,6 @@ typedef struct {
 	/* Callback that returns a list of actions the plugin can perform */
 	PurplePluginActionsCb actions_cb;
 
-	/* Callback that returns extra information about a plugin */
-	PurplePluginExtraCb extra_cb;
-
 	/* Callback that returns a preferences frame for a plugin */
 	PurplePluginPrefFrameCb pref_frame_cb;
 
@@ -54,7 +51,6 @@ typedef struct {
 enum {
 	PROP_0,
 	PROP_ACTIONS_CB,
-	PROP_EXTRA_CB,
 	PROP_PREF_FRAME_CB,
 	PROP_PREF_REQUEST_CB,
 	PROP_FLAGS,
@@ -120,9 +116,6 @@ purple_plugin_info_set_property(GObject *obj, guint param_id,
 		case PROP_ACTIONS_CB:
 			priv->actions_cb = g_value_get_pointer(value);
 			break;
-		case PROP_EXTRA_CB:
-			priv->extra_cb = g_value_get_pointer(value);
-			break;
 		case PROP_PREF_FRAME_CB:
 			priv->pref_frame_cb = g_value_get_pointer(value);
 			break;
@@ -156,10 +149,6 @@ purple_plugin_info_get_property(GObject *obj, guint param_id, GValue *value,
 		case PROP_ACTIONS_CB:
 			g_value_set_pointer(value,
 					purple_plugin_info_get_actions_cb(info));
-			break;
-		case PROP_EXTRA_CB:
-			g_value_set_pointer(value,
-					purple_plugin_info_get_extra_cb(info));
 			break;
 		case PROP_PREF_FRAME_CB:
 			g_value_set_pointer(value,
@@ -247,11 +236,6 @@ purple_plugin_info_class_init(PurplePluginInfoClass *klass) {
 		"Callback that returns list of plugin's actions",
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
-	properties[PROP_EXTRA_CB] = g_param_spec_pointer(
-		"extra-cb", "Extra info callback",
-		"Callback that returns extra info about the plugin",
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
 	properties[PROP_PREF_FRAME_CB] = g_param_spec_pointer(
 		"pref-frame-cb", "Preferences frame callback",
 		"The callback that returns the preferences frame",
@@ -328,17 +312,6 @@ purple_plugin_info_get_actions_cb(PurplePluginInfo *info) {
 	priv = purple_plugin_info_get_instance_private(info);
 
 	return priv->actions_cb;
-}
-
-PurplePluginExtraCb
-purple_plugin_info_get_extra_cb(PurplePluginInfo *info) {
-	PurplePluginInfoPrivate *priv = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_PLUGIN_INFO(info), NULL);
-
-	priv = purple_plugin_info_get_instance_private(info);
-
-	return priv->extra_cb;
 }
 
 PurplePluginPrefFrameCb
