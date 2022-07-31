@@ -583,7 +583,8 @@ pidgin_xmpp_console_init(PidginXmppConsole *console) {
  * Plugin implementation
  *****************************************************************************/
 static void
-create_console(PurplePluginAction *action)
+create_console(G_GNUC_UNUSED GSimpleAction *action,
+               G_GNUC_UNUSED GVariant *parameter, G_GNUC_UNUSED gpointer data)
 {
 	if (console == NULL) {
 		console = g_object_new(PIDGIN_TYPE_XMPP_CONSOLE, NULL);
@@ -593,25 +594,28 @@ create_console(PurplePluginAction *action)
 	gtk_window_present(GTK_WINDOW(console));
 }
 
-static GList *
-actions(PurplePlugin *plugin)
-{
-	GList *l = NULL;
-	PurplePluginAction *act = NULL;
-
-	act = purple_plugin_action_new(_("XMPP Console"), create_console);
-	l = g_list_append(l, act);
-
-	return l;
-}
-
 static GPluginPluginInfo *
 xmpp_console_query(GError **error)
 {
+	GActionEntry entries[] = {
+		{
+			.name = "console",
+			.activate = create_console,
+		}
+	};
+	GMenu *menu = NULL;
+	GSimpleActionGroup *group = NULL;
 	const gchar * const authors[] = {
 		"Sean Egan <seanegan@gmail.com>",
 		NULL
 	};
+
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries,
+	                                G_N_ELEMENTS(entries), NULL);
+
+	menu = g_menu_new();
+	g_menu_append(menu, _("XMPP Console"), "console");
 
 	return pidgin_plugin_info_new(
 		"id",           PLUGIN_ID,
@@ -624,7 +628,8 @@ xmpp_console_query(GError **error)
 		"authors",      authors,
 		"website",      PURPLE_WEBSITE,
 		"abi-version",  PURPLE_ABI_VERSION,
-		"actions-cb",   actions,
+		"action-group", group,
+		"action-menu",  menu,
 		NULL
 	);
 }
