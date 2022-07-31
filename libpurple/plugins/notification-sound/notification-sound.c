@@ -50,14 +50,18 @@ static ca_context *context = NULL;
  *****************************************************************************/
 static void
 purple_notification_sound_load_prefs(void) {
-	GTimeZone *tz = g_time_zone_new_utc();
 	const gchar *str_mute_until = NULL;
 
 	muted = purple_prefs_get_bool(PREF_MUTED);
 
 	str_mute_until = purple_prefs_get_string(PREF_MUTE_UNTIL);
-	mute_until = g_date_time_new_from_iso8601(str_mute_until, tz);
-	g_time_zone_unref(tz);
+	if(str_mute_until != NULL && *str_mute_until != '\0') {
+		GTimeZone *tz = g_time_zone_new_utc();
+
+		mute_until = g_date_time_new_from_iso8601(str_mute_until, tz);
+
+		g_time_zone_unref(tz);
+	}
 }
 
 static void
@@ -135,17 +139,41 @@ purple_notification_sound_chat_message_received(PurpleAccount *account,
  * Actions
  *****************************************************************************/
 static void
-purple_notification_sound_mute(PurplePluginAction *action) {
+purple_notification_sound_mute(G_GNUC_UNUSED GSimpleAction *action,
+                               GVariant *parameter,
+                               G_GNUC_UNUSED gpointer data)
+{
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_INT32)) {
+		g_critical("notification-sound mute action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+
+		return;
+	}
+
 	if(!muted) {
+		gint delay = g_variant_get_int32(parameter);
+
+		if(delay == 0) {
+			g_clear_pointer(&mute_until, g_date_time_unref);
+		} else {
+			GDateTime *now = NULL;
+
+			now = g_date_time_new_now_utc();
+			mute_until = g_date_time_add_minutes(now, delay);
+			g_date_time_unref(now);
+		}
+
 		muted = TRUE;
-		g_clear_pointer(&mute_until, g_date_time_unref);
 
 		purple_notification_sound_save_prefs();
 	}
 }
 
 static void
-purple_notification_sound_unmute(PurplePluginAction *action) {
+purple_notification_sound_unmute(G_GNUC_UNUSED GSimpleAction *action,
+                                 G_GNUC_UNUSED GVariant *parameter,
+                                 G_GNUC_UNUSED gpointer data)
+{
 	if(muted) {
 		muted = FALSE;
 		g_clear_pointer(&mute_until, g_date_time_unref);
@@ -154,95 +182,58 @@ purple_notification_sound_unmute(PurplePluginAction *action) {
 	}
 }
 
-static void
-purple_notification_sound_mute_minutes(PurplePluginAction *action) {
-	GDateTime *now = NULL;
-
-	g_clear_pointer(&mute_until, g_date_time_unref);
-
-	now = g_date_time_new_now_utc();
-	mute_until = g_date_time_add_minutes(now,
-	                                     GPOINTER_TO_INT(action->user_data));
-	g_date_time_unref(now);
-
-	muted = TRUE;
-
-	purple_notification_sound_save_prefs();
-}
-
-static void
-purple_notification_sound_mute_hours(PurplePluginAction *action) {
-	GDateTime *now = NULL;
-
-	g_clear_pointer(&mute_until, g_date_time_unref);
-
-	now = g_date_time_new_now_utc();
-	mute_until = g_date_time_add_hours(now,
-	                                   GPOINTER_TO_INT(action->user_data));
-	g_date_time_unref(now);
-
-	muted = TRUE;
-
-	purple_notification_sound_save_prefs();
-}
-
-static GList *
-purple_notification_sound_actions(PurplePlugin *plugin) {
-	GList *l = NULL;
-	PurplePluginAction *action = NULL;
-
-	action = purple_plugin_action_new(_("Mute"),
-	                                  purple_notification_sound_mute);
-	l = g_list_append(l, action);
-
-	action = purple_plugin_action_new(_("Unmute"),
-	                                  purple_notification_sound_unmute);
-	l = g_list_append(l, action);
-
-	/* Add a separator */
-	l = g_list_append(l, NULL);
-
-	action = purple_plugin_action_new(_("Mute for 30 minutes"),
-	                                  purple_notification_sound_mute_minutes);
-	action->user_data = GINT_TO_POINTER(30);
-	l = g_list_append(l, action);
-
-	action = purple_plugin_action_new(_("Mute for 1 hour"),
-	                                  purple_notification_sound_mute_hours);
-	action->user_data = GINT_TO_POINTER(1);
-	l = g_list_append(l, action);
-
-	action = purple_plugin_action_new(_("Mute for 2 hours"),
-	                                  purple_notification_sound_mute_hours);
-	action->user_data = GINT_TO_POINTER(2);
-	l = g_list_append(l, action);
-
-	action = purple_plugin_action_new(_("Mute for 4 hours"),
-	                                  purple_notification_sound_mute_hours);
-	action->user_data = GINT_TO_POINTER(4);
-	l = g_list_append(l, action);
-
-	return l;
-}
-
 /******************************************************************************
  * Plugin Exports
  *****************************************************************************/
 static GPluginPluginInfo *
 notification_sound_query(G_GNUC_UNUSED GError **error) {
+	GMenu *menu = NULL, *section = NULL;
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "mute",
+			.activate = purple_notification_sound_mute,
+			.parameter_type = "i",
+		}, {
+			.name = "unmute",
+			.activate = purple_notification_sound_unmute,
+		}
+	};
 	const gchar * const authors[] = {
 		"Pidgin Developers <devel@pidgin.im>",
 		NULL
 	};
 
+	menu = g_menu_new();
+
+	section = g_menu_new();
+	g_menu_append(section, _("Mute"), "mute(0)");
+	g_menu_append(section, _("Unmute"), "unmute");
+
+	g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+
+	section = g_menu_new();
+	g_menu_append(section, _("Mute for 30 minutes"), "mute(30)");
+	g_menu_append(section, _("Mute for 1 hour"), "mute(60)");
+	g_menu_append(section, _("Mute for 2 hours"), "mute(120)");
+	g_menu_append(section, _("Mute for 4 hours"), "mute(240)");
+
+	g_menu_append_section(menu, NULL, G_MENU_MODEL(section));
+
+	/* Create our action group. */
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries,
+	                                G_N_ELEMENTS(entries), NULL);
+
 	return purple_plugin_info_new(
-		"id", "purple/notification-sound",
+		"id", "purple-notification-sound",
 		"abi-version", PURPLE_ABI_VERSION,
 		"name", N_("Notification Sounds"),
 		"version", VERSION,
 		"summary", N_("Play sounds for notifications"),
 		"authors", authors,
-		"actions-cb", purple_notification_sound_actions,
+		"action-group", group,
+		"action-menu", menu,
 		NULL
 	);
 }
