@@ -84,7 +84,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                         <property name="headers-visible">False</property>
                         <property name="search-column">3</property>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection">
+                          <object class="GtkTreeSelection" id="selection">
+                            <property name="mode">browse</property>
                             <signal name="changed" handler="pidgin_conversation_window_selection_changed" object="PidginConversationWindow" swapped="no"/>
                           </object>
                         </child>

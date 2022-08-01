@@ -45,6 +45,7 @@ struct _PidginConversationWindow {
 	GtkWidget *vbox;
 
 	GtkWidget *view;
+	GtkTreeSelection *selection;
 	GtkTreeStore *model;
 
 	GtkWidget *stack;
@@ -200,6 +201,7 @@ pidgin_conversation_window_init(PidginConversationWindow *window) {
 	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_MARKUP, _("Conversations"),
 	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_NAME, "__conversations__",
 	                   -1);
+	gtk_tree_selection_select_iter(window->selection, &iter);
 	window->conversation_path = gtk_tree_model_get_path(GTK_TREE_MODEL(window->model),
 	                                                    &iter);
 }
@@ -236,6 +238,8 @@ pidgin_conversation_window_class_init(PidginConversationWindowClass *klass) {
 	                                     model);
 	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
 	                                     view);
+	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	                                     selection);
 
 	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
 	                                     stack);
