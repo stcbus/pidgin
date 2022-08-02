@@ -162,7 +162,7 @@ pidgin_info_pane_class_init(PidginInfoPaneClass *klass) {
 	obj_class->dispose = pidgin_info_pane_dispose;
 
 	/**
-	 * PidginInfoPane::conversation
+	 * PidginInfoPane:conversation
 	 *
 	 * The #PurpleConversation whose information will be displayed.
 	 */

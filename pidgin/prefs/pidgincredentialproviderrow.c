@@ -150,7 +150,7 @@ pidgin_credential_provider_row_class_init(PidginCredentialProviderRowClass *klas
 	obj_class->finalize = pidgin_credential_provider_row_finalize;
 
 	/**
-	 * PidginCredentialProviderRow::provider
+	 * PidginCredentialProviderRow:provider
 	 *
 	 * The #PurpleCredentialProvider whose information will be displayed.
 	 */
@@ -161,7 +161,7 @@ pidgin_credential_provider_row_class_init(PidginCredentialProviderRowClass *klas
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PidginCredentialProviderRow::active
+	 * PidginCredentialProviderRow:active
 	 *
 	 * Whether the #PurpleCredentialProvider is currently active.
 	 */

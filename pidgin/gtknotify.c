@@ -524,8 +524,8 @@ pidgin_notify_searchresults(PurpleConnection *gc, const char *title,
 	return data;
 }
 
-/** Xerox'ed from Finch! How the tables have turned!! ;) **/
-/** User information. **/
+/* Xerox'ed from Finch! How the tables have turned!! ;) */
+/* User information. */
 static GHashTable *userinfo;
 
 static char *

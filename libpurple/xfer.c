@@ -2281,13 +2281,15 @@ purple_xfer_class_init(PurpleXferClass *klass)
 
 	/**
 	 * PurpleXfer::open-local:
+	 * @xfer: The file transfer.
 	 *
 	 * Open a file locally for a file transfer.
 	 *
 	 * The default class handler will open a file using standard library
 	 * functions. If you connect to this signal, you should connect to
-	 * PurpleXfer::query-local, PurpleXfer::read-local, PurpleXfer::write-local
-	 * and PurpleXfer::data-not-sent as well.
+	 * [signal@PurpleXfer::query-local], [signal@PurpleXfer::read-local],
+	 * [signal@PurpleXfer::write-local] and [signal@PurpleXfer::data-not-sent]
+	 * as well.
 	 *
 	 * Returns: %TRUE if the file was opened successfully, or %FALSE otherwise,
 	 *          and the transfer should be cancelled (libpurple will cancel).
@@ -2301,6 +2303,7 @@ purple_xfer_class_init(PurpleXferClass *klass)
 
 	/**
 	 * PurpleXfer::query-local:
+	 * @xfer: The file transfer.
 	 * @filename: The filename of the transfer.
 	 *
 	 * Query a file's properties locally.
@@ -2309,8 +2312,9 @@ purple_xfer_class_init(PurpleXferClass *klass)
 	 * functions, and set the transfer's size. If you connect to this signal,
 	 * you should try to do the same, but it is not necessarily an error if you
 	 * cannot. If you connect to this signal, you must connect to
-	 * PurpleXfer::open-local, PurpleXfer::read-local, PurpleXfer::write-local
-	 * and PurpleXfer::data-not-sent as well.
+	 * [signal@PurpleXfer::open-local], [signal@PurpleXfer::read-local],
+	 * [signal@PurpleXfer::write-local] and [signal@PurpleXfer::data-not-sent]
+	 * as well.
 	 *
 	 * Returns: %TRUE if the properties were queried successfully, or %FALSE
 	 *          otherwise, and the transfer should be cancelled (libpurple will
@@ -2326,6 +2330,7 @@ purple_xfer_class_init(PurpleXferClass *klass)
 
 	/**
 	 * PurpleXfer::read-local:
+	 * @xfer: The file transfer.
 	 * @buffer: (out): A pointer to a buffer to fill.
 	 * @size: The maximum amount of data to put in the buffer.
 	 *
@@ -2333,8 +2338,9 @@ purple_xfer_class_init(PurpleXferClass *klass)
 	 *
 	 * The default class handler will read from a file using standard library
 	 * functions. If you connect to this signal, you must connect to
-	 * PurpleXfer::open-local, PurpleXfer::query-local, PurpleXfer::write-local
-	 * and PurpleXfer::data-not-sent as well.
+	 * [signal@PurpleXfer::open-local], [signal@PurpleXfer::query-local],
+	 * [signal@PurpleXfer::write-local] and [signal@PurpleXfer::data-not-sent]
+	 * as well.
 	 *
 	 * Returns: The amount of data in the buffer, 0 if nothing is available,
 	 *          and a negative value if an error occurred and the transfer
@@ -2350,6 +2356,7 @@ purple_xfer_class_init(PurpleXferClass *klass)
 
 	/**
 	 * PurpleXfer::write-local:
+	 * @xfer: The file transfer.
 	 * @buffer: The buffer to write.
 	 * @size: The size of the buffer.
 	 *
@@ -2359,8 +2366,9 @@ purple_xfer_class_init(PurpleXferClass *klass)
 	 *
 	 * The default class handler will write to a file using standard library
 	 * functions. If you connect to this signal, you must connect to
-	 * PurpleXfer::open-local, PurpleXfer::query-local, PurpleXfer::read-local
-	 * and PurpleXfer::data-not-sent as well.
+	 * [signal@PurpleXfer::open-local], [signal@PurpleXfer::query-local],
+	 * [signal@PurpleXfer::read-local] and [signal@PurpleXfer::data-not-sent]
+	 * as well.
 	 *
 	 * Returns: @size if the write was successful, or a value between 0 and
 	 *          @size on error.
@@ -2375,6 +2383,7 @@ purple_xfer_class_init(PurpleXferClass *klass)
 
 	/**
 	 * PurpleXfer::data-not-sent:
+	 * @xfer: The file transfer.
 	 * @buffer: A pointer to the beginning of the unwritten data.
 	 * @size: The amount of unwritten data.
 	 *
@@ -2382,8 +2391,9 @@ purple_xfer_class_init(PurpleXferClass *klass)
 	 * re-enqueue this data and return it the next time read is called.
 	 *
 	 * If you connect to this signal, you must connect to
-	 * PurpleXfer::open-local, PurpleXfer::query-local, PurpleXfer::read-local
-	 * and PurpleXfer::write-local as well.
+	 * [signal@PurpleXfer::open-local], [signal@PurpleXfer::query-local],
+	 * [signal@PurpleXfer::read-local] and [signal@PurpleXfer::write-local] as
+	 * well.
 	 *
 	 * Returns: %TRUE if the data was re-enqueued successfully, or %FALSE
 	 *          otherwise, and the transfer should be cancelled (libpurple
@@ -2399,6 +2409,7 @@ purple_xfer_class_init(PurpleXferClass *klass)
 
 	/**
 	 * PurpleXfer::add-thumbnail:
+	 * @xfer: The file transfer.
 	 * @formats: A comma-separated string of allowed image formats.
 	 *
 	 * Request that a thumbnail be added to a file transfer.

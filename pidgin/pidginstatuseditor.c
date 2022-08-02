@@ -235,7 +235,7 @@ pidgin_status_editor_class_init(PidginStatusEditorClass *klass) {
 	obj_class->set_property = pidgin_status_editor_set_property;
 
 	/**
-	 * PidginStatusEditor::status:
+	 * PidginStatusEditor:status:
 	 *
 	 * The [type@Purple.SavedStatus] that this editor is responsible for.
 	 * This may be %NULL if it is creating a new status.

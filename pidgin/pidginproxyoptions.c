@@ -268,7 +268,7 @@ pidgin_proxy_options_class_init(PidginProxyOptionsClass *klass) {
 	obj_class->constructed = pidgin_proxy_options_constructed;
 
 	/**
-	 * PidginProxyOptions::show-global:
+	 * PidginProxyOptions:show-global:
 	 *
 	 * Whether or not to show the "Use Global Proxy Settings" option. This
 	 * is turned off for the preferences where we use this widget to define
@@ -283,7 +283,7 @@ pidgin_proxy_options_class_init(PidginProxyOptionsClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PidginProxyOptions::info:
+	 * PidginProxyOptions:info:
 	 *
 	 * The [class@Purple.ProxyInfo] that this options widget is configuring. If
 	 * unset, a new instance will be created.

@@ -137,9 +137,9 @@ pidgin_presence_icon_class_init(PidginPresenceIconClass *klass) {
 	obj_class->set_property = pidgin_presence_icon_set_property;
 
 	/**
-	 * PidginPresenceIcon::presence:
+	 * PidginPresenceIcon:presence:
 	 *
-	 * The #PurplePresence that this icon will be representing.
+	 * The presence that this icon will be representing.
 	 */
 	properties[PROP_PRESENCE] = g_param_spec_object(
 		"presence", "presence",
@@ -148,7 +148,7 @@ pidgin_presence_icon_class_init(PidginPresenceIconClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PidginPresenceIcon::fallback:
+	 * PidginPresenceIcon:fallback:
 	 *
 	 * The name of the icon to use as a fallback when no presence is set.
 	 */
@@ -159,9 +159,9 @@ pidgin_presence_icon_class_init(PidginPresenceIconClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PidginPresenceIcon::icon-size:
+	 * PidginPresenceIcon:icon-size:
 	 *
-	 * The #GtkIconSize that should be used.
+	 * The size of the icon that should be used.
 	 */
 	properties[PROP_ICON_SIZE] = g_param_spec_enum(
 		"icon-size", "icon-size",

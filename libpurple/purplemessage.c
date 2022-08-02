@@ -29,11 +29,6 @@
 #include "purplemessage.h"
 #include "purpleprivate.h"
 
-/**
- * PurpleMessage:
- *
- * A message data container.
- */
 struct _PurpleMessage {
 	GObject parent;
 

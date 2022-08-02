@@ -324,7 +324,7 @@ if ENABLE_GTK
 	endif  # INSTALL_I18N
 
 	if enable_introspection
-		introspection_sources = libpidgin_headers + libpidgin_prefs_headers
+		introspection_sources = libpidgin_SOURCES + libpidgin_headers + libpidgin_prefs_headers
 
 		pidgin_gir = gnome.generate_gir(libpidgin,
 			sources : introspection_sources,

@@ -462,7 +462,7 @@ pidgin_avatar_class_init(PidginAvatarClass *klass) {
 	obj_class->dispose = pidgin_avatar_dispose;
 
 	/**
-	 * PidginAvatar::animate:
+	 * PidginAvatar:animate:
 	 *
 	 * Whether or not an animated avatar should be animated.
 	 */
@@ -473,9 +473,9 @@ pidgin_avatar_class_init(PidginAvatarClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PidginAvatar::buddy:
+	 * PidginAvatar:buddy:
 	 *
-	 * The #PurpleBuddy whose avatar will be displayed.
+	 * The buddy whose avatar will be displayed.
 	 */
 	properties[PROP_BUDDY] = g_param_spec_object(
 		"buddy", "buddy",
@@ -484,10 +484,9 @@ pidgin_avatar_class_init(PidginAvatarClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PidginAvatar::conversation:
+	 * PidginAvatar:conversation:
 	 *
-	 * The #PurpleConversation which will be used to find the correct
-	 * #PurpleBuddy.
+	 * The conversation which will be used to find the correct buddy.
 	 */
 	properties[PROP_CONVERSATION] = g_param_spec_object(
 		"conversation", "conversation",

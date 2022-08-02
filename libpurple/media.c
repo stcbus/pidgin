@@ -30,9 +30,7 @@
 #include "media-gst.h"
 
 #ifdef USE_VV
-/** @copydoc _PurpleMediaSession */
 typedef struct _PurpleMediaSession PurpleMediaSession;
-/** @copydoc _PurpleMediaStream */
 typedef struct _PurpleMediaStream PurpleMediaStream;
 
 struct _PurpleMediaSession

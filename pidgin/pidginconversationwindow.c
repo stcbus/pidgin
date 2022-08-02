@@ -213,6 +213,13 @@ pidgin_conversation_window_class_init(PidginConversationWindowClass *klass) {
 
 	obj_class->dispose = pidgin_conversation_window_dispose;
 
+	/**
+	 * PidginConversationWindow::conversation-switched:
+	 * @window: The conversation window.
+	 * @new_conv: The now active conversation.
+	 *
+	 * Emitted when a window switched from one conversation to another.
+	 */
 	signals[SIG_CONVERSATION_SWITCHED] = g_signal_new_class_handler(
 		"conversation-switched",
 		G_OBJECT_CLASS_TYPE(obj_class),

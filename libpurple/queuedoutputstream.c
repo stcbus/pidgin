@@ -24,23 +24,6 @@
 #include "internal.h"
 #include "queuedoutputstream.h"
 
-/**
- * PurpleQueuedOutputStream:
- *
- * An implementation of #GFilterOutputStream which allows queuing data for
- * output. This allows data to be queued while other data is being output.
- * Therefore, data doesn't have to be manually stored while waiting for
- * stream operations to finish.
- *
- * To create a queued output stream, use #purple_queued_output_stream_new().
- *
- * To queue data, use #purple_queued_output_stream_push_bytes_async().
- *
- * If there's a fatal stream error, it's suggested to clear the remaining
- * bytes queued with #purple_queued_output_stream_clear_queue() to avoid
- * excessive errors returned in
- * #purple_queued_output_stream_push_bytes_async()'s async callback.
- */
 struct _PurpleQueuedOutputStream
 {
 	GFilterOutputStream parent;

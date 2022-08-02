@@ -208,7 +208,7 @@ pidgin_status_primitive_store_class_init(PidginStatusPrimitiveStoreClass *klass)
 	obj_class->dispose = pidgin_status_primitive_store_dispose;
 
 	/**
-	 * PidginStatusPrimitiveStore::account:
+	 * PidginStatusPrimitiveStore:account:
 	 *
 	 * The account whose statuses to display.
 	 *

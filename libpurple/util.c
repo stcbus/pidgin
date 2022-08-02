@@ -418,7 +418,7 @@ purple_strreplace(const char *string, const char *delimiter,
 	return ret;
 }
 
-/** TODO: Expose this when we can add API */
+/* TODO: Expose this when we can add API */
 static const char *
 purple_strcasestr_len(const char *haystack, gssize hlen, const char *needle, gssize nlen)
 {

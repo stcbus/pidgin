@@ -44,11 +44,6 @@
 #include "signals.h"
 #include "util.h"
 
-/**
- * PurpleAccount:
- *
- * Structure representing an account.
- */
 struct _PurpleAccount
 {
 	GObject gparent;

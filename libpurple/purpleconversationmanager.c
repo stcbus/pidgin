@@ -142,7 +142,7 @@ purple_conversation_manager_class_init(PurpleConversationManagerClass *klass) {
 	/**
 	 * PurpleConversationManager::registered:
 	 * @manager: The manager.
-	 * @converstion: The conversation that was registered.
+	 * @conversation: The conversation that was registered.
 	 *
 	 * Emitted after @conversation has been registered with @manager.
 	 *

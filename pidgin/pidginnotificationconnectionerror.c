@@ -224,7 +224,7 @@ pidgin_notification_connection_error_class_init(PidginNotificationConnectionErro
 	obj_class->dispose = pidgin_notification_connection_error_dispose;
 
 	/**
-	 * PidginNotificationConnectionError::info:
+	 * PidginNotificationConnectionError:notification:
 	 *
 	 * The [type@Purple.ConnectionErrorInfo] that this notification is for.
 	 *

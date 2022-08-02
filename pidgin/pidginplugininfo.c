@@ -84,7 +84,7 @@ pidgin_plugin_info_class_init(PidginPluginInfoClass *klass) {
 	obj_class->set_property = pidgin_plugin_info_set_property;
 
 	/**
-	 * PidginPluginInfo::gtk-config-frame-cb:
+	 * PidginPluginInfo:gtk-config-frame-cb:
 	 *
 	 * A function to call to create the configuration widget for the plugin.
 	 */

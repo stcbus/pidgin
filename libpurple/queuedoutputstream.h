@@ -42,9 +42,19 @@ G_BEGIN_DECLS
 /**
  * PurpleQueuedOutputStream:
  *
- * A #PurpleQueuedOutputStream is a #GOutputStream which allows data to be
- * queued for outputting. It differs from a #GBufferedOutputStream in that
- * it allows for data to be queued while other operations are in progress.
+ * An implementation of #GFilterOutputStream which allows queuing data for
+ * output. This allows data to be queued while other data is being output.
+ * Therefore, data doesn't have to be manually stored while waiting for
+ * stream operations to finish.
+ *
+ * To create a queued output stream, use [ctor@QueuedOutputStream.new].
+ *
+ * To queue data, use [method@QueuedOutputStream.push_bytes_async].
+ *
+ * If there's a fatal stream error, it's suggested to clear the remaining bytes
+ * queued with [method@QueuedOutputStream.clear_queue] to avoid excessive
+ * errors returned in [method@QueuedOutputStream.push_bytes_async]'s async
+ * callback.
  */
 G_DECLARE_FINAL_TYPE(PurpleQueuedOutputStream,
 		purple_queued_output_stream, PURPLE,

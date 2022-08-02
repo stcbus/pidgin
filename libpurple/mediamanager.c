@@ -39,9 +39,7 @@
 #endif
 #endif /* USE_VV */
 
-/** @copydoc _PurpleMediaOutputWindow */
 typedef struct _PurpleMediaOutputWindow PurpleMediaOutputWindow;
-/** @copydoc _PurpleMediaManagerPrivate */
 typedef struct _PurpleMediaElementInfoPrivate PurpleMediaElementInfoPrivate;
 
 struct _PurpleMediaOutputWindow

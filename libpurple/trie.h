@@ -80,7 +80,7 @@ typedef gboolean (*PurpleTrieFindCb)(const gchar *word, gpointer word_data,
 G_BEGIN_DECLS
 
 /**
- * PurpleTrie
+ * PurpleTrie:
  *
  * A #PurpleTrie is a structure for quick searching of multiple phrases within
  * a text. It's intended for repeated searches of the same set of patterns

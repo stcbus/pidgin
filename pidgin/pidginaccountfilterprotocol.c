@@ -145,7 +145,7 @@ pidgin_account_filter_protocol_class_init(PidginAccountFilterProtocolClass *klas
 	obj_class->finalize = pidgin_account_filter_protocol_finalize;
 
 	/**
-	 * PidginAccountFilterProtocol::protocol-id:
+	 * PidginAccountFilterProtocol:protocol-id:
 	 *
 	 * The protocol id that will be filtered for.
 	 */

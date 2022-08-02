@@ -146,7 +146,7 @@ pidgin_application_populate_dynamic_menus(PidginApplication *application) {
 /******************************************************************************
  * Actions
  *****************************************************************************/
-/**< private >
+/*< private >
  * pidgin_application_online_actions:
  *
  * This list keeps track of which actions should only be enabled while online.
@@ -160,7 +160,7 @@ static const gchar *pidgin_application_online_actions[] = {
 	"set-mood",
 };
 
-/**< private >
+/*< private >
  * pidgin_application_chat_actions:
  *
  * This list keeps track of which actions should only be enabled if a protocol
@@ -171,7 +171,7 @@ static const gchar *pidgin_application_chat_actions[] = {
 	"join-chat",
 };
 
-/**< private >
+/*< private >
  * pidgin_application_room_list_actions:
  *
  * This list keeps track of which actions should only be enabled if an online

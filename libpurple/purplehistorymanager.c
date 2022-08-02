@@ -72,7 +72,7 @@ purple_history_manager_class_init(PurpleHistoryManagerClass *klass) {
 	obj_class->finalize = purple_history_manager_finalize;
 
 	/**
-	* PurpleHistoryManager::adapter-changed:
+	* PurpleHistoryManager::active-changed:
 	* @manager: The #PurpleHistoryManager instance.
 	* @old: The old #PurpleHistoryAdapter.
 	* @current: The new activated #PurpleHistoryAdapter.
