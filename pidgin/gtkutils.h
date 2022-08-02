@@ -55,31 +55,6 @@ typedef gboolean (*PidginFilterBuddyCompletionEntryFunc) (const PidginBuddyCompl
 G_BEGIN_DECLS
 
 /**
- * pidgin_separator:
- * @menu: The menu to add a separator to.
- *
- * Adds a separator to a menu.
- *
- * Returns: (transfer full): The separator.
- */
-GtkWidget *pidgin_separator(GtkWidget *menu);
-
-/**
- * pidgin_new_check_item:
- * @menu: The menu to which to append the check menu item.
- * @str: The title to use for the newly created menu item.
- * @cb: (scope call): A function to call when the menu item is activated.
- * @data: Data to pass to the signal function.
- * @checked: The initial state of the check item
- *
- * Creates a check menu item.
- *
- * Returns: (transfer full): The newly created menu item.
- */
-GtkWidget *pidgin_new_check_item(GtkWidget *menu, const char *str,
-		GCallback cb, gpointer data, gboolean checked);
-
-/**
  * pidgin_new_menu_item:
  * @menu:       The menu to which to append the menu item.
  * @mnemonic:   The title for the menu item.
@@ -228,19 +203,6 @@ GdkPixbuf *pidgin_create_protocol_icon(PurpleAccount *account, PidginProtocolIco
  * Since: 3.0.0
  */
 GdkPixbuf *pidgin_create_icon_from_protocol(PurpleProtocol *protocol, PidginProtocolIconSize size, PurpleAccount *account);
-
-/**
- * pidgin_append_menu_action:
- * @menu:    The menu to append to.
- * @act:     The PurpleActionMenu to append.
- * @gobject: The object to be passed to the action callback.
- *
- * Append a PurpleActionMenu to a menu.
- *
- * Returns: (transfer full): The menuitem added.
- */
-GtkWidget *pidgin_append_menu_action(GtkWidget *menu, PurpleActionMenu *act,
-                                 gpointer gobject);
 
 /**
  * pidgin_buddy_icon_chooser_new:

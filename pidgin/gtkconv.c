@@ -758,15 +758,6 @@ create_chat_menu(PurpleChatConversation *chat, const char *who, PurpleConnection
 			g_object_set_data_full(G_OBJECT(button), "user_data", g_strdup(who), g_free);
 	}
 
-	if (buddy != NULL)
-	{
-		if (purple_account_is_connected(account))
-			pidgin_append_blist_node_proto_menu(menu, purple_account_get_connection(account),
-												  (PurpleBlistNode *)buddy);
-		pidgin_append_blist_node_extended_menu(menu, (PurpleBlistNode *)buddy);
-		gtk_widget_show_all(menu);
-	}
-
 	return menu;
 }
 

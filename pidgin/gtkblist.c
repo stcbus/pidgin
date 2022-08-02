@@ -1461,25 +1461,6 @@ pidgin_blist_collapse_contact_cb(GtkWidget *w, PurpleBlistNode *node)
 	}
 }
 
-void
-pidgin_append_blist_node_proto_menu(GtkWidget *menu, PurpleConnection *gc,
-                                      PurpleBlistNode *node)
-{
-	GList *l, *ll;
-	PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-
-	if(!PURPLE_IS_PROTOCOL_CLIENT(protocol)) {
-		return;
-	}
-
-	ll = purple_protocol_client_blist_node_menu(PURPLE_PROTOCOL_CLIENT(protocol), node);
-	for(l = ll; l; l = l->next) {
-		PurpleActionMenu *act = (PurpleActionMenu *) l->data;
-		pidgin_append_menu_action(menu, act, node);
-	}
-	g_list_free(ll);
-}
-
 static gboolean
 pidgin_blist_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
                           guint keyval, G_GNUC_UNUSED guint keycode,
@@ -1578,18 +1559,6 @@ pidgin_blist_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
 	}
 
 	return FALSE;
-}
-
-void
-pidgin_append_blist_node_extended_menu(GtkWidget *menu, PurpleBlistNode *node)
-{
-	GList *l, *ll;
-
-	for(l = ll = purple_blist_node_get_extended_menu(node); l; l = l->next) {
-		PurpleActionMenu *act = (PurpleActionMenu *) l->data;
-		pidgin_append_menu_action(menu, act, node);
-	}
-	g_list_free(ll);
 }
 
 static gboolean

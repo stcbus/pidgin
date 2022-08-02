@@ -101,35 +101,6 @@ struct _icon_chooser {
  * Code
  *****************************************************************************/
 
-GtkWidget *pidgin_separator(GtkWidget *menu)
-{
-	GtkWidget *menuitem;
-
-	menuitem = gtk_separator_menu_item_new();
-	gtk_widget_show(menuitem);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	return menuitem;
-}
-
-GtkWidget *pidgin_new_check_item(GtkWidget *menu, const char *str,
-		GCallback cb, gpointer data, gboolean checked)
-{
-	GtkWidget *menuitem;
-	menuitem = gtk_check_menu_item_new_with_mnemonic(str);
-
-	if (menu)
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), checked);
-
-	if (cb)
-		g_signal_connect(G_OBJECT(menuitem), "activate", cb, data);
-
-	gtk_widget_show_all(menuitem);
-
-	return menuitem;
-}
-
 GtkWidget *pidgin_new_menu_item(GtkWidget *menu, const char *mnemonic,
                 const char *icon, GCallback cb, gpointer data)
 {
@@ -406,93 +377,6 @@ pidgin_create_protocol_icon(PurpleAccount *account, PidginProtocolIconSize size)
 	if (protocol == NULL)
 		return NULL;
 	return pidgin_create_icon_from_protocol(protocol, size, account);
-}
-
-static void
-menu_action_cb(GtkMenuItem *item, gpointer object)
-{
-	gpointer data;
-	void (*callback)(gpointer, gpointer);
-
-	callback = g_object_get_data(G_OBJECT(item), "purplecallback");
-	data = g_object_get_data(G_OBJECT(item), "purplecallbackdata");
-
-	if (callback)
-		callback(object, data);
-}
-
-static GtkWidget *
-do_pidgin_append_menu_action(GtkWidget *menu, PurpleActionMenu *act,
-				    gpointer object)
-{
-	GtkWidget *menuitem;
-	GList *list;
-
-	if (act == NULL) {
-		return pidgin_separator(menu);
-	}
-
-	menuitem = gtk_menu_item_new_with_mnemonic(
-	        purple_action_menu_get_label(act));
-
-	list = purple_action_menu_get_children(act);
-
-	if (list == NULL) {
-		GCallback callback;
-
-		callback = purple_action_menu_get_callback(act);
-
-		if (callback != NULL) {
-			g_object_set_data(G_OBJECT(menuitem),
-							  "purplecallback",
-							  callback);
-			g_object_set_data(G_OBJECT(menuitem),
-							  "purplecallbackdata",
-							  purple_action_menu_get_data(act));
-			g_signal_connect(G_OBJECT(menuitem), "activate",
-							 G_CALLBACK(menu_action_cb),
-							 object);
-		} else {
-			gtk_widget_set_sensitive(menuitem, FALSE);
-		}
-
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	} else {
-		GList *l = NULL;
-		GtkWidget *submenu = NULL;
-		GtkAccelGroup *group;
-
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-		submenu = gtk_menu_new();
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
-
-		group = gtk_menu_get_accel_group(GTK_MENU(menu));
-		if (group) {
-			char *path = g_strdup_printf("%s/%s",
-				gtk_menu_item_get_accel_path(GTK_MENU_ITEM(menuitem)),
-				purple_action_menu_get_label(act));
-			gtk_menu_set_accel_path(GTK_MENU(submenu), path);
-			g_free(path);
-			gtk_menu_set_accel_group(GTK_MENU(submenu), group);
-		}
-
-		for (l = list; l; l = l->next) {
-			PurpleActionMenu *act = (PurpleActionMenu *)l->data;
-
-			do_pidgin_append_menu_action(submenu, act, object);
-		}
-	}
-	return menuitem;
-}
-
-GtkWidget *
-pidgin_append_menu_action(GtkWidget *menu, PurpleActionMenu *act,
-                            gpointer object)
-{
-	GtkWidget *menuitem = do_pidgin_append_menu_action(menu, act, object);
-	purple_action_menu_free(act);
-	return menuitem;
 }
 
 static gboolean buddyname_completion_match_func(GtkEntryCompletion *completion,

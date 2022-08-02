@@ -817,7 +817,10 @@ version 3.0.0 (??/??/????):
 		* gtk_imhtml_image_scale
 		* pidgin_accounts_window_hide
 		* pidgin_accounts_window_show, use pidgin_account_manager_new instead.
+		* pidgin_append_blist_node_extended_menu
 		* pidgin_append_blist_node_privacy_menu
+		* pidgin_append_blist_node_proto_menu
+		* pidgin_append_menu_action
 		* pidgin_blist_draw_tooltip
 		* pidgin_blist_get_theme
 		* pidgin_blist_layout_get_type
@@ -961,6 +964,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_make_pretty_arrows
 		* pidgin_menu_position_func_helper
 		* pidgin_mini_dialog_links_supported
+		* pidgin_new_check_item
 		* pidgin_notify_emails_pending
 		* pidgin_notify_emails_present
 		* pidgin_parse_x_im_contact
@@ -977,6 +981,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_protocol_option_menu_get_selected
 		* pidgin_save_accels
 		* pidgin_save_accels_cb
+		* pidgin_separator
 		* pidgin_set_cursor
 		* pidgin_set_custom_buddy_icon
 		* pidgin_set_sensitive_if_input

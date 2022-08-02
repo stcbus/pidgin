@@ -258,22 +258,6 @@ gboolean pidgin_blist_joinchat_is_showable(void);
 void pidgin_blist_joinchat_show(void);
 
 /**
- * pidgin_append_blist_node_proto_menu:
- *
- * Appends the protocol specific menu items for a PurpleBlistNode
- */
-/* TODO Rename these. */
-void pidgin_append_blist_node_proto_menu (GtkWidget *menu, PurpleConnection *gc, PurpleBlistNode *node);
-
-/**
- * pidgin_append_blist_node_extended_menu:
- *
- * Appends the extended menu items for a PurpleBlistNode
- */
-/* TODO Rename these. */
-void pidgin_append_blist_node_extended_menu(GtkWidget *menu, PurpleBlistNode *node);
-
-/**
  * pidgin_blist_get_name_markup:
  * @buddy: The buddy to return markup from
  * @selected:  Whether this buddy is selected. If TRUE, the markup will not change the color.
