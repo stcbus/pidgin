@@ -43,7 +43,7 @@ iconify_windows(PurpleAccount *account, PurpleStatus *old, PurpleStatus *newstat
 
 	application = g_application_get_default();
 	windows = gtk_application_get_windows(GTK_APPLICATION(application));
-	g_list_foreach(windows, (GFunc)gtk_window_iconify, NULL);
+	g_list_foreach(windows, (GFunc)gtk_window_minimize, NULL);
 }
 
 /*
@@ -60,12 +60,12 @@ icon_away_query(GError **error)
 
 	return pidgin_plugin_info_new(
 		"id",           ICONAWAY_PLUGIN_ID,
-		"name",         N_("Iconify on Away"),
+		"name",         N_("Minimize on Away"),
 		"version",      DISPLAY_VERSION,
 		"category",     N_("User interface"),
-		"summary",      N_("Iconifies the buddy list and your conversations "
+		"summary",      N_("Minimizes the buddy list and your conversations "
 		                   "when you go away."),
-		"description",  N_("Iconifies the buddy list and your conversations "
+		"description",  N_("Minimizes the buddy list and your conversations "
 		                   "when you go away."),
 		"authors",      authors,
 		"website",      PURPLE_WEBSITE,
