@@ -356,6 +356,7 @@ pidgin/pidgindialog.c
 pidgin/pidginiconname.c
 pidgin/pidgininfopane.c
 pidgin/pidgininvitedialog.c
+pidgin/pidginkeypad.c
 pidgin/pidginmessage.c
 pidgin/pidginmooddialog.c
 pidgin/pidginplugininfo.c
@@ -405,6 +406,7 @@ pidgin/resources/Conversations/invite_dialog.ui
 pidgin/resources/Conversations/window.ui
 pidgin/resources/Debug/debug.ui
 pidgin/resources/Debug/plugininfo.ui
+pidgin/resources/Keypad/keypad.ui
 pidgin/resources/Log/log-viewer.ui
 pidgin/resources/Plugins/dialog.ui
 pidgin/resources/Plugins/menu.ui

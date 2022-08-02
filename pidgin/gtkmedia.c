@@ -32,6 +32,7 @@
 #include "gtkmedia.h"
 #include "gtkutils.h"
 #include "pidgincore.h"
+#include "pidginkeypad.h"
 
 #ifdef USE_VV
 
@@ -653,96 +654,14 @@ pidgin_media_add_audio_widget(PidginMedia *gtkmedia,
 }
 
 static void
-phone_dtmf_pressed_cb(GtkButton *button, gpointer user_data)
+pidgin_media_keypad_pressed_cb(PidginKeypad *keypad, guint key, gpointer data)
 {
-	PidginMedia *gtkmedia = user_data;
-	gint num;
+	PidginMedia *gtkmedia = data;
 	gchar *sid;
 
-	num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "dtmf-digit"));
-	sid = g_object_get_data(G_OBJECT(button), "session-id");
+	sid = g_object_get_data(G_OBJECT(gtkmedia), "session-id");
 
-	purple_media_send_dtmf(gtkmedia->priv->media, sid, num, 25, 50);
-}
-
-static inline GtkWidget *
-phone_create_button(const gchar *text_hi, const gchar *text_lo)
-{
-	GtkWidget *button;
-	GtkWidget *label_hi;
-	GtkWidget *label_lo;
-	GtkWidget *grid;
-	const gchar *text_hi_local;
-
-	if (text_hi)
-		text_hi_local = _(text_hi);
-	else
-		text_hi_local = "";
-
-	grid = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(grid), TRUE);
-
-	button = gtk_button_new();
-	label_hi = gtk_label_new(text_hi_local);
-	gtk_box_pack_end(GTK_BOX(grid), label_hi, FALSE, TRUE, 0);
-	label_lo = gtk_label_new(text_lo);
-	gtk_label_set_use_markup(GTK_LABEL(label_lo), TRUE);
-	gtk_box_pack_end(GTK_BOX(grid), label_lo, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(button), grid);
-
-	return button;
-}
-
-static struct phone_label {
-	gchar *subtext;
-	gchar *text;
-	gchar chr;
-} phone_labels[] = {
-	{"<b>1</b>", NULL, '1'},
-	/* Translators note: These are the letters on the keys of a numeric
-	   keypad; translate according to the tables in §7 of ETSI ES 202 130:
-           http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
-         */
-	 /* Letters on the '2' key of a numeric keypad */
-	{"<b>2</b>", N_("ABC"), '2'},
-	 /* Letters on the '3' key of a numeric keypad */
-	{"<b>3</b>", N_("DEF"), '3'},
-	 /* Letters on the '4' key of a numeric keypad */
-	{"<b>4</b>", N_("GHI"), '4'},
-	 /* Letters on the '5' key of a numeric keypad */
-	{"<b>5</b>", N_("JKL"), '5'},
-	 /* Letters on the '6' key of a numeric keypad */
-	{"<b>6</b>", N_("MNO"), '6'},
-	 /* Letters on the '7' key of a numeric keypad */
-	{"<b>7</b>", N_("PQRS"), '7'},
-	 /* Letters on the '8' key of a numeric keypad */
-	{"<b>8</b>", N_("TUV"), '8'},
-	 /* Letters on the '9' key of a numeric keypad */
-	{"<b>9</b>", N_("WXYZ"), '9'},
-	{"<b>*</b>", NULL, '*'},
-	{"<b>0</b>", NULL, '0'},
-	{"<b>#</b>", NULL, '#'},
-	{NULL, NULL, 0}
-};
-
-static gboolean
-pidgin_media_dtmf_key_press_event_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
-                                     guint keyval,
-                                     G_GNUC_UNUSED guint keycode,
-                                     G_GNUC_UNUSED GdkModifierType state,
-                                     gpointer user_data)
-{
-	PidginMedia *gtkmedia = user_data;
-
-	if ((keyval >= GDK_KEY_0 && keyval <= GDK_KEY_9) ||
-		keyval == GDK_KEY_asterisk ||
-		keyval == GDK_KEY_numbersign) {
-		gchar *sid = g_object_get_data(G_OBJECT(gtkmedia), "session-id");
-
-		purple_media_send_dtmf(gtkmedia->priv->media, sid, keyval, 25, 50);
-	}
-
-	return FALSE;
+	purple_media_send_dtmf(gtkmedia->priv->media, sid, key, 25, 50);
 }
 
 static GtkWidget *
@@ -750,42 +669,20 @@ pidgin_media_add_dtmf_widget(PidginMedia *gtkmedia,
 		PurpleMediaSessionType type, const gchar *_sid)
 {
 	GtkApplicationWindow *win = GTK_APPLICATION_WINDOW(gtkmedia);
-	GtkEventController *event_controller = NULL;
-	GtkWidget *grid = gtk_grid_new();
-	GtkWidget *button;
-	gint index = 0;
+	GtkWidget *keypad = NULL;
 
-	gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
-	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
-
-	/* Add buttons */
-	for (index = 0; phone_labels[index].subtext != NULL; index++) {
-		button = phone_create_button(phone_labels[index].text,
-				phone_labels[index].subtext);
-		g_signal_connect(button, "pressed",
-				G_CALLBACK(phone_dtmf_pressed_cb), gtkmedia);
-		g_object_set_data(G_OBJECT(button), "dtmf-digit",
-				GINT_TO_POINTER(phone_labels[index].chr));
-		g_object_set_data_full(G_OBJECT(button), "session-id",
-				g_strdup(_sid), g_free);
-		gtk_grid_attach(GTK_GRID(grid), button,
-				index % 3, index / 3, 1, 1);
-		g_object_set(button, "expand", TRUE, "margin", 2, NULL);
-	}
-
-	event_controller = gtk_event_controller_key_new(GTK_WIDGET(win));
-	g_object_set_data_full(G_OBJECT(win), "pidgin-event-controller",
-	                       event_controller, g_object_unref);
-
-	g_signal_connect(event_controller, "key-pressed",
-		G_CALLBACK(pidgin_media_dtmf_key_press_event_cb), gtkmedia);
+	keypad = pidgin_keypad_new();
+	pidgin_keypad_set_key_capture_widget(PIDGIN_KEYPAD(keypad),
+	                                     GTK_WIDGET(win));
+	g_signal_connect(keypad, "pressed",
+	                 G_CALLBACK(pidgin_media_keypad_pressed_cb), gtkmedia);
 
 	g_object_set_data_full(G_OBJECT(win), "session-id",
 		g_strdup(_sid), g_free);
 
-	gtk_widget_show_all(grid);
+	gtk_widget_show_all(keypad);
 
-	return grid;
+	return keypad;
 }
 
 static void
