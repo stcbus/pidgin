@@ -91,18 +91,7 @@ typedef struct
 	GtkWidget *persistent;
 } PidginAddChatData;
 
-typedef struct
-{
-	/* GBoxed reference count */
-	int box_count;
-
-	guint select_notebook_page_timeout;
-
-
-} PidginBuddyListPrivate;
-
-G_DEFINE_TYPE_WITH_PRIVATE(PidginBuddyList, pidgin_buddy_list,
-                           PURPLE_TYPE_BUDDY_LIST)
+G_DEFINE_TYPE(PidginBuddyList, pidgin_buddy_list, PURPLE_TYPE_BUDDY_LIST)
 
 enum {
 	STATUS_ICON_COLUMN,
@@ -119,14 +108,6 @@ enum {
 	PROTOCOL_ICON_COLUMN,
 	BLIST_COLUMNS
 };
-
-#define PIDGIN_WINDOW_ICONIFIED(x) \
-	(gdk_window_get_state(gtk_widget_get_window(GTK_WIDGET(x))) & \
-	GDK_WINDOW_STATE_ICONIFIED)
-
-#define PIDGIN_WINDOW_MAXIMIZED(x) \
-	(gdk_window_get_state(gtk_widget_get_window(GTK_WIDGET(x))) & \
-	GDK_WINDOW_STATE_MAXIMIZED)
 
 static GdkVisibilityState gtk_blist_visibility = GDK_VISIBILITY_UNOBSCURED;
 static gboolean editing_blist = FALSE;
@@ -4488,8 +4469,6 @@ static void
 pidgin_buddy_list_finalize(GObject *obj)
 {
 	PidginBuddyList *gtkblist = PIDGIN_BUDDY_LIST(obj);
-	PidginBuddyListPrivate *priv =
-	        pidgin_buddy_list_get_instance_private(gtkblist);
 
 	purple_signals_disconnect_by_handle(gtkblist);
 
@@ -4502,10 +4481,6 @@ pidgin_buddy_list_finalize(GObject *obj)
 
 	gtkblist->window = gtkblist->vbox = gtkblist->treeview = NULL;
 	g_clear_object(&gtkblist->treemodel);
-
-	if (priv->select_notebook_page_timeout) {
-		g_source_remove(priv->select_notebook_page_timeout);
-	}
 
 	purple_prefs_disconnect_by_handle(pidgin_blist_get_handle());
 
