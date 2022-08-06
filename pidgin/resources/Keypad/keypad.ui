@@ -20,24 +20,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.22"/>
+  <requires lib="gtk" version="4.0"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <!-- n-columns=3 n-rows=4 -->
   <template class="PidginKeypad" parent="GtkGrid">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="row-homogeneous">True</property>
-    <property name="column-homogeneous">True</property>
+    <property name="row-homogeneous">1</property>
+    <property name="column-homogeneous">1</property>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -46,55 +41,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">49</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">1</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="secondary_labels[1]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
+              <object class="GtkLabel" id="secondary_labels[1]"/>
             </child>
           </object>
         </child>
         <style>
           <class name="image-button"/>
         </style>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -103,60 +78,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">50</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">2</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[2]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '2' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">ABC</property>
+                <property name="label" translatable="1">ABC</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">0</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -165,60 +121,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">51</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">3</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[3]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '3' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">DEF</property>
+                <property name="label" translatable="1">DEF</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">2</property>
+          <property name="row">0</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -227,60 +164,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">52</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">4</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[4]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '4' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">GHI</property>
+                <property name="label" translatable="1">GHI</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">1</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -289,60 +207,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">53</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">5</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[5]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '5' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">JKL</property>
+                <property name="label" translatable="1">JKL</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">1</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">1</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -351,60 +250,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">54</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">6</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[6]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '6' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">MNO</property>
+                <property name="label" translatable="1">MNO</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">2</property>
+          <property name="row">1</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">1</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -413,60 +293,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">55</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">7</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[7]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '7' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">PQRS</property>
+                <property name="label" translatable="1">PQRS</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">2</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">2</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -475,60 +336,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">56</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">8</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[8]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '8' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">TUV</property>
+                <property name="label" translatable="1">TUV</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">2</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">2</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -537,60 +379,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">57</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">9</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[9]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <!-- Translators: These are the letters on the '9' key of a numeric
                   keypad; translate according to the tables in §7 of ETSI ES 202 130:
                   http://webapp.etsi.org/WorkProgram/Report_WorkItem.asp?WKI_ID=11730
                 -->
-                <property name="label" translatable="yes">WXYZ</property>
+                <property name="label" translatable="1">WXYZ</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">2</property>
+          <property name="row">2</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">2</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -599,55 +422,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">42</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">*</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="asterisk">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">3</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">3</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -656,55 +460,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">48</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">0</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="secondary_labels[0]">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">3</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">3</property>
-      </packing>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">2</property>
-        <property name="margin-right">2</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="margin-start">2</property>
         <property name="margin-end">2</property>
         <property name="margin-top">2</property>
@@ -713,47 +498,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <property name="action-target">35</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
+            <property name="homogeneous">1</property>
             <child>
               <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label">#</property>
                 <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="scale" value="2"/>
+                  <attribute name="weight" value="bold"></attribute>
+                  <attribute name="scale" value="2"></attribute>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="octothorpe">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
         </child>
+        <layout>
+          <property name="column">2</property>
+          <property name="row">3</property>
+        </layout>
       </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">3</property>
-      </packing>
     </child>
   </template>
 </interface>
