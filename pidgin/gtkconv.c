@@ -71,8 +71,6 @@ typedef enum
 #define BUDDYICON_SIZE_MIN    32
 #define BUDDYICON_SIZE_MAX    96
 
-static GtkWidget *invite_dialog = NULL;
-
 /* Prototypes. <-- because Paco-Paco hates this comment. */
 static void got_typing_keypress(PidginConversation *gtkconv, gboolean first);
 static void add_chat_user_common(PurpleChatConversation *chat, PurpleChatUser *cb, const char *old_name);
@@ -321,35 +319,6 @@ static void chat_do_info(PidginConversation *gtkconv, const char *who)
 	}
 }
 
-
-static void
-info_cb(GtkWidget *widget, PidginConversation *gtkconv)
-{
-	PurpleConversation *conv = gtkconv->active_conv;
-
-	if (PURPLE_IS_IM_CONVERSATION(conv)) {
-		pidgin_retrieve_user_info(purple_conversation_get_connection(conv),
-					  purple_conversation_get_name(conv));
-	} else if (PURPLE_IS_CHAT_CONVERSATION(conv)) {
-		/* Get info of the person currently selected in the GtkTreeView */
-		GtkTreeIter iter;
-		GtkTreeModel *model;
-		GtkTreeSelection *sel;
-		char *name;
-
-		model = gtk_tree_view_get_model(GTK_TREE_VIEW(gtkconv->list));
-		sel   = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtkconv->list));
-
-		if (gtk_tree_selection_get_selected(sel, NULL, &iter))
-			gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, CHAT_USERS_NAME_COLUMN, &name, -1);
-		else
-			return;
-
-		chat_do_info(gtkconv, name);
-		g_free(name);
-	}
-}
-
 static void
 block_cb(GtkWidget *widget, PidginConversation *gtkconv)
 {
@@ -374,44 +343,6 @@ unblock_cb(GtkWidget *widget, PidginConversation *gtkconv)
 		pidgin_request_add_permit(account, purple_conversation_get_name(conv));
 }
 
-static void
-do_invite(GtkWidget *w, int resp, gpointer data)
-{
-	PidginInviteDialog *dialog = PIDGIN_INVITE_DIALOG(w);
-	PurpleChatConversation *chat = pidgin_invite_dialog_get_conversation(dialog);
-	const gchar *contact, *message;
-
-	if (resp == GTK_RESPONSE_ACCEPT) {
-		contact = pidgin_invite_dialog_get_contact(dialog);
-		if (!g_ascii_strcasecmp(contact, ""))
-			return;
-
-		message = pidgin_invite_dialog_get_message(dialog);
-
-		purple_serv_chat_invite(purple_conversation_get_connection(PURPLE_CONVERSATION(chat)),
-						 purple_chat_conversation_get_id(chat),
-						 message, contact);
-	}
-
-	g_clear_pointer(&invite_dialog, gtk_widget_destroy);
-}
-
-static void
-invite_cb(GtkWidget *widget, PidginConversation *gtkconv)
-{
-	PurpleChatConversation *chat = PURPLE_CHAT_CONVERSATION(gtkconv->active_conv);
-
-	if (invite_dialog == NULL) {
-		invite_dialog = pidgin_invite_dialog_new(chat);
-
-		/* Connect the signals. */
-		g_signal_connect(G_OBJECT(invite_dialog), "response",
-						 G_CALLBACK(do_invite), NULL);
-	}
-
-	gtk_widget_show_all(invite_dialog);
-}
-
 #ifdef USE_VV
 static void
 menu_initiate_media_call_cb(GtkAction *action, gpointer data)
@@ -430,67 +361,6 @@ menu_initiate_media_call_cb(GtkAction *action, gpointer data)
 #endif
 }
 #endif
-
-static void
-menu_send_file_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv = pidgin_conversation_window_get_selected(win);
-
-	if (PURPLE_IS_IM_CONVERSATION(conv)) {
-		purple_serv_send_file(purple_conversation_get_connection(conv), purple_conversation_get_name(conv), NULL);
-	}
-
-}
-
-static void
-menu_alias_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv;
-	PurpleAccount *account;
-	const char *name;
-
-	conv    = pidgin_conversation_window_get_selected(win);
-	account = purple_conversation_get_account(conv);
-	name    = purple_conversation_get_name(conv);
-
-	if (PURPLE_IS_IM_CONVERSATION(conv)) {
-		PurpleBuddy *b;
-
-		b = purple_blist_find_buddy(account, name);
-		if (b != NULL)
-			pidgin_dialogs_alias_buddy(b);
-	} else if (PURPLE_IS_CHAT_CONVERSATION(conv)) {
-		PurpleChat *c;
-
-		c = purple_blist_find_chat(account, name);
-		if (c != NULL)
-			pidgin_dialogs_alias_chat(c);
-	}
-}
-
-static void
-menu_get_info_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv;
-
-	conv = pidgin_conversation_window_get_selected(win);
-
-	info_cb(NULL, PIDGIN_CONVERSATION(conv));
-}
-
-static void
-menu_invite_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv;
-
-	conv = pidgin_conversation_window_get_selected(win);
-
-	invite_cb(NULL, PIDGIN_CONVERSATION(conv));
-}
 
 static void
 menu_block_cb(GtkAction *action, gpointer data)
@@ -523,14 +393,6 @@ menu_add_remove_cb(GtkAction *action, gpointer data)
 	conv = pidgin_conversation_window_get_selected(win);
 
 	add_remove_cb(NULL, PIDGIN_CONVERSATION(conv));
-}
-
-static void
-menu_close_conv_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-
-	close_conv_cb(NULL, PIDGIN_CONVERSATION(pidgin_conversation_window_get_selected(win)));
 }
 
 static void
@@ -1142,18 +1004,10 @@ static GtkActionEntry menu_entries[] =
 	{ "AudioVideoCall", NULL, N_("Audio/Video _Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
 #endif
 
-	{ "SendFile", NULL, N_("Se_nd File..."), NULL, NULL, G_CALLBACK(menu_send_file_cb) },
-	{ "GetInfo", NULL, N_("_Get Info"), "<control>O", NULL, G_CALLBACK(menu_get_info_cb) },
-	{ "Invite", NULL, N_("In_vite..."), NULL, NULL, G_CALLBACK(menu_invite_cb) },
-	{ "MoreMenu", NULL, N_("M_ore"), NULL, NULL, NULL },
-	{ "Alias", NULL, N_("Al_ias..."), NULL, NULL, G_CALLBACK(menu_alias_cb) },
 	{ "Block", NULL, N_("_Block..."), NULL, NULL, G_CALLBACK(menu_block_cb) },
 	{ "Unblock", NULL, N_("_Unblock..."), NULL, NULL, G_CALLBACK(menu_unblock_cb) },
 	{ "Add", NULL, N_("_Add..."), NULL, NULL, G_CALLBACK(menu_add_remove_cb) },
 	{ "Remove", NULL, N_("_Remove..."), NULL, NULL, G_CALLBACK(menu_add_remove_cb) },
-	{ "InsertLink", NULL, N_("Insert Lin_k..."), NULL, NULL, NULL },
-	{ "InsertImage", NULL, N_("Insert Imag_e..."), NULL, NULL, NULL },
-	{ "Close", NULL, N_("_Close"), "<control>W", NULL, G_CALLBACK(menu_close_conv_cb) },
 };
 
 /**************************************************************************
@@ -1913,6 +1767,11 @@ pidgin_conversation_detach(PurpleConversation *conv) {
 	if(PIDGIN_IS_PIDGIN_CONVERSATION(conv)) {
 		PidginConversation *gtkconv = PIDGIN_CONVERSATION(conv);
 
+		if(gtkconv->attach_timer > 0) {
+			g_source_remove(gtkconv->attach_timer);
+			gtkconv->attach_timer = 0;
+		}
+
 		close_conv_cb(NULL, gtkconv);
 
 		g_free(gtkconv);
@@ -1975,6 +1834,7 @@ pidgin_conv_destroy(PurpleConversation *conv)
 
 	if (gtkconv->attach_timer) {
 		g_source_remove(gtkconv->attach_timer);
+		gtkconv->attach_timer = 0;
 	}
 
 	g_free(gtkconv);
