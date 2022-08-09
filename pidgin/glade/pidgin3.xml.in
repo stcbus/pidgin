@@ -17,6 +17,7 @@
     <glade-widget-class name="PidginPresenceIcon" generic-name="presence_icon" title="PresenceIcon"/>
     <glade-widget-class name="PidginProtocolChooser" generic-name="protocol_chooser" title="ProtocolChooser"/>
     <glade-widget-class name="PidginProtocolStore" generic-name="protocol_store" title="ProtocolStore"/>
+    <glade-widget-class name="PidginProxyOptions" generic-name="proxy_options" title="ProxyOptions"/>
     <glade-widget-class name="PidginScrollBook" generic-name="scroll_book" title="ScrollBook"/>
     <glade-widget-class name="PidginStatusBox" generic-name="status_box" title="StatusBox"/>
     <glade-widget-class name="PidginStatusPrimitiveChooser" generic-name="status_primitive_chooser" title="StatusPrimitiveChooser"/>
@@ -39,6 +40,7 @@
     <glade-widget-class-ref name="PidginPresenceIcon"/>
     <glade-widget-class-ref name="PidginProtocolChooser"/>
     <glade-widget-class-ref name="PidginProtocolStore"/>
+    <glade-widget-class-ref name="PidginProxyOptions"/>
     <glade-widget-class-ref name="PidginScrollBook"/>
     <glade-widget-class-ref name="PidginStatusBox"/>
     <glade-widget-class-ref name="PidginStatusPrimitiveChooser"/>

@@ -28,6 +28,7 @@
 
 #include "gtkaccount.h"
 #include "pidgincore.h"
+#include "pidginaccounteditor.h"
 
 struct _PidginAccountManager {
 	GtkDialog parent;
@@ -42,7 +43,9 @@ struct _PidginAccountManager {
 enum {
 	RESPONSE_ADD,
 	RESPONSE_MODIFY,
-	RESPONSE_REMOVE
+	RESPONSE_REMOVE,
+	RESPONSE_ADD_OLD,
+	RESPONSE_MODIFY_OLD
 };
 
 enum {
@@ -209,12 +212,25 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 {
 	PidginAccountManager *manager = PIDGIN_ACCOUNT_MANAGER(dialog);
 	PurpleAccount *account = NULL;
+	GtkWidget *editor = NULL;
 
 	switch(response_id) {
 		case RESPONSE_ADD:
+			editor = pidgin_account_editor_new(NULL);
+			gtk_widget_show_all(editor);
+			break;
+		case RESPONSE_ADD_OLD:
 			pidgin_account_dialog_show(PIDGIN_ADD_ACCOUNT_DIALOG, NULL);
 			break;
 		case RESPONSE_MODIFY:
+			account = pidgin_account_manager_get_selected_account(manager);
+
+			editor = pidgin_account_editor_new(account);
+			gtk_widget_show_all(editor);
+
+			g_clear_object(&account);
+			break;
+		case RESPONSE_MODIFY_OLD:
 			account = pidgin_account_manager_get_selected_account(manager);
 
 			pidgin_account_dialog_show(PIDGIN_MODIFY_ACCOUNT_DIALOG, account);

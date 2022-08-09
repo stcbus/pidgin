@@ -95,7 +95,7 @@ PurpleProxyInfo *pidgin_proxy_options_get_info(PidginProxyOptions *options);
 /**
  * pidgin_proxy_options_set_info:
  * @options: The instance.
- * @info: The [class@Purple.ProxyInfo] to set.
+ * @info: (nullable): The [class@Purple.ProxyInfo] to set.
  *
  * The proxy info that will be configured.
  *

@@ -6,6 +6,7 @@
     <file compressed="true">About/about.md</file>
     <file compressed="true">About/credits.json</file>
     <file compressed="true">Accounts/chooser.ui</file>
+    <file compressed="true">Accounts/editor.ui</file>
     <file compressed="true">Accounts/entry.css</file>
     <file compressed="true">Accounts/manager.ui</file>
     <file compressed="true">Avatar/avatar.ui</file>

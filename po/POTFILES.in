@@ -335,6 +335,7 @@ pidgin/libpidgin.c
 pidgin/minidialog.c
 pidgin/pidginabout.c
 pidgin/pidginaccountchooser.c
+pidgin/pidginaccounteditor.c
 pidgin/pidginaccountfilterconnected.c
 pidgin/pidginaccountfilterprotocol.c
 pidgin/pidginaccountmanager.c
@@ -397,6 +398,7 @@ pidgin/prefs/pidginproxyprefs.c
 pidgin/prefs/pidginvvprefs.c
 pidgin/resources/About/about.ui
 pidgin/resources/Accounts/chooser.ui
+pidgin/resources/Accounts/editor.ui
 pidgin/resources/Accounts/manager.ui
 pidgin/resources/Avatar/avatar.ui
 pidgin/resources/Avatar/menu.ui
