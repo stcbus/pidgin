@@ -67,8 +67,7 @@ static GtkWidget *default_window = NULL;
  * Helpers
  *****************************************************************************/
 static void
-pidgin_conversation_window_actions_set_enabled(PurpleConversation *conversation,
-                                               GActionMap *map,
+pidgin_conversation_window_actions_set_enabled(GActionMap *map,
                                                const gchar **actions,
                                                gboolean enabled)
 {
@@ -315,28 +314,25 @@ pidgin_conversation_window_selection_changed(GtkTreeSelection *selection,
 		 * actions.
 		 */
 		is_conversation = PURPLE_IS_CONVERSATION(obj);
-		pidgin_conversation_window_actions_set_enabled(PURPLE_CONVERSATION(obj),
-		                                               G_ACTION_MAP(window),
-		                                               pidgin_conversation_window_conversation_actions,
-		                                               is_conversation);
+		pidgin_conversation_window_actions_set_enabled(G_ACTION_MAP(window),
+							       pidgin_conversation_window_conversation_actions,
+							       is_conversation);
 
 		/* If an IM is selected, enable the IM-specific actions otherwise
 		 * disable them.
 		 */
 		im_selected = PURPLE_IS_IM_CONVERSATION(obj);
-		pidgin_conversation_window_actions_set_enabled(PURPLE_CONVERSATION(obj),
-		                                               G_ACTION_MAP(window),
-		                                               pidgin_conversation_window_im_conversation_actions,
-		                                               im_selected);
+		pidgin_conversation_window_actions_set_enabled(G_ACTION_MAP(window),
+							       pidgin_conversation_window_im_conversation_actions,
+							       im_selected);
 
 		/* If a chat is selected, enable the chat-specific actions otherwise
 		 * disable them.
 		 */
 		chat_selected = PURPLE_IS_CHAT_CONVERSATION(obj);
-		pidgin_conversation_window_actions_set_enabled(PURPLE_CONVERSATION(obj),
-		                                               G_ACTION_MAP(window),
-		                                               pidgin_conversation_window_chat_conversation_actions,
-		                                               chat_selected);
+		pidgin_conversation_window_actions_set_enabled(G_ACTION_MAP(window),
+							       pidgin_conversation_window_chat_conversation_actions,
+							       chat_selected);
 
 		g_clear_object(&obj);
 	}
