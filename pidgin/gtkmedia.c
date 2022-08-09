@@ -126,12 +126,21 @@ enum {
 	PROP_SCREENNAME
 };
 
+static gboolean
+pidgin_media_delete_event_cb(GtkWidget *widget,
+		GdkEvent *event, PidginMedia *media)
+{
+	if (media->priv->media)
+		g_action_group_activate_action(G_ACTION_GROUP(media),
+				"Hangup", NULL);
+	return FALSE;
+}
 
 static void
 pidgin_media_class_init (PidginMediaClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-/*	GtkContainerClass *container_class = (GtkContainerClass*)klass; */
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
 	gobject_class->dispose = pidgin_media_dispose;
 	gobject_class->finalize = pidgin_media_finalize;
@@ -150,6 +159,20 @@ pidgin_media_class_init (PidginMediaClass *klass)
 			"The screenname of the user this session is with.",
 			NULL,
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+	gtk_widget_class_set_template_from_resource(
+		widget_class,
+		"/im/pidgin/Pidgin3/Media/window.ui"
+	);
+
+	gtk_widget_class_bind_template_child_private(widget_class, PidginMedia,
+	                                             display);
+	gtk_widget_class_bind_template_child_private(widget_class, PidginMedia,
+	                                             statusbar);
+
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        pidgin_media_delete_event_cb);
+
 }
 
 static void
@@ -204,16 +227,6 @@ pidgin_media_pause_change_state_cb(GSimpleAction *action, GVariant *value,
 	g_simple_action_set_state(action, value);
 }
 
-static gboolean
-pidgin_media_delete_event_cb(GtkWidget *widget,
-		GdkEvent *event, PidginMedia *media)
-{
-	if (media->priv->media)
-		g_action_group_activate_action(G_ACTION_GROUP(media),
-				"Hangup", NULL);
-	return FALSE;
-}
-
 static const GActionEntry media_action_entries[] = {
 	{ "Hangup", pidgin_media_hangup_activate_cb },
 	{ "Hold", NULL, NULL, "false", pidgin_media_hold_change_state_cb },
@@ -221,76 +234,19 @@ static const GActionEntry media_action_entries[] = {
 	{ "Pause", NULL, NULL, "false", pidgin_media_pause_change_state_cb },
 };
 
-static const gchar *media_menu = 
-"<interface>"
-	"<menu id='MediaMenu'>"
-		"<submenu>"
-			"<attribute name='label' translatable='yes'>_Media</attribute>"
-			"<section>"
-				"<item>"
-					"<attribute name='label' translatable='yes'>_Hangup</attribute>"
-					"<attribute name='action'>win.Hangup</attribute>"
-				"</item>"
-			"</section>"
-		"</submenu>"
-	"</menu>"
-"</interface>";
-
-static GtkWidget *
-setup_menubar(PidginMedia *window)
-{
-	GError *error = NULL;
-	GtkWidget *menu;
-
-	window->priv->ui = gtk_builder_new();
-	gtk_builder_set_translation_domain(window->priv->ui, PACKAGE);
-
-	if (!gtk_builder_add_from_string(window->priv->ui, media_menu, -1, &error))
-	{
-		g_message("building menus failed: %s", error->message);
-		g_error_free(error);
-		exit(EXIT_FAILURE);
-	}
-
-	menu = gtk_menu_bar_new_from_model(G_MENU_MODEL(
-			gtk_builder_get_object(window->priv->ui,
-				"MediaMenu")));
-
-	gtk_widget_show(menu);
-	return menu;
-}
-
 static void
 pidgin_media_init (PidginMedia *media)
 {
-	GtkWidget *vbox;
 	media->priv = pidgin_media_get_instance_private(media);
+
+	gtk_widget_init_template(GTK_WIDGET(media));
 
 	g_action_map_add_action_entries(G_ACTION_MAP(media),
 			media_action_entries,
 			G_N_ELEMENTS(media_action_entries), media);
 
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add(GTK_CONTAINER(media), vbox);
-
-	media->priv->statusbar = gtk_statusbar_new();
-	gtk_box_pack_end(GTK_BOX(vbox), media->priv->statusbar,
-			FALSE, FALSE, 0);
 	gtk_statusbar_push(GTK_STATUSBAR(media->priv->statusbar),
 			0, _("Calling..."));
-	gtk_widget_show(media->priv->statusbar);
-
-	media->priv->menubar = setup_menubar(media);
-	gtk_box_pack_start(GTK_BOX(vbox), media->priv->menubar,
-			FALSE, TRUE, 0);
-
-	media->priv->display = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_set_border_width(GTK_CONTAINER(media->priv->display), 6);
-	gtk_box_pack_start(GTK_BOX(vbox), media->priv->display, TRUE, TRUE, 6);
-	gtk_widget_show(vbox);
-
-	g_signal_connect(G_OBJECT(media), "delete-event",
-			G_CALLBACK(pidgin_media_delete_event_cb), media);
 
 	media->priv->recv_progressbars =
 			g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -1048,4 +1004,3 @@ pidgin_medias_init(void)
 	purple_media_manager_set_active_element(manager, audio_sink);
 #endif
 }
-
