@@ -38,9 +38,8 @@ purple_minor_version = parts[1]
 purple_micro_version = parts[2]
 
 GETTEXT_PACKAGE=meson.project_name()
-if get_option('nls')
-	find_program('gettext')
-endif
+find_program('gettext')
+find_program('xgettext')
 
 add_project_arguments([
 	'-DHAVE_CONFIG_H=1',
@@ -94,11 +93,6 @@ compiler = meson.get_compiler('c')
 
 # Check for Sun compiler
 SUNCC = compiler.compiles('void main() {__SUNPRO_C;};')
-
-# Make sure we have xgettext
-if get_option('nls')
-	find_program('xgettext')
-endif
 
 # Check for Win32
 if host_machine.system() == 'windows'
@@ -657,11 +651,6 @@ endif
 #AC_VAR_TIMEZONE_EXTERNALS
 
 #######################################################################
-# Disable pixmap installation
-#######################################################################
-INSTALL_PIXMAPS = get_option('pixmaps-install')
-
-#######################################################################
 # Documentation
 #######################################################################
 
@@ -740,26 +729,10 @@ summary({
     'Enable Introspection': enable_introspection,
     'Generate documentation': get_option('doc'),
     'Has you': true,
-    'Install pixmaps': INSTALL_PIXMAPS,
-    'Install translations': get_option('nls'),
     'Print debugging messages': enable_debug,
 }, section: 'Miscellaneous', bool_yn: true)
 
 if pidgin3path.found()
     summary('You have an old copy of pidgin3 at', pidgin3path.full_path(),
-            section: 'Warnings')
-endif
-if not INSTALL_PIXMAPS
-    summary('Pixmaps disabled',
-            'You have disabled the installation of pixmap data, ' +
-            'but Pidgin still requires installed pixmaps. ' +
-            'Be sure you know what you are doing.',
-            section: 'Warnings')
-endif
-if not get_option('nls')
-    summary('Translations disabled',
-            'You have disabled the building and installation of translation data. ' +
-            'This will prevent building Pidgin desktop files. ' +
-            'Be sure you know what you are doing.',
             section: 'Warnings')
 endif

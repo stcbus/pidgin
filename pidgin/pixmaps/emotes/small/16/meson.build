@@ -85,15 +85,13 @@ SMILEYS = [
     'wink.png'
 ]
 
-if INSTALL_PIXMAPS
-	pidginsmileypixdir = pidginpixmapdir / 'emotes/small'
+pidginsmileypixdir = pidginpixmapdir / 'emotes/small'
 
-	custom_target('small-theme',
-	    input : 'small.theme.in',
-	    output : 'theme',
-	    command : [smiley_theme_generator, '@INPUT@', '@OUTPUT@'],
-	    install : true,
-	    install_dir : pidginsmileypixdir)
+custom_target('small-theme',
+    input : 'small.theme.in',
+    output : 'theme',
+    command : [smiley_theme_generator, '@INPUT@', '@OUTPUT@'],
+    install : true,
+    install_dir : pidginsmileypixdir)
 
-	install_data(MOODS + SMILEYS, install_dir : pidginsmileypixdir)
-endif
+install_data(MOODS + SMILEYS, install_dir : pidginsmileypixdir)

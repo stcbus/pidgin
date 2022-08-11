@@ -289,41 +289,25 @@ if ENABLE_GTK
 	    variables : ['plugindir=${libdir}/pidgin-@0@'.format(purple_major_version)])
 
 	PIDGIN_DESKTOP_FILE = 'im.pidgin.Pidgin3.desktop'
-	if get_option('nls')
-		i18n = import('i18n')
-		desktop_file_in = configure_file(
-		    input : 'data' / (PIDGIN_DESKTOP_FILE + '.in.in'),
-		    output : PIDGIN_DESKTOP_FILE + '.in',
-		    configuration : conf)
-		desktop_file = i18n.merge_file(
-		    input : desktop_file_in,
-		    output : PIDGIN_DESKTOP_FILE,
-		    po_dir : meson.project_source_root() / 'po',
-		    type : 'desktop',
-		    install : true,
-		    install_dir : get_option('datadir') / 'applications')
+	i18n = import('i18n')
+	desktop_file_in = configure_file(
+	    input : 'data' / (PIDGIN_DESKTOP_FILE + '.in.in'),
+	    output : PIDGIN_DESKTOP_FILE + '.in',
+	    configuration : conf)
+	desktop_file = i18n.merge_file(
+	    input : desktop_file_in,
+	    output : PIDGIN_DESKTOP_FILE,
+	    po_dir : meson.project_source_root() / 'po',
+	    type : 'desktop',
+	    install : true,
+	    install_dir : get_option('datadir') / 'applications')
 
-		appdata = i18n.merge_file(
-		    input : 'data/im.pidgin.Pidgin3.appdata.xml.in',
-		    output : 'im.pidgin.Pidgin3.appdata.xml',
-		    po_dir : meson.project_source_root() / 'po',
-		    install : true,
-		    install_dir : get_option('datadir') / 'metainfo')
-	else
-		configure_file(
-		    input : 'data' / (PIDGIN_DESKTOP_FILE + '.in.in'),
-		    output : PIDGIN_DESKTOP_FILE,
-		    configuration : conf,
-		    install : true,
-		    install_dir : get_option('datadir') / 'applications')
-
-		configure_file(
-		    input : 'data/im.pidgin.Pidgin3.appdata.xml.in',
-		    output : 'im.pidgin.Pidgin3.appdata.xml',
-		    configuration : configuration_data(),
-		    install : true,
-		    install_dir : get_option('datadir') / 'metainfo')
-	endif  # INSTALL_I18N
+	appdata = i18n.merge_file(
+	    input : 'data/im.pidgin.Pidgin3.appdata.xml.in',
+	    output : 'im.pidgin.Pidgin3.appdata.xml',
+	    po_dir : meson.project_source_root() / 'po',
+	    install : true,
+	    install_dir : get_option('datadir') / 'metainfo')
 
 	if enable_introspection
 		introspection_sources = libpidgin_SOURCES + libpidgin_headers + libpidgin_prefs_headers

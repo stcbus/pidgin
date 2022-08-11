@@ -185,15 +185,14 @@ SMILEYS = [
     'yin-yang.png'
 ]
 
-if INSTALL_PIXMAPS
-	pidginsmileypixdir = pidginpixmapdir / 'emotes/default'
+pidginsmileypixdir = pidginpixmapdir / 'emotes/default'
 
-	custom_target('default-theme',
-	    input : 'default.theme.in',
-	    output : 'theme',
-	    command : [smiley_theme_generator, '@INPUT@', '@OUTPUT@'],
-	    install : true,
-	    install_dir : pidginsmileypixdir)
+custom_target('default-theme',
+    input : 'default.theme.in',
+    output : 'theme',
+    command : [smiley_theme_generator, '@INPUT@', '@OUTPUT@'],
+    install : true,
+    install_dir : pidginsmileypixdir)
 
-	install_data(SMILEYS, install_dir : pidginsmileypixdir)
-endif
+install_data(SMILEYS, install_dir : pidginsmileypixdir)
+
