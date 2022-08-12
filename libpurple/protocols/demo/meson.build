@@ -11,6 +11,8 @@ DEMO_SOURCES = [
 	'purpledemoprotocolclient.h',
 	'purpledemoprotocolim.c',
 	'purpledemoprotocolim.h',
+	'purpledemoprotocolmedia.c',
+	'purpledemoprotocolmedia.h',
 ]
 
 if DYNAMIC_DEMO

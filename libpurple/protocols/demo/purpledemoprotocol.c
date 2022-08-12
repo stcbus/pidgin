@@ -24,6 +24,7 @@
 #include "purpledemoprotocolactions.h"
 #include "purpledemoprotocolclient.h"
 #include "purpledemoprotocolim.h"
+#include "purpledemoprotocolmedia.h"
 
 #include "purpledemocontacts.h"
 
@@ -85,6 +86,8 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(
 	                              purple_demo_protocol_client_init)
 	G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_IM,
 	                              purple_demo_protocol_im_init)
+	G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_MEDIA,
+	                              purple_demo_protocol_media_init)
 )
 
 static void

@@ -128,6 +128,9 @@ purple_demo_protocol_load_buddies(PurpleAccount *account, PurpleGroup *group,
 			purple_demo_protocol_load_icon(account, name);
 			purple_demo_protocol_load_status(account, group, contact, buddy,
 			                                 buddy_object);
+			if (purple_strequal(name, "Echo")) {
+				purple_protocol_got_media_caps(account, name);
+			}
 		}
 
 		buddies = g_list_delete_link(buddies, buddies);
