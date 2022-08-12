@@ -40,6 +40,7 @@
 #include "pidgin/pidginaccountfilterconnected.h"
 #include "pidgin/pidginaccountstore.h"
 #include "pidgin/pidginactiongroup.h"
+#include "pidgin/pidginaddbuddydialog.h"
 #include "pidgin/pidgincellrendererexpander.h"
 #include "pidgin/pidgincontactlistwindow.h"
 #include "pidgin/pidgincore.h"
@@ -63,16 +64,6 @@ typedef struct
 	GtkWidget *account_menu;
 	GtkSizeGroup *sg;
 } PidginBlistRequestData;
-
-typedef struct
-{
-	PidginBlistRequestData rq_data;
-	GtkWidget *combo;
-	GtkWidget *entry;
-	GtkWidget *entry_for_alias;
-	GtkWidget *entry_for_invite;
-
-} PidginAddBuddyData;
 
 typedef struct
 {
@@ -997,20 +988,6 @@ set_sensitive_if_input_chat_cb(GtkWidget *entry, gpointer user_data)
 }
 
 static void
-set_sensitive_if_input_buddy_cb(GtkWidget *entry, gpointer user_data)
-{
-	PurpleProtocol *protocol;
-	PidginAddBuddyData *data = user_data;
-	const char *text;
-
-	protocol = purple_account_get_protocol(data->rq_data.account);
-	text = gtk_entry_get_text(GTK_ENTRY(entry));
-
-	gtk_dialog_set_response_sensitive(GTK_DIALOG(data->rq_data.window),
-		GTK_RESPONSE_OK, purple_validate(protocol, text));
-}
-
-static void
 pidgin_blist_update_privacy_cb(PurpleBuddy *buddy)
 {
 	PidginBlistNode *ui_data = g_object_get_data(G_OBJECT(buddy), UI_DATA);
@@ -1018,15 +995,6 @@ pidgin_blist_update_privacy_cb(PurpleBuddy *buddy)
 		return;
 	pidgin_blist_update_buddy(purple_blist_get_default(),
 	                          PURPLE_BLIST_NODE(buddy), TRUE);
-}
-
-static gboolean
-add_buddy_account_filter_func(PurpleAccount *account)
-{
-	PurpleConnection *gc = purple_account_get_connection(account);
-	PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-
-	return PURPLE_PROTOCOL_IMPLEMENTS(protocol, SERVER, add_buddy);
 }
 
 static gboolean
@@ -3925,187 +3893,15 @@ groups_tree(void)
 }
 
 static void
-add_buddy_select_account_cb(GObject *w, PidginAddBuddyData *data)
-{
-	PidginAccountChooser *chooser = PIDGIN_ACCOUNT_CHOOSER(w);
-	PurpleAccount *account = pidgin_account_chooser_get_selected(chooser);
-	PurpleConnection *pc = NULL;
-	PurpleProtocol *protocol = NULL;
-	gboolean invite_enabled = TRUE;
-
-	/* Save our account */
-	data->rq_data.account = account;
-
-	if (account)
-		pc = purple_account_get_connection(account);
-	if (pc)
-		protocol = purple_connection_get_protocol(pc);
-	if (protocol && !(purple_protocol_get_options(protocol) & OPT_PROTO_INVITE_MESSAGE))
-		invite_enabled = FALSE;
-
-	gtk_widget_set_sensitive(data->entry_for_invite, invite_enabled);
-	set_sensitive_if_input_buddy_cb(data->entry, data);
-}
-
-static void
-destroy_add_buddy_dialog_cb(GtkWidget *win, PidginAddBuddyData *data)
-{
-	g_free(data);
-}
-
-static void
-add_buddy_cb(GtkWidget *w, int resp, PidginAddBuddyData *data)
-{
-	const char *grp, *who, *whoalias, *invite;
-	PurpleAccount *account;
-	PurpleGroup *g;
-	PurpleBuddy *b;
-	PurpleConversation *im;
-	PurpleBuddyIcon *icon;
-
-	if (resp == GTK_RESPONSE_OK)
-	{
-		PurpleConversationManager *manager;
-
-		who = gtk_entry_get_text(GTK_ENTRY(data->entry));
-		grp = pidgin_text_combo_box_entry_get_text(data->combo);
-		whoalias = gtk_entry_get_text(GTK_ENTRY(data->entry_for_alias));
-		if (*whoalias == '\0')
-			whoalias = NULL;
-		invite = gtk_entry_get_text(GTK_ENTRY(data->entry_for_invite));
-		if (*invite == '\0')
-			invite = NULL;
-
-		account = data->rq_data.account;
-
-		g = NULL;
-		if ((grp != NULL) && (*grp != '\0'))
-		{
-			if ((g = purple_blist_find_group(grp)) == NULL)
-			{
-				g = purple_group_new(grp);
-				purple_blist_add_group(g, NULL);
-			}
-
-			b = purple_blist_find_buddy_in_group(account, who, g);
-		}
-		else if ((b = purple_blist_find_buddy(account, who)) != NULL)
-		{
-			g = purple_buddy_get_group(b);
-		}
-
-		if (b == NULL)
-		{
-			b = purple_buddy_new(account, who, whoalias);
-			purple_blist_add_buddy(b, NULL, g, NULL);
-		}
-
-		purple_account_add_buddy(account, b, invite);
-
-		/* Offer to merge people with the same alias. */
-		if (whoalias != NULL && g != NULL)
-			gtk_blist_auto_personize(PURPLE_BLIST_NODE(g), whoalias);
-
-		/*
-		 * XXX
-		 * It really seems like it would be better if the call to
-		 * purple_account_add_buddy() and purple_conversation_update() were done in
-		 * blist.c, possibly in the purple_blist_add_buddy() function.  Maybe
-		 * purple_account_add_buddy() should be renamed to
-		 * purple_blist_add_new_buddy() or something, and have it call
-		 * purple_blist_add_buddy() after it creates it.  --Mark
-		 *
-		 * No that's not good.  blist.c should only deal with adding nodes to the
-		 * local list.  We need a new, non-gtk file that calls both
-		 * purple_account_add_buddy and purple_blist_add_buddy().
-		 * Or something.  --Mark
-		 */
-
-		manager = purple_conversation_manager_get_default();
-		im = purple_conversation_manager_find_im(manager, data->rq_data.account,
-		                                         who);
-		if(PURPLE_IS_IM_CONVERSATION(im)) {
-			icon = purple_im_conversation_get_icon(PURPLE_IM_CONVERSATION(im));
-			if(icon != NULL) {
-				purple_buddy_icon_update(icon);
-			}
-		}
-	}
-
-	gtk_widget_destroy(data->rq_data.window);
-}
-
-static void
 pidgin_blist_request_add_buddy(PurpleBuddyList *list, PurpleAccount *account,
                                const char *username, const char *group,
                                const char *alias)
 {
-	PidginAccountChooser *chooser = NULL;
-	PidginAddBuddyData *data = g_new0(PidginAddBuddyData, 1);
-	PidginBlistRequestData *blist_req_data = &data->rq_data;
+	GtkWidget *dialog = NULL;
 
-	if (account == NULL)
-		account = purple_connection_get_account(purple_connections_get_all()->data);
+	dialog = pidgin_add_buddy_dialog_new(account, username, alias, NULL, group);
 
-	make_blist_request_dialog(blist_req_data,
-		account,
-		_("Add Buddy"), "add_buddy",
-		_("Add a buddy.\n"),
-		G_CALLBACK(add_buddy_select_account_cb), add_buddy_account_filter_func,
-		G_CALLBACK(add_buddy_cb));
-	gtk_dialog_add_buttons(GTK_DIALOG(data->rq_data.window),
-			_("Cancel"), GTK_RESPONSE_CANCEL,
-			_("Add"), GTK_RESPONSE_OK,
-			NULL);
-	gtk_dialog_set_default_response(GTK_DIALOG(data->rq_data.window),
-			GTK_RESPONSE_OK);
-
-	g_signal_connect(G_OBJECT(data->rq_data.window), "destroy",
-	                 G_CALLBACK(destroy_add_buddy_dialog_cb), data);
-
-	data->entry = gtk_entry_new();
-
-	pidgin_add_widget_to_vbox(data->rq_data.vbox, _("Buddy's _username:"),
-		data->rq_data.sg, data->entry, TRUE, NULL);
-	gtk_widget_grab_focus(data->entry);
-
-	if (username != NULL)
-		gtk_entry_set_text(GTK_ENTRY(data->entry), username);
-	else
-		gtk_dialog_set_response_sensitive(GTK_DIALOG(data->rq_data.window),
-		                                  GTK_RESPONSE_OK, FALSE);
-
-	gtk_entry_set_activates_default (GTK_ENTRY(data->entry), TRUE);
-
-	g_signal_connect(G_OBJECT(data->entry), "changed",
-	                 G_CALLBACK(set_sensitive_if_input_buddy_cb),
-	                 data);
-
-	data->entry_for_alias = gtk_entry_new();
-	pidgin_add_widget_to_vbox(data->rq_data.vbox, _("(Optional) A_lias:"),
-	                          data->rq_data.sg, data->entry_for_alias, TRUE,
-	                          NULL);
-
-	if (alias != NULL)
-		gtk_entry_set_text(GTK_ENTRY(data->entry_for_alias), alias);
-
-	if (username != NULL)
-		gtk_widget_grab_focus(GTK_WIDGET(data->entry_for_alias));
-
-	data->entry_for_invite = gtk_entry_new();
-	pidgin_add_widget_to_vbox(data->rq_data.vbox, _("(Optional) _Invite message:"),
-	                          data->rq_data.sg, data->entry_for_invite, TRUE,
-	                          NULL);
-
-	data->combo = pidgin_text_combo_box_entry_new(group, groups_tree());
-	pidgin_add_widget_to_vbox(data->rq_data.vbox, _("Add buddy to _group:"),
-	                          data->rq_data.sg, data->combo, TRUE, NULL);
-
-	gtk_widget_show_all(data->rq_data.window);
-
-	/* Force update of invite message entry sensitivity */
-	chooser = PIDGIN_ACCOUNT_CHOOSER(blist_req_data->account_menu);
-	pidgin_account_chooser_set_selected(chooser, account);
+	gtk_widget_show(dialog);
 }
 
 static void
