@@ -217,7 +217,7 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 	switch(response_id) {
 		case RESPONSE_ADD:
 			editor = pidgin_account_editor_new(NULL);
-			gtk_widget_show_all(editor);
+			gtk_widget_show(editor);
 			break;
 		case RESPONSE_ADD_OLD:
 			pidgin_account_dialog_show(PIDGIN_ADD_ACCOUNT_DIALOG, NULL);
@@ -226,7 +226,7 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 			account = pidgin_account_manager_get_selected_account(manager);
 
 			editor = pidgin_account_editor_new(account);
-			gtk_widget_show_all(editor);
+			gtk_widget_show(editor);
 
 			g_clear_object(&account);
 			break;

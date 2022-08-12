@@ -116,7 +116,7 @@ pidgin_conversation_window_invite_cb(GtkDialog *dialog, gint response_id,
 		}
 	}
 
-	gtk_widget_destroy(GTK_WIDGET(invite_dialog));
+	gtk_window_destroy(GTK_WINDOW(invite_dialog));
 }
 
 /******************************************************************************
@@ -218,7 +218,7 @@ pidgin_conversation_window_invite(G_GNUC_UNUSED GSimpleAction *simple,
 			                 NULL);
 		}
 
-		gtk_widget_show_all(invite_dialog);
+		gtk_widget_show(invite_dialog);
 	}
 }
 
@@ -424,6 +424,7 @@ pidgin_conversation_window_dispose(GObject *obj) {
 
 static void
 pidgin_conversation_window_init(PidginConversationWindow *window) {
+	GtkEventController *key = NULL;
 	GtkTreeIter iter;
 
 	gtk_widget_init_template(GTK_WIDGET(window));
@@ -434,13 +435,12 @@ pidgin_conversation_window_init(PidginConversationWindow *window) {
 	g_action_map_add_action_entries(G_ACTION_MAP(window), win_entries,
 	                                G_N_ELEMENTS(win_entries), window);
 
-	key = gtk_event_controller_key_new(GTK_WIDGET(window));
+	key = gtk_event_controller_key_new();
 	gtk_event_controller_set_propagation_phase(key, GTK_PHASE_CAPTURE);
 	g_signal_connect(G_OBJECT(key), "key-pressed",
 	                 G_CALLBACK(pidgin_conversation_window_key_pressed_cb),
 	                 window);
-	g_object_set_data_full(G_OBJECT(window), "key-press-controller", key,
-	                       g_object_unref);
+	gtk_widget_add_controller(GTK_WIDGET(window), key);
 
 	/* Add our toplevels to the tree store. */
 	gtk_tree_store_append(window->model, &iter, NULL);
@@ -632,7 +632,7 @@ pidgin_conversation_window_remove(PidginConversationWindow *window,
 			child = gtk_stack_get_child_by_name(GTK_STACK(window->stack),
 			                                    name);
 			if(GTK_IS_WIDGET(child)) {
-				gtk_container_remove(GTK_CONTAINER(window->stack), child);
+				gtk_widget_unparent(child);
 			}
 
 			gtk_tree_store_remove(window->model, &iter);

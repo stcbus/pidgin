@@ -107,7 +107,7 @@ pidgin_account_editor_response_cb(GtkDialog *dialog, gint response_id,
 		pidgin_account_editor_save_account(PIDGIN_ACCOUNT_EDITOR(dialog));
 	}
 
-	gtk_widget_destroy(GTK_WIDGET(dialog));
+	gtk_window_destroy(GTK_WINDOW(dialog));
 }
 
 /******************************************************************************
