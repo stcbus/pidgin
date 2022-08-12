@@ -308,7 +308,9 @@ purple_media_codec_get_optional_parameter(PurpleMediaCodec *codec,
 		if (!g_ascii_strcasecmp(param->key, name) &&
 				(value == NULL ||
 				!g_ascii_strcasecmp(param->value, value)))
+		{
 			return param;
+		}
 	}
 
 	return NULL;
@@ -321,8 +323,9 @@ purple_media_codec_copy(PurpleMediaCodec *codec)
 	PurpleMediaCodec *new_codec;
 	GList *iter;
 
-	if (codec == NULL)
+	if (codec == NULL) {
 		return NULL;
+	}
 
 	priv = purple_media_codec_get_instance_private(codec);
 
@@ -361,19 +364,21 @@ purple_media_codec_to_string(PurpleMediaCodec *codec)
 	gchar *charstring;
 	const gchar *media_type_str = NULL;
 
-	if (codec == NULL)
+	if (codec == NULL) {
 		return g_strdup("(NULL)");
+	}
 
 	priv = purple_media_codec_get_instance_private(codec);
 
 	string = g_string_new("");
 
-	if (priv->media_type & PURPLE_MEDIA_AUDIO)
+	if (priv->media_type & PURPLE_MEDIA_AUDIO) {
 		media_type_str = "audio";
-	else if (priv->media_type & PURPLE_MEDIA_VIDEO)
+	} else if (priv->media_type & PURPLE_MEDIA_VIDEO) {
 		media_type_str = "video";
-	else if (priv->media_type & PURPLE_MEDIA_APPLICATION)
+	} else if (priv->media_type & PURPLE_MEDIA_APPLICATION) {
 		media_type_str = "application";
+	}
 
 	g_string_printf(string, "%d: %s %s clock:%d channels:%d", priv->id,
 			media_type_str, priv->encoding_name,

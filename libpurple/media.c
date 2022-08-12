@@ -234,22 +234,20 @@ purple_media_init (PurpleMedia *media)
 static void
 purple_media_stream_free(PurpleMediaStream *stream)
 {
-	if (stream == NULL)
+	if (stream == NULL) {
 		return;
+	}
 
 	g_free(stream->participant);
 
-	if (stream->local_candidates)
-		purple_media_candidate_list_free(stream->local_candidates);
-	if (stream->remote_candidates)
-		purple_media_candidate_list_free(stream->remote_candidates);
-
-	if (stream->active_local_candidates)
-		purple_media_candidate_list_free(
-				stream->active_local_candidates);
-	if (stream->active_remote_candidates)
-		purple_media_candidate_list_free(
-				stream->active_remote_candidates);
+	g_clear_pointer(&stream->local_candidates,
+	                purple_media_candidate_list_free);
+	g_clear_pointer(&stream->remote_candidates,
+	                purple_media_candidate_list_free);
+	g_clear_pointer(&stream->active_local_candidates,
+	                purple_media_candidate_list_free);
+	g_clear_pointer(&stream->active_remote_candidates,
+	                purple_media_candidate_list_free);
 
 	g_free(stream);
 }
@@ -257,8 +255,9 @@ purple_media_stream_free(PurpleMediaStream *stream)
 static void
 purple_media_session_free(PurpleMediaSession *session)
 {
-	if (session == NULL)
+	if (session == NULL) {
 		return;
+	}
 
 	g_free(session->id);
 	g_free(session);
@@ -274,20 +273,9 @@ purple_media_dispose(GObject *media)
 
 	purple_media_manager_remove_media(priv->manager, PURPLE_MEDIA(media));
 
-	if (priv->backend) {
-		g_object_unref(priv->backend);
-		priv->backend = NULL;
-	}
-
-	if (priv->manager) {
-		g_object_unref(priv->manager);
-		priv->manager = NULL;
-	}
-
-	if (priv->conference_type) {
-		g_free(priv->conference_type);
-		priv->conference_type = NULL;
-	}
+	g_clear_object(&priv->backend);
+	g_clear_object(&priv->manager);
+	g_clear_pointer(&priv->conference_type, g_free);
 
 	G_OBJECT_CLASS(purple_media_parent_class)->dispose(media);
 }
@@ -327,34 +315,27 @@ purple_media_set_property (GObject *object, guint prop_id, const GValue *value, 
 			media->priv->account = g_value_get_object(value);
 			break;
 		case PROP_CONFERENCE_TYPE:
-			media->priv->conference_type =
-					g_value_dup_string(value);
+			media->priv->conference_type = g_value_dup_string(value);
 			media->priv->backend = g_object_new(
-					purple_media_manager_get_backend_type(
-					purple_media_manager_get()),
-					"conference-type",
-					media->priv->conference_type,
+					purple_media_manager_get_backend_type(purple_media_manager_get()),
+					"conference-type", media->priv->conference_type,
 					"media", media,
 					NULL);
 			g_signal_connect(media->priv->backend,
 					"active-candidate-pair",
-					G_CALLBACK(
-					purple_media_candidate_pair_established_cb),
+					G_CALLBACK(purple_media_candidate_pair_established_cb),
 					media);
 			g_signal_connect(media->priv->backend,
 					"candidates-prepared",
-					G_CALLBACK(
-					purple_media_candidates_prepared_cb),
+					G_CALLBACK(purple_media_candidates_prepared_cb),
 					media);
 			g_signal_connect(media->priv->backend,
 					"codecs-changed",
-					G_CALLBACK(
-					purple_media_codecs_changed_cb),
+					G_CALLBACK(purple_media_codecs_changed_cb),
 					media);
 			g_signal_connect(media->priv->backend,
 					"new-candidate",
-					G_CALLBACK(
-					purple_media_new_local_candidate_cb),
+					G_CALLBACK(purple_media_new_local_candidate_cb),
 					media);
 			break;
 		case PROP_INITIATOR:
@@ -388,8 +369,7 @@ purple_media_get_property (GObject *object, guint prop_id, GValue *value, GParam
 			g_value_set_object(value, media->priv->account);
 			break;
 		case PROP_CONFERENCE_TYPE:
-			g_value_set_string(value,
-					media->priv->conference_type);
+			g_value_set_string(value, media->priv->conference_type);
 			break;
 		case PROP_INITIATOR:
 			g_value_set_boolean(value, media->priv->initiator);
@@ -425,7 +405,9 @@ purple_media_get_stream(PurpleMedia *media, const gchar *session, const gchar *p
 		PurpleMediaStream *stream = streams->data;
 		if (purple_strequal(stream->session->id, session) &&
 				purple_strequal(stream->participant, participant))
+		{
 			return stream;
+		}
 	}
 
 	return NULL;
@@ -448,7 +430,9 @@ purple_media_get_streams(PurpleMedia *media, const gchar *session,
 				purple_strequal(stream->session->id, session)) &&
 				(participant == NULL ||
 				purple_strequal(stream->participant, participant)))
+		{
 			ret = g_list_append(ret, stream);
+		}
 	}
 
 	return ret;
@@ -599,13 +583,16 @@ purple_media_end(PurpleMedia *media,
 		media->priv->streams =
 				g_list_remove(media->priv->streams, stream);
 
-		if (g_list_find(sessions, stream->session) == NULL)
+		if (g_list_find(sessions, stream->session) == NULL) {
 			sessions = g_list_prepend(sessions, stream->session);
+		}
 
 		if (g_list_find_custom(participants, stream->participant,
 				(GCompareFunc)strcmp) == NULL)
+		{
 			participants = g_list_prepend(participants,
 					g_strdup(stream->participant));
+		}
 
 		purple_media_stream_free(stream);
 	}
@@ -692,12 +679,10 @@ purple_media_stream_info(PurpleMedia *media, PurpleMediaInfoType type,
 
 		g_return_if_fail(PURPLE_IS_MEDIA(media));
 
-		streams = purple_media_get_streams(media,
-				session_id, participant);
+		streams = purple_media_get_streams(media, session_id, participant);
 
 		/* Emit stream acceptance */
-		for (; streams; streams =
-				g_list_delete_link(streams, streams)) {
+		for (; streams; streams = g_list_delete_link(streams, streams)) {
 			PurpleMediaStream *stream = streams->data;
 
 			stream->accepted = TRUE;
@@ -707,15 +692,16 @@ purple_media_stream_info(PurpleMedia *media, PurpleMediaInfoType type,
 					0, type, stream->session->id,
 					stream->participant, local);
 
-			if (g_list_find(sessions, stream->session) == NULL)
-				sessions = g_list_prepend(sessions,
-						stream->session);
+			if (g_list_find(sessions, stream->session) == NULL) {
+				sessions = g_list_prepend(sessions, stream->session);
+			}
 
 			if (g_list_find_custom(participants,
 					stream->participant,
-					(GCompareFunc)strcmp) == NULL)
+					(GCompareFunc)strcmp) == NULL) {
 				participants = g_list_prepend(participants,
 						g_strdup(stream->participant));
+			}
 		}
 
 		/* Emit session acceptance */
@@ -723,11 +709,12 @@ purple_media_stream_info(PurpleMedia *media, PurpleMediaInfoType type,
 				g_list_delete_link(sessions, sessions)) {
 			PurpleMediaSession *session = sessions->data;
 
-			if (purple_media_accepted(media, session->id, NULL))
+			if (purple_media_accepted(media, session->id, NULL)) {
 				g_signal_emit(media, purple_media_signals[
 						STREAM_INFO], 0,
 						PURPLE_MEDIA_INFO_ACCEPT,
 						session->id, NULL, local);
+			}
 		}
 
 		/* Emit participant acceptance */
@@ -735,21 +722,23 @@ purple_media_stream_info(PurpleMedia *media, PurpleMediaInfoType type,
 				participants, participants)) {
 			gchar *participant = participants->data;
 
-			if (purple_media_accepted(media, NULL, participant))
+			if (purple_media_accepted(media, NULL, participant)) {
 				g_signal_emit(media, purple_media_signals[
 						STREAM_INFO], 0,
 						PURPLE_MEDIA_INFO_ACCEPT,
 						NULL, participant, local);
+			}
 
 			g_free(participant);
 		}
 
 		/* Emit conference acceptance */
-		if (purple_media_accepted(media, NULL, NULL))
+		if (purple_media_accepted(media, NULL, NULL)) {
 			g_signal_emit(media,
 					purple_media_signals[STREAM_INFO],
 					0, PURPLE_MEDIA_INFO_ACCEPT,
 					NULL, NULL, local);
+		}
 
 		return;
 	} else if (type == PURPLE_MEDIA_INFO_HANGUP ||
@@ -758,12 +747,10 @@ purple_media_stream_info(PurpleMedia *media, PurpleMediaInfoType type,
 
 		g_return_if_fail(PURPLE_IS_MEDIA(media));
 
-		streams = purple_media_get_streams(media,
-				session_id, participant);
+		streams = purple_media_get_streams(media, session_id, participant);
 
 		/* Emit for stream */
-		for (; streams; streams =
-				g_list_delete_link(streams, streams)) {
+		for (; streams; streams = g_list_delete_link(streams, streams)) {
 			PurpleMediaStream *stream = streams->data;
 
 			g_signal_emit(media,
@@ -779,9 +766,10 @@ purple_media_stream_info(PurpleMedia *media, PurpleMediaInfoType type,
 			GList *sessions = NULL;
 			GList *participants = media->priv->participants;
 
-			if (media->priv->sessions != NULL)
+			if (media->priv->sessions != NULL) {
 				sessions = g_hash_table_get_values(
 					media->priv->sessions);
+			}
 
 			/* Emit for sessions */
 			for (; sessions; sessions = g_list_delete_link(
@@ -878,9 +866,11 @@ purple_media_param_is_supported(PurpleMedia *media, const gchar *param)
 	g_return_val_if_fail(param != NULL, FALSE);
 
 	params = purple_media_backend_get_available_params(media->priv->backend);
-	for (; *params != NULL; ++params)
-		if (purple_strequal(*params, param))
+	for (; *params != NULL; ++params) {
+		if (purple_strequal(*params, param)) {
 			return TRUE;
+		}
+	}
 #endif
 	return FALSE;
 }
@@ -1306,10 +1296,8 @@ purple_media_accepted(PurpleMedia *media, const gchar *sess_id,
 			}
 		}
 	} else if (sess_id != NULL && participant == NULL) {
-		GList *streams = purple_media_get_streams(
-				media, sess_id, NULL);
-		for (; streams; streams =
-				g_list_delete_link(streams, streams)) {
+		GList *streams = purple_media_get_streams(media, sess_id, NULL);
+		for (; streams; streams = g_list_delete_link(streams, streams)) {
 			PurpleMediaStream *stream = streams->data;
 			if (stream->accepted == FALSE) {
 				g_list_free(streams);
@@ -1320,8 +1308,9 @@ purple_media_accepted(PurpleMedia *media, const gchar *sess_id,
 	} else if (sess_id != NULL && participant != NULL) {
 		PurpleMediaStream *stream = purple_media_get_stream(
 				media, sess_id, participant);
-		if (stream == NULL || stream->accepted == FALSE)
+		if (stream == NULL || stream->accepted == FALSE) {
 			accepted = FALSE;
+		}
 	}
 
 	return accepted;
@@ -1401,19 +1390,19 @@ purple_media_send_dtmf(PurpleMedia *media, const gchar *session_id,
 #ifdef USE_VV
 	PurpleMediaBackendInterface *backend_iface = NULL;
 
-	if (media)
-	{
+	if (media) {
 		backend_iface = PURPLE_MEDIA_BACKEND_GET_INTERFACE(media->priv->backend);
 	}
 
-	if (dtmf == 'a')
+	if (dtmf == 'a') {
 		dtmf = 'A';
-	else if (dtmf == 'b')
+	} else if (dtmf == 'b') {
 		dtmf = 'B';
-	else if (dtmf == 'c')
+	} else if (dtmf == 'c') {
 		dtmf = 'C';
-	else if (dtmf == 'd')
+	} else if (dtmf == 'd') {
 		dtmf = 'D';
+	}
 
 	g_return_val_if_fail(strchr("0123456789ABCD#*", dtmf), FALSE);
 

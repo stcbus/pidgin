@@ -39,8 +39,9 @@ purple_media_backend_base_init(gpointer iface)
 {
 	static gboolean is_initialized = FALSE;
 
-	if (is_initialized)
+	if (is_initialized) {
 		return;
+	}
 
 	g_object_interface_install_property(iface,
 			g_param_spec_string("conference-type",

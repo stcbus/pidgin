@@ -224,12 +224,12 @@ purple_media_manager_finalize (GObject *media)
 	g_list_free_full(priv->medias, g_object_unref);
 	g_list_free_full(priv->private_medias, g_object_unref);
 	g_list_free_full(priv->elements, g_object_unref);
-	if (priv->video_caps)
-		gst_caps_unref(priv->video_caps);
+	g_clear_pointer(&priv->video_caps, gst_caps_unref);
 #ifdef HAVE_MEDIA_APPLICATION
-	if (priv->appdata_info)
-		g_list_free_full (priv->appdata_info,
-			(GDestroyNotify) free_appdata_info_locked);
+	if (priv->appdata_info) {
+		g_list_free_full(priv->appdata_info,
+		                 (GDestroyNotify)free_appdata_info_locked);
+	}
 	g_mutex_clear (&priv->appdata_mutex);
 #endif
 	if (priv->device_monitor) {
@@ -247,8 +247,10 @@ purple_media_manager_get()
 #ifdef USE_VV
 	static PurpleMediaManager *manager = NULL;
 
-	if (manager == NULL)
+	if (manager == NULL) {
 		manager = PURPLE_MEDIA_MANAGER(g_object_new(purple_media_manager_get_type(), NULL));
+	}
+
 	return manager;
 #else
 	return NULL;
@@ -261,7 +263,7 @@ pipeline_bus_call(GstBus *bus, GstMessage *msg, PurpleMediaManager *manager)
 {
 	switch(GST_MESSAGE_TYPE(msg)) {
 		case GST_MESSAGE_EOS:
-			purple_debug_info("mediamanager", "End of Stream\n");
+			purple_debug_info("mediamanager", "End of Stream");
 			break;
 		case GST_MESSAGE_ERROR: {
 			gchar *debug = NULL;
@@ -269,15 +271,13 @@ pipeline_bus_call(GstBus *bus, GstMessage *msg, PurpleMediaManager *manager)
 
 			gst_message_parse_error(msg, &err, &debug);
 
-			purple_debug_error("mediamanager",
-					"gst pipeline error: %s\n",
-					err->message);
+			purple_debug_error("mediamanager", "gst pipeline error: %s",
+			                   err->message);
 			g_error_free(err);
 
 			if (debug) {
-				purple_debug_error("mediamanager",
-						"Debug details: %s\n", debug);
-				g_free (debug);
+				purple_debug_error("mediamanager", "Debug details: %s", debug);
+				g_free(debug);
 			}
 			break;
 		}
@@ -348,11 +348,13 @@ create_media(PurpleMediaManager *manager,
 		}
 	}
 
-	if (private)
+	if (private) {
 		manager->priv->private_medias = g_list_append(
 			manager->priv->private_medias, media);
-	else
+	} else {
 		manager->priv->medias = g_list_append(manager->priv->medias, media);
+	}
+
 	return media;
 #else
 	return NULL;
@@ -363,10 +365,11 @@ static GList *
 get_media(PurpleMediaManager *manager, gboolean private)
 {
 #ifdef USE_VV
-	if (private)
+	if (private) {
 		return manager->priv->private_medias;
-	else
+	} else {
 		return manager->priv->medias;
+	}
 #else
 	return NULL;
 #endif
@@ -383,10 +386,11 @@ get_media_by_account(PurpleMediaManager *manager,
 
 	g_return_val_if_fail(PURPLE_IS_MEDIA_MANAGER(manager), NULL);
 
-	if (private)
+	if (private) {
 		iter = manager->priv->private_medias;
-	else
+	} else {
 		iter = manager->priv->medias;
+	}
 	for (; iter; iter = g_list_next(iter)) {
 		media_account = purple_media_get_account(iter->data);
 		if (media_account == account) {
@@ -495,8 +499,9 @@ free_appdata_info_locked (PurpleMediaAppDataInfo *info)
 	GstAppSrcCallbacks null_src_cb = { NULL, NULL, NULL, { NULL } };
 	GstAppSinkCallbacks null_sink_cb = { NULL, NULL, NULL , { NULL } };
 
-	if (info->notify)
-		info->notify (info->user_data);
+	if (info->notify) {
+		info->notify(info->user_data);
+	}
 
 	info->media = NULL;
 	if (info->appsrc) {
@@ -529,9 +534,7 @@ free_appdata_info_locked (PurpleMediaAppDataInfo *info)
 		info->writable_timer_id = 0;
 	}
 
-	if (info->current_sample)
-		gst_sample_unref (info->current_sample);
-	info->current_sample = NULL;
+	g_clear_pointer(&info->current_sample, gst_sample_unref);
 
 	/* Unblock any reading thread before destroying the GCond */
 	g_cond_broadcast (&info->readable_cond);
@@ -632,8 +635,7 @@ nonunique_src_unlinked_cb(GstPad *pad, GstPad *peer, gpointer user_data)
 void
 purple_media_manager_set_video_caps(PurpleMediaManager *manager, GstCaps *caps)
 {
-	if (manager->priv->video_caps)
-		gst_caps_unref(manager->priv->video_caps);
+	g_clear_pointer(&manager->priv->video_caps, gst_caps_unref);
 
 	manager->priv->video_caps = caps;
 
@@ -657,9 +659,11 @@ purple_media_manager_set_video_caps(PurpleMediaManager *manager, GstCaps *caps)
 GstCaps *
 purple_media_manager_get_video_caps(PurpleMediaManager *manager)
 {
-	if (manager->priv->video_caps == NULL)
+	if (manager->priv->video_caps == NULL) {
 		manager->priv->video_caps = gst_caps_from_string("video/x-raw,"
 			"width=[250,352], height=[200,288], framerate=[1/1,20/1]");
+	}
+
 	return manager->priv->video_caps;
 }
 #endif /* USE_VV */
@@ -714,9 +718,10 @@ appsrc_writable (gpointer user_data)
 	g_mutex_unlock (&manager->priv->appdata_mutex);
 
 
-	if (writable_cb && media)
+	if (writable_cb && media) {
 		writable_cb (manager, media, session_id, participant, writable,
 			cb_data);
+	}
 
 	g_object_unref (media);
 	g_free (session_id);
@@ -741,8 +746,9 @@ call_appsrc_writable_locked (PurpleMediaAppDataInfo *info)
 	PurpleMediaManager *manager = purple_media_manager_get ();
 
 	/* We already have a writable callback scheduled, don't create another one */
-	if (info->writable_cb_token || info->callbacks.writable == NULL)
+	if (info->writable_cb_token || info->callbacks.writable == NULL) {
 		return;
+	}
 
 	/* We can't use writable_timer_id as a token, because the timeout is added
 	 * into libpurple's main event loop, which runs in a different thread than
@@ -763,8 +769,9 @@ appsrc_need_data (GstAppSrc *appsrc, guint length, gpointer user_data)
 	if (!info->writable) {
 		info->writable = TRUE;
 		/* Only signal writable if we also established a connection */
-		if (info->connected)
+		if (info->connected) {
 			call_appsrc_writable_locked (info);
+		}
 	}
 	g_mutex_unlock (&manager->priv->appdata_mutex);
 }
@@ -821,8 +828,9 @@ media_established_cb (PurpleMedia *media,const gchar *session_id,
 	info->connected = TRUE;
 	/* We established the connection, if we were writable, then we need to
 	 * signal it now */
-	if (info->writable)
+	if (info->writable) {
 		call_appsrc_writable_locked (info);
+	}
 	g_mutex_unlock (&manager->priv->appdata_mutex);
 }
 
@@ -932,8 +940,9 @@ call_appsink_readable_locked (PurpleMediaAppDataInfo *info)
 	g_cond_broadcast (&info->readable_cond);
 
 	/* We already have a writable callback scheduled, don't create another one */
-	if (info->readable_cb_token || info->callbacks.readable == NULL)
+	if (info->readable_cb_token || info->callbacks.readable == NULL) {
 		return;
+	}
 
 	info->readable_cb_token = ++manager->priv->appdata_cb_token;
 	info->readable_timer_id = g_timeout_add (0, appsink_readable, info);
@@ -1051,21 +1060,23 @@ purple_media_manager_get_element(PurpleMediaManager *manager,
 	PurpleMediaElementInfo *info = NULL;
 	PurpleMediaElementType element_type;
 
-	if (type & PURPLE_MEDIA_SEND_AUDIO)
+	if (type & PURPLE_MEDIA_SEND_AUDIO) {
 		info = manager->priv->audio_src;
-	else if (type & PURPLE_MEDIA_RECV_AUDIO)
+	} else if (type & PURPLE_MEDIA_RECV_AUDIO) {
 		info = manager->priv->audio_sink;
-	else if (type & PURPLE_MEDIA_SEND_VIDEO)
+	} else if (type & PURPLE_MEDIA_SEND_VIDEO) {
 		info = manager->priv->video_src;
-	else if (type & PURPLE_MEDIA_RECV_VIDEO)
+	} else if (type & PURPLE_MEDIA_RECV_VIDEO) {
 		info = manager->priv->video_sink;
-	else if (type & PURPLE_MEDIA_SEND_APPLICATION)
+	} else if (type & PURPLE_MEDIA_SEND_APPLICATION) {
 		info = get_send_application_element_info ();
-	else if (type & PURPLE_MEDIA_RECV_APPLICATION)
+	} else if (type & PURPLE_MEDIA_RECV_APPLICATION) {
 		info = get_recv_application_element_info ();
+	}
 
-	if (info == NULL)
+	if (info == NULL) {
 		return NULL;
+	}
 
 	element_type = purple_media_element_info_get_element_type(info);
 
@@ -1100,8 +1111,9 @@ purple_media_manager_get_element(PurpleMediaManager *manager,
 
 				gst_bin_add_many(GST_BIN(bin), videoscale, capsfilter, NULL);
 				gst_element_link_many(ret, videoscale, capsfilter, tee, NULL);
-			} else
+			} else {
 				gst_element_link(ret, tee);
+			}
 
 			/*
 			 * This shouldn't be necessary, but it stops it from
@@ -1150,8 +1162,9 @@ purple_media_manager_get_element(PurpleMediaManager *manager,
 		}
 	}
 
-	if (ret == NULL)
+	if (ret == NULL) {
 		purple_debug_error("media", "Error creating source or sink\n");
+	}
 
 	return ret;
 }
@@ -1168,8 +1181,7 @@ purple_media_manager_get_element_info(PurpleMediaManager *manager,
 	iter = manager->priv->elements;
 
 	for (; iter; iter = g_list_next(iter)) {
-		gchar *element_id =
-				purple_media_element_info_get_id(iter->data);
+		gchar *element_id = purple_media_element_info_get_id(iter->data);
 		if (purple_strequal(element_id, id)) {
 			g_free(element_id);
 			g_object_ref(iter->data);
@@ -1225,8 +1237,7 @@ purple_media_manager_register_element(PurpleMediaManager *manager,
 		return FALSE;
 	}
 
-	manager->priv->elements =
-			g_list_prepend(manager->priv->elements, info);
+	manager->priv->elements = g_list_prepend(manager->priv->elements, info);
 
 	detail = element_info_to_detail(info);
 	if (detail != 0) {
@@ -1254,14 +1265,18 @@ purple_media_manager_unregister_element(PurpleMediaManager *manager,
 		return FALSE;
 	}
 
-	if (manager->priv->audio_src == info)
+	if (manager->priv->audio_src == info) {
 		manager->priv->audio_src = NULL;
-	if (manager->priv->audio_sink == info)
+	}
+	if (manager->priv->audio_sink == info) {
 		manager->priv->audio_sink = NULL;
-	if (manager->priv->video_src == info)
+	}
+	if (manager->priv->video_src == info) {
 		manager->priv->video_src = NULL;
-	if (manager->priv->video_sink == info)
+	}
+	if (manager->priv->video_sink == info) {
 		manager->priv->video_sink = NULL;
+	}
 
 	detail = element_info_to_detail(info);
 
@@ -1294,10 +1309,11 @@ purple_media_manager_set_active_element(PurpleMediaManager *manager,
 	info2 = purple_media_manager_get_element_info(manager, id);
 	g_free(id);
 
-	if (info2 == NULL)
+	if (info2 == NULL) {
 		purple_media_manager_register_element(manager, info);
-	else
+	} else {
 		g_object_unref(info2);
+	}
 
 	type = purple_media_element_info_get_element_type(info);
 
@@ -1332,20 +1348,21 @@ purple_media_manager_get_active_element(PurpleMediaManager *manager,
 	g_return_val_if_fail(PURPLE_IS_MEDIA_MANAGER(manager), NULL);
 
 	if (type & PURPLE_MEDIA_ELEMENT_SRC) {
-		if (type & PURPLE_MEDIA_ELEMENT_AUDIO)
+		if (type & PURPLE_MEDIA_ELEMENT_AUDIO) {
 			return manager->priv->audio_src;
-		else if (type & PURPLE_MEDIA_ELEMENT_VIDEO)
+		} else if (type & PURPLE_MEDIA_ELEMENT_VIDEO) {
 			return manager->priv->video_src;
-		else if (type & PURPLE_MEDIA_ELEMENT_APPLICATION)
+		} else if (type & PURPLE_MEDIA_ELEMENT_APPLICATION) {
 			return get_send_application_element_info ();
+		}
 	} else if (type & PURPLE_MEDIA_ELEMENT_SINK) {
-		if (type & PURPLE_MEDIA_ELEMENT_AUDIO)
+		if (type & PURPLE_MEDIA_ELEMENT_AUDIO) {
 			return manager->priv->audio_sink;
-		else if (type & PURPLE_MEDIA_ELEMENT_VIDEO)
+		} else if (type & PURPLE_MEDIA_ELEMENT_VIDEO) {
 			return manager->priv->video_sink;
-		else if (type & PURPLE_MEDIA_ELEMENT_APPLICATION)
+		} else if (type & PURPLE_MEDIA_ELEMENT_APPLICATION) {
 			return get_recv_application_element_info ();
-
+		}
 	}
 
 	return NULL;
@@ -1373,8 +1390,9 @@ purple_media_manager_create_output_window(PurpleMediaManager *manager,
 			GstElement *tee = purple_media_get_tee(media,
 					session_id, participant);
 
-			if (tee == NULL)
+			if (tee == NULL) {
 				continue;
+			}
 
 			queue = gst_element_factory_make("queue", NULL);
 			convert = gst_element_factory_make("videoconvert", NULL);
@@ -1388,14 +1406,14 @@ purple_media_manager_create_output_window(PurpleMediaManager *manager,
 				/* aka this is a preview sink */
 				GObjectClass *klass =
 						G_OBJECT_GET_CLASS(ow->sink);
-				if (g_object_class_find_property(klass,
-						"sync"))
+				if (g_object_class_find_property(klass, "sync")) {
 					g_object_set(G_OBJECT(ow->sink),
 							"sync", FALSE, NULL);
-				if (g_object_class_find_property(klass,
-						"async"))
+				}
+				if (g_object_class_find_property(klass, "async")) {
 					g_object_set(G_OBJECT(ow->sink),
 							"async", FALSE, NULL);
+				}
 			}
 
 			gst_bin_add_many(GST_BIN(GST_ELEMENT_PARENT(tee)),
@@ -1437,9 +1455,10 @@ purple_media_manager_set_output_window(PurpleMediaManager *manager,
 	manager->priv->output_windows = g_list_prepend(
 			manager->priv->output_windows, output_window);
 
-	if (purple_media_get_tee(media, session_id, participant) != NULL)
+	if (purple_media_get_tee(media, session_id, participant) != NULL) {
 		purple_media_manager_create_output_window(manager,
 				media, session_id, participant);
+	}
 
 	return output_window->id;
 #else
@@ -1468,8 +1487,9 @@ purple_media_manager_remove_output_window(PurpleMediaManager *manager,
 		}
 	}
 
-	if (output_window == NULL)
+	if (output_window == NULL) {
 		return FALSE;
+	}
 
 	if (output_window->sink != NULL) {
 		GstElement *element = output_window->sink;
@@ -1547,11 +1567,13 @@ purple_media_manager_remove_output_windows(PurpleMediaManager *manager,
 		PurpleMediaOutputWindow *ow = iter->data;
 		iter = g_list_next(iter);
 
-	if (media == ow->media &&
-			purple_strequal(session_id, ow->session_id) &&
-			purple_strequal(participant, ow->participant))
-		purple_media_manager_remove_output_window(
-				manager, ow->id);
+		if (media == ow->media &&
+				purple_strequal(session_id, ow->session_id) &&
+				purple_strequal(participant, ow->participant))
+		{
+			purple_media_manager_remove_output_window(
+					manager, ow->id);
+		}
 	}
 #endif
 }
@@ -1568,10 +1590,11 @@ purple_media_manager_set_ui_caps(PurpleMediaManager *manager,
 	oldcaps = manager->priv->ui_caps;
 	manager->priv->ui_caps = caps;
 
-	if (caps != oldcaps)
+	if (caps != oldcaps) {
 		g_signal_emit(manager,
 				purple_media_manager_signals[UI_CAPS_CHANGED],
 				0, caps, oldcaps);
+	}
 #endif
 }
 
@@ -1621,8 +1644,9 @@ purple_media_manager_set_application_data_callbacks(PurpleMediaManager *manager,
 	PurpleMediaAppDataInfo * info = ensure_app_data_info_and_lock (manager,
 		media, session_id, participant);
 
-	if (info->notify)
+	if (info->notify) {
 		info->notify (info->user_data);
+	}
 
 	if (info->readable_cb_token) {
 		g_source_remove (info->readable_timer_id);
@@ -1644,8 +1668,9 @@ purple_media_manager_set_application_data_callbacks(PurpleMediaManager *manager,
 	info->notify = notify;
 
 	call_appsrc_writable_locked (info);
-	if (info->num_samples > 0 || info->current_sample != NULL)
+	if (info->num_samples > 0 || info->current_sample != NULL) {
 		call_appsink_readable_locked (info);
+	}
 
 	g_mutex_unlock (&manager->priv->appdata_mutex);
 #endif
@@ -1711,8 +1736,9 @@ purple_media_manager_receive_application_data (
 			if (!info->current_sample && info->appsink && info->num_samples > 0) {
 				info->current_sample = gst_app_sink_pull_sample (info->appsink);
 				info->sample_offset = 0;
-				if (info->current_sample)
+				if (info->current_sample) {
 					info->num_samples--;
+				}
 			}
 
 			if (info->current_sample) {
@@ -1726,9 +1752,8 @@ purple_media_manager_receive_application_data (
 					gst_buffer_map (gstbuffer, &mapinfo, GST_MAP_READ);
 					/* We must copy only the data remaining in the buffer without
 					 * overflowing the buffer */
-					bytes_to_copy = max_size - bytes_read;
-					if (bytes_to_copy > mapinfo.size - info->sample_offset)
-						bytes_to_copy = mapinfo.size - info->sample_offset;
+					bytes_to_copy = MIN(max_size - bytes_read,
+					                    mapinfo.size - info->sample_offset);
 					memcpy ((guint8 *)buffer + bytes_read,
 						mapinfo.data + info->sample_offset,	bytes_to_copy);
 
@@ -1766,8 +1791,7 @@ purple_media_manager_receive_application_data (
 					return bytes_read;
 				}
 			}
-		} while (bytes_read < max_size &&
-			(blocking || info->num_samples > 0));
+		} while (bytes_read < max_size && (blocking || info->num_samples > 0));
 
 		g_mutex_unlock (&manager->priv->appdata_mutex);
 		return bytes_read;
@@ -2351,8 +2375,7 @@ purple_media_element_info_set_property (GObject *object, guint prop_id,
 			priv->create = g_value_get_pointer(value);
 			break;
 		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(
-					object, prop_id, pspec);
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
 	}
 }
@@ -2381,8 +2404,7 @@ purple_media_element_info_get_property (GObject *object, guint prop_id,
 			g_value_set_pointer(value, priv->create);
 			break;
 		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(
-					object, prop_id, pspec);
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
 	}
 }
@@ -2466,8 +2488,9 @@ purple_media_element_info_call_create(PurpleMediaElementInfo *info,
 	PurpleMediaElementCreateCallback create;
 	g_return_val_if_fail(PURPLE_IS_MEDIA_ELEMENT_INFO(info), NULL);
 	g_object_get(info, "create-cb", &create, NULL);
-	if (create)
+	if (create) {
 		return create(info, media, session_id, participant);
+	}
 	return NULL;
 }
 #endif /* USE_VV */

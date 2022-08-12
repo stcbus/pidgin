@@ -329,8 +329,9 @@ purple_media_candidate_copy(PurpleMediaCandidate *candidate)
 	PurpleMediaCandidatePrivate *priv;
 	PurpleMediaCandidate *new_candidate;
 
-	if (candidate == NULL)
+	if (candidate == NULL) {
 		return NULL;
+	}
 
 	priv = purple_media_candidate_get_instance_private(candidate);
 
