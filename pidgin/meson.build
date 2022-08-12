@@ -67,12 +67,8 @@ libpidgin_SOURCES = [
 	'prefs/pidgincredentialprefs.c',
 	'prefs/pidginnetworkprefs.c',
 	'prefs/pidginproxyprefs.c',
+	'prefs/pidginvvprefs.c',
 ]
-if enable_vv
-	libpidgin_SOURCES += [
-		'prefs/pidginvvprefs.c',
-	]
-endif
 
 libpidgin_headers = [
 	'gtkaccount.h',
@@ -145,12 +141,8 @@ libpidgin_prefs_headers = [
 	'prefs/pidgincredentialprefs.h',
 	'prefs/pidginnetworkprefs.h',
 	'prefs/pidginproxyprefs.h',
+	'prefs/pidginvvprefs.h',
 ]
-if enable_vv
-	libpidgin_prefs_headers += [
-		'prefs/pidginvvprefs.h',
-	]
-endif
 
 libpidgin_enum_headers = [
 	'gtkaccount.h',
@@ -228,7 +220,6 @@ if ENABLE_GTK
 	_libpidgin_dependencies = [
 		glib,
 		gplugin_gtk_dep,
-		gstreamer_video,
 		gtk,
 		IOKIT,
 		json,

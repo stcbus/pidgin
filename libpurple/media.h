@@ -45,8 +45,6 @@ typedef struct _PurpleMedia PurpleMedia;
 #include "signals.h"
 #include "util.h"
 
-#ifdef USE_VV
-
 typedef struct _PurpleMediaClass    PurpleMediaClass;
 typedef struct _PurpleMediaPrivate  PurpleMediaPrivate;
 
@@ -78,8 +76,6 @@ struct _PurpleMediaClass
 	void (*purple_reserved3)(void);
 	void (*purple_reserved4)(void);
 };
-
-#endif
 
 G_BEGIN_DECLS
 

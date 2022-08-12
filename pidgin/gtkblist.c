@@ -406,7 +406,6 @@ pidgin_blist_menu_autojoin_cb(GSimpleAction *action, GVariant *state,
 	g_simple_action_set_state(action, state);
 }
 
-#ifdef USE_VV
 static void
 pidgin_blist_menu_audio_call_cb(G_GNUC_UNUSED GSimpleAction *action,
                                 G_GNUC_UNUSED GVariant *parameter,
@@ -419,7 +418,6 @@ pidgin_blist_menu_audio_call_cb(G_GNUC_UNUSED GSimpleAction *action,
 	                               purple_buddy_get_name(buddy),
 	                               PURPLE_MEDIA_AUDIO);
 }
-#endif /* USE_VV */
 
 static void
 pidgin_blist_menu_block_cb(GSimpleAction *action, GVariant *state,
@@ -612,7 +610,6 @@ pidgin_blist_set_node_custom_icon(G_GNUC_UNUSED GSimpleAction *action,
 	gtk_native_dialog_show(GTK_NATIVE_DIALOG(win));
 }
 
-#ifdef USE_VV
 static void
 pidgin_blist_menu_video_call_cb(G_GNUC_UNUSED GSimpleAction *action,
                                 G_GNUC_UNUSED GVariant *parameter,
@@ -638,7 +635,6 @@ pidgin_blist_menu_video_call_cb(G_GNUC_UNUSED GSimpleAction *action,
 		purple_protocol_initiate_media(account, buddy_name, PURPLE_MEDIA_VIDEO);
 	}
 }
-#endif
 
 static GActionEntry menu_actions[] = {
 	{
@@ -655,11 +651,9 @@ static GActionEntry menu_actions[] = {
 		.activate = pidgin_blist_toggle_action,
 		.state = "false",
 		.change_state = pidgin_blist_menu_autojoin_cb,
-#ifdef USE_VV
 	}, {
 		.name = "buddy-audio-call",
 		.activate = pidgin_blist_menu_audio_call_cb,
-#endif /* USE_VV */
 	}, {
 		.name = "buddy-block",
 		.activate = pidgin_blist_toggle_action,
@@ -674,11 +668,9 @@ static GActionEntry menu_actions[] = {
 	}, {
 		.name = "buddy-send-file",
 		.activate = pidgin_blist_menu_send_file_cb,
-#ifdef USE_VV
 	}, {
 		.name = "buddy-video-call",
 		.activate = pidgin_blist_menu_video_call_cb,
-#endif /* USE_VV */
 	}, {
 		.name = "chat-settings",
 		.activate = pidgin_blist_menu_chat_settings_cb,
@@ -1627,7 +1619,6 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventBut
 
 		g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 
-#ifdef USE_VV
 		if(protocol != NULL &&
 		   PURPLE_PROTOCOL_IMPLEMENTS(protocol, MEDIA, get_caps))
 		{
@@ -1646,7 +1637,6 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventBut
 			          (caps & PURPLE_MEDIA_CAPS_VIDEO);
 			g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 		}
-#endif /* USE_VV */
 
 		/* Set the proper state of the block action. */
 		action = g_action_map_lookup_action(action_map, "buddy-block");
@@ -3215,12 +3205,10 @@ pidgin_blist_populate_menus(void) {
 	target = gtk_application_get_menu_by_id(application, "buddy-custom-icon");
 	g_menu_append_section(target, NULL, G_MENU_MODEL(source));
 
-#ifdef USE_VV
 	/* Add the voice and video menu to the buddy menu. */
 	source = gtk_application_get_menu_by_id(application, "voice-video");
 	target = gtk_application_get_menu_by_id(application, "buddy-voice-video");
 	g_menu_append_section(target, NULL, G_MENU_MODEL(source));
-#endif /* USE_VV */
 }
 
 static void pidgin_blist_show(PurpleBuddyList *list)

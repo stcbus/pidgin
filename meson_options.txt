@@ -19,17 +19,11 @@ option('build-dependencies', type : 'boolean', value : false,
 ##############################################################################
 # Libpurple Options
 
-option('gstreamer-video', type : 'feature',
-       description : 'compile with GStreamer 1.0 Video Overlay support')
-
 option('kwallet', type : 'feature',
        description : 'enable KWallet support')
 
 option('libsecret', type : 'feature',
        description : 'enable libsecret support')
-
-option('vv', type : 'feature',
-       description : 'compile with voice and video support')
 
 option('soup3', type : 'boolean', value : false,
        description : 'compile against libsoup3')

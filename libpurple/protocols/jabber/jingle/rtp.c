@@ -24,8 +24,6 @@
 
 #include <config.h>
 
-#ifdef USE_VV
-
 #include <glib/gi18n-lib.h>
 
 #include <purple.h>
@@ -930,5 +928,3 @@ jingle_rtp_terminate_session(JabberStream *js, const gchar *who)
 		}
 	}
 }
-
-#endif /* USE_VV */

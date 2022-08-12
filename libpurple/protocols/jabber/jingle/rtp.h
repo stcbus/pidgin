@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#ifdef USE_VV
-
 #include <glib.h>
 #include <glib-object.h>
 
@@ -62,8 +60,6 @@ gboolean jingle_rtp_initiate_media(JabberStream *js,
 void jingle_rtp_terminate_session(JabberStream *js, const gchar *who);
 
 G_END_DECLS
-
-#endif /* USE_VV */
 
 #endif /* PURPLE_JABBER_JINGLE_RTP_H */
 

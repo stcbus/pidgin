@@ -876,7 +876,6 @@ add_account_options(AccountPrefsDialog *dialog)
 static void
 add_voice_options(AccountPrefsDialog *dialog)
 {
-#ifdef USE_VV
 	if (!dialog->protocol || !PURPLE_PROTOCOL_IMPLEMENTS(dialog->protocol, MEDIA, initiate_session)) {
 		if (dialog->voice_frame) {
 			gtk_widget_destroy(dialog->voice_frame);
@@ -906,7 +905,6 @@ add_voice_options(AccountPrefsDialog *dialog)
 	} else {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->suppression_check), FALSE);
 	}
-#endif
 }
 
 static gboolean

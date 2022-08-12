@@ -36,15 +36,10 @@
 #include "pidginprefsinternal.h"
 #include "gtkutils.h"
 #include "pidgincore.h"
-#ifdef USE_VV
 #include "pidginvvprefs.h"
-#endif
 
 struct _PidginPrefsWindow {
 	GtkDialog parent;
-
-	/* Stack */
-	GtkWidget *stack;
 };
 
 /* Main dialog */
@@ -420,7 +415,6 @@ delete_prefs(GtkWidget *asdf, void *gdsa)
 	prefs = NULL;
 }
 
-#ifdef USE_VV
 static void
 vv_test_switch_page_cb(GtkStack *stack, G_GNUC_UNUSED GParamSpec *pspec,
                        gpointer data)
@@ -432,7 +426,6 @@ vv_test_switch_page_cb(GtkStack *stack, G_GNUC_UNUSED GParamSpec *pspec,
 		pidgin_vv_prefs_disable_test_pipelines(vv_prefs);
 	}
 }
-#endif
 
 /******************************************************************************
  * GObject Implementation
@@ -448,26 +441,15 @@ pidgin_prefs_window_class_init(PidginPrefsWindowClass *klass)
 	);
 
 	/* Main window */
-	gtk_widget_class_bind_template_child(widget_class, PidginPrefsWindow,
-	                                     stack);
 	gtk_widget_class_bind_template_callback(widget_class, delete_prefs);
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        vv_test_switch_page_cb);
 }
 
 static void
 pidgin_prefs_window_init(PidginPrefsWindow *win)
 {
-#ifdef USE_VV
-	GtkWidget *vv = NULL;
-#endif
-
 	gtk_widget_init_template(GTK_WIDGET(win));
-
-#ifdef USE_VV
-	vv = pidgin_vv_prefs_new();
-	gtk_stack_add_titled(GTK_STACK(win->stack), vv, "vv", _("Voice/Video"));
-	g_signal_connect(win->stack, "notify::visible-child",
-	                 G_CALLBACK(vv_test_switch_page_cb), vv);
-#endif
 }
 
 /******************************************************************************
@@ -500,7 +482,6 @@ pidgin_prefs_init(void)
 	purple_prefs_add_path(PIDGIN_PREFS_ROOT "/filelocations/last_open_folder", "");
 	purple_prefs_add_path(PIDGIN_PREFS_ROOT "/filelocations/last_icon_folder", "");
 
-#ifdef USE_VV
 	/* Voice/Video */
 	purple_prefs_add_none(PIDGIN_PREFS_ROOT "/vvconfig");
 	purple_prefs_add_none(PIDGIN_PREFS_ROOT "/vvconfig/audio");
@@ -514,7 +495,6 @@ pidgin_prefs_init(void)
 	purple_prefs_add_none(PIDGIN_PREFS_ROOT "/vvconfig/video");
 	purple_prefs_add_none(PIDGIN_PREFS_ROOT "/vvconfig/video/sink");
 	purple_prefs_add_string(PIDGIN_PREFS_ROOT "/vvconfig/video/sink/device", "");
-#endif
 
 	pidgin_prefs_update_old();
 }

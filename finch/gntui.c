@@ -168,9 +168,7 @@ void finch_ui_uninit()
 	finch_roomlist_uninit();
 	purple_roomlist_set_ui_ops(NULL);
 
-#ifdef USE_VV
 	finch_media_manager_uninit();
-#endif
 
 	gnt_quit();
 

@@ -34,10 +34,6 @@
 #include "pidgincore.h"
 #include "pidginkeypad.h"
 
-#ifdef USE_VV
-
-#include <gdk/gdkkeysyms.h>
-
 #define PIDGIN_TYPE_MEDIA            (pidgin_media_get_type())
 #define PIDGIN_MEDIA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), PIDGIN_TYPE_MEDIA, PidginMedia))
 #define PIDGIN_MEDIA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), PIDGIN_TYPE_MEDIA, PidginMediaClass))
@@ -112,13 +108,6 @@ static void pidgin_media_finalize (GObject *object);
 static void pidgin_media_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec);
 static void pidgin_media_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec);
 static void pidgin_media_set_state(PidginMedia *gtkmedia, PidginMediaState state);
-
-#if 0
-enum {
-	LAST_SIGNAL
-};
-static guint pidgin_media_signals[LAST_SIGNAL] = {0};
-#endif
 
 enum {
 	PROP_0,
@@ -926,12 +915,10 @@ pidgin_media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 
 	return TRUE;
 }
-#endif  /* USE_VV */
 
 void
 pidgin_medias_init(void)
 {
-#ifdef USE_VV
 	PurpleMediaManager *manager = purple_media_manager_get();
 	PurpleMediaElementInfo *video_src = NULL;
 	PurpleMediaElementInfo *video_sink = NULL;
@@ -1002,5 +989,4 @@ pidgin_medias_init(void)
 	purple_media_manager_set_active_element(manager, video_sink);
 	purple_media_manager_set_active_element(manager, audio_src);
 	purple_media_manager_set_active_element(manager, audio_sink);
-#endif
 }

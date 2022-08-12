@@ -343,7 +343,6 @@ unblock_cb(GtkWidget *widget, PidginConversation *gtkconv)
 		pidgin_request_add_permit(account, purple_conversation_get_name(conv));
 }
 
-#ifdef USE_VV
 static void
 menu_initiate_media_call_cb(GtkAction *action, gpointer data)
 {
@@ -360,7 +359,6 @@ menu_initiate_media_call_cb(GtkAction *action, gpointer data)
 			PURPLE_MEDIA_VIDEO : PURPLE_MEDIA_NONE);
 #endif
 }
-#endif
 
 static void
 menu_block_cb(GtkAction *action, gpointer data)
@@ -997,12 +995,10 @@ static GtkActionEntry menu_entries[] =
 	/* Conversation menu */
 	{ "ConversationMenu", NULL, N_("_Conversation"), NULL, NULL, NULL },
 
-#ifdef USE_VV
 	{ "MediaMenu", NULL, N_("M_edia"), NULL, NULL, NULL },
 	{ "AudioCall", NULL, N_("_Audio Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
 	{ "VideoCall", NULL, N_("_Video Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
 	{ "AudioVideoCall", NULL, N_("Audio/Video _Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
-#endif
 
 	{ "Block", NULL, N_("_Block..."), NULL, NULL, G_CALLBACK(menu_block_cb) },
 	{ "Unblock", NULL, N_("_Unblock..."), NULL, NULL, G_CALLBACK(menu_unblock_cb) },

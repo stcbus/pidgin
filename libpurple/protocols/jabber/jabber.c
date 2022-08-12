@@ -3047,7 +3047,6 @@ jabber_offline_message(PurpleProtocolClient *client, PurpleBuddy *buddy) {
 	return TRUE;
 }
 
-#ifdef USE_VV
 gboolean
 jabber_audio_enabled(JabberStream *js, const char *namespace)
 {
@@ -3095,13 +3094,11 @@ jabber_media_ok_cb(JabberMediaRequest *request, PurpleRequestFields *fields)
 	g_free(request->who);
 	g_free(request);
 }
-#endif
 
 gboolean
 jabber_initiate_media(PurpleProtocolMedia *media, PurpleAccount *account,
                       const gchar *who, PurpleMediaSessionType type)
 {
-#ifdef USE_VV
 	PurpleConnection *gc = purple_account_get_connection(account);
 	JabberStream *js = purple_connection_get_protocol_data(gc);
 	JabberBuddy *jb;
@@ -3235,7 +3232,7 @@ jabber_initiate_media(PurpleProtocolMedia *media, PurpleAccount *account,
 		g_free(msg);
 		return TRUE;
 	}
-#endif
+
 	return FALSE;
 }
 
@@ -3243,7 +3240,6 @@ PurpleMediaCaps
 jabber_get_media_caps(PurpleProtocolMedia *media, PurpleAccount *account,
                       const gchar *who)
 {
-#ifdef USE_VV
 	PurpleConnection *gc = purple_account_get_connection(account);
 	JabberStream *js = purple_connection_get_protocol_data(gc);
 	JabberBuddy *jb;
@@ -3321,9 +3317,6 @@ jabber_get_media_caps(PurpleProtocolMedia *media, PurpleAccount *account,
 	}
 
 	return total;
-#else
-	return PURPLE_MEDIA_CAPS_NONE;
-#endif
 }
 
 gboolean jabber_can_receive_file(PurpleProtocolXfer *prplxfer, PurpleConnection *gc, const char *who)
@@ -3705,7 +3698,6 @@ jabber_do_init(void)
 	/* Jingle features! */
 	jabber_add_feature(JINGLE, NULL);
 
-#ifdef USE_VV
 	jabber_add_feature(JINGLE_APP_RTP, NULL);
 	jabber_add_feature(JINGLE_APP_RTP_SUPPORT_AUDIO, jabber_audio_enabled);
 	jabber_add_feature(JINGLE_APP_RTP_SUPPORT_VIDEO, jabber_video_enabled);
@@ -3714,7 +3706,6 @@ jabber_do_init(void)
 
 	g_signal_connect(G_OBJECT(purple_media_manager_get()), "ui-caps-changed",
 			G_CALLBACK(jabber_caps_broadcast_change), NULL);
-#endif
 
 	/* reverse order of unload_plugin */
 	jabber_iq_init();
@@ -3747,10 +3738,8 @@ jabber_do_uninit(void)
 	jabber_presence_uninit();
 	jabber_iq_uninit();
 
-#ifdef USE_VV
 	g_signal_handlers_disconnect_by_func(G_OBJECT(purple_media_manager_get()),
 			G_CALLBACK(jabber_caps_broadcast_change), NULL);
-#endif
 
 	jabber_auth_uninit();
 	g_list_free_full(jabber_features, (GDestroyNotify)jabber_feature_free);
@@ -4056,9 +4045,7 @@ jabber_load(GPluginPlugin *plugin, GError **error)
 	jingle_rawudp_register(plugin);
 
 	jingle_content_register(plugin);
-#ifdef USE_VV
 	jingle_rtp_register(plugin);
-#endif
 
 	jabber_protocol_register_type(G_TYPE_MODULE(plugin));
 

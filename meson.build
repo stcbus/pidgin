@@ -322,46 +322,9 @@ sqlite3 = dependency('sqlite3', version : '>= 3.27.0')
 gstreamer = dependency('gstreamer-1.0', version : '>=1.14')
 
 #######################################################################
-# Check for GStreamer Video
-#######################################################################
-gstreamer_video = dependency('gstreamer-video-1.0',
-                             required : get_option('gstreamer-video'))
-conf.set('USE_GSTVIDEO', gstreamer_video.found())
-
-#######################################################################
-# Check for Voice and Video support
-#######################################################################
-if get_option('vv').enabled() or get_option('vv').auto()
-	if gstreamer_video.found()
-		conf.set('USE_VV', true)
-		enable_vv = true
-	else
-		if get_option('vv').enabled()
-			error('''
-Dependencies for voice/video were not met.
-Install the necessary gstreamer packages first.
-Or use -Dvv=disabled if you do not need voice/video support.
-			''')
-		endif
-		enable_vv = false
-	endif
-else
-	enable_vv = false
-endif
-
-#######################################################################
 # Check for Raw data streams support in Farstream
 #######################################################################
-if enable_vv
-	gstreamer_app = dependency('gstreamer-app-1.0',
-	                           required : false)
-	if gstreamer_app.found()
-		conf.set('USE_GSTAPP', true)
-		conf.set('HAVE_MEDIA_APPLICATION', true)
-	endif
-else
-	gstreamer_app = []
-endif
+gstreamer_app = dependency('gstreamer-app-1.0')
 
 #######################################################################
 # Check for Meanwhile headers (for Sametime)
@@ -707,7 +670,6 @@ summary({
 summary({
     'GTK': get_option('gtkui'),
     'console': enable_consoleui,
-    'Voice and Video': enable_vv,
     'X11 support': x11.found(),
 }, section: 'User Interfaces', bool_yn: true)
 

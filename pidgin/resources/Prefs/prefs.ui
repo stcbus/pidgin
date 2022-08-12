@@ -82,6 +82,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
               <object class="GtkStack" id="stack">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <signal name="notify::visible-child" handler="vv_test_switch_page_cb" object="vv" swapped="no"/>
                 <child>
                   <object class="PidginConversationPrefs">
                     <property name="visible">True</property>
@@ -135,6 +136,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                     <property name="name">credentials</property>
                     <property name="title" translatable="yes">Credentials</property>
                     <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="PidginVVPrefs" id="vv">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="name">vv</property>
+                    <property name="title" translatable="yes">Voice/Video</property>
+                    <property name="position">5</property>
                   </packing>
                 </child>
               </object>

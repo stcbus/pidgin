@@ -253,7 +253,6 @@ struct _JabberStream
 	/* keep a hash table of JingleSessions */
 	GHashTable *sessions;
 
-	/* maybe this should only be present when USE_VV? */
 	gchar *stun_ip;
 	int stun_port;
 };

@@ -33,9 +33,7 @@
 #include "rtp.h"
 
 #include <string.h>
-#ifdef USE_VV
 #include <gst/gst.h>
-#endif
 
 GType
 jingle_get_type(const gchar *type)
@@ -47,10 +45,8 @@ jingle_get_type(const gchar *type)
 		return JINGLE_TYPE_RAWUDP;
 	else if (purple_strequal(type, JINGLE_TRANSPORT_ICEUDP))
 		return JINGLE_TYPE_ICEUDP;
-#ifdef USE_VV
 	else if (purple_strequal(type, JINGLE_APP_RTP))
 		return JINGLE_TYPE_RTP;
-#endif
 	else
 		return G_TYPE_NONE;
 }
@@ -432,7 +428,6 @@ jingle_terminate_sessions(JabberStream *js)
 	}
 }
 
-#ifdef USE_VV
 static void
 jingle_create_relay_info(const gchar *ip, guint port, const gchar *username,
 	const gchar *password, const gchar *relay_type, GPtrArray *relay_info)
@@ -518,5 +513,3 @@ jingle_get_params(JabberStream *js, const gchar *relay_ip, guint relay_udp,
 
 	return params;
 }
-#endif
-

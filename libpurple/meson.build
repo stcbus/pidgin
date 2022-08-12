@@ -125,6 +125,7 @@ purple_coreheaders = [
 	'image.h',
 	'image-store.h',
 	'media.h',
+	'media-gst.h',
 	'mediamanager.h',
 	'memorypool.h',
 	'nat-pmp.h',
@@ -213,10 +214,6 @@ purple_coresources += purple_resource
 
 purple_filebase = 'purple-@0@'.format(purple_major_version)
 purple_include_base = purple_filebase / 'libpurple'
-
-if enable_vv
-	purple_coreheaders += 'media-gst.h'
-endif
 
 if IS_WIN32
 	purple_coresources += [
@@ -311,7 +308,7 @@ libpurple = library('purple',
                     version : PURPLE_LIB_VERSION,
                     dependencies : # static_link_libs
                         [dnsapi, ws2_32, glib, gio, gplugin_dep, libsoup,
-                         libxml, gdk_pixbuf, gstreamer, gstreamer_video,
+                         libxml, gdk_pixbuf, gstreamer,
                          gstreamer_app, json, sqlite3, math])
 
 install_headers(purple_coreheaders,

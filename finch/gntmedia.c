@@ -33,7 +33,6 @@
 #include "libfinch.h"
 
 /* An incredibly large part of the following is from gtkmedia.c */
-#ifdef USE_VV
 
 #undef hangup
 
@@ -372,11 +371,8 @@ call_cmd_cb(PurpleConversation *conv, const char *cmd, char **args,
 	return PURPLE_CMD_RET_OK;
 }
 
-#endif  /* USE_VV */
-
 void finch_media_manager_init(void)
 {
-#ifdef USE_VV
 	PurpleMediaManager *manager = purple_media_manager_get();
 	PurpleMediaElementInfo *audio_src = NULL;
 	PurpleMediaElementInfo *audio_sink = NULL;
@@ -418,16 +414,11 @@ void finch_media_manager_init(void)
 	purple_debug_info("gntmedia", "Registering media element types\n");
 	purple_media_manager_set_active_element(manager, audio_src);
 	purple_media_manager_set_active_element(manager, audio_sink);
-#endif
 }
 
 void finch_media_manager_uninit(void)
 {
-#ifdef USE_VV
 	PurpleMediaManager *manager = purple_media_manager_get();
 	g_signal_handlers_disconnect_by_func(G_OBJECT(manager),
 			G_CALLBACK(finch_new_media), NULL);
-#endif
 }
-
-

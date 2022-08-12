@@ -44,7 +44,7 @@ purple_media_backend_base_init(gpointer iface)
 	}
 
 	g_object_interface_install_property(iface,
-			g_param_spec_string("conference-type",
+		g_param_spec_string("conference-type",
 			"Conference Type",
 			"The type of conference that this backend "
 			"has been created to provide.",
@@ -52,16 +52,10 @@ purple_media_backend_base_init(gpointer iface)
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
 			G_PARAM_STATIC_STRINGS));
 	g_object_interface_install_property(iface,
-#ifdef USE_VV
-			g_param_spec_object(
-#else
-			g_param_spec_pointer(
-#endif
+		g_param_spec_object(
 			"media", "Purple Media",
 			"The media object that this backend is bound to.",
-#ifdef USE_VV
 			PURPLE_TYPE_MEDIA,
-#endif
 			G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
 			G_PARAM_STATIC_STRINGS));
 	purple_media_backend_signals[S_ERROR] =

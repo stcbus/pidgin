@@ -354,7 +354,6 @@ purple_protocol_initiate_media(PurpleAccount *account,
 			   const char *who,
 			   PurpleMediaSessionType type)
 {
-#ifdef USE_VV
 	PurpleConnection *gc = NULL;
 	PurpleProtocol *protocol = NULL;
 
@@ -373,15 +372,11 @@ purple_protocol_initiate_media(PurpleAccount *account,
 	} else {
 		return FALSE;
 	}
-#else
-	return FALSE;
-#endif
 }
 
 PurpleMediaCaps
 purple_protocol_get_media_caps(PurpleAccount *account, const char *who)
 {
-#ifdef USE_VV
 	PurpleConnection *gc = NULL;
 	PurpleProtocol *protocol = NULL;
 
@@ -398,15 +393,11 @@ purple_protocol_get_media_caps(PurpleAccount *account, const char *who)
 	} else {
 		return PURPLE_MEDIA_CAPS_NONE;
 	}
-#else
-	return PURPLE_MEDIA_CAPS_NONE;
-#endif
 }
 
 void
 purple_protocol_got_media_caps(PurpleAccount *account, const char *name)
 {
-#ifdef USE_VV
 	GSList *list;
 
 	g_return_if_fail(account != NULL);
@@ -433,6 +424,4 @@ purple_protocol_got_media_caps(PurpleAccount *account, const char *name)
 				"buddy-caps-changed", buddy,
 				newcaps, oldcaps);
 	}
-#endif
 }
-
