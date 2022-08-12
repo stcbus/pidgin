@@ -245,6 +245,9 @@ pidgin_proxy_options_init(PidginProxyOptions *options) {
 	gtk_tree_model_filter_set_visible_func(options->filter,
 	                                       pidgin_proxy_options_filter_visible,
 	                                       options, NULL);
+
+	/* Force the filter to refresh. */
+	gtk_tree_model_filter_refilter(options->filter);
 }
 
 static void
