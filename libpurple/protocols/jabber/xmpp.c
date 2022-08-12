@@ -129,11 +129,8 @@ xmpp_protocol_new(void) {
 	PurpleProtocolOptions options;
 
 	options = OPT_PROTO_CHAT_TOPIC | OPT_PROTO_UNIQUE_CHATNAME |
-	          OPT_PROTO_MAIL_CHECK | OPT_PROTO_SLASH_COMMANDS_NATIVE;
-
-#ifdef HAVE_CYRUS_SASL
-	options |= OPT_PROTO_PASSWORD_OPTIONAL;
-#endif
+	          OPT_PROTO_MAIL_CHECK | OPT_PROTO_SLASH_COMMANDS_NATIVE |
+	          OPT_PROTO_PASSWORD_OPTIONAL;
 
 	return PURPLE_PROTOCOL(g_object_new(
 		XMPP_TYPE_PROTOCOL,

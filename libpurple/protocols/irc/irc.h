@@ -26,9 +26,7 @@
 
 #include <config.h>
 
-#ifdef HAVE_CYRUS_SASL
 #include <sasl/sasl.h>
-#endif
 
 #include <purple.h>
 
@@ -97,13 +95,11 @@ struct irc_conn {
 	char *mode_chars;
 	char *reqnick;
 	gboolean nickused;
-#ifdef HAVE_CYRUS_SASL
 	sasl_conn_t *sasl_conn;
 	const char *current_mech;
 	GString *sasl_mechs;
 	gboolean mech_works;
 	sasl_callback_t *sasl_cb;
-#endif
 };
 
 struct irc_buddy {
@@ -181,14 +177,12 @@ void irc_msg_unknown(struct irc_conn *irc, const char *name, const char *from, c
 void irc_msg_wallops(struct irc_conn *irc, const char *name, const char *from, char **args);
 void irc_msg_whois(struct irc_conn *irc, const char *name, const char *from, char **args);
 void irc_msg_who(struct irc_conn *irc, const char *name, const char *from, char **args);
-#ifdef HAVE_CYRUS_SASL
 void irc_msg_cap(struct irc_conn *irc, const char *name, const char *from, char **args);
 void irc_msg_auth(struct irc_conn *irc, char *arg);
 void irc_msg_authenticate(struct irc_conn *irc, const char *name, const char *from, char **args);
 void irc_msg_authok(struct irc_conn *irc, const char *name, const char *from, char **args);
 void irc_msg_authtryagain(struct irc_conn *irc, const char *name, const char *from, char **args);
 void irc_msg_authfail(struct irc_conn *irc, const char *name, const char *from, char **args);
-#endif
 
 void irc_cmd_table_build(struct irc_conn *irc);
 

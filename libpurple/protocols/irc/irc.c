@@ -413,7 +413,6 @@ irc_protocol_get_account_options(PurpleProtocol *protocol) {
 	option = purple_account_option_bool_new(_("Use SSL"), "ssl", FALSE);
 	opts = g_list_append(opts, option);
 
-#ifdef HAVE_CYRUS_SASL
 	option = purple_account_option_bool_new(_("Authenticate with SASL"),
 	                                        "sasl", FALSE);
 	opts = g_list_append(opts, option);
@@ -422,7 +421,6 @@ irc_protocol_get_account_options(PurpleProtocol *protocol) {
 	                                          "unencrypted connection"),
 	                                        "auth_plain_in_clear", FALSE);
 	opts = g_list_append(opts, option);
-#endif
 
 	return opts;
 }
@@ -601,16 +599,12 @@ static gboolean do_login(PurpleConnection *gc) {
 	const char *nickname, *identname, *realname;
 	struct irc_conn *irc = purple_connection_get_protocol_data(gc);
 	const char *pass = purple_connection_get_password(gc);
-#ifdef HAVE_CYRUS_SASL
 	const gboolean use_sasl = purple_account_get_bool(irc->account, "sasl", FALSE);
-#endif
 
 	if (pass && *pass) {
-#ifdef HAVE_CYRUS_SASL
 		if (use_sasl)
 			buf = irc_format(irc, "vv:", "CAP", "REQ", "sasl");
-		else /* intended to fall through */
-#endif
+		else
 			buf = irc_format(irc, "v:", "PASS", pass);
 		if (irc_send(irc, buf) < 0) {
 			g_free(buf);
@@ -728,7 +722,6 @@ static void irc_close(PurpleConnection *gc)
 	g_free(irc->mode_chars);
 	g_free(irc->reqnick);
 
-#ifdef HAVE_CYRUS_SASL
 	if (irc->sasl_conn) {
 		sasl_dispose(&irc->sasl_conn);
 		irc->sasl_conn = NULL;
@@ -736,7 +729,6 @@ static void irc_close(PurpleConnection *gc)
 	g_free(irc->sasl_cb);
 	if(irc->sasl_mechs)
 		g_string_free(irc->sasl_mechs, TRUE);
-#endif
 
 
 	g_free(irc);

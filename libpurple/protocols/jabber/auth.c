@@ -73,7 +73,6 @@ static void disallow_plaintext_auth(PurpleAccount *account)
 		_("Server requires plaintext authentication over an unencrypted stream"));
 }
 
-#ifdef HAVE_CYRUS_SASL
 static void
 auth_old_pass_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 {
@@ -122,7 +121,6 @@ auth_no_pass_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 	/* Disable the account as the user has cancelled connecting */
 	purple_account_set_enabled(purple_connection_get_account(gc), FALSE);
 }
-#endif
 
 void
 jabber_auth_start(JabberStream *js, PurpleXmlNode *packet)
@@ -366,17 +364,14 @@ void jabber_auth_start_old(JabberStream *js)
 		js->user->resource = g_strdup("Home");
 	}
 
-#ifdef HAVE_CYRUS_SASL
-	/* If we have Cyrus SASL, then passwords will have been set
-	 * to OPTIONAL for this protocol. So, we need to do our own
-	 * password prompting here
+	/* With Cyrus SASL, passwords are optional for this protocol. So, we need to
+	 * do our own password prompting here
 	 */
 
 	if (!purple_connection_get_password(js->gc)) {
 		purple_account_request_password(account, G_CALLBACK(auth_old_pass_cb), G_CALLBACK(auth_no_pass_cb), js->gc);
 		return;
 	}
-#endif
 	iq = jabber_iq_new_query(js, JABBER_IQ_GET, "jabber:iq:auth");
 
 	query = purple_xmlnode_get_child(iq->node, "query");
@@ -519,9 +514,7 @@ void jabber_auth_init(void)
 
 	jabber_auth_add_mech(jabber_auth_get_plain_mech());
 	jabber_auth_add_mech(jabber_auth_get_digest_md5_mech());
-#ifdef HAVE_CYRUS_SASL
 	jabber_auth_add_mech(jabber_auth_get_cyrus_mech());
-#endif
 #ifdef HAVE_WEBEX_TOKEN
 	jabber_auth_add_mech(jabber_auth_get_webex_token_mech());
 #endif

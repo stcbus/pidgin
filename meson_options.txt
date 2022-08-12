@@ -40,9 +40,6 @@ option('soup3', type : 'boolean', value : false,
 option('avahi', type : 'feature',
        description : 'compile with avahi (required for Bonjour support)')
 
-option('cyrus-sasl', type : 'feature',
-       description : 'enable Cyrus SASL support for XMPP/IRC')
-
 option('dynamic-prpls', type : 'string', value: 'all',
        description : 'specify which protocols to build dynamically')
 

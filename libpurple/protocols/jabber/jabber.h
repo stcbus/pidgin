@@ -69,9 +69,7 @@ typedef struct _JabberStream JabberStream;
 #include "buddy.h"
 #include "bosh.h"
 
-#ifdef HAVE_CYRUS_SASL
 #include <sasl/sasl.h>
-#endif
 
 #define CAPS0115_NODE "https://pidgin.im/"
 
@@ -196,7 +194,6 @@ struct _JabberStream
 
 	char *serverFQDN;
 
-#ifdef HAVE_CYRUS_SASL
 	sasl_conn_t *sasl;
 	sasl_callback_t *sasl_cb;
 	sasl_secret_t *sasl_secret;
@@ -208,7 +205,6 @@ struct _JabberStream
 	GString *sasl_mechs;
 
 	gchar *sasl_password;
-#endif
 
 	gboolean unregistration;
 	PurpleAccountUnregistrationCb unregistration_cb;

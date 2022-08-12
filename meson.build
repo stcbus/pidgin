@@ -577,8 +577,7 @@ foreach func : ['snprintf']
 	conf.set('HAVE_' + func.to_upper(),
 	    compiler.has_function(func))
 endforeach
-sasl = dependency('libsasl2', version : '>= 2.0', required : get_option('cyrus-sasl'))
-conf.set('HAVE_CYRUS_SASL', sasl.found())
+sasl = dependency('libsasl2', version : '>= 2.0')
 
 #######################################################################
 # Check for external libzephyr

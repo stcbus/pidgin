@@ -463,7 +463,6 @@ jabber_send_raw(PurpleProtocolServer *protocol_server, JabberStream *js,
 
 	/* If we've got a security layer, we need to encode the data,
 	 * splitting it on the maximum buffer length negotiated */
-#ifdef HAVE_CYRUS_SASL
 	if (js->sasl_maxbuf>0) {
 		int pos = 0;
 
@@ -502,7 +501,6 @@ jabber_send_raw(PurpleProtocolServer *protocol_server, JabberStream *js,
 		}
 		return;
 	}
-#endif
 
 	if (js->bosh)
 		jabber_bosh_connection_send(js->bosh, data);
@@ -618,7 +616,6 @@ jabber_recv_cb(GObject *stream, gpointer data)
 		}
 
 		purple_connection_update_last_received(gc);
-#ifdef HAVE_CYRUS_SASL
 		if (js->sasl_maxbuf > 0) {
 			const char *out;
 			unsigned int olen;
@@ -643,7 +640,6 @@ jabber_recv_cb(GObject *stream, gpointer data)
 			}
 			return G_SOURCE_CONTINUE;
 		}
-#endif
 		buf[len] = '\0';
 		purple_debug_misc("jabber", "Recv (%" G_GSSIZE_FORMAT "): %s", len,
 		                  buf);
@@ -1588,7 +1584,6 @@ void jabber_close(PurpleConnection *gc)
 
 	if (js->auth_mech && js->auth_mech->dispose)
 		js->auth_mech->dispose(js);
-#ifdef HAVE_CYRUS_SASL
 	if(js->sasl)
 		sasl_dispose(&js->sasl);
 	if(js->sasl_mechs)
@@ -1597,7 +1592,6 @@ void jabber_close(PurpleConnection *gc)
 	/* Note: _not_ g_free.  See auth_cyrus.c:jabber_sasl_cb_secret */
 	free(js->sasl_secret);
 	g_free(js->sasl_password);
-#endif
 	g_free(js->serverFQDN);
 	g_list_free_full(js->commands, (GDestroyNotify)jabber_adhoc_commands_free);
 	g_free(js->server_name);
@@ -3638,7 +3632,6 @@ jabber_do_init(void)
 	const gchar *type = "pc"; /* default client type, if unknown or
 								unspecified */
 	const gchar *ui_name = NULL;
-#ifdef HAVE_CYRUS_SASL
 	/* We really really only want to do this once per process */
 	static gboolean sasl_initialized = FALSE;
 #ifdef _WIN32
@@ -3646,10 +3639,8 @@ jabber_do_init(void)
 	gchar *sasldir;
 #endif
 	int ret;
-#endif
 
 	/* XXX - If any other plugin wants SASL this won't be good ... */
-#ifdef HAVE_CYRUS_SASL
 	if (!sasl_initialized) {
 		sasl_initialized = TRUE;
 #ifdef _WIN32
@@ -3667,7 +3658,6 @@ jabber_do_init(void)
 		SetErrorMode(old_error_mode);
 #endif
 	}
-#endif
 
 	jabber_cmds = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, cmds_free_func);
 

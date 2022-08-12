@@ -35,9 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef HAVE_CYRUS_SASL
 #include <sasl/sasl.h>
-#endif
 
 static char *irc_mask_nick(const char *mask);
 static char *irc_mask_userhost(const char *mask);
@@ -49,9 +47,7 @@ static void irc_msg_handle_privmsg(struct irc_conn *irc, const char *name,
                                    const char *from, const char *to,
                                    const char *rawmsg, gboolean notice);
 
-#ifdef HAVE_CYRUS_SASL
 static void irc_sasl_finish(struct irc_conn *irc);
-#endif
 
 static char *irc_mask_nick(const char *mask)
 {
@@ -1464,7 +1460,6 @@ void irc_msg_wallops(struct irc_conn *irc, const char *name, const char *from, c
 	g_free(msg);
 }
 
-#ifdef HAVE_CYRUS_SASL
 static int
 irc_sasl_cb_secret(sasl_conn_t *conn, void *ctx, int id, sasl_secret_t **secret)
 {
@@ -1862,4 +1857,3 @@ irc_sasl_finish(struct irc_conn *irc)
 	irc_send(irc, buf);
 	g_free(buf);
 }
-#endif
