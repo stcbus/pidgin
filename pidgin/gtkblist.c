@@ -1619,7 +1619,7 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventBut
 	g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 
 	/* Now display the menu */
-	if (menu != NULL) {
+	if (menu != NULL && event != NULL) {
 		GtkWidget *popover_menu = gtk_popover_menu_new();
 
 		gtk_popover_bind_model(GTK_POPOVER(popover_menu), G_MENU_MODEL(menu),

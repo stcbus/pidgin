@@ -1643,7 +1643,7 @@ irc_msg_cap(struct irc_conn *irc, const char *name, const char *from, char **arg
 		return;
 	}
 
-	if ((ret = sasl_client_init(NULL)) != SASL_OK) {
+	if (sasl_client_init(NULL) != SASL_OK) {
 		purple_connection_take_error(gc, g_error_new_literal(
 			PURPLE_CONNECTION_ERROR,
 			PURPLE_CONNECTION_ERROR_OTHER_ERROR,

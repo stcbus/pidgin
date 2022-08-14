@@ -513,7 +513,6 @@ create_chat_menu(PurpleChatConversation *chat, const char *who, PurpleConnection
 	PurpleAccount *account = purple_conversation_get_account(conv);
 	gboolean is_me = FALSE;
 	GtkWidget *button;
-	PurpleBuddy *buddy = NULL;
 
 	if (gc != NULL)
 		protocol = purple_connection_get_protocol(gc);
@@ -601,7 +600,7 @@ create_chat_menu(PurpleChatConversation *chat, const char *who, PurpleConnection
 	}
 
 	if (!is_me && protocol && !(purple_protocol_get_options(protocol) & OPT_PROTO_UNIQUE_CHATNAME) && PURPLE_PROTOCOL_IMPLEMENTS(protocol, SERVER, add_buddy)) {
-		if ((buddy = purple_blist_find_buddy(account, who)) != NULL)
+		if (purple_blist_find_buddy(account, who) != NULL)
 			button = pidgin_new_menu_item(menu, _("Remove"),
                                         NULL,
                                         G_CALLBACK(menu_chat_add_remove_cb),
