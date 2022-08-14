@@ -4,6 +4,10 @@ foreach prog : ['im_mime']
 	    link_with : [sametime_prpl],
 	    dependencies : [libpurple_dep, gmime, glib])
 
+	stenv = environment()
+	stenv.set('G_TEST_SRCDIR', meson.current_source_dir())
+	stenv.set('XDG_CONFIG_DIR', meson.current_build_dir() / 'config')
+
 	test('sametime_' + prog, e,
-	    env : 'G_TEST_SRCDIR=@0@'.format(meson.current_source_dir()))
+	    env : stenv)
 endforeach

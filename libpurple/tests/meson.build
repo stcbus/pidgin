@@ -34,6 +34,9 @@ test_ui = static_library(
     dependencies: [libpurple_dep, glib]
 )
 
+testenv = environment()
+testenv.set('XDG_CONFIG_HOME', meson.current_build_dir() / 'config')
+
 foreach prog : PROGS
     e = executable('test_' + prog, 'test_@0@.c'.format(prog),
                    c_args : [
@@ -42,5 +45,7 @@ foreach prog : PROGS
                    dependencies : [libpurple_dep, glib],
                    link_with: test_ui,
     )
-    test(prog, e)
+    test(prog, e,
+        env: testenv,
+    )
 endforeach

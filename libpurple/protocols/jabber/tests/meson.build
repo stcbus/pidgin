@@ -4,5 +4,9 @@ foreach prog : ['caps', 'digest_md5', 'scram', 'jutil']
 	    link_with : [jabber_prpl],
 	    dependencies : [libxml, libpurple_dep, libsoup, glib])
 
-	test('jabber_' + prog, e)
+	jabberenv = environment()
+	jabberenv.set('XDG_CONFIG_DIR', meson.current_build_dir() / 'config')
+
+	test('jabber_' + prog, e,
+	    env: jabberenv)
 endforeach
