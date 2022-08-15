@@ -85,7 +85,7 @@ pidgin_add_buddy_dialog_validate(PidginAddBuddyDialog *dialog) {
 
 		protocol = purple_account_get_protocol(account);
 		if(PURPLE_IS_PROTOCOL(protocol)) {
-			const gchar *username = gtk_entry_get_text(GTK_ENTRY(dialog->username));
+			const gchar *username = gtk_editable_get_text(GTK_EDITABLE(dialog->username));
 
 			valid = purple_validate(protocol, username);
 		}
@@ -115,9 +115,9 @@ pidgin_add_buddy_dialog_response_cb(GtkDialog *dialog, gint response_id,
 
 		/* Grab all of the values that the user entered. */
 		account = pidgin_account_chooser_get_selected(PIDGIN_ACCOUNT_CHOOSER(abdialog->account));
-		username = gtk_entry_get_text(GTK_ENTRY(abdialog->username));
-		alias = gtk_entry_get_text(GTK_ENTRY(abdialog->alias));
-		message = gtk_entry_get_text(GTK_ENTRY(abdialog->message));
+		username = gtk_editable_get_text(GTK_EDITABLE(abdialog->username));
+		alias = gtk_editable_get_text(GTK_EDITABLE(abdialog->alias));
+		message = gtk_editable_get_text(GTK_EDITABLE(abdialog->message));
 		groupname = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(abdialog->group));
 
 		/* Make anything that is an empty string NULL. */
@@ -194,7 +194,7 @@ pidgin_add_buddy_dialog_response_cb(GtkDialog *dialog, gint response_id,
 		g_free(groupname);
 	}
 
-	gtk_widget_destroy(GTK_WIDGET(abdialog));
+	gtk_window_destroy(GTK_WINDOW(abdialog));
 }
 
 static void
@@ -304,22 +304,22 @@ pidgin_add_buddy_dialog_new(PurpleAccount *account, const gchar *username,
 	}
 
 	if(username != NULL) {
-		gtk_entry_set_text(GTK_ENTRY(abdialog->username), username);
+		gtk_editable_set_text(GTK_EDITABLE(abdialog->username), username);
 	}
 
 	if(alias != NULL) {
-		gtk_entry_set_text(GTK_ENTRY(abdialog->alias), alias);
+		gtk_editable_set_text(GTK_EDITABLE(abdialog->alias), alias);
 	}
 
 	if(message != NULL) {
-		gtk_entry_set_text(GTK_ENTRY(abdialog->message), message);
+		gtk_editable_set_text(GTK_EDITABLE(abdialog->message), message);
 	}
 
 	if(group != NULL) {
 		GtkWidget *entry = NULL;
 
-		entry = gtk_bin_get_child(GTK_BIN(abdialog->group));
-		gtk_entry_set_text(GTK_ENTRY(entry), group);
+		entry = gtk_combo_box_get_child(GTK_COMBO_BOX(abdialog->group));
+		gtk_editable_set_text(GTK_EDITABLE(entry), group);
 	}
 
 	return dialog;
