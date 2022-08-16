@@ -205,20 +205,6 @@ GdkPixbuf *pidgin_create_protocol_icon(PurpleAccount *account, PidginProtocolIco
 GdkPixbuf *pidgin_create_icon_from_protocol(PurpleProtocol *protocol, PidginProtocolIconSize size, PurpleAccount *account);
 
 /**
- * pidgin_buddy_icon_chooser_new:
- * @parent:      The parent window
- * @callback:    The callback to call when the window is closed. If the user chose an icon, the char* argument will point to its path
- * @data:        Data to pass to @callback
- *
- * Creates a File Selection widget for choosing a buddy icon
- *
- * Returns: (transfer full): The file dialog
- */
-GtkFileChooserNative *pidgin_buddy_icon_chooser_new(
-        GtkWindow *parent, void (*callback)(const char *, gpointer),
-        gpointer data);
-
-/**
  * pidgin_convert_buddy_icon:
  * @protocol:   The protocol to convert the icon
  * @path:       The path of a file to convert

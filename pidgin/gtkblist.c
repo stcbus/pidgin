@@ -191,14 +191,17 @@ static gboolean gtk_blist_delete_cb(GtkWidget *w, GdkEventAny *event, gpointer d
 }
 
 static void
-set_node_custom_icon_cb(const gchar *filename, gpointer data)
+set_node_custom_icon_cb(GtkWidget *widget, gint response, gpointer data)
 {
-	if (filename) {
+	if (response == GTK_RESPONSE_ACCEPT) {
 		PurpleBlistNode *node = (PurpleBlistNode*)data;
+		gchar *filename = NULL;
 
-		purple_buddy_icons_node_set_custom_icon_from_file(node,
-		                                                  filename);
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
+		g_free(filename);
 	}
+
 	g_object_set_data(G_OBJECT(data), "buddy-icon-chooser", NULL);
 }
 
@@ -592,8 +595,13 @@ pidgin_blist_set_node_custom_icon(G_GNUC_UNUSED GSimpleAction *action,
 
 	win = g_object_get_data(G_OBJECT(node), "buddy-icon-chooser");
 	if(win == NULL) {
-		win = pidgin_buddy_icon_chooser_new(NULL, set_node_custom_icon_cb,
-		                                    node);
+		win = gtk_file_chooser_native_new(_("Buddy Icon"), NULL,
+		                                  GTK_FILE_CHOOSER_ACTION_OPEN,
+		                                  _("_Open"), _("_Cancel"));
+
+		g_signal_connect(win, "response", G_CALLBACK(set_node_custom_icon_cb),
+		                 node);
+
 		g_object_set_data_full(G_OBJECT(node), "buddy-icon-chooser", win,
 		                       g_object_unref);
 	}

@@ -90,8 +90,6 @@ typedef struct
 
 struct _icon_chooser {
 	GtkFileChooserNative *icon_filesel;
-	GtkWidget *icon_preview;
-	GtkWidget *icon_text;
 
 	void (*callback)(const char*,gpointer);
 	gpointer data;
@@ -638,115 +636,6 @@ pidgin_screenname_autocomplete_default_filter(const PidginBuddyCompletionEntry *
 	gboolean all = GPOINTER_TO_INT(all_accounts);
 
 	return all || purple_account_is_connected(purple_buddy_get_account(completion_entry->buddy));
-}
-
-static void
-icon_filesel_choose_cb(GtkWidget *widget, gint response, struct _icon_chooser *dialog)
-{
-	char *filename, *current_folder;
-
-	if (response != GTK_RESPONSE_ACCEPT) {
-		if (dialog->callback)
-			dialog->callback(NULL, dialog->data);
-		g_free(dialog);
-		return;
-	}
-
-	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog->icon_filesel));
-	current_folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog->icon_filesel));
-	if (current_folder != NULL) {
-		purple_prefs_set_path(PIDGIN_PREFS_ROOT "/filelocations/last_icon_folder", current_folder);
-		g_free(current_folder);
-	}
-
-
-	if (dialog->callback)
-		dialog->callback(filename, dialog->data);
-	g_free(filename);
-	g_free(dialog);
-}
-
-
-static void
-icon_preview_change_cb(GtkFileChooser *widget, struct _icon_chooser *dialog)
-{
-	GdkPixbuf *pixbuf;
-	int height, width;
-	char *basename, *markup, *size;
-	GStatBuf st;
-	char *filename;
-
-	filename = gtk_file_chooser_get_preview_filename(
-					GTK_FILE_CHOOSER(dialog->icon_filesel));
-
-	if (!filename || g_stat(filename, &st) || !(pixbuf = purple_gdk_pixbuf_new_from_file_at_size(filename, 128, 128)))
-	{
-		gtk_image_set_from_pixbuf(GTK_IMAGE(dialog->icon_preview), NULL);
-		gtk_label_set_markup(GTK_LABEL(dialog->icon_text), "");
-		g_free(filename);
-		return;
-	}
-
-	gdk_pixbuf_get_file_info(filename, &width, &height);
-	basename = g_path_get_basename(filename);
-	size = g_format_size(st.st_size);
-	markup = g_strdup_printf(_("<b>File:</b> %s\n"
-							   "<b>File size:</b> %s\n"
-							   "<b>Image size:</b> %dx%d"),
-							 basename, size, width, height);
-
-	gtk_image_set_from_pixbuf(GTK_IMAGE(dialog->icon_preview), pixbuf);
-	gtk_label_set_markup(GTK_LABEL(dialog->icon_text), markup);
-
-	g_object_unref(G_OBJECT(pixbuf));
-	g_free(filename);
-	g_free(basename);
-	g_free(size);
-	g_free(markup);
-}
-
-GtkFileChooserNative *
-pidgin_buddy_icon_chooser_new(GtkWindow *parent,
-                              void (*callback)(const char *, gpointer),
-                              gpointer data)
-{
-	struct _icon_chooser *dialog = g_new0(struct _icon_chooser, 1);
-
-	GtkWidget *vbox;
-	const char *current_folder;
-
-	dialog->callback = callback;
-	dialog->data = data;
-
-	current_folder = purple_prefs_get_path(PIDGIN_PREFS_ROOT "/filelocations/last_icon_folder");
-
-	dialog->icon_filesel = gtk_file_chooser_native_new(
-	        _("Buddy Icon"), parent, GTK_FILE_CHOOSER_ACTION_OPEN, _("_Open"),
-	        _("_Cancel"));
-	if ((current_folder != NULL) && (*current_folder != '\0'))
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog->icon_filesel),
-						    current_folder);
-
-	dialog->icon_preview = gtk_image_new();
-	dialog->icon_text = gtk_label_new(NULL);
-
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_widget_set_size_request(GTK_WIDGET(vbox), -1, 50);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(dialog->icon_preview), TRUE, FALSE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(dialog->icon_text), FALSE, FALSE, 0);
-	gtk_widget_show_all(vbox);
-
-	gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(dialog->icon_filesel), vbox);
-	gtk_file_chooser_set_preview_widget_active(GTK_FILE_CHOOSER(dialog->icon_filesel), TRUE);
-	gtk_file_chooser_set_use_preview_label(GTK_FILE_CHOOSER(dialog->icon_filesel), FALSE);
-
-	g_signal_connect(G_OBJECT(dialog->icon_filesel), "update-preview",
-					 G_CALLBACK(icon_preview_change_cb), dialog);
-	g_signal_connect(G_OBJECT(dialog->icon_filesel), "response",
-					 G_CALLBACK(icon_filesel_choose_cb), dialog);
-	icon_preview_change_cb(NULL, dialog);
-
-	return dialog->icon_filesel;
 }
 
 /*

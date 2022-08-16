@@ -871,6 +871,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_blist_visibility_manager_add
 		* pidgin_blist_visibility_manager_remove
 		* PidginBlistLayout
+		* pidgin_buddy_icon_chooser_new
 		* PidginBuddyList.connection_errors
 		* PidginButtonStyle
 		* pidgin_check_if_dir

@@ -274,15 +274,18 @@ register_button_cb(GtkWidget *checkbox, AccountPrefsDialog *dialog)
 }
 
 static void
-icon_filesel_choose_cb(const char *filename, gpointer data)
+icon_filesel_choose_cb(GtkWidget *widget, gint response, gpointer data)
 {
 	AccountPrefsDialog *dialog = data;
 
-	if (filename != NULL)
-	{
+	if (response == GTK_RESPONSE_ACCEPT) {
+		gchar *filename = NULL;
+		gpointer data = NULL;
 		size_t len = 0;
-		gpointer data = pidgin_convert_buddy_icon(dialog->protocol, filename, &len);
-		set_dialog_icon(dialog, data, len, g_strdup(filename));
+
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+		data = pidgin_convert_buddy_icon(dialog->protocol, filename, &len);
+		set_dialog_icon(dialog, data, len, filename);
 	}
 
 	g_clear_object(&dialog->icon_filesel);
@@ -291,7 +294,15 @@ icon_filesel_choose_cb(const char *filename, gpointer data)
 static void
 icon_select_cb(GtkWidget *button, AccountPrefsDialog *dialog)
 {
-	dialog->icon_filesel = pidgin_buddy_icon_chooser_new(GTK_WINDOW(dialog->window), icon_filesel_choose_cb, dialog);
+	dialog->icon_filesel = gtk_file_chooser_native_new(_("Buddy Icon"),
+	                                                   GTK_WINDOW(dialog->window),
+	                                                   GTK_FILE_CHOOSER_ACTION_OPEN,
+	                                                   _("_Open"),
+	                                                   _("_Cancel"));
+
+	g_signal_connect(G_OBJECT(dialog->icon_filesel), "response",
+					 G_CALLBACK(icon_filesel_choose_cb), dialog);
+
 	gtk_native_dialog_show(GTK_NATIVE_DIALOG(dialog->icon_filesel));
 }
 
