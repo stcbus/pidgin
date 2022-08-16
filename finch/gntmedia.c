@@ -378,6 +378,13 @@ void finch_media_manager_init(void)
 	PurpleMediaElementInfo *audio_sink = NULL;
 	const char *pref;
 
+	purple_prefs_add_none(FINCH_PREFS_ROOT "/vvconfig");
+	purple_prefs_add_none(FINCH_PREFS_ROOT "/vvconfig/audio");
+	purple_prefs_add_none(FINCH_PREFS_ROOT "/vvconfig/audio/src");
+	purple_prefs_add_none(FINCH_PREFS_ROOT "/vvconfig/audio/sink");
+	purple_prefs_add_string(FINCH_PREFS_ROOT "/vvconfig/audio/src/device", "");
+	purple_prefs_add_string(FINCH_PREFS_ROOT "/vvconfig/audio/sink/device", "");
+
 	pref = purple_prefs_get_string(
 			FINCH_PREFS_ROOT "/vvconfig/audio/src/device");
 	if (pref)
