@@ -15,12 +15,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.18"/>
+  <requires lib="gtk" version="4.0"/>
   <requires lib="pidgin" version="3.0"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Pidgin -->
@@ -38,11 +37,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
       </item>
     </section>
   </menu>
-  <object class="GtkPopoverMenu" id="popover">
-    <property name="can_focus">False</property>
-    <property name="relative-to">tree</property>
-    <property name="position">bottom</property>
-  </object>
   <object class="PidginAccountStore" id="accounts"/>
   <object class="PidginAccountFilterConnected" id="accounts_connected">
     <property name="child_model">accounts</property>
@@ -64,192 +58,147 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
     </columns>
   </object>
   <template class="PidginDiscoDialog" parent="GtkDialog">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Service Discovery</property>
-    <property name="role">service discovery</property>
-    <property name="type_hint">dialog</property>
+    <property name="title" translatable="1">Service Discovery</property>
     <signal name="destroy" handler="destroy_win_cb" swapped="no"/>
-    <child internal-child="vbox">
+    <child internal-child="content_area">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
+        <property name="vexpand">1</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
             <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">_Account:</property>
-                    <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="PidginAccountChooser" id="account_chooser">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="model">xmpp_accounts</property>
-                    <property name="active">0</property>
-                    <signal name="changed" handler="dialog_select_account_cb" object="PidginDiscoDialog" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+              <object class="GtkLabel">
+                <property name="label" translatable="1">_Account:</property>
+                <property name="use_underline">1</property>
+                <property name="xalign">0</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">always</property>
-                <property name="vscrollbar_policy">always</property>
-                <property name="shadow_type">in</property>
-                <property name="min_content_height">250</property>
-                <child>
-                  <object class="GtkTreeView" id="tree">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="model">model</property>
-                    <signal name="button-press-event" handler="service_click_cb" object="PidginDiscoDialog" swapped="no"/>
-                    <signal name="row-activated" handler="row_activated_cb" object="PidginDiscoDialog" swapped="no"/>
-                    <signal name="row-expanded" handler="row_expanded_cb" object="PidginDiscoDialog" swapped="no"/>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection">
-                        <signal name="changed" handler="selection_changed_cb" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="title" translatable="yes">Name</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort_column_id">1</property>
-                        <child>
-                          <object class="GtkCellRendererPixbuf"/>
-                          <attributes>
-                            <attribute name="pixbuf">0</attribute>
-                          </attributes>
-                        </child>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="title" translatable="yes">Description</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort_column_id">2</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">2</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+              <object class="PidginAccountChooser" id="account_chooser">
+                <property name="model">xmpp_accounts</property>
+                <property name="active">0</property>
+                <signal name="changed" handler="dialog_select_account_cb" object="PidginDiscoDialog" swapped="no"/>
               </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkProgressBar" id="progress">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">2</property>
-              </packing>
             </child>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">1</property>
+            <property name="focusable">1</property>
+            <property name="hscrollbar_policy">always</property>
+            <property name="vscrollbar_policy">always</property>
+            <property name="min_content_height">250</property>
+            <property name="child">
+              <object class="GtkTreeView" id="tree">
+                <property name="focusable">1</property>
+                <property name="model">model</property>
+                <signal name="row-activated" handler="row_activated_cb" object="PidginDiscoDialog" swapped="no"/>
+                <signal name="row-expanded" handler="row_expanded_cb" object="PidginDiscoDialog" swapped="no"/>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection">
+                    <signal name="changed" handler="selection_changed_cb" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkGestureClick">
+                    <property name="button">3</property>
+                    <signal name="pressed" handler="service_click_cb" object="PidginDiscoDialog" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkPopoverMenu" id="popover">
+                    <property name="menu-model">popover_menu</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="resizable">1</property>
+                    <property name="title" translatable="1">Name</property>
+                    <property name="reorderable">1</property>
+                    <property name="sort_column_id">1</property>
+                    <child>
+                      <object class="GtkCellRendererPixbuf"/>
+                      <attributes>
+                        <attribute name="pixbuf">0</attribute>
+                      </attributes>
+                    </child>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="resizable">1</property>
+                    <property name="title" translatable="1">Description</property>
+                    <property name="reorderable">1</property>
+                    <property name="sort_column_id">2</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkProgressBar" id="progress">
+            <property name="valign">center</property>
+          </object>
         </child>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="stop_button">
-        <property name="label" translatable="yes">_Stop</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="use_underline">True</property>
+        <property name="label" translatable="1">_Stop</property>
+        <property name="focusable">1</property>
+        <property name="receives_default">1</property>
+        <property name="use_underline">1</property>
         <property name="action-name">disco.stop</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="browse_button">
-        <property name="label" translatable="yes">_Browse</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="use_underline">True</property>
+        <property name="label" translatable="1">_Browse</property>
+        <property name="focusable">1</property>
+        <property name="receives_default">1</property>
+        <property name="use_underline">1</property>
         <property name="action-name">disco.browse</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="register_button">
-        <property name="label" translatable="yes">Register</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
+        <property name="label" translatable="1">Register</property>
+        <property name="focusable">1</property>
+        <property name="receives_default">1</property>
         <property name="action-name">disco.register</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="add_button">
-        <property name="label" translatable="yes">_Add</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="use_underline">True</property>
+        <property name="label" translatable="1">_Add</property>
+        <property name="focusable">1</property>
+        <property name="receives_default">1</property>
+        <property name="use_underline">1</property>
         <property name="action-name">disco.add</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="close_button">
-        <property name="label" translatable="yes">_Close</property>
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="use_underline">True</property>
-        <signal name="clicked" handler="close_button_cb" swapped="no"/>
+        <property name="label" translatable="1">_Close</property>
+        <property name="focusable">1</property>
+        <property name="receives_default">1</property>
+        <property name="use_underline">1</property>
+        <signal name="clicked" handler="gtk_window_destroy" object="PidginDiscoDialog" swapped="yes"/>
       </object>
     </child>
     <action-widgets>

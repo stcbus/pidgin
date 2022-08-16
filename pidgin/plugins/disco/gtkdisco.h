@@ -49,7 +49,6 @@ struct _PidginDiscoDialog {
 	PidginDiscoList *discolist;
 
 	GtkPopoverMenu *popover;
-	GMenuModel *popover_menu;
 
 	gpointer prompt_handle;
 };
