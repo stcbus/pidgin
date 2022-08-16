@@ -539,10 +539,20 @@ _purple_account_set_current_error(PurpleAccount *account,
 
 	if(new_err != NULL) {
 		PurpleProtocol *protocol = NULL;
+		gchar *title = NULL;
 
 		priv->error_notification =
 			purple_notification_new(PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR,
 			                        account, new_err, NULL);
+
+		if(priv->enabled) {
+			title = g_strdup_printf(_("%s disconnected"), priv->username);
+		} else {
+			title = g_strdup_printf(_("%s disabled"), priv->username);
+		}
+
+		purple_notification_set_title(priv->error_notification, title);
+		g_free(title);
 
 		protocol = purple_account_get_protocol(account);
 		if(PURPLE_IS_PROTOCOL(protocol)) {

@@ -53,8 +53,7 @@ static void
 pidgin_notification_connection_error_update(PidginNotificationConnectionError *error) {
 	PurpleAccount *account = NULL;
 	PurpleConnectionErrorInfo *info = NULL;
-	gchar *title = NULL;
-	const gchar *username = NULL, *icon_name = NULL, *account_id = NULL;
+	const gchar *icon_name = NULL, *account_id = NULL, *title = NULL;
 	gboolean enabled = FALSE;
 
 	g_return_if_fail(PIDGIN_IS_NOTIFICATION_CONNECTION_ERROR(error));
@@ -103,16 +102,10 @@ pidgin_notification_connection_error_update(PidginNotificationConnectionError *e
 		hdy_action_row_set_icon_name(HDY_ACTION_ROW(error), icon_name);
 	}
 
-	username = purple_account_get_username(account);
-
 	enabled = purple_account_get_enabled(account);
-	if(enabled) {
-		title = g_strdup_printf(_("%s disconnected"), username);
-	} else {
-		title = g_strdup_printf(_("%s disabled"), username);
-	}
+
+	title = purple_notification_get_title(error->notification);
 	hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(error), title);
-	g_free(title);
 
 	info = purple_notification_get_data(error->notification);
 	if(info != NULL) {
