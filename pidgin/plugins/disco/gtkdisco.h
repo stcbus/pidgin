@@ -37,10 +37,10 @@ struct _PidginDiscoDialog {
 
 	GtkWidget *progress;
 
-	GtkWidget *stop_button;
-	GtkWidget *browse_button;
-	GtkWidget *register_button;
-	GtkWidget *add_button;
+	GSimpleAction *stop_action;
+	GSimpleAction *browse_action;
+	GSimpleAction *register_action;
+	GSimpleAction *add_action;
 	XmppDiscoService *selected;
 
 	GtkTreeView *tree;
@@ -48,7 +48,10 @@ struct _PidginDiscoDialog {
 	PurpleAccount *account;
 	PidginDiscoList *discolist;
 
-	gpointer *prompt_handle;
+	GtkPopoverMenu *popover;
+	GMenuModel *popover_menu;
+
+	gpointer prompt_handle;
 };
 
 #define PIDGIN_TYPE_DISCO_DIALOG (pidgin_disco_dialog_get_type())
@@ -60,7 +63,6 @@ struct _PidginDiscoList {
 	gboolean in_progress;
 	const gchar *server;
 
-	gint ref;
 	guint fetch_count;
 
 	PidginDiscoDialog *dialog;

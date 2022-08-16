@@ -1,5 +1,10 @@
 /*
  * Purple - XMPP Service Disco Browser
+ * Copyright (C) Pidgin Developers <devel@pidgin.im>
+ *
+ * Pidgin is the legal property of its developers, whose names are too numerous
+ * to list here.  Please refer to the COPYRIGHT file distributed with this
+ * source distribution.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,9 +17,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301 USA
- *
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /* TODO list (a little bit of a brain dump):
@@ -116,8 +119,9 @@ xmpp_iq_received(PurpleConnection *pc, const char *type, const char *id,
 	struct xmpp_iq_cb_data *cb_data;
 
 	cb_data = g_hash_table_lookup(iq_callbacks, id);
-	if (!cb_data)
+	if (!cb_data) {
 		return FALSE;
+	}
 
 	cb_data->cb(cb_data->pc, type, id, from, iq, cb_data->context);
 
@@ -170,16 +174,18 @@ xmpp_disco_info_do(PurpleConnection *pc, gpointer cbdata, const char *jid,
 
 	query = purple_xmlnode_new_child(iq, "query");
 	purple_xmlnode_set_namespace(query, NS_DISCO_INFO);
-	if (node)
+	if (node) {
 		purple_xmlnode_set_attrib(query, "node", node);
+	}
 
 	/* Steals id */
 	xmpp_iq_register_callback(pc, id, cbdata, cb);
 
 	purple_signal_emit(purple_connection_get_protocol(pc), "jabber-sending-xmlnode",
 	                   pc, &iq);
-	if (iq != NULL)
+	if (iq != NULL) {
 		purple_xmlnode_free(iq);
+	}
 }
 
 static void
@@ -196,16 +202,18 @@ xmpp_disco_items_do(PurpleConnection *pc, gpointer cbdata, const char *jid,
 
 	query = purple_xmlnode_new_child(iq, "query");
 	purple_xmlnode_set_namespace(query, NS_DISCO_ITEMS);
-	if (node)
+	if (node) {
 		purple_xmlnode_set_attrib(query, "node", node);
+	}
 
 	/* Steals id */
 	xmpp_iq_register_callback(pc, id, cbdata, cb);
 
 	purple_signal_emit(purple_connection_get_protocol(pc), "jabber-sending-xmlnode",
 	                   pc, &iq);
-	if (iq != NULL)
+	if (iq != NULL) {
 		purple_xmlnode_free(iq);
+	}
 }
 
 static XmppDiscoServiceType
@@ -213,29 +221,31 @@ disco_service_type_from_identity(PurpleXmlNode *identity)
 {
 	const char *category, *type;
 
-	if (!identity)
+	if (!identity) {
 		return XMPP_DISCO_SERVICE_TYPE_OTHER;
+	}
 
 	category = purple_xmlnode_get_attrib(identity, "category");
 	type = purple_xmlnode_get_attrib(identity, "type");
 
-	if (!category)
+	if (!category) {
 		return XMPP_DISCO_SERVICE_TYPE_OTHER;
+	}
 
-	if (purple_strequal(category, "conference"))
+	if (purple_strequal(category, "conference")) {
 		return XMPP_DISCO_SERVICE_TYPE_CHAT;
-	else if (purple_strequal(category, "directory"))
+	} else if (purple_strequal(category, "directory")) {
 		return XMPP_DISCO_SERVICE_TYPE_DIRECTORY;
-	else if (purple_strequal(category, "gateway"))
+	} else if (purple_strequal(category, "gateway")) {
 		return XMPP_DISCO_SERVICE_TYPE_GATEWAY;
-	else if (purple_strequal(category, "pubsub")) {
-		if (!type || purple_strequal(type, "collection"))
+	} else if (purple_strequal(category, "pubsub")) {
+		if (!type || purple_strequal(type, "collection")) {
 			return XMPP_DISCO_SERVICE_TYPE_PUBSUB_COLLECTION;
-		else if (purple_strequal(type, "leaf"))
+		} else if (purple_strequal(type, "leaf")) {
 			return XMPP_DISCO_SERVICE_TYPE_PUBSUB_LEAF;
-		else if (purple_strequal(type, "service"))
+		} else if (purple_strequal(type, "service")) {
 			return XMPP_DISCO_SERVICE_TYPE_OTHER;
-		else {
+		} else {
 			purple_debug_warning("xmppdisco", "Unknown pubsub type '%s'\n", type);
 			return XMPP_DISCO_SERVICE_TYPE_OTHER;
 		}
@@ -262,8 +272,9 @@ disco_type_from_string(const gchar *str)
 	g_return_val_if_fail(str != NULL, "");
 
 	for ( ; disco_type_mappings[i].from; ++i) {
-		if (!g_ascii_strcasecmp(str, disco_type_mappings[i].from))
+		if (!g_ascii_strcasecmp(str, disco_type_mappings[i].from)) {
 			return disco_type_mappings[i].to;
+		}
 	}
 
 	/* fallback to the string itself */
@@ -280,8 +291,9 @@ got_info_cb(PurpleConnection *pc, const char *type, const char *id,
 
 	--list->fetch_count;
 
-	if (!list->in_progress)
+	if (!list->in_progress) {
 		goto out;
+	}
 
 	if (purple_strequal(type, "result") &&
 			(query = purple_xmlnode_get_child(iq, "query"))) {
@@ -300,26 +312,31 @@ got_info_cb(PurpleConnection *pc, const char *type, const char *id,
 			if (item_data->name) {
 				service->name = item_data->name;
 				item_data->name = NULL;
-			} else
+			} else {
 				service->name = g_strdup(item_data->node);
+			}
 
 			service->node = item_data->node;
 			item_data->node = NULL;
 
-			if (service->type == XMPP_DISCO_SERVICE_TYPE_PUBSUB_COLLECTION)
+			if (service->type == XMPP_DISCO_SERVICE_TYPE_PUBSUB_COLLECTION) {
 				service->flags |= XMPP_DISCO_BROWSE;
-		} else
+			}
+		} else {
 			service->name = g_strdup(from);
+		}
 
-		if (!service->node)
+		if (!service->node) {
 			/* Only support adding JIDs, not JID+node combos */
 			service->flags |= XMPP_DISCO_ADD;
+		}
 
 		if (item_data->name) {
 			service->description = item_data->name;
 			item_data->name = NULL;
-		} else if (identity)
+		} else if (identity) {
 			service->description = g_strdup(purple_xmlnode_get_attrib(identity, "name"));
+		}
 
 		/* TODO: Overlap with service->name a bit */
 		service->jid = g_strdup(from);
@@ -327,29 +344,32 @@ got_info_cb(PurpleConnection *pc, const char *type, const char *id,
 		for (feature = purple_xmlnode_get_child(query, "feature"); feature;
 				feature = purple_xmlnode_get_next_twin(feature)) {
 			const char *var;
-			if (!(var = purple_xmlnode_get_attrib(feature, "var")))
+			if (!(var = purple_xmlnode_get_attrib(feature, "var"))) {
 				continue;
+			}
 
-			if (purple_strequal(var, NS_REGISTER))
+			if (purple_strequal(var, NS_REGISTER)) {
 				service->flags |= XMPP_DISCO_REGISTER;
-			else if (purple_strequal(var, NS_DISCO_ITEMS))
+			} else if (purple_strequal(var, NS_DISCO_ITEMS)) {
 				service->flags |= XMPP_DISCO_BROWSE;
-			else if (purple_strequal(var, NS_MUC)) {
+			} else if (purple_strequal(var, NS_MUC)) {
 				service->flags |= XMPP_DISCO_BROWSE;
 				service->type = XMPP_DISCO_SERVICE_TYPE_CHAT;
 			}
 		}
 
-		if (service->type == XMPP_DISCO_SERVICE_TYPE_GATEWAY)
+		if (service->type == XMPP_DISCO_SERVICE_TYPE_GATEWAY) {
 			service->gateway_type = g_strdup(disco_type_from_string(
 					purple_xmlnode_get_attrib(identity, "type")));
+		}
 
 		pidgin_disco_add_service(list, service, service->parent);
 	}
 
 out:
-	if (list->fetch_count == 0)
+	if (list->fetch_count == 0) {
 		pidgin_disco_list_set_in_progress(list, FALSE);
+	}
 
 	g_free(item_data->name);
 	g_free(item_data->node);
@@ -368,8 +388,9 @@ got_items_cb(PurpleConnection *pc, const char *type, const char *id,
 
 	--list->fetch_count;
 
-	if (!list->in_progress)
+	if (!list->in_progress) {
 		goto out;
+	}
 
 	if (purple_strequal(type, "result") &&
 			(query = purple_xmlnode_get_child(iq, "query"))) {
@@ -400,6 +421,9 @@ got_items_cb(PurpleConnection *pc, const char *type, const char *id,
 				service->name = g_strdup(name);
 				service->jid = g_strdup(jid);
 				service->node = g_strdup(node);
+				if (service->name == NULL) {
+					service->name = g_strdup(jid);
+				}
 				pidgin_disco_add_service(list, service, item_data->parent);
 			} else {
 				struct item_data *item_data2 = g_new0(struct item_data, 1);
@@ -416,12 +440,14 @@ got_items_cb(PurpleConnection *pc, const char *type, const char *id,
 		}
 	}
 
-	if (!has_items)
+	if (!has_items) {
 		pidgin_disco_add_service(list, NULL, item_data->parent);
+	}
 
 out:
-	if (list->fetch_count == 0)
+	if (list->fetch_count == 0) {
 		pidgin_disco_list_set_in_progress(list, FALSE);
+	}
 
 	g_free(item_data);
 	pidgin_disco_list_unref(list);
@@ -449,8 +475,9 @@ server_items_cb(PurpleConnection *pc, const char *type, const char *id,
 			const char *node = purple_xmlnode_get_attrib(item, "node");
 			struct item_data *item_data;
 
-			if (!jid)
+			if (!jid) {
 				continue;
+			}
 
 			item_data = g_new0(struct item_data, 1);
 			item_data->list = list;
@@ -463,8 +490,9 @@ server_items_cb(PurpleConnection *pc, const char *type, const char *id,
 		}
 	}
 
-	if (list->fetch_count == 0)
+	if (list->fetch_count == 0) {
 		pidgin_disco_list_set_in_progress(list, FALSE);
+	}
 
 	pidgin_disco_list_unref(list);
 }
@@ -511,8 +539,7 @@ server_info_cb(PurpleConnection *pc, const char *type, const char *id,
 			purple_notify_error(my_plugin, _("Error"),
 			                    _("Server does not exist"),
  			                    NULL, NULL);
-		}
-		else {
+		} else {
 			purple_notify_error(my_plugin, _("Error"),
 			                    _("Server does not support service discovery"),
 			                    NULL, NULL);
@@ -545,8 +572,9 @@ void xmpp_disco_service_expand(XmppDiscoService *service)
 
 	g_return_if_fail(service != NULL);
 
-	if (service->expanded)
+	if (service->expanded) {
 		return;
+	}
 
 	item_data = g_new0(struct item_data, 1);
 	item_data->list = service->list;
@@ -577,8 +605,9 @@ void xmpp_disco_service_register(XmppDiscoService *service)
 
 	purple_signal_emit(purple_connection_get_protocol(service->list->pc),
 			"jabber-sending-xmlnode", service->list->pc, &iq);
-	if (iq != NULL)
+	if (iq != NULL) {
 		purple_xmlnode_free(iq);
+	}
 	g_free(id);
 }
 
