@@ -4525,7 +4525,7 @@ static void sort_method_status(PurpleBlistNode *node, PurpleBuddyList *blist, Gt
 void
 pidgin_blist_update_sort_methods(void)
 {
-	GtkWidget *sort_item = NULL;
+	GApplication *application = NULL;
 	GMenu *menu = NULL;
 	GList *l;
 
@@ -4533,10 +4533,13 @@ pidgin_blist_update_sort_methods(void)
 		return;
 	}
 
-	/* create the gmenu */
-	menu = g_menu_new();
+	/* get the menu and clear any existing entries. */
+	application = g_application_get_default();
+	menu = gtk_application_get_menu_by_id(GTK_APPLICATION(application),
+	                                      "sort-buddies");
+	g_menu_remove_all(menu);
 
-	/* walk through the sort methods and update all the things */
+	/* Walk through the sort methods and add them to the menu. */
 	for (l = pidgin_blist_sort_methods; l; l = l->next) {
 		PidginBlistSortMethod *method = NULL;
 		GMenuItem *item = NULL;
@@ -4555,10 +4558,4 @@ pidgin_blist_update_sort_methods(void)
 		g_menu_append_item(menu, item);
 		g_object_unref(item);
 	}
-
-	/* replace the old submenu with a new one */
-	sort_item = pidgin_contact_list_window_get_menu_sort_item(PIDGIN_CONTACT_LIST_WINDOW(gtkblist->window));
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(sort_item),
-	                          gtk_menu_new_from_model(G_MENU_MODEL(menu)));
-	g_object_unref(menu);
 }

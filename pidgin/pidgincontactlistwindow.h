@@ -71,18 +71,6 @@ GtkWidget *pidgin_contact_list_window_new(void);
 GtkWidget *pidgin_contact_list_window_get_vbox(PidginContactListWindow *window);
 
 /**
- * pidgin_contact_list_window_get_menu_sort_item:
- * @window: The #PidginContactListWindow instance.
- *
- * Returns the sort menu item from the menu of @window.
- *
- * Returns: (transfer none): The sort menu item from the menu of @window.
- *
- * Since: 3.0.0
- */
-GtkWidget *pidgin_contact_list_window_get_menu_sort_item(PidginContactListWindow *window);
-
-/**
  * pidgin_contact_list_window_get_menu_tray:
  * @window: The #PidginContactListWindow instance.
  *

@@ -45,6 +45,14 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       </section>
 
       <section>
+        <submenu>
+          <attribute name="label" translatable="yes">_Sort Buddies</attribute>
+
+          <section id="sort-buddies"/>
+        </submenu>
+      </section>
+
+      <section>
         <item>
           <attribute name="label" translatable="yes">_Add Buddy...</attribute>
           <attribute name="action">app.add-buddy</attribute>

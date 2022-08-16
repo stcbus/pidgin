@@ -28,9 +28,6 @@ struct _PidginContactListWindow {
 	GtkApplicationWindow parent;
 
 	GtkWidget *vbox;
-
-	GtkWidget *menu_bar;
-	GtkWidget *sort_buddies;
 };
 
 G_DEFINE_TYPE(PidginContactListWindow, pidgin_contact_list_window,
@@ -64,10 +61,6 @@ pidgin_contact_list_window_class_init(PidginContactListWindowClass *klass) {
 
 	gtk_widget_class_bind_template_child(widget_class, PidginContactListWindow,
 	                                     vbox);
-	gtk_widget_class_bind_template_child(widget_class, PidginContactListWindow,
-	                                     menu_bar);
-	gtk_widget_class_bind_template_child(widget_class, PidginContactListWindow,
-	                                     sort_buddies);
 }
 
 /******************************************************************************
@@ -83,11 +76,4 @@ pidgin_contact_list_window_get_vbox(PidginContactListWindow *window) {
 	g_return_val_if_fail(PIDGIN_IS_CONTACT_LIST_WINDOW(window), NULL);
 
 	return window->vbox;
-}
-
-GtkWidget *
-pidgin_contact_list_window_get_menu_sort_item(PidginContactListWindow *window) {
-	g_return_val_if_fail(PIDGIN_IS_CONTACT_LIST_WINDOW(window), NULL);
-
-	return window->sort_buddies;
 }
