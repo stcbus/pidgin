@@ -97,6 +97,33 @@ get_status_titles(void)
 	return list;
 }
 
+static void
+get_credential_provider_options_helper(PurpleCredentialProvider *provider,
+                                       gpointer data)
+{
+	GList **list = data;
+	const gchar *value = NULL;
+
+	value = purple_credential_provider_get_name(provider);
+	*list = g_list_append(*list, (gpointer)value);
+
+	value = purple_credential_provider_get_id(provider);
+	*list = g_list_append(*list, (gpointer)value);
+}
+
+static GList *
+get_credential_provider_options(void) {
+	PurpleCredentialManager *manager = NULL;
+	GList *list = NULL;
+
+	manager = purple_credential_manager_get_default();
+	purple_credential_manager_foreach(manager,
+	                                  get_credential_provider_options_helper,
+	                                  &list);
+
+	return list;
+}
+
 static PurpleRequestField *
 get_pref_field(Prefs *prefs)
 {
@@ -177,20 +204,18 @@ static Prefs convs[] =
 	{PURPLE_PREF_NONE, NULL, NULL, NULL}
 };
 
-static Prefs logging[] =
-{
-	{PURPLE_PREF_BOOLEAN, "/purple/logging/log_ims", N_("Log IMs"), NULL},
-	{PURPLE_PREF_BOOLEAN, "/purple/logging/log_chats", N_("Log chats"), NULL},
-	{PURPLE_PREF_BOOLEAN, "/purple/logging/log_system", N_("Log status change events"), NULL},
-	{PURPLE_PREF_NONE, NULL, NULL, NULL},
-};
-
 static Prefs idle[] =
 {
 	{PURPLE_PREF_STRING, "/purple/away/idle_reporting", N_("Report Idle time"), get_idle_options},
 	{PURPLE_PREF_BOOLEAN, "/purple/away/away_when_idle", N_("Change status when idle"), NULL},
 	{PURPLE_PREF_INT, "/purple/away/mins_before_away", N_("Minutes before changing status"), NULL},
 	{PURPLE_PREF_INT, "/purple/savedstatus/idleaway", N_("Change status to"), get_status_titles},
+	{PURPLE_PREF_NONE, NULL, NULL, NULL},
+};
+
+static Prefs credentials[] =
+{
+	{PURPLE_PREF_STRING, "/purple/credentials/active-provider", N_("Provider"), get_credential_provider_options},
 	{PURPLE_PREF_NONE, NULL, NULL, NULL},
 };
 
@@ -239,8 +264,8 @@ void finch_prefs_show_all()
 
 	add_pref_group(fields, _("Buddy List"), blist);
 	add_pref_group(fields, _("Conversations"), convs);
-	add_pref_group(fields, _("Logging"), logging);
 	add_pref_group(fields, _("Idle"), idle);
+	add_pref_group(fields, _("Credentials"), credentials);
 
 	pref_request.showing = TRUE;
 	pref_request.window = purple_request_fields(NULL, _("Preferences"), NULL, NULL, fields,
