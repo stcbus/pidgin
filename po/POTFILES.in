@@ -348,7 +348,6 @@ pidgin/pidginapplication.c
 pidgin/pidginattachment.c
 pidgin/pidginavatar.c
 pidgin/pidgin.c
-pidgin/pidgincellrendererexpander.c
 pidgin/pidgincolor.c
 pidgin/pidgincommands.c
 pidgin/pidgincontactlistwindow.c

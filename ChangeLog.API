@@ -874,6 +874,9 @@ version 3.0.0 (??/??/????):
 		* pidgin_buddy_icon_chooser_new
 		* PidginBuddyList.connection_errors
 		* PidginButtonStyle
+		* PidginCellRendererExpander
+		* PIDGIN_TYPE_CELL_RENDERER_EXPANDER
+		* pidgin_cell_renderer_expander_new
 		* pidgin_check_if_dir
 		* pidgin_clear_cursor
 		* PidginConversation.sg
