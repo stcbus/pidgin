@@ -280,35 +280,6 @@ send_cb(GtkWidget *widget, PidginConversation *gtkconv)
 	talkatu_buffer_clear(TALKATU_BUFFER(buffer));
 }
 
-static void
-add_remove_cb(GtkWidget *widget, PidginConversation *gtkconv)
-{
-	PurpleAccount *account;
-	const char *name;
-	PurpleConversation *conv = gtkconv->active_conv;
-
-	account = purple_conversation_get_account(conv);
-	name    = purple_conversation_get_name(conv);
-
-	if (PURPLE_IS_IM_CONVERSATION(conv)) {
-		PurpleBuddy *b;
-
-		b = purple_blist_find_buddy(account, name);
-		if (b != NULL)
-			pidgin_dialogs_remove_buddy(b);
-		else if (account != NULL && purple_account_is_connected(account))
-			purple_blist_request_add_buddy(account, (char *)name, NULL, NULL);
-	} else if (PURPLE_IS_CHAT_CONVERSATION(conv)) {
-		PurpleChat *c;
-
-		c = purple_blist_find_chat(account, name);
-		if (c != NULL)
-			pidgin_dialogs_remove_chat(c);
-		else if (account != NULL && purple_account_is_connected(account))
-			purple_blist_request_add_chat(account, NULL, NULL, name);
-	}
-}
-
 static void chat_do_info(PidginConversation *gtkconv, const char *who)
 {
 	PurpleChatConversation *chat = PURPLE_CHAT_CONVERSATION(gtkconv->active_conv);
@@ -317,80 +288,6 @@ static void chat_do_info(PidginConversation *gtkconv, const char *who)
 	if ((gc = purple_conversation_get_connection(gtkconv->active_conv))) {
 		pidgin_retrieve_user_info_in_chat(gc, who, purple_chat_conversation_get_id(chat));
 	}
-}
-
-static void
-block_cb(GtkWidget *widget, PidginConversation *gtkconv)
-{
-	PurpleConversation *conv = gtkconv->active_conv;
-	PurpleAccount *account;
-
-	account = purple_conversation_get_account(conv);
-
-	if (account != NULL && purple_account_is_connected(account))
-		pidgin_request_add_block(account, purple_conversation_get_name(conv));
-}
-
-static void
-unblock_cb(GtkWidget *widget, PidginConversation *gtkconv)
-{
-	PurpleConversation *conv = gtkconv->active_conv;
-	PurpleAccount *account;
-
-	account = purple_conversation_get_account(conv);
-
-	if (account != NULL && purple_account_is_connected(account))
-		pidgin_request_add_permit(account, purple_conversation_get_name(conv));
-}
-
-static void
-menu_initiate_media_call_cb(GtkAction *action, gpointer data)
-{
-#if 0
-	PidginConvWindow *win = (PidginConvWindow *)data;
-	PurpleConversation *conv = pidgin_conv_window_get_active_conversation(win);
-	PurpleAccount *account = purple_conversation_get_account(conv);
-
-	purple_protocol_initiate_media(account,
-			purple_conversation_get_name(conv),
-			action == win->menu->audio_call ? PURPLE_MEDIA_AUDIO :
-			action == win->menu->video_call ? PURPLE_MEDIA_VIDEO :
-			action == win->menu->audio_video_call ? PURPLE_MEDIA_AUDIO |
-			PURPLE_MEDIA_VIDEO : PURPLE_MEDIA_NONE);
-#endif
-}
-
-static void
-menu_block_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv;
-
-	conv = pidgin_conversation_window_get_selected(win);
-
-	block_cb(NULL, PIDGIN_CONVERSATION(conv));
-}
-
-static void
-menu_unblock_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv;
-
-	conv = pidgin_conversation_window_get_selected(win);
-
-	unblock_cb(NULL, PIDGIN_CONVERSATION(conv));
-}
-
-static void
-menu_add_remove_cb(GtkAction *action, gpointer data)
-{
-	PidginConversationWindow *win = data;
-	PurpleConversation *conv;
-
-	conv = pidgin_conversation_window_get_selected(win);
-
-	add_remove_cb(NULL, PIDGIN_CONVERSATION(conv));
 }
 
 static void
@@ -987,23 +884,6 @@ pidgin_conv_switch_active_conversation(PurpleConversation *conv)
 	update_typing_icon(gtkconv);
 	g_object_set_data(G_OBJECT(gtkconv->entry), "transient_buddy", NULL);
 }
-
-static GtkActionEntry menu_entries[] =
-/* TODO: fill out tooltips... */
-{
-	/* Conversation menu */
-	{ "ConversationMenu", NULL, N_("_Conversation"), NULL, NULL, NULL },
-
-	{ "MediaMenu", NULL, N_("M_edia"), NULL, NULL, NULL },
-	{ "AudioCall", NULL, N_("_Audio Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
-	{ "VideoCall", NULL, N_("_Video Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
-	{ "AudioVideoCall", NULL, N_("Audio/Video _Call"), NULL, NULL, G_CALLBACK(menu_initiate_media_call_cb) },
-
-	{ "Block", NULL, N_("_Block..."), NULL, NULL, G_CALLBACK(menu_block_cb) },
-	{ "Unblock", NULL, N_("_Unblock..."), NULL, NULL, G_CALLBACK(menu_unblock_cb) },
-	{ "Add", NULL, N_("_Add..."), NULL, NULL, G_CALLBACK(menu_add_remove_cb) },
-	{ "Remove", NULL, N_("_Remove..."), NULL, NULL, G_CALLBACK(menu_add_remove_cb) },
-};
 
 /**************************************************************************
  * Utility functions
