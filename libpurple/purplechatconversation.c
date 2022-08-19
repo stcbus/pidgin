@@ -40,7 +40,6 @@ typedef struct {
 	GHashTable *users;  /* Hash table of the users in the room.      */
 } PurpleChatConversationPrivate;
 
-/* Chat Property enums */
 enum {
 	PROP_0,
 	PROP_TOPIC_WHO,
@@ -51,6 +50,13 @@ enum {
 	N_PROPERTIES
 };
 static GParamSpec *properties[N_PROPERTIES] = { NULL, };
+
+enum {
+	SIG_USER_JOINED,
+	SIG_USER_LEFT,
+	N_SIGNALS
+};
+static guint signals[N_SIGNALS] = { 0, };
 
 G_DEFINE_TYPE_WITH_PRIVATE(PurpleChatConversation, purple_chat_conversation,
                            PURPLE_TYPE_CONVERSATION);
@@ -331,6 +337,56 @@ purple_chat_conversation_class_init(PurpleChatConversationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPERTIES, properties);
+
+	/* Signals */
+
+	/**
+	 * PurpleChatConversation::user-joined:
+	 * @chat: The chat instance.
+	 * @username: The user that joined the conversation.
+	 * @flags: The [flags@ChatUserFlags] for user.
+	 * @new_arrival: %TRUE if the user is new to the conversation.
+	 *
+	 * Emitted after a @username has joined the conversation.
+	 *
+	 * Since: 3.0.0
+	 */
+	signals[SIG_USER_JOINED] = g_signal_new_class_handler(
+		"user-joined",
+		G_OBJECT_CLASS_TYPE(klass),
+		G_SIGNAL_RUN_LAST,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		G_TYPE_NONE,
+		3,
+		G_TYPE_STRING,
+		PURPLE_TYPE_CHAT_USER_FLAGS,
+		G_TYPE_BOOLEAN);
+
+	/**
+	 * PurpleChatConversation::user-left:
+	 * @chat: The chat instance.
+	 * @username: The user that left the conversation
+	 * @reason: The optional reason why the user left the chat.
+	 *
+	 * Emitted after a @username has left the conversation.
+	 *
+	 * Since: 3.0.0
+	 */
+	signals[SIG_USER_LEFT] = g_signal_new_class_handler(
+		"user-left",
+		G_OBJECT_CLASS_TYPE(klass),
+		G_SIGNAL_RUN_LAST,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		G_TYPE_NONE,
+		2,
+		G_TYPE_STRING,
+		G_TYPE_STRING);
 }
 
 /******************************************************************************
@@ -690,6 +746,9 @@ purple_chat_conversation_add_users(PurpleChatConversation *chat, GList *users,
 		purple_signal_emit(handle, "chat-user-joined", chat, user, flag,
 		                   new_arrivals);
 
+		g_signal_emit(chat, signals[SIG_USER_JOINED], 0, user, flag,
+		              new_arrivals);
+
 		users = users->next;
 		flags = flags->next;
 		if(extra_msgs != NULL) {
@@ -910,6 +969,8 @@ purple_chat_conversation_remove_users(PurpleChatConversation *chat,
 		}
 
 		purple_signal_emit(handle, "chat-user-left", conv, user, reason);
+
+		g_signal_emit(chat, signals[SIG_USER_LEFT], 0, user, reason);
 	}
 
 	if(ops != NULL && ops->chat_remove_users != NULL) {
