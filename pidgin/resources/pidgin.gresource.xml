@@ -20,6 +20,7 @@
     <file compressed="true">Debug/filter.css</file>
     <file compressed="true">Debug/plugininfo.ui</file>
     <file compressed="true">Dialogs/addbuddy.ui</file>
+    <file compressed="true">Dialogs/addchat.ui</file>
     <file compressed="true">Keypad/keypad.ui</file>
     <file compressed="true">Log/log-viewer.ui</file>
     <file compressed="true">Media/window.ui</file>

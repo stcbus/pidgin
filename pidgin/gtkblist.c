@@ -41,6 +41,7 @@
 #include "pidgin/pidginaccountstore.h"
 #include "pidgin/pidginactiongroup.h"
 #include "pidgin/pidginaddbuddydialog.h"
+#include "pidgin/pidginaddchatdialog.h"
 #include "pidgin/pidgincontactlistwindow.h"
 #include "pidgin/pidgincore.h"
 #include "pidgin/pidgindebug.h"
@@ -106,7 +107,6 @@ static void sort_method_status(PurpleBlistNode *node, PurpleBuddyList *blist, Gt
 
 static PidginBuddyList *gtkblist = NULL;
 
-static GList *groups_tree(void);
 static void pidgin_blist_update_buddy(PurpleBuddyList *list, PurpleBlistNode *node, gboolean status_change);
 static void pidgin_blist_selection_changed(GtkTreeSelection *selection, gpointer data);
 static void pidgin_blist_update(PurpleBuddyList *list, PurpleBlistNode *node);
@@ -3736,33 +3736,6 @@ static void pidgin_blist_set_visible(PurpleBuddyList *list, gboolean show)
 	}
 }
 
-static GList *
-groups_tree(void)
-{
-	static GList *list = NULL;
-	PurpleGroup *g;
-	PurpleBlistNode *gnode;
-
-	g_list_free(list);
-	list = NULL;
-
-	gnode = purple_blist_get_default_root();
-	if (gnode == NULL) {
-		list  = g_list_append(list,
-			(gpointer)PURPLE_BLIST_DEFAULT_GROUP_NAME);
-	} else {
-		for (; gnode != NULL; gnode = gnode->next) {
-			if (PURPLE_IS_GROUP(gnode))
-			{
-				g    = (PurpleGroup *)gnode;
-				list  = g_list_append(list, (char *) purple_group_get_name(g));
-			}
-		}
-	}
-
-	return list;
-}
-
 static void
 pidgin_blist_request_add_buddy(PurpleBuddyList *list, PurpleAccount *account,
                                const char *username, const char *group,
@@ -3776,170 +3749,15 @@ pidgin_blist_request_add_buddy(PurpleBuddyList *list, PurpleAccount *account,
 }
 
 static void
-add_chat_cb(GtkWidget *w, PidginAddChatData *data)
-{
-	GList *tmp;
-	PurpleChat *chat;
-	GHashTable *components;
-
-	components = g_hash_table_new_full(g_str_hash, g_str_equal,
-									   g_free, g_free);
-
-	for (tmp = data->chat_data.entries; tmp; tmp = tmp->next)
-	{
-		if (g_object_get_data(tmp->data, "is_spin"))
-		{
-			g_hash_table_replace(components,
-					g_strdup(g_object_get_data(tmp->data, "identifier")),
-					g_strdup_printf("%d",
-						gtk_spin_button_get_value_as_int(tmp->data)));
-		}
-		else
-		{
-			const char *value = gtk_entry_get_text(tmp->data);
-
-			if (*value != '\0')
-				g_hash_table_replace(components,
-						g_strdup(g_object_get_data(tmp->data, "identifier")),
-						g_strdup(value));
-		}
-	}
-
-	chat = purple_chat_new(data->chat_data.rq_data.account,
-	                       gtk_entry_get_text(GTK_ENTRY(data->alias_entry)),
-	                       components);
-
-	if (chat != NULL) {
-		PurpleGroup *group;
-		const char *group_name;
-
-		group_name = pidgin_text_combo_box_entry_get_text(data->group_combo);
-
-		group = NULL;
-		if ((group_name != NULL) && (*group_name != '\0') &&
-		    ((group = purple_blist_find_group(group_name)) == NULL))
-		{
-			group = purple_group_new(group_name);
-			purple_blist_add_group(group, NULL);
-		}
-
-		purple_blist_add_chat(chat, group, NULL);
-
-		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->autojoin)))
-			purple_blist_node_set_bool(PURPLE_BLIST_NODE(chat), "gtk-autojoin", TRUE);
-
-		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->persistent)))
-			purple_blist_node_set_bool(PURPLE_BLIST_NODE(chat), "gtk-persistent", TRUE);
-	}
-
-	gtk_widget_destroy(data->chat_data.rq_data.window);
-	g_free(data->chat_data.default_chat_name);
-	g_list_free(data->chat_data.entries);
-	g_free(data);
-}
-
-static void
-add_chat_resp_cb(GtkWidget *w, int resp, PidginAddChatData *data)
-{
-	if (resp == GTK_RESPONSE_OK)
-	{
-		add_chat_cb(NULL, data);
-	}
-	else if (resp == 1)
-	{
-		pidgin_roomlist_dialog_show_with_account(data->chat_data.rq_data.account);
-	}
-	else
-	{
-		gtk_widget_destroy(data->chat_data.rq_data.window);
-		g_free(data->chat_data.default_chat_name);
-		g_list_free(data->chat_data.entries);
-		g_free(data);
-	}
-}
-
-static void
 pidgin_blist_request_add_chat(PurpleBuddyList *list, PurpleAccount *account,
                               PurpleGroup *group, const char *alias,
                               const char *name)
 {
-	PidginAddChatData *data;
-	GList *l;
-	PurpleConnection *gc;
-	GtkBox *vbox;
-	PurpleProtocol *protocol = NULL;
+	GtkWidget *dialog = NULL;
 
-	if (account != NULL) {
-		gc = purple_account_get_connection(account);
-		protocol = purple_connection_get_protocol(gc);
+	dialog = pidgin_add_chat_dialog_new(account, group, alias, name);
 
-		if (!PURPLE_PROTOCOL_IMPLEMENTS(protocol, CHAT, join)) {
-			purple_notify_error(gc, NULL, _("This protocol does not"
-				" support chat rooms."), NULL,
-				purple_request_cpar_from_account(account));
-			return;
-		}
-	} else {
-		/* Find an account with chat capabilities */
-		for (l = purple_connections_get_all(); l != NULL; l = l->next) {
-			gc = (PurpleConnection *)l->data;
-			protocol = purple_connection_get_protocol(gc);
-
-			if (PURPLE_PROTOCOL_IMPLEMENTS(protocol, CHAT, join)) {
-				account = purple_connection_get_account(gc);
-				break;
-			}
-		}
-
-		if (account == NULL) {
-			purple_notify_error(NULL, NULL,
-							  _("You are not currently signed on with any "
-								"protocols that have the ability to chat."), NULL, NULL);
-			return;
-		}
-	}
-
-	data = g_new0(PidginAddChatData, 1);
-	vbox = GTK_BOX(make_blist_request_dialog((PidginBlistRequestData *)data, account,
-			_("Add Chat"), "add_chat",
-			_("Please enter an alias, and the appropriate information "
-			  "about the chat you would like to add to your buddy list.\n"),
-			G_CALLBACK(chat_select_account_cb), chat_account_filter_func,
-			G_CALLBACK(add_chat_resp_cb)));
-	gtk_dialog_add_buttons(GTK_DIALOG(data->chat_data.rq_data.window),
-		_("Room List"), 1,
-		_("Cancel"), GTK_RESPONSE_CANCEL,
-		_("Add"), GTK_RESPONSE_OK,
-		NULL);
-	gtk_dialog_set_default_response(GTK_DIALOG(data->chat_data.rq_data.window),
-			GTK_RESPONSE_OK);
-
-	data->chat_data.default_chat_name = g_strdup(name);
-
-	rebuild_chat_entries((PidginChatData *)data, name);
-
-	data->alias_entry = gtk_entry_new();
-	if (alias != NULL)
-		gtk_entry_set_text(GTK_ENTRY(data->alias_entry), alias);
-	gtk_entry_set_activates_default(GTK_ENTRY(data->alias_entry), TRUE);
-
-	pidgin_add_widget_to_vbox(GTK_BOX(vbox), _("A_lias:"),
-	                          data->chat_data.rq_data.sg, data->alias_entry,
-	                          TRUE, NULL);
-	if (name != NULL)
-		gtk_widget_grab_focus(data->alias_entry);
-
-	data->group_combo = pidgin_text_combo_box_entry_new(group ? purple_group_get_name(group) : NULL, groups_tree());
-	pidgin_add_widget_to_vbox(GTK_BOX(vbox), _("_Group:"),
-	                          data->chat_data.rq_data.sg, data->group_combo,
-	                          TRUE, NULL);
-
-	data->autojoin = gtk_check_button_new_with_mnemonic(_("Automatically _join when account connects"));
-	data->persistent = gtk_check_button_new_with_mnemonic(_("_Remain in chat after window is closed"));
-	gtk_box_pack_start(GTK_BOX(vbox), data->autojoin, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), data->persistent, FALSE, FALSE, 0);
-
-	gtk_widget_show_all(data->chat_data.rq_data.window);
+	gtk_widget_show(dialog);
 }
 
 static void

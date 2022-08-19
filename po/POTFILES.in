@@ -344,6 +344,7 @@ pidgin/pidginaccountsenabledmenu.c
 pidgin/pidginaccountstore.c
 pidgin/pidginactiongroup.c
 pidgin/pidginaddbuddydialog.c
+pidgin/pidginaddchatdialog.c
 pidgin/pidginapplication.c
 pidgin/pidginattachment.c
 pidgin/pidginavatar.c
@@ -409,6 +410,7 @@ pidgin/resources/Conversations/window.ui
 pidgin/resources/Debug/debug.ui
 pidgin/resources/Debug/plugininfo.ui
 pidgin/resources/Dialogs/addbuddy.ui
+pidgin/resources/Dialogs/addchat.ui
 pidgin/resources/Keypad/keypad.ui
 pidgin/resources/Log/log-viewer.ui
 pidgin/resources/Media/window.ui
