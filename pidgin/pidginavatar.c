@@ -76,6 +76,7 @@ pidgin_avatar_save_response_cb(GtkNativeDialog *native, gint response,
 		purple_buddy_icon_save_to_filename(icon, filename, NULL);
 
 		g_free(filename);
+		g_object_unref(file);
 	}
 
 	gtk_native_dialog_destroy(native);
@@ -141,6 +142,9 @@ pidgin_avatar_set_custom_response_cb(GtkNativeDialog *native, gint response,
 
 		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
 	}
+
+	g_free(filename);
+	g_object_unref(file);
 
 	gtk_native_dialog_destroy(native);
 }

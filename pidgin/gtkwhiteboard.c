@@ -412,6 +412,7 @@ pidgin_whiteboard_save_response(GtkNativeDialog *self, gint response_id,
 		}
 
 		g_free(filename);
+		g_object_unref(file);
 	}
 
 	g_object_unref(self);
