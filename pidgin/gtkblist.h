@@ -71,8 +71,6 @@ struct _PidginBuddyList {
 
 	GtkWidget *menu;
 
-	guint refresh_timer;
-
 	PurpleBlistNode *selected_node;
 
 	GtkWidget *scrollbook;

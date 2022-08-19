@@ -100,7 +100,6 @@ enum {
 	BLIST_COLUMNS
 };
 
-static GdkVisibilityState gtk_blist_visibility = GDK_VISIBILITY_UNOBSCURED;
 static gboolean editing_blist = FALSE;
 
 static GList *pidgin_blist_sort_methods = NULL;
@@ -113,7 +112,6 @@ static void sort_method_status(PurpleBlistNode *node, PurpleBuddyList *blist, Gt
 static PidginBuddyList *gtkblist = NULL;
 
 static GList *groups_tree(void);
-static gboolean pidgin_blist_refresh_timer(PurpleBuddyList *list);
 static void pidgin_blist_update_buddy(PurpleBuddyList *list, PurpleBlistNode *node, gboolean status_change);
 static void pidgin_blist_selection_changed(GtkTreeSelection *selection, gpointer data);
 static void pidgin_blist_update(PurpleBuddyList *list, PurpleBlistNode *node);
@@ -139,57 +137,6 @@ typedef struct {
 /***************************************************
  *              Callbacks                          *
  ***************************************************/
-static gboolean gtk_blist_visibility_cb(GtkWidget *w, GdkEventVisibility *event, gpointer data)
-{
-	GdkVisibilityState old_state = gtk_blist_visibility;
-	gtk_blist_visibility = event->state;
-
-	if (gtk_blist_visibility == GDK_VISIBILITY_FULLY_OBSCURED &&
-		old_state != GDK_VISIBILITY_FULLY_OBSCURED) {
-
-		/* no longer fully obscured */
-		pidgin_blist_refresh_timer(purple_blist_get_default());
-	}
-
-	/* continue to handle event normally */
-	return FALSE;
-}
-
-static gboolean gtk_blist_window_state_cb(GtkWidget *w, GdkEventWindowState *event, gpointer data)
-{
-	if(event->changed_mask & GDK_WINDOW_STATE_WITHDRAWN) {
-		if(event->new_window_state & GDK_WINDOW_STATE_WITHDRAWN)
-			purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/blist/list_visible", FALSE);
-		else {
-			purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/blist/list_visible", TRUE);
-			pidgin_blist_refresh_timer(purple_blist_get_default());
-		}
-	}
-
-	if(event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED) {
-		if(event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED)
-			purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/blist/list_maximized", TRUE);
-		else
-			purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/blist/list_maximized", FALSE);
-	}
-
-	/* Refresh gtkblist if un-iconifying */
-	if (event->changed_mask & GDK_WINDOW_STATE_ICONIFIED){
-		if (!(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED))
-			pidgin_blist_refresh_timer(purple_blist_get_default());
-	}
-
-	return FALSE;
-}
-
-static gboolean gtk_blist_delete_cb(GtkWidget *w, GdkEventAny *event, gpointer data)
-{
-	purple_core_quit();
-
-	/* we handle everything, event should not propagate further */
-	return TRUE;
-}
-
 static void
 set_node_custom_icon_cb(GtkWidget *widget, gint response, gpointer data)
 {
@@ -2826,34 +2773,6 @@ pidgin_blist_get_name_markup(PurpleBuddy *b, gboolean selected, gboolean aliased
 	return text;
 }
 
-static gboolean pidgin_blist_refresh_timer(PurpleBuddyList *list)
-{
-	PurpleBlistNode *gnode, *cnode;
-
-	if (gtk_blist_visibility == GDK_VISIBILITY_FULLY_OBSCURED
-			|| !gtk_widget_get_visible(gtkblist->window))
-		return TRUE;
-
-	for (gnode = purple_blist_get_root(list); gnode; gnode = gnode->next) {
-		if(!PURPLE_IS_GROUP(gnode))
-			continue;
-		for(cnode = gnode->child; cnode; cnode = cnode->next) {
-			if(PURPLE_IS_CONTACT(cnode)) {
-				PurpleBuddy *buddy;
-
-				buddy = purple_contact_get_priority_buddy((PurpleContact*)cnode);
-
-				if (buddy &&
-						purple_presence_is_idle(purple_buddy_get_presence(buddy)))
-					pidgin_blist_update_contact(list, PURPLE_BLIST_NODE(buddy));
-			}
-		}
-	}
-
-	/* keep on going */
-	return TRUE;
-}
-
 static void pidgin_blist_hide_node(PurpleBuddyList *list, PurpleBlistNode *node, gboolean update)
 {
 	PidginBlistNode *gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
@@ -3196,11 +3115,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	GtkEventController *key_controller = NULL;
 	GtkTreeSelection *selection;
 
-	if (gtkblist && gtkblist->window) {
-		purple_blist_set_visible(purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/blist/list_visible"));
-		return;
-	}
-
 	gtkblist = PIDGIN_BUDDY_LIST(list);
 
 	gtkblist->window = pidgin_contact_list_window_new();
@@ -3213,11 +3127,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	 * reference to it to pack the rest of our widgets here.
 	 */
 	gtkblist->vbox = pidgin_contact_list_window_get_vbox(PIDGIN_CONTACT_LIST_WINDOW(gtkblist->window));
-
-	g_signal_connect(G_OBJECT(gtkblist->window), "delete_event", G_CALLBACK(gtk_blist_delete_cb), NULL);
-	g_signal_connect(G_OBJECT(gtkblist->window), "visibility_notify_event", G_CALLBACK(gtk_blist_visibility_cb), NULL);
-	g_signal_connect(G_OBJECT(gtkblist->window), "window_state_event", G_CALLBACK(gtk_blist_window_state_cb), NULL);
-	gtk_widget_add_events(gtkblist->window, GDK_VISIBILITY_NOTIFY_MASK);
 
 	/****************************** GtkTreeView **********************************/
 	gtkblist->treemodel = gtk_tree_store_new(BLIST_COLUMNS,
@@ -3301,9 +3210,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	pidgin_blist_refresh(list);
 	gtk_widget_show_all(GTK_WIDGET(gtkblist->vbox));
 	purple_blist_set_visible(purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/blist/list_visible"));
-
-	/* start the refresh timer */
-	gtkblist->refresh_timer = g_timeout_add_seconds(30, (GSourceFunc)pidgin_blist_refresh_timer, list);
 
 	handle = pidgin_blist_get_handle();
 
@@ -4211,8 +4117,6 @@ void pidgin_blist_init(void)
 
 	/* Initialize prefs */
 	purple_prefs_add_none(PIDGIN_PREFS_ROOT "/blist");
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/blist/list_visible", FALSE);
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/blist/list_maximized", FALSE);
 	purple_prefs_add_string(PIDGIN_PREFS_ROOT "/blist/sort_type", "alphabetical");
 	purple_prefs_add_string(PIDGIN_PREFS_ROOT "/blist/theme", "");
 
@@ -4265,11 +4169,6 @@ pidgin_buddy_list_finalize(GObject *obj)
 	purple_signals_disconnect_by_handle(gtkblist);
 
 	gtk_widget_destroy(gtkblist->window);
-
-	if (gtkblist->refresh_timer) {
-		g_source_remove(gtkblist->refresh_timer);
-		gtkblist->refresh_timer = 0;
-	}
 
 	gtkblist->window = gtkblist->vbox = gtkblist->treeview = NULL;
 	g_clear_object(&gtkblist->treemodel);
