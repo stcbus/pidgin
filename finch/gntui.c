@@ -28,6 +28,7 @@
 
 #include "gntui.h"
 
+#include "finchnotifications.h"
 #include "gntaccount.h"
 #include "gntblist.h"
 #include "gntconn.h"
@@ -132,6 +133,7 @@ void finch_ui_init()
 
 	gnt_register_action(_("Accounts"), finch_accounts_show_all);
 	gnt_register_action(_("Buddy List"), finch_blist_show);
+	gnt_register_action(_("Notifications"), finch_notifications_window_show);
 	gnt_register_action(_("Debug Window"), finch_debug_window_show);
 	gnt_register_action(_("File Transfers"), finch_xfer_dialog_show);
 	gnt_register_action(_("Plugins"), finch_plugins_show_all);

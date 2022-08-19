@@ -84,6 +84,7 @@ endif
 
 
 libfinch_SOURCES = [
+	'finchnotifications.c',
 	'gntaccount.c',
 	'gntblist.c',
 	'gntconn.c',
@@ -105,6 +106,7 @@ libfinch_SOURCES = [
 ]
 
 libfinch_headers = [
+	'finchnotifications.h',
 	'gntaccount.h',
 	'gntblist.h',
 	'gntconn.h',
