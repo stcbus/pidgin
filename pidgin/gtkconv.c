@@ -762,30 +762,37 @@ update_typing_deleting(PidginConversation *gtkconv)
 }
 
 static gboolean
-conv_keypress_common(PidginConversation *gtkconv, GdkEventKey *event)
+conv_keypress_common(PidginConversation *gtkconv, guint keyval,
+                     GdkModifierType state)
 {
 	/* If CTRL was held down... */
-	if (event->state & GDK_CONTROL_MASK) {
-		switch (event->keyval) {
+	if (state & GDK_CONTROL_MASK) {
+		switch (keyval) {
 			case GDK_KEY_F6:
-				if (gtkconv_cycle_focus(gtkconv, event->state & GDK_SHIFT_MASK ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD))
+				if (gtkconv_cycle_focus(gtkconv,
+				                        state & GDK_SHIFT_MASK ?
+				                        GTK_DIR_TAB_BACKWARD :
+				                        GTK_DIR_TAB_FORWARD))
+				{
 					return TRUE;
+				}
 				break;
 		} /* End of switch */
-	}
 
 	/* If ALT (or whatever) was held down... */
-	else if (event->state & GDK_MOD1_MASK)
-	{
-	}
+	} else if (state & GDK_ALT_MASK) {
 
 	/* If neither CTRL nor ALT were held down... */
-	else
-	{
-		switch (event->keyval) {
+	} else {
+		switch (keyval) {
 		case GDK_KEY_F6:
-			if (gtkconv_cycle_focus(gtkconv, event->state & GDK_SHIFT_MASK ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD))
+			if (gtkconv_cycle_focus(gtkconv,
+			                        state & GDK_SHIFT_MASK ?
+			                        GTK_DIR_TAB_BACKWARD :
+			                        GTK_DIR_TAB_FORWARD))
+			{
 				return TRUE;
+			}
 			break;
 		}
 	}
@@ -793,37 +800,42 @@ conv_keypress_common(PidginConversation *gtkconv, GdkEventKey *event)
 }
 
 static gboolean
-entry_key_press_cb(GtkWidget *entry, GdkEventKey *event, gpointer data)
+entry_key_press_cb(GtkEventControllerKey *controller, guint keyval,
+                   G_GNUC_UNUSED guint keycode, GdkModifierType state,
+                   gpointer data)
 {
+	GtkWidget *entry = NULL;
 	PurpleConversation *conv;
 	PidginConversation *gtkconv;
 
-	gtkconv  = (PidginConversation *)data;
-	conv     = gtkconv->active_conv;
+	entry = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+	gtkconv = (PidginConversation *)data;
+	conv = gtkconv->active_conv;
 
-	if (conv_keypress_common(gtkconv, event))
+	if (conv_keypress_common(gtkconv, keyval, state)) {
 		return TRUE;
+	}
 
 	/* If CTRL was held down... */
-	if (event->state & GDK_CONTROL_MASK) {
-	}
+	if (state & GDK_CONTROL_MASK) {
+
 	/* If ALT (or whatever) was held down... */
-	else if (event->state & GDK_MOD1_MASK) 	{
-	}
+	} else if (state & GDK_ALT_MASK) {
 
 	/* If neither CTRL nor ALT were held down... */
-	else {
-		switch (event->keyval) {
+	} else {
+		switch (keyval) {
 		case GDK_KEY_Tab:
 		case GDK_KEY_KP_Tab:
 		case GDK_KEY_ISO_Left_Tab:
-			if (gtkconv->entry != entry)
+			if (gtkconv->entry != entry) {
 				break;
+			}
 			{
 				gint plugin_return;
 				plugin_return = GPOINTER_TO_INT(purple_signal_emit_return_1(
 							pidgin_conversations_get_handle(), "chat-nick-autocomplete",
-							conv, event->state & GDK_SHIFT_MASK));
+							conv, state & GDK_SHIFT_MASK));
 				return plugin_return;
 			}
 			break;
@@ -852,7 +864,7 @@ entry_key_press_cb(GtkWidget *entry, GdkEventKey *event, gpointer data)
 	if (PURPLE_IS_IM_CONVERSATION(conv) &&
 			purple_prefs_get_bool("/purple/conversations/im/send_typing")) {
 
-		switch (event->keyval) {
+		switch (keyval) {
 		case GDK_KEY_BackSpace:
 		case GDK_KEY_Delete:
 		case GDK_KEY_KP_Delete:
@@ -866,6 +878,41 @@ entry_key_press_cb(GtkWidget *entry, GdkEventKey *event, gpointer data)
 	return FALSE;
 }
 
+static gboolean
+is_valid_conversation_key(guint keyval, GdkModifierType state)
+{
+	if (state & GDK_CONTROL_MASK) {
+		return TRUE;
+	}
+
+	switch (keyval) {
+		case GDK_KEY_F6:
+		case GDK_KEY_F10:
+		case GDK_KEY_Menu:
+		case GDK_KEY_Shift_L:
+		case GDK_KEY_Shift_R:
+		case GDK_KEY_Control_L:
+		case GDK_KEY_Control_R:
+		case GDK_KEY_Escape:
+		case GDK_KEY_Up:
+		case GDK_KEY_Down:
+		case GDK_KEY_Left:
+		case GDK_KEY_Right:
+		case GDK_KEY_Page_Up:
+		case GDK_KEY_KP_Page_Up:
+		case GDK_KEY_Page_Down:
+		case GDK_KEY_KP_Page_Down:
+		case GDK_KEY_Home:
+		case GDK_KEY_End:
+		case GDK_KEY_Tab:
+		case GDK_KEY_KP_Tab:
+		case GDK_KEY_ISO_Left_Tab:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
 /*
  * If someone tries to type into the conversation backlog of a
  * conversation window then we yank focus from the conversation backlog
@@ -873,43 +920,26 @@ entry_key_press_cb(GtkWidget *entry, GdkEventKey *event, gpointer data)
  * all the live long day and it will get entered into the entry box.
  */
 static gboolean
-refocus_entry_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
+refocus_entry_cb(GtkEventControllerKey *controller, guint keyval,
+                 G_GNUC_UNUSED guint keycode, GdkModifierType state,
+                 gpointer data)
 {
-	GtkWidget *input = NULL;
 	PidginConversation *gtkconv = data;
+	GtkWidget *input = NULL;
+	GdkEvent *event = NULL;
 
 	/* If we have a valid key for the conversation display, then exit */
-	if ((event->state & GDK_CONTROL_MASK) ||
-		(event->keyval == GDK_KEY_F6) ||
-		(event->keyval == GDK_KEY_F10) ||
-		(event->keyval == GDK_KEY_Menu) ||
-		(event->keyval == GDK_KEY_Shift_L) ||
-		(event->keyval == GDK_KEY_Shift_R) ||
-		(event->keyval == GDK_KEY_Control_L) ||
-		(event->keyval == GDK_KEY_Control_R) ||
-		(event->keyval == GDK_KEY_Escape) ||
-		(event->keyval == GDK_KEY_Up) ||
-		(event->keyval == GDK_KEY_Down) ||
-		(event->keyval == GDK_KEY_Left) ||
-		(event->keyval == GDK_KEY_Right) ||
-		(event->keyval == GDK_KEY_Page_Up) ||
-		(event->keyval == GDK_KEY_KP_Page_Up) ||
-		(event->keyval == GDK_KEY_Page_Down) ||
-		(event->keyval == GDK_KEY_KP_Page_Down) ||
-		(event->keyval == GDK_KEY_Home) ||
-		(event->keyval == GDK_KEY_End) ||
-		(event->keyval == GDK_KEY_Tab) ||
-		(event->keyval == GDK_KEY_KP_Tab) ||
-		(event->keyval == GDK_KEY_ISO_Left_Tab))
-	{
-		if (event->type == GDK_KEY_PRESS)
-			return conv_keypress_common(gtkconv, event);
+	event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(controller));
+	if (is_valid_conversation_key(keyval, state)) {
+		if (gdk_event_get_event_type(event) == GDK_KEY_PRESS) {
+			return conv_keypress_common(gtkconv, keyval, state);
+		}
 		return FALSE;
 	}
 
 	input = talkatu_editor_get_input(TALKATU_EDITOR(gtkconv->editor));
 	gtk_widget_grab_focus(input);
-	gtk_widget_event(input, (GdkEvent *)event);
+	gtk_event_controller_key_forward(controller, input);
 
 	return TRUE;
 }
@@ -1340,12 +1370,13 @@ setup_chat_topic(PidginConversation *gtkconv, GtkWidget *vbox)
 	if (purple_protocol_get_options(protocol) & OPT_PROTO_CHAT_TOPIC)
 	{
 		GtkWidget *hbox, *label;
+		GtkEventController *key = NULL;
 
 		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+		gtk_box_append(GTK_BOX(vbox), hbox);
 
 		label = gtk_label_new(_("Topic:"));
-		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+		gtk_box_append(GTK_BOX(hbox), label);
 
 		gtkconv->topic_text = gtk_entry_new();
 		gtk_widget_set_size_request(gtkconv->topic_text, -1, BUDDYICON_SIZE_MIN);
@@ -1357,9 +1388,14 @@ setup_chat_topic(PidginConversation *gtkconv, GtkWidget *vbox)
 					G_CALLBACK(topic_callback), gtkconv);
 		}
 
-		gtk_box_pack_start(GTK_BOX(hbox), gtkconv->topic_text, TRUE, TRUE, 0);
-		g_signal_connect(G_OBJECT(gtkconv->topic_text), "key_press_event",
-			             G_CALLBACK(entry_key_press_cb), gtkconv);
+		gtk_widget_set_hexpand(gtkconv->topic_text, TRUE);
+		gtk_widget_set_halign(gtkconv->topic_text, GTK_ALIGN_FILL);
+		gtk_box_append(GTK_BOX(hbox), gtkconv->topic_text);
+
+		key = gtk_event_controller_key_new();
+		g_signal_connect(key, "key-pressed", G_CALLBACK(entry_key_press_cb),
+		                 gtkconv);
+		gtk_widget_add_controller(gtkconv->topic_text, key);
 	}
 }
 
@@ -1432,7 +1468,7 @@ pidgin_conv_userlist_query_tooltip(GtkWidget *widget, int x, int y,
 static void
 setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 {
-	GtkWidget *lbox, *list;
+	GtkWidget *lbox, *list, *sw;
 	GtkListStore *ls;
 	GtkCellRenderer *rend;
 	GtkTreeViewColumn *col;
@@ -1441,14 +1477,14 @@ setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 
 	/* Build the right pane. */
 	lbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_paned_pack2(GTK_PANED(hpaned), lbox, FALSE, TRUE);
-	gtk_widget_show(lbox);
+	gtk_paned_set_end_child(GTK_PANED(hpaned), lbox);
+	gtk_paned_set_resize_end_child(GTK_PANED(hpaned), FALSE);
+	gtk_paned_set_shrink_end_child(GTK_PANED(hpaned), TRUE);
 
 	/* Setup the label telling how many people are in the room. */
 	gtkconv->count = gtk_label_new(_("0 people in room"));
 	gtk_label_set_ellipsize(GTK_LABEL(gtkconv->count), PANGO_ELLIPSIZE_END);
-	gtk_box_pack_start(GTK_BOX(lbox), gtkconv->count, FALSE, FALSE, 0);
-	gtk_widget_show(gtkconv->count);
+	gtk_box_append(GTK_BOX(lbox), gtkconv->count);
 
 	/* Setup the list of users. */
 
@@ -1507,36 +1543,35 @@ setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(list), col);
 
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), FALSE);
-	gtk_widget_show(list);
 
 	gtkconv->list = list;
 
-	gtk_box_pack_start(GTK_BOX(lbox),
-		pidgin_make_scrollable(list, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC, -1, -1),
-		TRUE, TRUE, 0);
+	sw = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+	                               GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), list);
+
+	gtk_widget_set_vexpand(sw, TRUE);
+	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(lbox), sw);
 }
 
 static GtkWidget *
 setup_common_pane(PidginConversation *gtkconv)
 {
 	GtkWidget *vbox, *input, *hpaned;
+	GtkEventController *key = NULL;
 	PurpleConversation *conv = gtkconv->active_conv;
 
 	/* Setup the top part of the pane */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_widget_show(vbox);
 
 	/* Setup the info pane */
 	gtkconv->infopane = pidgin_info_pane_new(conv);
-	gtk_box_pack_start(GTK_BOX(vbox), gtkconv->infopane, FALSE, FALSE, 0);
-	gtk_widget_show(gtkconv->infopane);
+	gtk_box_append(GTK_BOX(vbox), gtkconv->infopane);
 
 	/* Setup the history widget */
-	gtkconv->history_sw = talkatu_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_shadow_type(
-		GTK_SCROLLED_WINDOW(gtkconv->history_sw),
-		GTK_SHADOW_IN
-	);
+	gtkconv->history_sw = talkatu_scrolled_window_new();
 	gtk_scrolled_window_set_policy(
 		GTK_SCROLLED_WINDOW(gtkconv->history_sw),
 		GTK_POLICY_NEVER,
@@ -1544,32 +1579,37 @@ setup_common_pane(PidginConversation *gtkconv)
 	);
 
 	gtkconv->history = talkatu_history_new();
-	gtk_container_add(GTK_CONTAINER(gtkconv->history_sw), gtkconv->history);
+	talkatu_scrolled_window_set_child(TALKATU_SCROLLED_WINDOW(gtkconv->history_sw),
+	                                  gtkconv->history);
 
 	/* Add the topic */
 	setup_chat_topic(gtkconv, vbox);
 
 	/* Add the talkatu history */
 	hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
-	gtk_widget_show(hpaned);
-	gtk_paned_pack1(GTK_PANED(hpaned), gtkconv->history_sw, TRUE, TRUE);
+	gtk_widget_set_vexpand(hpaned, TRUE);
+	gtk_widget_set_valign(hpaned, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(vbox), hpaned);
+	gtk_paned_set_start_child(GTK_PANED(hpaned), gtkconv->history_sw);
+	gtk_paned_set_resize_start_child(GTK_PANED(hpaned), TRUE);
+	gtk_paned_set_shrink_start_child(GTK_PANED(hpaned), TRUE);
 
 	/* Now add the userlist */
 	setup_chat_userlist(gtkconv, hpaned);
-	gtk_widget_show_all(gtkconv->history_sw);
 
 	g_object_set_data(G_OBJECT(gtkconv->history), "gtkconv", gtkconv);
 
-	g_signal_connect(G_OBJECT(gtkconv->history), "key_press_event",
-	                 G_CALLBACK(refocus_entry_cb), gtkconv);
-	g_signal_connect(G_OBJECT(gtkconv->history), "key_release_event",
-	                 G_CALLBACK(refocus_entry_cb), gtkconv);
+	key = gtk_event_controller_key_new();
+	g_signal_connect(key, "key-pressed", G_CALLBACK(refocus_entry_cb),
+	                 gtkconv);
+	g_signal_connect(key, "key-released", G_CALLBACK(refocus_entry_cb),
+	                 gtkconv);
+	gtk_widget_add_controller(gtkconv->history, key);
 
 	/* Setup the entry widget and all signals */
 	gtkconv->editor = talkatu_editor_new();
 	talkatu_editor_set_buffer(TALKATU_EDITOR(gtkconv->editor), talkatu_html_buffer_new());
-	gtk_box_pack_start(GTK_BOX(vbox), gtkconv->editor, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(vbox), gtkconv->editor);
 
 	input = talkatu_editor_get_input(TALKATU_EDITOR(gtkconv->editor));
 	gtk_widget_set_name(input, "pidgin_conv_entry");
@@ -1617,14 +1657,17 @@ pidgin_conv_find_gtkconv(PurpleConversation * conv)
 }
 
 static gboolean
-ignore_middle_click(GtkWidget *widget, GdkEventButton *e, gpointer null)
+ignore_middle_click(G_GNUC_UNUSED GtkGestureClick *click,
+                    gint n_press, G_GNUC_UNUSED gdouble x,
+                    G_GNUC_UNUSED gdouble y, G_GNUC_UNUSED gpointer data)
 {
 	/* A click on the pane is propagated to the notebook containing the pane.
 	 * So if Stu accidentally aims high and middle clicks on the pane-handle,
 	 * it causes a conversation tab to close. Let's stop that from happening.
 	 */
-	if (e->button == GDK_BUTTON_MIDDLE && e->type == GDK_BUTTON_PRESS)
+	if (n_press == 1) {
 		return TRUE;
+	}
 	return FALSE;
 }
 
@@ -1636,6 +1679,7 @@ private_gtkconv_new(PurpleConversation *conv, gboolean hidden)
 {
 	PidginConversation *gtkconv;
 	GtkWidget *tab_cont, *pane;
+	GtkGesture *click = NULL;
 
 	if (PURPLE_IS_IM_CONVERSATION(conv) && (gtkconv = pidgin_conv_find_gtkconv(conv))) {
 		purple_debug_misc("gtkconv", "found existing gtkconv %p", gtkconv);
@@ -1661,15 +1705,17 @@ private_gtkconv_new(PurpleConversation *conv, gboolean hidden)
 		return;
 	}
 
-	g_signal_connect(G_OBJECT(pane), "button_press_event",
-	                 G_CALLBACK(ignore_middle_click), NULL);
+	click = gtk_gesture_click_new();
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click), GDK_BUTTON_MIDDLE);
+	g_signal_connect(click, "pressed", G_CALLBACK(ignore_middle_click), NULL);
+	gtk_widget_add_controller(pane, GTK_EVENT_CONTROLLER(click));
 
 	/* Setup the container for the tab. */
 	gtkconv->tab_cont = tab_cont = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	g_object_set_data(G_OBJECT(tab_cont), "PidginConversation", gtkconv);
-	gtk_container_set_border_width(GTK_CONTAINER(tab_cont), 6);
-	gtk_box_pack_start(GTK_BOX(tab_cont), pane, TRUE, TRUE, 0);
-	gtk_widget_show(pane);
+	gtk_widget_set_vexpand(pane, TRUE);
+	gtk_widget_set_valign(pane, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(tab_cont), pane);
 
 	talkatu_editor_set_toolbar_visible(
 		TALKATU_EDITOR(gtkconv->editor),
@@ -1730,7 +1776,7 @@ static void
 pidgin_conv_destroy(PurpleConversation *conv)
 {
 	PidginConversation *gtkconv = PIDGIN_CONVERSATION(conv);
-	GtkWidget *win;
+	GtkRoot *win = NULL;
 
 	gtkconv->convs = g_list_remove(gtkconv->convs, conv);
 	/* Don't destroy ourselves until all our convos are gone */
@@ -1743,14 +1789,14 @@ pidgin_conv_destroy(PurpleConversation *conv)
 		return;
 	}
 
-	win = gtk_widget_get_toplevel(gtkconv->tab_cont);
+	win = gtk_widget_get_root(gtkconv->tab_cont);
 	pidgin_conversation_window_remove(PIDGIN_CONVERSATION_WINDOW(win), conv);
 
 	/* If the "Save Conversation" or "Save Icon" dialogs are open then close them */
 	purple_request_close_with_handle(gtkconv);
 	purple_notify_close_with_handle(gtkconv);
 
-	gtk_widget_destroy(gtkconv->tab_cont);
+	gtk_widget_unparent(gtkconv->tab_cont);
 
 	if (PURPLE_IS_IM_CONVERSATION(conv)) {
 		if (gtkconv->typing_timer != 0)
@@ -2005,10 +2051,10 @@ gboolean
 pidgin_conv_has_focus(PurpleConversation *conv)
 {
 	PidginConversation *gtkconv = PIDGIN_CONVERSATION(conv);
-	GtkWidget *win;
+	GtkRoot *win;
 
-	win = gtk_widget_get_toplevel(gtkconv->tab_cont);
-	if(gtk_window_has_toplevel_focus(GTK_WINDOW(win))) {
+	win = gtk_widget_get_root(gtkconv->tab_cont);
+	if(gtk_window_is_active(GTK_WINDOW(win))) {
 		PidginConversationWindow *convwin = PIDGIN_CONVERSATION_WINDOW(win);
 
 		if(pidgin_conversation_window_conversation_is_selected(convwin, conv)) {
@@ -2024,13 +2070,13 @@ pidgin_conv_update_fields(PurpleConversation *conv, PidginConvFields fields)
 {
 	PidginConversation *gtkconv;
 	PidginConversationWindow *convwin;
-	GtkWidget *win;
+	GtkRoot *win;
 
 	gtkconv = PIDGIN_CONVERSATION(conv);
 	if (!gtkconv)
 		return;
 
-	win = gtk_widget_get_toplevel(gtkconv->tab_cont);
+	win = gtk_widget_get_root(gtkconv->tab_cont);
 	convwin = PIDGIN_CONVERSATION_WINDOW(win);
 
 	if (fields & PIDGIN_CONV_SET_TITLE)
