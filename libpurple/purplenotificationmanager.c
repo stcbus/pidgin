@@ -357,6 +357,94 @@ purple_notification_manager_remove(PurpleNotificationManager *manager,
 	}
 }
 
+/*
+This function uses the following algorithm to optimally remove items from the
+GListStore. See the psuedo code below for an easier to follow version.
+
+A
+A B C
+B C
+A A B C
+B A C
+B A A C
+B C A
+B C A A
+
+set len = number_of_items
+set pos = 0
+set have_same = false
+while pos < len
+  check item at pos
+    if same
+      if not have_same
+        reset count = 0
+        set start = pos
+        set have_same = TRUE
+
+      set count = count + 1
+    else
+      if have_same
+        remove count items from start
+        set pos = pos - count
+        set len = len - count
+        set have_same = FALSE
+  set pos = pos + 1
+if have_same
+  remove count items from start
+*/
+void
+purple_notification_manager_remove_with_account(PurpleNotificationManager *manager,
+                                                PurpleAccount *account)
+{
+	guint pos = 0, len = 0;
+	guint start = 0, count = 0;
+	gboolean have_same = FALSE;
+
+	g_return_if_fail(PURPLE_IS_NOTIFICATION_MANAGER(manager));
+	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
+
+	len = g_list_model_get_n_items(G_LIST_MODEL(manager->notifications));
+	for(pos = 0; pos < len; pos++) {
+		PurpleAccount *account2 = NULL;
+		PurpleNotification *notification = NULL;
+
+		notification = g_list_model_get_item(G_LIST_MODEL(manager->notifications),
+		                                     pos);
+
+		account2 = purple_notification_get_account(notification);
+		if(account == account2) {
+			/* If this is the first item with the right account store its position. */
+			if(!have_same) {
+				count = 0;
+				start = pos;
+				have_same = TRUE;
+			}
+
+			/* Increment the count of items starting at the start position. */
+			count++;
+		} else {
+			if(have_same) {
+				/* Remove the run of items from the list. */
+				g_list_store_splice(manager->notifications, start, count, NULL,
+				                    0);
+
+				/* Adjust pos and len for the items that we removed. */
+				pos = pos - count;
+				len = len - count;
+
+				have_same = FALSE;
+			}
+		}
+
+		g_clear_object(&notification);
+	}
+
+	/* Clean up the last bit if the last item needs to be removed. */
+	if(have_same) {
+		g_list_store_splice(manager->notifications, start, count, NULL, 0);
+	}
+}
+
 guint
 purple_notification_manager_get_unread_count(PurpleNotificationManager *manager) {
 	g_return_val_if_fail(PURPLE_IS_NOTIFICATION_MANAGER(manager), 0);

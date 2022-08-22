@@ -162,6 +162,78 @@ test_purple_notification_manager_double_remove(void) {
 }
 
 static void
+test_purple_notification_manager_remove_with_account_simple(void) {
+	PurpleNotificationManager *manager = NULL;
+	PurpleNotification *notification = NULL;
+	PurpleAccount *account = NULL;
+	GListModel *model = NULL;
+
+	manager = g_object_new(PURPLE_TYPE_NOTIFICATION_MANAGER, NULL);
+	model = purple_notification_manager_get_model(manager);
+	account = purple_account_new("test", "test");
+
+	/* Make sure that nothing happens on an empty list. */
+	purple_notification_manager_remove_with_account(manager, account);
+	g_assert_cmpuint(0, ==, g_list_model_get_n_items(model));
+
+	/* Add a single notification without the account */
+	notification = purple_notification_new(PURPLE_NOTIFICATION_TYPE_GENERIC,
+	                                       NULL, NULL, NULL);
+	purple_notification_manager_add(manager, notification);
+	purple_notification_manager_remove_with_account(manager, account);
+	g_assert_cmpuint(1, ==, g_list_model_get_n_items(model));
+	g_list_store_remove_all(G_LIST_STORE(model));
+	g_clear_object(&notification);
+
+	/* Add a single notification with the account */
+	notification = purple_notification_new(PURPLE_NOTIFICATION_TYPE_GENERIC,
+	                                       account, NULL, NULL);
+	purple_notification_manager_add(manager, notification);
+	purple_notification_manager_remove_with_account(manager, account);
+	g_assert_cmpuint(0, ==, g_list_model_get_n_items(model));
+	g_list_store_remove_all(G_LIST_STORE(model));
+	g_clear_object(&notification);
+
+	g_clear_object(&manager);
+	g_clear_object(&account);
+}
+
+static void
+test_purple_notification_manager_remove_with_account_mixed(void) {
+	PurpleNotificationManager *manager = NULL;
+	PurpleNotification *notification = NULL;
+	PurpleAccount *accounts[3];
+	GListModel *model = NULL;
+	gint pattern[] = {0, 0, 1, 0, 2, 1, 0, 0, 1, 2, 0, 1, 0, 0, -1};
+	gint i = 0;
+
+	manager = g_object_new(PURPLE_TYPE_NOTIFICATION_MANAGER, NULL);
+	model = purple_notification_manager_get_model(manager);
+
+	accounts[0] = purple_account_new("account1", "account1");
+	accounts[1] = purple_account_new("account2", "account2");
+	accounts[2] = purple_account_new("account3", "account3");
+
+	/* Add our notifications. */
+	for(i = 0; pattern[i] >= 0; i++) {
+		notification = purple_notification_new(PURPLE_NOTIFICATION_TYPE_GENERIC,
+		                                       accounts[pattern[i]], NULL,
+		                                       NULL);
+		purple_notification_manager_add(manager, notification);
+		g_clear_object(&notification);
+	}
+
+	g_assert_cmpuint(14, ==, g_list_model_get_n_items(model));
+	purple_notification_manager_remove_with_account(manager, accounts[0]);
+	g_assert_cmpuint(6, ==, g_list_model_get_n_items(model));
+
+	g_clear_object(&manager);
+	g_clear_object(&accounts[0]);
+	g_clear_object(&accounts[1]);
+	g_clear_object(&accounts[2]);
+}
+
+static void
 test_purple_notification_manager_read_propagation(void) {
 	PurpleNotificationManager *manager = NULL;
 	PurpleNotification *notification = NULL;
@@ -242,6 +314,11 @@ main(gint argc, gchar *argv[]) {
 	                test_purple_notification_manager_double_add);
 	g_test_add_func("/notification-manager/double-remove",
 	                test_purple_notification_manager_double_remove);
+
+	g_test_add_func("/notification-manager/remove-with-account/simple",
+	                test_purple_notification_manager_remove_with_account_simple);
+	g_test_add_func("/notification-manager/remove-with-account/mixed",
+	                test_purple_notification_manager_remove_with_account_mixed);
 
 	g_test_add_func("/notification-manager/read-propagation",
 	                test_purple_notification_manager_read_propagation);

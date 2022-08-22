@@ -78,6 +78,17 @@ void purple_notification_manager_add(PurpleNotificationManager *manager, PurpleN
 void purple_notification_manager_remove(PurpleNotificationManager *manager, PurpleNotification *notification);
 
 /**
+ * purple_notification_manager_remove_with_account:
+ * @manager: The instance.
+ * @account: The [class@Account] whose notifications to remove.
+ *
+ * Removes all notifications with @account from @manager.
+ *
+ * Since: 3.0.0
+ */
+void purple_notification_manager_remove_with_account(PurpleNotificationManager *manager, PurpleAccount *account);
+
+/**
  * purple_notification_manager_get_unread_count:
  * @manager: The instance.
  *
