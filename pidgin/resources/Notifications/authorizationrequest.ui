@@ -19,24 +19,22 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
-  <requires lib="libhandy" version="0.0"/>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
-  <template class="PidginNotificationAuthorizationRequest" parent="HdyActionRow">
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <property name="activatable">False</property>
+  <template class="PidginNotificationAuthorizationRequest" parent="AdwActionRow">
+    <property name="focusable">1</property>
+    <property name="activatable">0</property>
     <property name="title-lines">3</property>
     <property name="subtitle-lines">3</property>
     <child>
       <object class="GtkButton" id="accept">
-        <property name="label" translatable="yes">Accept</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
+        <property name="label" translatable="1">Accept</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
         <signal name="clicked" handler="pidgin_notification_authorization_request_accept_cb" object="PidginNotificationAuthorizationRequest" swapped="no"/>
@@ -47,10 +45,9 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="GtkButton" id="deny">
-        <property name="label" translatable="yes">Deny</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
+        <property name="label" translatable="1">Deny</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
         <signal name="clicked" handler="pidgin_notification_authorization_request_deny_cb" object="PidginNotificationAuthorizationRequest" swapped="no"/>
@@ -61,10 +58,9 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="GtkButton" id="message">
-        <property name="label" translatable="yes">Message</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
+        <property name="label" translatable="1">Message</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
         <signal name="clicked" handler="pidgin_notification_authorization_request_message_cb" object="PidginNotificationAuthorizationRequest" swapped="no"/>
@@ -72,17 +68,16 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="GtkButton" id="remove">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="relief">none</property>
         <signal name="clicked" handler="pidgin_notification_authorization_request_remove_cb" object="PidginNotificationAuthorizationRequest" swapped="no"/>
+        <style>
+          <class name="flat"/>
+        </style>
         <child>
           <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="icon-name">edit-delete-symbolic</property>
           </object>
         </child>

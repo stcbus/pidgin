@@ -24,9 +24,8 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <template class="PidginNotificationConnectionError" parent="AdwActionRow">
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <property name="activatable">False</property>
+    <property name="focusable">1</property>
+    <property name="activatable">0</property>
     <property name="subtitle-lines">3</property>
     <child>
       <object class="GtkButton" id="reconnect">
@@ -64,8 +63,10 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
         <property name="receives-default">1</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="relief">none</property>
         <signal name="clicked" handler="pidgin_notification_connection_error_remove_cb" object="PidginNotificationConnectionError" swapped="no"/>
+        <style>
+          <class name="flat"/>
+        </style>
         <child>
           <object class="GtkImage">
             <property name="icon-name">edit-delete-symbolic</property>

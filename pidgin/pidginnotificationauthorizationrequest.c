@@ -29,7 +29,7 @@
 #include "pidgin/gtkdialogs.h"
 
 struct _PidginNotificationAuthorizationRequest {
-	HdyActionRow parent;
+	AdwActionRow parent;
 
 	PurpleNotification *notification;
 
@@ -46,7 +46,7 @@ enum {
 static GParamSpec *properties[N_PROPERTIES] = { NULL, };
 
 G_DEFINE_TYPE(PidginNotificationAuthorizationRequest,
-              pidgin_notification_authorization_request, HDY_TYPE_ACTION_ROW)
+              pidgin_notification_authorization_request, ADW_TYPE_ACTION_ROW)
 
 /******************************************************************************
  * Helpers
@@ -61,11 +61,11 @@ pidgin_notification_authorization_request_update(PidginNotificationAuthorization
 	g_return_if_fail(PIDGIN_IS_NOTIFICATION_AUTHORIZATION_REQUEST(request));
 
 	if(!PURPLE_IS_NOTIFICATION(request->notification)) {
-		hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(request),
+		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(request),
 		                              _("Notification missing"));
 
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(request), NULL);
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(request), NULL);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(request), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(request), NULL);
 
 		gtk_widget_hide(request->accept);
 		gtk_widget_hide(request->deny);
@@ -76,11 +76,11 @@ pidgin_notification_authorization_request_update(PidginNotificationAuthorization
 
 	account = purple_notification_get_account(request->notification);
 	if(!PURPLE_IS_ACCOUNT(account)) {
-		hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(request),
+		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(request),
 		                              _("Notification is missing an account"));
 
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(request), NULL);
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(request), NULL);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(request), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(request), NULL);
 
 		gtk_widget_hide(request->accept);
 		gtk_widget_hide(request->deny);
@@ -103,13 +103,13 @@ pidgin_notification_authorization_request_update(PidginNotificationAuthorization
 			icon_name = "dialog-question";
 		}
 	}
-	hdy_action_row_set_icon_name(HDY_ACTION_ROW(request), icon_name);
+	adw_action_row_set_icon_name(ADW_ACTION_ROW(request), icon_name);
 
 	title = purple_notification_get_title(request->notification);
-	hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(request), title);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(request), title);
 
 	message = purple_authorization_request_get_message(purple_request);
-	hdy_action_row_set_subtitle(HDY_ACTION_ROW(request), message);
+	adw_action_row_set_subtitle(ADW_ACTION_ROW(request), message);
 
 	gtk_widget_show(request->accept);
 	gtk_widget_show(request->deny);
