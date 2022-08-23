@@ -3111,10 +3111,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 						 G_TYPE_STRING,   /* Name */
 						 GDK_TYPE_PIXBUF, /* Buddy icon */
 						 G_TYPE_POINTER,  /* Node */
-						 G_TYPE_BOOLEAN,  /* Group expander */
-						 G_TYPE_BOOLEAN,  /* Group expander visible */
-						 G_TYPE_BOOLEAN,  /* Contact expander */
-						 G_TYPE_BOOLEAN,  /* Contact expander visible */
 						 GDK_TYPE_PIXBUF, /* Emblem */
 						 G_TYPE_BOOLEAN,  /* Emblem visible */
 						 GDK_TYPE_PIXBUF /* Protocol icon */
@@ -3179,7 +3175,7 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	/* OK... let's show this bad boy. */
 	pidgin_blist_refresh(list);
 	gtk_widget_show_all(GTK_WIDGET(gtkblist->vbox));
-	purple_blist_set_visible(purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/blist/list_visible"));
+	purple_blist_set_visible(TRUE);
 
 	handle = pidgin_blist_get_handle();
 
