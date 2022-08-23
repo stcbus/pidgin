@@ -134,11 +134,14 @@ set_node_custom_icon_cb(GtkWidget *widget, gint response, gpointer data)
 {
 	if (response == GTK_RESPONSE_ACCEPT) {
 		PurpleBlistNode *node = (PurpleBlistNode*)data;
+		GFile *file = NULL;
 		gchar *filename = NULL;
 
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+		file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(widget));
+		filename = g_file_get_path(file);
 		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
 		g_free(filename);
+		g_object_unref(file);
 	}
 
 	g_object_set_data(G_OBJECT(data), "buddy-icon-chooser", NULL);
@@ -892,7 +895,7 @@ do_joinchat(GtkWidget *dialog, int id, PidginChatData *info)
 		break;
 	}
 
-	gtk_widget_destroy(GTK_WIDGET(dialog));
+	gtk_window_destroy(GTK_WINDOW(dialog));
 	g_list_free(info->entries);
 	g_free(info);
 }
@@ -990,8 +993,8 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 
 	data->account = account;
 
-	img = gtk_image_new_from_icon_name("dialog-question",
-			GTK_ICON_SIZE_DIALOG);
+	img = gtk_image_new_from_icon_name("dialog-question");
+	gtk_image_set_icon_size(GTK_IMAGE(img), GTK_ICON_SIZE_LARGE);
 
 	gtkblist = PIDGIN_BUDDY_LIST(purple_blist_get_default());
 	blist_window = gtkblist ? GTK_WINDOW(gtkblist->window) : NULL;
@@ -1000,31 +1003,25 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 	gtk_window_set_title(GTK_WINDOW(data->window), title);
 	gtk_window_set_transient_for(GTK_WINDOW(data->window), blist_window);
 	gtk_dialog_set_default_response(GTK_DIALOG(data->window), GTK_RESPONSE_OK);
-	gtk_container_set_border_width(GTK_CONTAINER(data->window), 6);
 	gtk_window_set_resizable(GTK_WINDOW(data->window), FALSE);
 	gtk_box_set_spacing(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(data->window))),
 	                    12);
-	gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(data->window))),
-	                               6);
-	gtk_window_set_role(GTK_WINDOW(data->window), window_role);
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(data->window))),
-	                  hbox);
-	gtk_box_pack_start(GTK_BOX(hbox), img, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(hbox), img);
 	gtk_widget_set_halign(img, GTK_ALIGN_START);
 	gtk_widget_set_valign(img, GTK_ALIGN_START);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add(GTK_CONTAINER(hbox), vbox);
+	gtk_box_append(GTK_BOX(hbox), vbox);
 
 	label = gtk_label_new(label_text);
 
 	gtk_widget_set_size_request(label, 400, -1);
-	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+	gtk_label_set_wrap(GTK_LABEL(label), TRUE);
 	gtk_label_set_xalign(GTK_LABEL(label), 0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0);
-	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(vbox), label);
 
 	data->sg = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 
@@ -1048,8 +1045,7 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 	                 G_CALLBACK(callback_func), data);
 
 	data->vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-	gtk_container_set_border_width(GTK_CONTAINER(data->vbox), 0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(data->vbox), FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(vbox), GTK_WIDGET(data->vbox));
 
 	g_signal_connect(G_OBJECT(data->window), "response", response_cb, data);
 
@@ -1063,6 +1059,7 @@ rebuild_chat_entries(PidginChatData *data, const char *default_chat_name)
 {
 	PurpleConnection *gc;
 	PurpleProtocol *protocol;
+	GtkWidget *child = NULL;
 	GList *list = NULL, *tmp;
 	GHashTable *defaults = NULL;
 	PurpleProtocolChatEntry *pce;
@@ -1073,7 +1070,11 @@ rebuild_chat_entries(PidginChatData *data, const char *default_chat_name)
 	gc = purple_account_get_connection(data->rq_data.account);
 	protocol = purple_connection_get_protocol(gc);
 
-	gtk_container_foreach(GTK_CONTAINER(data->rq_data.vbox), (GtkCallback)gtk_widget_destroy, NULL);
+	child = gtk_widget_get_first_child(GTK_WIDGET(data->rq_data.vbox));
+	while (child != NULL) {
+		gtk_widget_unparent(child);
+		child = gtk_widget_get_first_child(GTK_WIDGET(data->rq_data.vbox));
+	}
 
 	g_list_free(data->entries);
 	data->entries = NULL;
@@ -1135,8 +1136,6 @@ rebuild_chat_entries(PidginChatData *data, const char *default_chat_name)
 
 	/* Set whether the "OK" button should be clickable initially */
 	set_sensitive_if_input_chat_cb(NULL, data);
-
-	gtk_widget_show_all(GTK_WIDGET(data->rq_data.vbox));
 }
 
 static void
@@ -1187,7 +1186,7 @@ pidgin_blist_joinchat_show(void)
 
 	rebuild_chat_entries(data, NULL);
 
-	gtk_widget_show_all(data->rq_data.window);
+	gtk_widget_show(data->rq_data.window);
 }
 
 static void gtk_blist_row_expanded_cb(GtkTreeView *tv, GtkTreeIter *iter, GtkTreePath *path, gpointer user_data)
@@ -1451,7 +1450,8 @@ pidgin_blist_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
 }
 
 static gboolean
-pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventButton *event)
+pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node,
+                               gdouble x, gdouble y)
 {
 	PidginBlistNode *gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
 	GAction *action = NULL;
@@ -1463,7 +1463,7 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventBut
 
 	gtk_application = GTK_APPLICATION(g_application_get_default());
 
-	action_map = G_ACTION_MAP(gtk_widget_get_action_group(tv, "menu"));
+	action_map = G_ACTION_MAP(gtkblist->action_group);
 
 	/* Create a menu based on the thing we right-clicked on */
 	if (PURPLE_IS_GROUP(node)) {
@@ -1567,15 +1567,14 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventBut
 	g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 
 	/* Now display the menu */
-	if (menu != NULL && event != NULL) {
-		GtkWidget *popover_menu = gtk_popover_menu_new();
+	if (menu != NULL && x >= 0 && y >= 0) {
+		GtkWidget *popover_menu = NULL;
 
-		gtk_popover_bind_model(GTK_POPOVER(popover_menu), G_MENU_MODEL(menu),
-		                       NULL);
-		gtk_popover_set_relative_to(GTK_POPOVER(popover_menu), tv);
+		popover_menu = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+		gtk_widget_set_parent(popover_menu, tv);
 		gtk_popover_set_position(GTK_POPOVER(popover_menu), GTK_POS_BOTTOM);
 		gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu),
-		                            &(const GdkRectangle){(int)event->x, (int)event->y, 1, 1});
+		                            &(const GdkRectangle){(gint)x, (gint)y, 1, 1});
 
 		gtk_popover_popup(GTK_POPOVER(popover_menu));
 
@@ -1586,8 +1585,14 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node, GdkEventBut
 }
 
 static gboolean
-gtk_blist_button_press_cb(GtkWidget *tv, GdkEventButton *event, gpointer user_data)
+gtk_blist_button_press_cb(GtkGestureClick *click, gint n_press, gdouble x,
+                          gdouble y, gpointer data)
 {
+	PidginBuddyList *gtkblist = data;
+	GtkWidget *tv = NULL;
+	GdkEvent *event = NULL;
+	GdkModifierType state;
+	guint button = 0;
 	GtkTreePath *path;
 	PurpleBlistNode *node;
 	GtkTreeIter iter;
@@ -1596,20 +1601,27 @@ gtk_blist_button_press_cb(GtkWidget *tv, GdkEventButton *event, gpointer user_da
 	PidginBlistNode *gtknode;
 	gboolean handled = FALSE;
 
+	tv = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(click));
+	event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(click));
+	button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(click));
+	state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(click));
+
 	/* Here we figure out which node was clicked */
-	if (!gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tv), event->x, event->y, &path, NULL, NULL, NULL))
+	if (!gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tv), x, y, &path, NULL,
+	                                   NULL, NULL)) {
 		return FALSE;
+	}
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(gtkblist->treemodel), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &iter, NODE_COLUMN, &node, -1);
 	gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
 
 	/* Right click draws a context menu */
-	if (gdk_event_triggers_context_menu((GdkEvent *)event)) {
-		handled = pidgin_blist_show_context_menu(tv, node, event);
+	if (gdk_event_triggers_context_menu(event)) {
+		handled = pidgin_blist_show_context_menu(tv, node, x, y);
 
 	/* CTRL+middle click expands or collapse a contact */
-	} else if ((event->button == GDK_BUTTON_MIDDLE) && (event->type == GDK_BUTTON_PRESS) &&
-			   (event->state & GDK_CONTROL_MASK) && (PURPLE_IS_CONTACT(node))) {
+	} else if ((button == GDK_BUTTON_MIDDLE) && (n_press == 1) &&
+			   (state & GDK_CONTROL_MASK) && PURPLE_IS_CONTACT(node)) {
 		if (gtknode->contact_expanded)
 			pidgin_blist_collapse_contact_cb(NULL, node);
 		else
@@ -1617,8 +1629,8 @@ gtk_blist_button_press_cb(GtkWidget *tv, GdkEventButton *event, gpointer user_da
 		handled = TRUE;
 
 	/* Double middle click gets info */
-	} else if ((event->button == GDK_BUTTON_MIDDLE) && (event->type == GDK_2BUTTON_PRESS) &&
-			   ((PURPLE_IS_CONTACT(node)) || (PURPLE_IS_BUDDY(node)))) {
+	} else if ((button == GDK_BUTTON_MIDDLE) && (n_press == 2) &&
+			   (PURPLE_IS_CONTACT(node) || PURPLE_IS_BUDDY(node))) {
 		PurpleAccount *account;
 		PurpleBuddy *b;
 		if(PURPLE_IS_CONTACT(node))
@@ -1656,8 +1668,9 @@ gtk_blist_button_press_cb(GtkWidget *tv, GdkEventButton *event, gpointer user_da
 }
 
 static gboolean
-pidgin_blist_popup_menu_cb(GtkWidget *tv, void *user_data)
+pidgin_blist_popup_menu_cb(GtkWidget *tv, gpointer data)
 {
+	PidginBuddyList *gtkblist = data;
 	PurpleBlistNode *node;
 	GtkTreeIter iter;
 	GtkTreeSelection *sel;
@@ -1670,7 +1683,7 @@ pidgin_blist_popup_menu_cb(GtkWidget *tv, void *user_data)
 	gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &iter, NODE_COLUMN, &node, -1);
 
 	/* Shift+F10 draws a context menu */
-	handled = pidgin_blist_show_context_menu(tv, node, NULL);
+	handled = pidgin_blist_show_context_menu(tv, node, -1, -1);
 
 	return handled;
 }
@@ -1913,7 +1926,7 @@ add_tip_for_account(GtkWidget *grid, gint row, PurpleAccount *account)
 	name = gtk_label_new(purple_account_get_username(account));
 	gtk_label_set_xalign(GTK_LABEL(name), 0);
 	gtk_label_set_yalign(GTK_LABEL(name), 0);
-	gtk_label_set_line_wrap(GTK_LABEL(name), TRUE);
+	gtk_label_set_wrap(GTK_LABEL(name), TRUE);
 	gtk_label_set_max_width_chars(GTK_LABEL(name), 36);
 	gtk_grid_attach(GTK_GRID(grid), name, 1, row, 1, 1);
 }
@@ -2036,7 +2049,7 @@ add_tip_for_node(GtkWidget *grid, gint row, PurpleBlistNode *node, gboolean full
 		gtk_label_set_xalign(GTK_LABEL(contents), 0);
 		gtk_label_set_yalign(GTK_LABEL(contents), 0);
 		gtk_label_set_markup(GTK_LABEL(contents), tooltip_text);
-		gtk_label_set_line_wrap(GTK_LABEL(contents), TRUE);
+		gtk_label_set_wrap(GTK_LABEL(contents), TRUE);
 		gtk_label_set_max_width_chars(GTK_LABEL(contents), 36);
 		gtk_grid_attach(GTK_GRID(grid), contents, 1, row+1, 2, 1);
 	}
@@ -2099,7 +2112,6 @@ pidgin_blist_query_tooltip_for_node(PurpleBlistNode *node, GtkTooltip *tooltip)
 		return FALSE;
 	}
 
-	gtk_widget_show_all(grid);
 	gtk_tooltip_set_custom(tooltip, grid);
 
 	return TRUE;
@@ -3043,9 +3055,9 @@ pidgin_blist_populate_menus(void) {
 
 static void pidgin_blist_show(PurpleBuddyList *list)
 {
-	GSimpleActionGroup *action_group = NULL;
 	void *handle;
 	GtkWidget *sep, *sw;
+	GtkGesture *click = NULL;
 	GtkEventController *key_controller = NULL;
 	GtkTreeSelection *selection;
 
@@ -3100,13 +3112,19 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	                 G_CALLBACK(gtk_blist_row_expanded_cb), gtkblist);
 	g_signal_connect(G_OBJECT(gtkblist->treeview), "row-collapsed",
 	                 G_CALLBACK(gtk_blist_row_collapsed_cb), gtkblist);
-	g_signal_connect(G_OBJECT(gtkblist->treeview), "button-press-event", G_CALLBACK(gtk_blist_button_press_cb), NULL);
-	key_controller = gtk_event_controller_key_new(gtkblist->treeview);
+
+	click = gtk_gesture_click_new();
+	g_signal_connect(click, "pressed", G_CALLBACK(gtk_blist_button_press_cb),
+	                 gtkblist);
+	gtk_widget_add_controller(gtkblist->treeview, GTK_EVENT_CONTROLLER(click));
+
+	key_controller = gtk_event_controller_key_new();
 	g_signal_connect(G_OBJECT(key_controller), "key-pressed",
 	                 G_CALLBACK(pidgin_blist_key_press_cb), gtkblist);
-	g_object_set_data_full(G_OBJECT(gtkblist->treeview), "key-controller",
-	                       key_controller, g_object_unref);
-	g_signal_connect(G_OBJECT(gtkblist->treeview), "popup-menu", G_CALLBACK(pidgin_blist_popup_menu_cb), NULL);
+	gtk_widget_add_controller(gtkblist->treeview, key_controller);
+
+	g_signal_connect(gtkblist->treeview, "popup-menu",
+	                 G_CALLBACK(pidgin_blist_popup_menu_cb), gtkblist);
 
 	/* Enable CTRL+F searching */
 	gtk_tree_view_set_search_column(GTK_TREE_VIEW(gtkblist->treeview), NAME_COLUMN);
@@ -3124,14 +3142,13 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	gtk_box_append(GTK_BOX(gtkblist->vbox), sw);
 
 	sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start(GTK_BOX(gtkblist->vbox), sep, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(gtkblist->vbox), sep);
 
 	/* Update some dynamic things */
 	pidgin_blist_update_sort_methods();
 
 	/* OK... let's show this bad boy. */
 	pidgin_blist_refresh(list);
-	gtk_widget_show_all(GTK_WIDGET(gtkblist->vbox));
 	purple_blist_set_visible(TRUE);
 
 	handle = pidgin_blist_get_handle();
@@ -3160,11 +3177,12 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	handle = pidgin_blist_get_handle();
 	purple_signal_emit(handle, "gtkblist-created", list);
 
-	action_group = g_simple_action_group_new();
-	g_action_map_add_action_entries(G_ACTION_MAP(action_group), menu_actions,
-	                                G_N_ELEMENTS(menu_actions), gtkblist);
+	gtkblist->action_group = G_ACTION_GROUP(g_simple_action_group_new());
+	g_action_map_add_action_entries(G_ACTION_MAP(gtkblist->action_group),
+	                                menu_actions, G_N_ELEMENTS(menu_actions),
+	                                gtkblist);
 	gtk_widget_insert_action_group(gtkblist->treeview, "menu",
-	                               G_ACTION_GROUP(action_group));
+	                               G_ACTION_GROUP(gtkblist->action_group));
 
 	pidgin_blist_populate_menus();
 }
@@ -3678,7 +3696,7 @@ static void pidgin_blist_set_visible(PurpleBuddyList *list, gboolean show)
 	} else {
 		if (!gtk_widget_get_visible(gtkblist->window))
 			gtk_widget_show(gtkblist->window);
-		gtk_window_iconify(GTK_WINDOW(gtkblist->window));
+		/* gtk_window_iconify(GTK_WINDOW(gtkblist->window)); */
 	}
 }
 
@@ -3876,7 +3894,7 @@ pidgin_buddy_list_finalize(GObject *obj)
 
 	purple_signals_disconnect_by_handle(gtkblist);
 
-	gtk_widget_destroy(gtkblist->window);
+	gtk_window_destroy(GTK_WINDOW(gtkblist->window));
 
 	gtkblist->window = gtkblist->vbox = gtkblist->treeview = NULL;
 	g_clear_object(&gtkblist->treemodel);

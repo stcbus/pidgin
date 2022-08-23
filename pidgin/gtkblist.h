@@ -69,7 +69,7 @@ struct _PidginBuddyList {
 
 	GtkCellRenderer *text_rend;
 
-	GtkWidget *menu;
+	GActionGroup *action_group;
 
 	PurpleBlistNode *selected_node;
 };
