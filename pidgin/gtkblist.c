@@ -89,7 +89,7 @@ enum {
 	NODE_COLUMN,
 	EMBLEM_COLUMN,
 	EMBLEM_VISIBLE_COLUMN,
-	PROTOCOL_ICON_COLUMN,
+	PROTOCOL_ICON_NAME_COLUMN,
 	BLIST_COLUMNS
 };
 
@@ -1897,18 +1897,17 @@ static gboolean buddy_is_displayable(PurpleBuddy *buddy)
 static void
 add_tip_for_account(GtkWidget *grid, gint row, PurpleAccount *account)
 {
-	GdkPixbuf *protocol_icon = NULL;
+	PurpleProtocol *protocol = NULL;
 	GtkWidget *image = NULL;
 	GtkWidget *name = NULL;
+	const gchar *icon_name = NULL;
 
-	protocol_icon = pidgin_create_protocol_icon(account, PIDGIN_PROTOCOL_ICON_SMALL);
-	if (purple_account_is_disconnected(account)) {
-		gdk_pixbuf_saturate_and_pixelate(protocol_icon, protocol_icon, 0.0, FALSE);
-	}
-	image = gtk_image_new_from_pixbuf(protocol_icon);
+	protocol = purple_account_get_protocol(account);
+	icon_name = purple_protocol_get_icon_name(protocol);
+
+	image = gtk_image_new_from_icon_name(icon_name);
 	gtk_image_set_pixel_size(GTK_IMAGE(image), STATUS_SIZE);
 	gtk_grid_attach(GTK_GRID(grid), image, 0, row, 1, 1);
-	g_clear_object(&protocol_icon);
 
 	name = gtk_label_new(purple_account_get_username(account));
 	gtk_label_set_xalign(GTK_LABEL(name), 0);
@@ -1965,13 +1964,13 @@ add_tip_for_node(GtkWidget *grid, gint row, PurpleBlistNode *node, gboolean full
 	gtk_grid_attach(GTK_GRID(grid), name, 1, row, 1, 1);
 
 	if (account != NULL) {
-		GdkPixbuf *protocol_icon = pidgin_create_protocol_icon(
-		        account, PIDGIN_PROTOCOL_ICON_SMALL);
-		image = gtk_image_new_from_pixbuf(protocol_icon);
+		PurpleProtocol *protocol = purple_account_get_protocol(account);
+		const gchar *icon_name = purple_protocol_get_icon_name(protocol);
+
+		image = gtk_image_new_from_icon_name(icon_name);
 		gtk_image_set_pixel_size(GTK_IMAGE(image), STATUS_SIZE);
 		gtk_widget_set_halign(image, GTK_ALIGN_END);
 		gtk_grid_attach(GTK_GRID(grid), image, 2, row, 1, 1);
-		g_clear_object(&protocol_icon);
 	}
 
 	tooltip_text = pidgin_get_tooltip_text(node, full);
@@ -1986,12 +1985,6 @@ add_tip_for_node(GtkWidget *grid, gint row, PurpleBlistNode *node, gboolean full
 	}
 
 	avatar = pidgin_blist_get_buddy_icon(node, !full, FALSE);
-#if 0  /* Protocol Icon as avatar */
-	if(!avatar && full) {
-		avatar = pidgin_create_protocol_icon(account, PIDGIN_PROTOCOL_ICON_LARGE);
-	}
-#endif
-
 	if (avatar != NULL) {
 		avatar_image = gtk_image_new_from_pixbuf(avatar);
 		gtk_widget_set_halign(avatar_image, GTK_ALIGN_END);
@@ -2980,7 +2973,7 @@ pidgin_blist_build_layout(PurpleBuddyList *list)
 	rend = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(column, rend, FALSE);
 	gtk_tree_view_column_set_attributes(column, rend,
-	                                    "pixbuf", PROTOCOL_ICON_COLUMN,
+	                                    "icon-name", PROTOCOL_ICON_NAME_COLUMN,
 	                                    NULL);
 	g_object_set(rend, "xalign", 0.0, "xpad", 3, "ypad", 0, NULL);
 
@@ -3097,7 +3090,7 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 						 G_TYPE_POINTER,  /* Node */
 						 GDK_TYPE_PIXBUF, /* Emblem */
 						 G_TYPE_BOOLEAN,  /* Emblem visible */
-						 GDK_TYPE_PIXBUF /* Protocol icon */
+						 G_TYPE_STRING /* Protocol icon */
 						);
 
 	gtkblist->treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gtkblist->treemodel));
@@ -3469,10 +3462,12 @@ static char *pidgin_get_group_title(PurpleBlistNode *gnode, gboolean expanded)
 static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *node)
 {
 	PurplePresence *presence = purple_buddy_get_presence(buddy);
-	GdkPixbuf *status, *avatar, *emblem, *protocol_icon;
+	PurpleProtocol *protocol = NULL;
+	GdkPixbuf *status, *avatar, *emblem;
 	char *mark;
 	char *idle = NULL;
 	gboolean selected = (gtkblist->selected_node == node);
+	const gchar *protocol_icon_name = NULL;
 
 	if(editing_blist) {
 		return;
@@ -3491,7 +3486,8 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 	emblem = pidgin_blist_get_emblem(PURPLE_BLIST_NODE(buddy));
 	mark = pidgin_blist_get_name_markup(buddy, selected, TRUE);
 
-	protocol_icon = pidgin_create_protocol_icon(purple_buddy_get_account(buddy), PIDGIN_PROTOCOL_ICON_SMALL);
+	protocol = purple_account_get_protocol(purple_buddy_get_account(buddy));
+	protocol_icon_name = purple_protocol_get_icon_name(protocol);
 
 	gtk_tree_store_set(gtkblist->treemodel, iter,
 			   STATUS_ICON_COLUMN, status,
@@ -3500,7 +3496,7 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 			   BUDDY_ICON_COLUMN, avatar,
 			   EMBLEM_COLUMN, emblem,
 			   EMBLEM_VISIBLE_COLUMN, (emblem != NULL),
-			   PROTOCOL_ICON_COLUMN, protocol_icon,
+			   PROTOCOL_ICON_NAME_COLUMN, protocol_icon_name,
 			-1);
 
 	g_free(mark);
@@ -3511,8 +3507,6 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 		g_object_unref(status);
 	if(avatar)
 		g_object_unref(avatar);
-	if(protocol_icon)
-		g_object_unref(protocol_icon);
 }
 
 /* This is a variation on the original gtk_blist_update_contact. Here we
@@ -3627,12 +3621,14 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 	chat = (PurpleChat*)node;
 
 	if(purple_account_is_connected(purple_chat_get_account(chat))) {
+		PurpleProtocol *protocol = NULL;
 		GtkTreeIter iter;
-		GdkPixbuf *status, *avatar, *emblem, *protocol_icon;
+		GdkPixbuf *status, *avatar, *emblem;
 		const gchar *color = NULL;
 		gchar *mark, *tmp;
 		gboolean selected = (gtkblist->selected_node == node);
 		gboolean nick_said = FALSE;
+		const gchar *protocol_icon_name = NULL;
 
 		if (!insert_node(list, node, &iter))
 			return;
@@ -3654,7 +3650,8 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 			mark = tmp;
 		}
 
-		protocol_icon = pidgin_create_protocol_icon(purple_chat_get_account(chat), PIDGIN_PROTOCOL_ICON_SMALL);
+		protocol = purple_account_get_protocol(purple_chat_get_account(chat));
+		protocol_icon_name = purple_protocol_get_icon_name(protocol);
 
 		gtk_tree_store_set(gtkblist->treemodel, &iter,
 				STATUS_ICON_COLUMN, status,
@@ -3662,7 +3659,7 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 				BUDDY_ICON_COLUMN, avatar,
 				EMBLEM_COLUMN, emblem,
 				EMBLEM_VISIBLE_COLUMN, emblem != NULL,
-				PROTOCOL_ICON_COLUMN, protocol_icon,
+				PROTOCOL_ICON_NAME_COLUMN, protocol_icon_name,
 				NAME_COLUMN, mark,
 				-1);
 
@@ -3673,9 +3670,6 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 			g_object_unref(status);
 		if(avatar)
 			g_object_unref(avatar);
-		if(protocol_icon)
-			g_object_unref(protocol_icon);
-
 	} else {
 		pidgin_blist_hide_node(list, node, TRUE);
 	}

@@ -121,58 +121,6 @@ pidgin_make_frame(GtkWidget *parent, const char *title)
 	return vbox2;
 }
 
-GdkPixbuf *
-pidgin_create_icon_from_protocol(PurpleProtocol *protocol,
-                                 PidginProtocolIconSize size,
-                                 PurpleAccount *account)
-{
-	GdkPixbuf *pixbuf;
-	const char *protoname = NULL;
-	const gchar *icon_name = NULL;
-	char *tmp;
-	GtkIconTheme *theme = NULL;
-	gint dimensions = 0;
-
-	theme = gtk_icon_theme_get_default();
-	if(size == PIDGIN_PROTOCOL_ICON_SMALL) {
-		dimensions = 16;
-	} else if(size == PIDGIN_PROTOCOL_ICON_MEDIUM) {
-		dimensions = 22;
-	} else {
-		dimensions = 48;
-	}
-
-	/* If the protocol specified an icon-name try to load it from the icon
-	 * theme.
-	 */
-	icon_name = purple_protocol_get_icon_name(protocol);
-	if(icon_name != NULL) {
-		pixbuf = gtk_icon_theme_load_icon(theme, icon_name, dimensions,
-		                                  GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-
-		if(GDK_IS_PIXBUF(pixbuf)) {
-			return pixbuf;
-		}
-
-	}
-
-	protoname = purple_protocol_get_list_icon(protocol, account, NULL);
-	if (protoname == NULL) {
-		return NULL;
-	}
-
-	/*
-	 * Status icons will be themeable too, and then it will look up
-	 * protoname from the theme
-	 */
-	tmp = g_strconcat("im-", protoname, NULL);
-	pixbuf = gtk_icon_theme_load_icon(theme, tmp, dimensions,
-					  GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-	g_free(tmp);
-
-	return pixbuf;
-}
-
 static void
 aop_option_menu_select_by_data(GtkWidget *optmenu, gpointer data)
 {
@@ -261,19 +209,6 @@ void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec,
 		*width = 100;
 	if(*height > 100)
 		*height = 100;
-}
-
-GdkPixbuf *
-pidgin_create_protocol_icon(PurpleAccount *account, PidginProtocolIconSize size)
-{
-	PurpleProtocol *protocol;
-
-	g_return_val_if_fail(account != NULL, NULL);
-
-	protocol = purple_account_get_protocol(account);
-	if (protocol == NULL)
-		return NULL;
-	return pidgin_create_icon_from_protocol(protocol, size, account);
 }
 
 static gboolean buddyname_completion_match_func(GtkEntryCompletion *completion,

@@ -89,20 +89,18 @@ static GtkWidget * create_account_field(PurpleRequestField *field);
 static void
 pidgin_widget_decorate_account(GtkWidget *cont, PurpleAccount *account)
 {
+	PurpleProtocol *protocol = NULL;
 	GtkWidget *image;
-	GdkPixbuf *pixbuf;
+	const gchar *icon_name = NULL;
 
 	if(!PURPLE_IS_ACCOUNT(account)) {
 		return;
 	}
 
-	pixbuf = pidgin_create_protocol_icon(account, PIDGIN_PROTOCOL_ICON_SMALL);
-	if(!GDK_IS_PIXBUF(pixbuf)) {
-		return;
-	}
+	protocol = purple_account_get_protocol(account);
+	icon_name = purple_protocol_get_icon_name(protocol);
 
-	image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(G_OBJECT(pixbuf));
+	image = gtk_image_new_from_icon_name(icon_name);
 
 	gtk_widget_set_tooltip_text(image, purple_account_get_username(account));
 
@@ -1557,7 +1555,6 @@ static GdkPixbuf*
 _pidgin_datasheet_stock_icon_get(const gchar *stock_name)
 {
 	GdkPixbuf *image = NULL;
-	gchar *domain, *id;
 
 	if (stock_name == NULL)
 		return NULL;
@@ -1572,46 +1569,9 @@ _pidgin_datasheet_stock_icon_get(const gchar *stock_name)
 		return image;
 	}
 
-	domain = g_strdup(stock_name);
-	id = strchr(domain, '/');
-	if (!id) {
-		g_free(domain);
-		return NULL;
-	}
-	id[0] = '\0';
-	id++;
+	purple_debug_error("gtkrequest", "Unknown icon: %s", stock_name);
 
-	if (purple_strequal(domain, "protocol")) {
-		PurpleAccount *account;
-		PurpleAccountManager *manager = NULL;
-		gchar *protocol_id, *accountname;
-
-		protocol_id = id;
-		accountname = strchr(id, ':');
-
-		if (!accountname) {
-			g_free(domain);
-			return NULL;
-		}
-
-		accountname[0] = '\0';
-		accountname++;
-
-		manager = purple_account_manager_get_default();
-		account = purple_account_manager_find(manager, accountname,
-		                                      protocol_id);
-		if(account) {
-			image = pidgin_create_protocol_icon(account,
-				PIDGIN_PROTOCOL_ICON_SMALL);
-		}
-	} else {
-		purple_debug_error("gtkrequest", "Unknown domain: %s", domain);
-		g_free(domain);
-		return NULL;
-	}
-
-	g_hash_table_insert(datasheet_stock, g_strdup(stock_name), image);
-	return image;
+	return NULL;
 }
 
 static PurpleRequestDatasheetRecord*

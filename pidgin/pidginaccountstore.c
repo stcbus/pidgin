@@ -37,12 +37,14 @@ static void
 pidgin_account_store_add_account(PidginAccountStore *store,
                                  PurpleAccount *account)
 {
+	PurpleProtocol *protocol = NULL;
 	GtkTreeIter iter;
 	GdkPixbuf *pixbuf = NULL;
 	gchar *markup = NULL;
-	const gchar *alias = NULL;
+	const gchar *alias = NULL, *icon_name = NULL;
 
-	pixbuf = pidgin_create_protocol_icon(account, PIDGIN_PROTOCOL_ICON_SMALL);
+	protocol = purple_account_get_protocol(account);
+	icon_name = purple_protocol_get_icon_name(protocol);
 
 	alias = purple_account_get_private_alias(account);
 	if(alias != NULL) {
@@ -62,11 +64,10 @@ pidgin_account_store_add_account(PidginAccountStore *store,
 		&iter,
 		PIDGIN_ACCOUNT_STORE_COLUMN_ACCOUNT, account,
 		PIDGIN_ACCOUNT_STORE_COLUMN_MARKUP, markup,
-		PIDGIN_ACCOUNT_STORE_COLUMN_ICON, pixbuf,
+		PIDGIN_ACCOUNT_STORE_COLUMN_ICON_NAME, icon_name,
 		-1
 	);
 
-	g_clear_object(&pixbuf);
 	g_free(markup);
 }
 
@@ -150,7 +151,7 @@ pidgin_account_store_init(PidginAccountStore *store) {
 	GType types[PIDGIN_ACCOUNT_STORE_N_COLUMNS] = {
 		PURPLE_TYPE_ACCOUNT,
 		G_TYPE_STRING,
-		GDK_TYPE_PIXBUF,
+		G_TYPE_STRING,
 	};
 
 	gtk_list_store_set_column_types(

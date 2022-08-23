@@ -111,15 +111,17 @@ searchresults_callback_wrapper_cb(GtkWidget *widget, PidginNotifySearchResultsBu
 static void
 pidgin_widget_decorate_account(GtkWidget *cont, PurpleAccount *account)
 {
+	PurpleProtocol *protocol = NULL;
 	GtkWidget *image;
-	GdkPixbuf *pixbuf;
+	const gchar *icon_name = NULL;
 
 	if (!account)
 		return;
 
-	pixbuf = pidgin_create_protocol_icon(account, PIDGIN_PROTOCOL_ICON_SMALL);
-	image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(G_OBJECT(pixbuf));
+	protocol = purple_account_get_protocol(account);
+	icon_name = purple_protocol_get_icon_name(protocol);
+
+	image = gtk_image_new_from_icon_name(icon_name);
 
 	gtk_widget_set_tooltip_text(image,
 		purple_account_get_username(account));
@@ -322,20 +324,22 @@ pidgin_notify_searchresults_new_rows(PurpleConnection *gc, PurpleNotifySearchRes
 									   void *data_)
 {
 	PidginNotifySearchResultsData *data = data_;
+	PurpleProtocol *protocol = NULL;
 	GtkListStore *model = data->model;
 	GtkTreeIter iter;
-	GdkPixbuf *pixbuf;
 	GList *row, *column;
 	guint n;
+	const gchar *icon_name = NULL;
 
 	gtk_list_store_clear(data->model);
 
-	pixbuf = pidgin_create_protocol_icon(purple_connection_get_account(gc), PIDGIN_PROTOCOL_ICON_SMALL);
+	protocol = purple_account_get_protocol(purple_connection_get_account(gc));
+	icon_name = purple_protocol_get_icon_name(protocol);
 
 	for (row = results->rows; row != NULL; row = row->next) {
 
 		gtk_list_store_append(model, &iter);
-		gtk_list_store_set(model, &iter, 0, pixbuf, -1);
+		gtk_list_store_set(model, &iter, 0, icon_name, -1);
 
 		n = 1;
 		for (column = row->data; column != NULL; column = column->next) {
@@ -348,9 +352,6 @@ pidgin_notify_searchresults_new_rows(PurpleConnection *gc, PurpleNotifySearchRes
 			n++;
 		}
 	}
-
-	if (pixbuf != NULL)
-		g_object_unref(pixbuf);
 }
 
 static void *
@@ -443,7 +444,7 @@ pidgin_notify_searchresults(PurpleConnection *gc, const char *title,
 
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-					-1, "", renderer, "pixbuf", 0, NULL);
+					-1, "", renderer, "icon-name", 0, NULL);
 
 	i = 1;
 	for (columniter = results->columns; columniter != NULL; columniter = columniter->next) {

@@ -927,6 +927,8 @@ version 3.0.0 (??/??/????):
 		* pidgin_conversations_fill_menu
 		* pidgin_conversations_get_unseen_all
 		* pidgin_create_dialog, use pidgin_dialog_new instead.
+		* pidgin_create_icon_from_protocol
+		* pidgin_create_protocol_icon
 		* pidgin_create_small_button, use pidgin_close_button_new instead.
 		* pidgin_create_status_icon
 		* pidgin_create_window, use pidgin_window_new instead.
