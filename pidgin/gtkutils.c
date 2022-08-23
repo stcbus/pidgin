@@ -45,7 +45,6 @@
 #include "gtkdialogs.h"
 #include "gtkrequest.h"
 #include "gtkutils.h"
-#include "minidialog.h"
 #include "pidgincore.h"
 
 /******************************************************************************

@@ -26,8 +26,9 @@
 
 #include "pidgin/pidginnotificationlist.h"
 
-#include "pidgin/pidginnotificationconnectionerror.h"
+#include "pidgin/pidginnotificationaddcontact.h"
 #include "pidgin/pidginnotificationauthorizationrequest.h"
+#include "pidgin/pidginnotificationconnectionerror.h"
 
 struct _PidginNotificationList {
 	GtkBox parent;
@@ -74,6 +75,9 @@ pidgin_notification_list_create_widget_func(gpointer item, gpointer data) {
 			break;
 		case PURPLE_NOTIFICATION_TYPE_AUTHORIZATION_REQUEST:
 			widget = pidgin_notification_authorization_request_new(notification);
+			break;
+		case PURPLE_NOTIFICATION_TYPE_ADD_CONTACT:
+			widget = pidgin_notification_add_contact_new(notification);
 			break;
 		default:
 			widget = pidgin_notification_list_unknown_notification(notification);

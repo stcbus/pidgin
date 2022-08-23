@@ -237,6 +237,7 @@ libpurple/purpleaccountmanager.c
 libpurple/purpleaccountoption.c
 libpurple/purpleaccountpresence.c
 libpurple/purpleaccountusersplit.c
+libpurple/purpleaddcontactrequest.c
 libpurple/purpleattachment.c
 libpurple/purplebuddypresence.c
 libpurple/purplechatconversation.c
@@ -332,7 +333,6 @@ pidgin/gtkutils.c
 pidgin/gtkwhiteboard.c
 pidgin/gtkxfer.c
 pidgin/libpidgin.c
-pidgin/minidialog.c
 pidgin/pidginabout.c
 pidgin/pidginaccountchooser.c
 pidgin/pidginaccounteditor.c
@@ -368,7 +368,6 @@ pidgin/pidginpresenceicon.c
 pidgin/pidginprotocolchooser.c
 pidgin/pidginprotocolstore.c
 pidgin/pidginproxyoptions.c
-pidgin/pidginscrollbook.c
 pidgin/pidginstatusbox.c
 pidgin/pidginstatuseditor.c
 pidgin/pidginstatusmanager.c

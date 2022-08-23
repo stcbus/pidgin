@@ -34,7 +34,6 @@
 #include "gtkutils.h"
 #include "pidgincore.h"
 #include "pidgindialog.h"
-#include "minidialog.h"
 #include "pidginprotocolchooser.h"
 #include "pidginproxyoptions.h"
 
@@ -1281,91 +1280,8 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
  * Accounts Dialog
  **************************************************************************/
 
-static void
-free_add_user_data(G_GNUC_UNUSED PidginMiniDialog *mini_dialog,
-                   G_GNUC_UNUSED GtkButton *button,
-                   gpointer user_data)
-{
-	PidginAccountAddUserData *data = user_data;
-	g_free(data->username);
-	g_free(data->alias);
-	g_free(data);
-}
-
-static void
-add_user_cb(G_GNUC_UNUSED PidginMiniDialog *mini_dialog,
-            G_GNUC_UNUSED GtkButton *button, gpointer user_data)
-{
-	PidginAccountAddUserData *data = user_data;
-	PurpleConnection *gc = purple_account_get_connection(data->account);
-
-	if (g_list_find(purple_connections_get_all(), gc))
-	{
-		purple_blist_request_add_buddy(data->account, data->username,
-									 NULL, data->alias);
-	}
-
-	free_add_user_data(NULL, NULL, user_data);
-}
-
-static char *
-make_info(PurpleAccount *account, PurpleConnection *gc, const char *remote_user,
-          const char *id, const char *alias, const char *msg)
-{
-	if (msg != NULL && *msg == '\0')
-		msg = NULL;
-
-	return g_strdup_printf(_("%s%s%s%s has made %s his or her buddy%s%s"),
-	                       remote_user,
-	                       (alias != NULL ? " ("  : ""),
-	                       (alias != NULL ? alias : ""),
-	                       (alias != NULL ? ")"   : ""),
-	                       (id != NULL
-	                        ? id
-	                        : (purple_connection_get_display_name(gc) != NULL
-	                           ? purple_connection_get_display_name(gc)
-	                           : purple_account_get_username(account))),
-	                       (msg != NULL ? ": " : "."),
-	                       (msg != NULL ? msg  : ""));
-}
-
-static void
-pidgin_accounts_request_add(PurpleAccount *account, const char *remote_user,
-                              const char *id, const char *alias,
-                              const char *msg)
-{
-	char *buffer;
-	PurpleConnection *gc;
-	PidginAccountAddUserData *data;
-	GtkWidget *alert;
-
-	gc = purple_account_get_connection(account);
-
-	data = g_new0(PidginAccountAddUserData, 1);
-	data->account  = account;
-	data->username = g_strdup(remote_user);
-	data->alias    = g_strdup(alias);
-
-	buffer = make_info(account, gc, remote_user, id, alias, msg);
-	alert = pidgin_mini_dialog_new_with_buttons(
-		_("Add buddy to your list?"), buffer, "dialog-question", data,
-		_("Add"), add_user_cb, _("Cancel"), free_add_user_data, NULL);
-	pidgin_blist_add_alert(alert);
-
-	g_free(buffer);
-}
-
-static void
-pidgin_accounts_request_close(void *ui_handle)
-{
-	gtk_widget_destroy(GTK_WIDGET(ui_handle));
-}
-
-static PurpleAccountUiOps ui_ops =
-{
-	.request_add = pidgin_accounts_request_add,
-	.close_account_request = pidgin_accounts_request_close,
-};
+/* This still exists because gtkprivacy calls it to add the privacy ui ops */
+static PurpleAccountUiOps ui_ops = {};
 
 PurpleAccountUiOps *
 pidgin_accounts_get_ui_ops(void)

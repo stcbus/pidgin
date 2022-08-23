@@ -441,6 +441,38 @@ purple_notification_new(PurpleNotificationType type, PurpleAccount *account,
 }
 
 PurpleNotification *
+purple_notification_new_from_add_contact_request(PurpleAddContactRequest *request)
+{
+	PurpleAccount *account = NULL;
+	PurpleNotification *notification = NULL;
+	gchar *title = NULL;
+	const gchar *alias = NULL, *username = NULL;
+
+	g_return_val_if_fail(PURPLE_IS_ADD_CONTACT_REQUEST(request), NULL);
+
+	account = purple_add_contact_request_get_account(request);
+	notification = purple_notification_new(PURPLE_NOTIFICATION_TYPE_ADD_CONTACT,
+	                                       account, request, g_object_unref);
+
+	username = purple_add_contact_request_get_username(request);
+	alias = purple_add_contact_request_get_alias(request);
+
+	if(alias != NULL && *alias != '\0') {
+		title = g_strdup_printf(_("%s (%s) added %s to their contact list"),
+		                        alias, username,
+		                        purple_account_get_username(account));
+	} else {
+		title = g_strdup_printf(_("%s added %s to their contact list"),
+		                        username, purple_account_get_username(account));
+	}
+
+	purple_notification_set_title(notification, title);
+	g_free(title);
+
+	return notification;
+}
+
+PurpleNotification *
 purple_notification_new_from_authorization_request(PurpleAuthorizationRequest *authorization_request)
 {
 	PurpleAccount *account = NULL;

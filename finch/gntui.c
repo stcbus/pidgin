@@ -98,7 +98,6 @@ void finch_ui_init()
 
 	/* Accounts */
 	finch_accounts_init();
-	purple_accounts_set_ui_ops(finch_accounts_get_ui_ops());
 
 	/* Connections */
 	finch_connections_init();

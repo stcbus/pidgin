@@ -251,7 +251,6 @@ pidgin_ui_init(void)
 	}
 
 	/* Set the UI operation structures. */
-	purple_accounts_set_ui_ops(pidgin_accounts_get_ui_ops());
 	purple_xfers_set_ui_ops(pidgin_xfers_get_ui_ops());
 	purple_blist_set_ui(PIDGIN_TYPE_BUDDY_LIST);
 	purple_notify_set_ui_ops(pidgin_notify_get_ui_ops());

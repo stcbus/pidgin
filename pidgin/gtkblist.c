@@ -35,7 +35,6 @@
 #include "gtkprivacy.h"
 #include "gtkroomlist.h"
 #include "gtkutils.h"
-#include "pidgin/minidialog.h"
 #include "pidgin/pidginaccountchooser.h"
 #include "pidgin/pidginaccountfilterconnected.h"
 #include "pidgin/pidginaccountstore.h"
@@ -47,7 +46,6 @@
 #include "pidgin/pidgindebug.h"
 #include "pidgin/pidginmooddialog.h"
 #include "pidgin/pidginplugininfo.h"
-#include "pidginscrollbook.h"
 #include "pidgin/pidginstylecontext.h"
 
 #include <gdk/gdkkeysyms.h>
@@ -3152,9 +3150,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_pack_start(GTK_BOX(gtkblist->vbox), sep, FALSE, FALSE, 0);
 
-	gtkblist->scrollbook = pidgin_scroll_book_new();
-	gtk_box_pack_start(GTK_BOX(gtkblist->vbox), gtkblist->scrollbook, FALSE, FALSE, 0);
-
 	/* Update some dynamic things */
 	pidgin_blist_update_sort_methods();
 
@@ -3763,11 +3758,6 @@ pidgin_blist_request_add_group(PurpleBuddyList *list)
 					   _("Add"), G_CALLBACK(add_group_cb),
 					   _("Cancel"), NULL,
 					   NULL, NULL);
-}
-
-void pidgin_blist_add_alert(GtkWidget *widget)
-{
-	gtk_container_add(GTK_CONTAINER(gtkblist->scrollbook), widget);
 }
 
 PidginBuddyList *

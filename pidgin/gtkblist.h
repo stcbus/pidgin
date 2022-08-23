@@ -72,8 +72,6 @@ struct _PidginBuddyList {
 	GtkWidget *menu;
 
 	PurpleBlistNode *selected_node;
-
-	GtkWidget *scrollbook;
 };
 
 G_BEGIN_DECLS

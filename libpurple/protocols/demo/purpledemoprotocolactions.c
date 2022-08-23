@@ -33,6 +33,30 @@
 #define TEMPORARY_TICK_PLURAL_STR N_("Pruning connection in %d seconds...")
 #define TEMPORARY_DISCONNECT_STR N_("%s pruned the connection")
 
+static const gchar *contacts[] = {"Alice", "Bob", "Carlos", "Erin", NULL };
+
+static void
+purple_demo_protocol_remote_add(G_GNUC_UNUSED GSimpleAction *action,
+                                GVariant *parameter,
+                                G_GNUC_UNUSED gpointer data)
+{
+	PurpleAccount *account = NULL;
+	PurpleAccountManager *manager = NULL;
+	const gchar *account_id = NULL;
+	static gint counter = 0;
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+
+	purple_account_request_add(account, contacts[counter], NULL, NULL);
+
+	counter++;
+	if(counter >= G_N_ELEMENTS(contacts)) {
+		counter = 0;
+	}
+}
+
 static gboolean
 purple_demo_protocol_failure_tick(gpointer data,
                                   PurpleConnectionError error_code,
@@ -175,7 +199,11 @@ purple_demo_protocol_get_action_group(PurpleProtocolActions *actions,
 			.name = "fatal-failure",
 			.activate = purple_demo_protocol_fatal_failure_action_activate,
 			.parameter_type = "s",
-		},
+		}, {
+			.name = "remote-add",
+			.activate = purple_demo_protocol_remote_add,
+			.parameter_type = "s",
+		}
 	};
 	gsize nentries = G_N_ELEMENTS(entries);
 
@@ -203,6 +231,13 @@ purple_demo_protocol_get_menu(PurpleProtocolActions *actions)
 
 	item = g_menu_item_new(_("Trigger fatal connection failure..."),
 	                       "prpl-demo.fatal-failure");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Trigger a contact adding you"),
+	                       "prpl-demo.remote-add");
 	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
 	                          "account");
 	g_menu_append_item(menu, item);

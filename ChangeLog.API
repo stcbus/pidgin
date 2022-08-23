@@ -332,6 +332,8 @@ version 3.0.0 (??/??/????):
 		* PurpleAccount->ui_data
 		* PurpleAccountPrefsUiOps
 		* PurpleAccountRequestType
+		* PurpleAccountUiOps:close_account_request
+		* PurpleAccountUiOps:request_add
 		* PurpleAccountUiOps:request_authorization
 		* purple_account_add_buddies_with_invite
 		* purple_account_add_buddy_with_invite
@@ -825,6 +827,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_append_blist_node_privacy_menu
 		* pidgin_append_blist_node_proto_menu
 		* pidgin_append_menu_action
+		* pidgin_blist_add_alert
 		* pidgin_blist_draw_tooltip
 		* pidgin_blist_get_theme
 		* pidgin_blist_layout_get_type
@@ -969,9 +972,22 @@ version 3.0.0 (??/??/????):
 		* PidginIconThemeLoaderClass
 		* pidgin_idle_get_ui_ops
 		* pidgin_load_accels
-		* pidgin_make_mini_dialog_with_custom_icon; use
-		  pidgin_mini_dialog_new_with_custom_icon instead.
+		* pidgin_make_mini_dialog_with_custom_icon
 		* pidgin_make_pretty_arrows
+		* PidginMiniDialog
+		* PidginMiniDialogCallback
+		* pidgin_mini_dialog_add_button
+		* pidgin_mini_dialog_add_non_closing_button
+		* pidgin_mini_dialog_enable_description_markup
+		* pidgin_mini_dialog_get_num_children
+		* pidgin_mini_dialog_new
+		* pidgin_mini_dialog_new_with_buttons
+		* pidgin_mini_dialog_new_with_custom_icon
+		* pidgin_mini_dialog_set_custom_icon
+		* pidgin_mini_dialog_set_description
+		* pidgin_mini_dialog_set_icon_name
+		* pidgin_mini_dialog_set_link_callback
+		* pidgin_mini_dialog_set_title
 		* pidgin_menu_position_func_helper
 		* pidgin_mini_dialog_links_supported
 		* pidgin_new_check_item
@@ -991,6 +1007,9 @@ version 3.0.0 (??/??/????):
 		* pidgin_protocol_option_menu_get_selected
 		* pidgin_save_accels
 		* pidgin_save_accels_cb
+		* PidginScrollBook
+		* pidgin_scroll_book_new
+		* pidgin_scroll_book_get_notebook
 		* pidgin_separator
 		* pidgin_set_cursor
 		* pidgin_set_custom_buddy_icon
@@ -1097,6 +1116,7 @@ version 3.0.0 (??/??/????):
 		* gnt_ui_uninit renamed to finch_ui_uninit
 
 		Removed:
+		* finch_accounts_get_ui_ops
 		* finch_idle_get_ui_ops
 		* finch_pounce_editor_show
 		* finch_pounces_get_handle

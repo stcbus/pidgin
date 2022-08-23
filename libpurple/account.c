@@ -31,6 +31,7 @@
 #include "prefs.h"
 #include "purpleaccountmanager.h"
 #include "purpleaccountpresence.h"
+#include "purpleaddcontactrequest.h"
 #include "purpleconversationmanager.h"
 #include "purplecredentialmanager.h"
 #include "purplenotification.h"
@@ -1163,18 +1164,28 @@ purple_account_is_disconnecting(PurpleAccount *account)
 
 void
 purple_account_request_add(PurpleAccount *account, const char *remote_user,
-                         const char *id, const char *alias,
-                         const char *message)
+                           const char *alias, const char *message)
 {
-	PurpleAccountUiOps *ui_ops;
+	PurpleAddContactRequest *request = NULL;
+	PurpleNotification *notification = NULL;
+	PurpleNotificationManager *manager = NULL;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(remote_user != NULL);
 
-	ui_ops = purple_accounts_get_ui_ops();
+	request = purple_add_contact_request_new(account, remote_user);
+	if(alias != NULL && *alias != '\0') {
+		purple_add_contact_request_set_alias(request, alias);
+	}
 
-	if (ui_ops != NULL && ui_ops->request_add != NULL)
-		ui_ops->request_add(account, remote_user, id, alias, message);
+	if(message != NULL && *message != '\0') {
+		purple_add_contact_request_set_message(request, message);
+	}
+
+	notification = purple_notification_new_from_add_contact_request(request);
+
+	manager = purple_notification_manager_get_default();
+	purple_notification_manager_add(manager, notification);
 }
 
 void

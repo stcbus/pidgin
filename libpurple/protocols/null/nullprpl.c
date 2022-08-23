@@ -703,7 +703,6 @@ null_add_buddy(PurpleProtocolServer *protocol_server, PurpleConnection *gc,
                         purple_buddy_get_name(buddy), username);
       purple_account_request_add(buddy_acct,
                                  username,
-                                 NULL,   /* local account id (rarely used) */
                                  NULL,   /* alias */
                                  message);  /* message */
     }

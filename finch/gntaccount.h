@@ -34,15 +34,6 @@
  **********************************************************************/
 
 /**
- * finch_accounts_get_ui_ops:
- *
- * Get the ui-functions.
- *
- * Returns: The PurpleAccountUiOps structure populated with the appropriate functions.
- */
-PurpleAccountUiOps *finch_accounts_get_ui_ops(void);
-
-/**
  * finch_accounts_init:
  *
  * Perform necessary initializations.

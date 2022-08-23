@@ -36,11 +36,6 @@ typedef struct _PurpleAccountUiOps  PurpleAccountUiOps;
 /**
  * PurpleAccountUiOps:
  * @status_changed:        This account's status changed.
- * @request_add:           Someone we don't have on our list added us; prompt
- *                         to add them.
- * @close_account_request: Close a pending request for authorization.
- *                         @ui_handle is a handle as returned by
- *                         @request_authorize.
  * @permit_added: Called during a call to purple_account_privacy_permit_add().
  * @permit_removed: Called during a call to
  *                  purple_account_privacy_permit_removed().
@@ -55,14 +50,6 @@ struct _PurpleAccountUiOps
 {
 	void (*status_changed)(PurpleAccount *account,
 	                       PurpleStatus *status);
-
-	void (*request_add)(PurpleAccount *account,
-	                    const char *remote_user,
-	                    const char *id,
-	                    const char *alias,
-	                    const char *message);
-
-	void (*close_account_request)(void *ui_handle);
 
 	void (*permit_added)(PurpleAccount *account, const char *name);
 	void (*permit_removed)(PurpleAccount *account, const char *name);
