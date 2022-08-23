@@ -244,52 +244,23 @@ void pidgin_retrieve_user_info_in_chat(PurpleConnection *conn, const char *name,
 void
 pidgin_set_accessible_label(GtkWidget *w, GtkLabel *l)
 {
-	AtkObject *acc;
-	const gchar *label_text;
-	const gchar *existing_name;
-
-	acc = gtk_widget_get_accessible (w);
-
-	/* If this object has no name, set it's name with the label text */
-	existing_name = atk_object_get_name (acc);
-	if (!existing_name) {
-		label_text = gtk_label_get_text(l);
-		if (label_text)
-			atk_object_set_name (acc, label_text);
-	}
-
 	pidgin_set_accessible_relations(w, l);
 }
 
 void
 pidgin_set_accessible_relations (GtkWidget *w, GtkLabel *l)
 {
-	AtkObject *acc, *label;
-	AtkObject *rel_obj[1];
-	AtkRelationSet *set;
-	AtkRelation *relation;
+	GtkAccessible *acc, *label;
 
-	acc = gtk_widget_get_accessible (w);
-	label = gtk_widget_get_accessible(GTK_WIDGET(l));
+	acc = GTK_ACCESSIBLE(w);
+	label = GTK_ACCESSIBLE(l);
 
 	/* Make sure mnemonics work */
 	gtk_label_set_mnemonic_widget(l, w);
 
 	/* Create the labeled-by relation */
-	set = atk_object_ref_relation_set (acc);
-	rel_obj[0] = label;
-	relation = atk_relation_new (rel_obj, 1, ATK_RELATION_LABELLED_BY);
-	atk_relation_set_add (set, relation);
-	g_object_unref (relation);
-	g_object_unref(set);
-
-	/* Create the label-for relation */
-	set = atk_object_ref_relation_set (label);
-	rel_obj[0] = acc;
-	relation = atk_relation_new (rel_obj, 1, ATK_RELATION_LABEL_FOR);
-	atk_relation_set_add (set, relation);
-	g_object_unref (relation);
-	g_object_unref(set);
+	gtk_accessible_update_relation(acc, GTK_ACCESSIBLE_RELATION_LABELLED_BY,
+	                               label, NULL, -1);
 }
 
 void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec, PurpleBuddyIconScaleFlags rules, int *width, int *height)
