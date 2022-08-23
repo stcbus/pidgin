@@ -580,10 +580,8 @@ gtkconv_chat_popup_menu_cb(GtkWidget *widget, PidginConversation *gtkconv)
 	gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, CHAT_USERS_NAME_COLUMN, &who, -1);
 	menu = create_chat_menu(PURPLE_CHAT_CONVERSATION(conv), who, gc, gtkconv);
 
-	popover_menu = gtk_popover_menu_new();
-	gtk_popover_bind_model(GTK_POPOVER(popover_menu), G_MENU_MODEL(menu),
-	                       NULL);
-	gtk_popover_set_relative_to(GTK_POPOVER(popover_menu), gtkconv->list);
+	popover_menu = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+	gtk_widget_set_parent(popover_menu, gtkconv->list);
 
 	gtk_popover_popup(GTK_POPOVER(popover_menu));
 
@@ -594,9 +592,10 @@ gtkconv_chat_popup_menu_cb(GtkWidget *widget, PidginConversation *gtkconv)
 
 
 static gint
-right_click_chat_cb(GtkWidget *widget, GdkEventButton *event,
-					PidginConversation *gtkconv)
+right_click_chat_cb(GtkGestureClick *click, gint n_press, gdouble x, gdouble y,
+                    gpointer data)
 {
+	PidginConversation *gtkconv = data;
 	PurpleConversation *conv = gtkconv->active_conv;
 	PurpleConnection *gc;
 	PurpleAccount *account;
@@ -605,15 +604,18 @@ right_click_chat_cb(GtkWidget *widget, GdkEventButton *event,
 	GtkTreeModel *model;
 	GtkTreeViewColumn *column;
 	gchar *who;
-	int x, y;
+	GdkEvent *event = NULL;
+	guint button;
 
 	account = purple_conversation_get_account(conv);
 	gc      = purple_account_get_connection(account);
+	event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(click));
+	button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(click));
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(gtkconv->list));
 
-	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(gtkconv->list),
-								  event->x, event->y, &path, &column, &x, &y);
+	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(gtkconv->list), x, y,
+	                              &path, &column, NULL, NULL);
 
 	if (path == NULL)
 		return FALSE;
@@ -628,27 +630,26 @@ right_click_chat_cb(GtkWidget *widget, GdkEventButton *event,
 	gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, CHAT_USERS_NAME_COLUMN, &who, -1);
 
 	/* emit chat-nick-clicked signal */
-	if (event->type == GDK_BUTTON_PRESS) {
+	if (n_press == 1) {
 		gint plugin_return = GPOINTER_TO_INT(purple_signal_emit_return_1(
 					pidgin_conversations_get_handle(), "chat-nick-clicked",
-					conv, who, event->button));
+					conv, who, button));
 		if (plugin_return)
 			goto handled;
 	}
 
-	if (event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS) {
+	if (button == GDK_BUTTON_PRIMARY && n_press == 2) {
 		chat_do_im(gtkconv, who);
-	} else if (gdk_event_triggers_context_menu((GdkEvent *)event)) {
-		GtkWidget *popover_menu = gtk_popover_menu_new();
+	} else if (gdk_event_triggers_context_menu(event)) {
+		GtkWidget *popover_menu = NULL;
 		GMenu *menu = create_chat_menu(PURPLE_CHAT_CONVERSATION(conv), who, gc,
 		                               gtkconv);
 
-		gtk_popover_bind_model(GTK_POPOVER(popover_menu), G_MENU_MODEL(menu),
-		                       NULL);
-		gtk_popover_set_relative_to(GTK_POPOVER(popover_menu), gtkconv->list);
+		popover_menu = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+		gtk_widget_set_parent(popover_menu, gtkconv->list);
 		gtk_popover_set_position(GTK_POPOVER(popover_menu), GTK_POS_BOTTOM);
 		gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu),
-		                            &(const GdkRectangle){(int)event->x, (int)event->y, 1, 1});
+		                            &(const GdkRectangle){(int)x, (int)y, 1, 1});
 
 		gtk_popover_popup(GTK_POPOVER(popover_menu));
 	}
@@ -1469,6 +1470,7 @@ static void
 setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 {
 	GtkWidget *lbox, *list, *sw;
+	GtkGesture *click = NULL;
 	GtkListStore *ls;
 	GtkCellRenderer *rend;
 	GtkTreeViewColumn *col;
@@ -1505,8 +1507,10 @@ setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 	gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(list), col);
 
-	g_signal_connect(G_OBJECT(list), "button_press_event",
-					 G_CALLBACK(right_click_chat_cb), gtkconv);
+	click = gtk_gesture_click_new();
+	g_signal_connect(click, "pressed", G_CALLBACK(right_click_chat_cb), gtkconv);
+	gtk_widget_add_controller(list, GTK_EVENT_CONTROLLER(click));
+
 	g_signal_connect(G_OBJECT(list), "row-activated",
 					 G_CALLBACK(activate_list_cb), gtkconv);
 	g_signal_connect(G_OBJECT(list), "popup-menu",
