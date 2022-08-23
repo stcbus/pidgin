@@ -71,11 +71,6 @@ enum {
  * Structs
  *****************************************************************************/
 
-typedef struct {
-	GtkTreeModel *model;
-	gint default_item;
-} AopMenu;
-
 typedef struct
 {
 	GtkWidget *entry;
@@ -86,13 +81,6 @@ typedef struct
 
 	GtkListStore *store;
 } PidginCompletionData;
-
-struct _icon_chooser {
-	GtkFileChooserNative *icon_filesel;
-
-	void (*callback)(const char*,gpointer);
-	gpointer data;
-};
 
 /******************************************************************************
  * Code
@@ -106,8 +94,7 @@ pidgin_make_frame(GtkWidget *parent, const char *title)
 	char *labeltitle;
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start(GTK_BOX(parent), vbox, FALSE, FALSE, 0);
-	gtk_widget_show(vbox);
+	gtk_box_append(GTK_BOX(parent), vbox);
 
 	label = GTK_LABEL(gtk_label_new(NULL));
 
@@ -117,21 +104,17 @@ pidgin_make_frame(GtkWidget *parent, const char *title)
 
 	gtk_label_set_xalign(GTK_LABEL(label), 0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(label), FALSE, FALSE, 0);
-	gtk_widget_show(GTK_WIDGET(label));
+	gtk_box_append(GTK_BOX(vbox), GTK_WIDGET(label));
 	pidgin_set_accessible_label(vbox, label);
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-	gtk_widget_show(hbox);
+	gtk_box_append(GTK_BOX (vbox), hbox);
 
 	label = GTK_LABEL(gtk_label_new("    "));
-	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 0);
-	gtk_widget_show(GTK_WIDGET(label));
+	gtk_box_append(GTK_BOX(hbox), GTK_WIDGET(label));
 
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
-	gtk_widget_show(vbox2);
+	gtk_box_append(GTK_BOX(hbox), vbox2);
 
 	g_object_set_data(G_OBJECT(vbox2), "main-vbox", vbox);
 
@@ -867,22 +850,26 @@ pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *
 
 	if (widget_label) {
 		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-		gtk_widget_show(hbox);
-		gtk_box_pack_start(vbox, hbox, FALSE, FALSE, 0);
+		gtk_box_append(vbox, hbox);
 
 		label = gtk_label_new_with_mnemonic(widget_label);
-		gtk_widget_show(label);
 		if (sg) {
 			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			gtk_size_group_add_widget(sg, label);
 		}
-		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+		gtk_box_append(GTK_BOX(hbox), label);
+
+		gtk_widget_set_hexpand(widget, expand);
+		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+		gtk_box_append(GTK_BOX(hbox), widget);
 	} else {
+		gtk_widget_set_vexpand(widget, expand);
+		gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
+		gtk_box_append(vbox, widget);
+
 		hbox = GTK_WIDGET(vbox);
 	}
 
-	gtk_widget_show(widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, expand, TRUE, 0);
 	if (label) {
 		gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
 		pidgin_set_accessible_label(widget, GTK_LABEL(label));
@@ -895,67 +882,9 @@ pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *
 
 gboolean pidgin_auto_parent_window(GtkWidget *widget)
 {
-#if 0
-	/* This looks at the most recent window that received focus, and makes
-	 * that the parent window. */
-#ifndef _WIN32
-	static GdkAtom _WindowTime = GDK_NONE;
-	static GdkAtom _Cardinal = GDK_NONE;
-	GList *windows = NULL;
-	GtkWidget *parent = NULL;
-	time_t window_time = 0;
-
-	windows = gtk_window_list_toplevels();
-
-	if (_WindowTime == GDK_NONE) {
-		_WindowTime = gdk_x11_xatom_to_atom(gdk_x11_get_xatom_by_name("_NET_WM_USER_TIME"));
-	}
-	if (_Cardinal == GDK_NONE) {
-		_Cardinal = gdk_atom_intern("CARDINAL", FALSE);
-	}
-
-	while (windows) {
-		GtkWidget *window = windows->data;
-		guchar *data = NULL;
-		int al = 0;
-		time_t value;
-
-		windows = g_list_delete_link(windows, windows);
-
-		if (window == widget ||
-				!gtk_widget_get_visible(window))
-			continue;
-
-		if (!gdk_property_get(window->window, _WindowTime, _Cardinal, 0, sizeof(time_t), FALSE,
-				NULL, NULL, &al, &data))
-			continue;
-		value = *(time_t *)data;
-		if (window_time < value) {
-			window_time = value;
-			parent = window;
-		}
-		g_free(data);
-	}
-	if (windows)
-		g_list_free(windows);
-	if (parent) {
-		if (!gtk_get_current_event() && gtk_window_has_toplevel_focus(GTK_WINDOW(parent))) {
-			/* The window is in focus, and the new window was not triggered by a keypress/click
-			 * event. So do not set it transient, to avoid focus stealing and all that.
-			 */
-			return FALSE;
-		}
-		gtk_window_set_transient_for(GTK_WINDOW(widget), GTK_WINDOW(parent));
-		return TRUE;
-	}
-	return FALSE;
-#endif
-#else
 	/* This finds the currently active window and makes that the parent window. */
 	GList *windows = NULL;
 	GtkWindow *parent = NULL;
-	GdkEvent *event = gtk_get_current_event();
-	GdkWindow *menu = NULL;
 	gpointer parent_from;
 	PurpleNotifyType notify_type;
 
@@ -975,20 +904,6 @@ gboolean pidgin_auto_parent_window(GtkWidget *widget)
 		return TRUE;
 	}
 
-	if (event == NULL)
-		/* The window was not triggered by a user action. */
-		return FALSE;
-
-	/* We need to special case events from a popup menu. */
-	if (event->type == GDK_BUTTON_RELEASE) {
-		/* XXX: Neither of the following works:
-			menu = event->button.window;
-			menu = gdk_window_get_parent(event->button.window);
-			menu = gdk_window_get_toplevel(event->button.window);
-		*/
-	} else if (event->type == GDK_KEY_PRESS)
-		menu = event->key.window;
-
 	windows = gtk_window_list_toplevels();
 	while (windows) {
 		GtkWindow *window = GTK_WINDOW(windows->data);
@@ -1006,8 +921,7 @@ gboolean pidgin_auto_parent_window(GtkWidget *widget)
 			continue;
 		}
 
-		if (gtk_window_has_toplevel_focus(window) ||
-				(menu && menu == gtk_widget_get_window(GTK_WIDGET(window)))) {
+		if (gtk_window_is_active(window)) {
 			parent = window;
 			break;
 		}
@@ -1019,5 +933,4 @@ gboolean pidgin_auto_parent_window(GtkWidget *widget)
 		return TRUE;
 	}
 	return FALSE;
-#endif
 }
