@@ -1075,6 +1075,8 @@ version 3.0.0 (??/??/????):
 		* PIDGIN_TYPE_STOCK_ICON_THEME
 		* PidginStockIconTheme
 		* PidginStockIconThemeClass
+		* pidgin_text_combo_box_entry_new
+		* pidgin_text_combo_box_entry_get_text
 		* pidgin_text_combo_box_entry_set_text
 		* pidgin_theme_font_free
 		* pidgin_theme_font_get_color

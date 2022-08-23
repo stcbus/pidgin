@@ -859,65 +859,6 @@ gboolean pidgin_tree_view_search_equal_func(GtkTreeModel *model, gint column,
 	return result;
 }
 
-static void
-combo_box_changed_cb(GtkComboBoxText *combo_box, GtkEntry *entry)
-{
-	char *text = gtk_combo_box_text_get_active_text(combo_box);
-	gtk_editable_set_text(GTK_EDITABLE(entry), text ? text : "");
-	g_free(text);
-}
-
-static gboolean
-entry_key_pressed_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
-                     guint keyval, G_GNUC_UNUSED guint keycode,
-                     G_GNUC_UNUSED GdkModifierType state,
-                     gpointer data)
-{
-	GtkComboBoxText *combo = data;
-
-	if (keyval == GDK_KEY_Down || keyval == GDK_KEY_Up) {
-		gtk_combo_box_popup(GTK_COMBO_BOX(combo));
-		return TRUE;
-	}
-	return FALSE;
-}
-
-GtkWidget *
-pidgin_text_combo_box_entry_new(const char *default_item, GList *items)
-{
-	GtkComboBoxText *ret = NULL;
-	GtkWidget *the_entry = NULL;
-	GtkEventController *controller = NULL;
-
-	ret = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new_with_entry());
-	the_entry = gtk_bin_get_child(GTK_BIN(ret));
-
-	if(default_item) {
-		gtk_editable_set_text(GTK_EDITABLE(the_entry), default_item);
-	}
-
-	for (; items != NULL ; items = items->next) {
-		char *text = items->data;
-		if (text && *text)
-			gtk_combo_box_text_append_text(ret, text);
-	}
-
-	g_signal_connect(G_OBJECT(ret), "changed", (GCallback)combo_box_changed_cb, the_entry);
-
-	controller = gtk_event_controller_key_new(the_entry);
-	g_object_set_data_full(G_OBJECT(the_entry), "pidgin-event-controller",
-	                       controller, g_object_unref);
-	g_signal_connect_after(G_OBJECT(controller), "key-pressed",
-	                       G_CALLBACK(entry_key_pressed_cb), ret);
-
-	return GTK_WIDGET(ret);
-}
-
-const char *
-pidgin_text_combo_box_entry_get_text(GtkWidget *widget) {
-	return gtk_editable_get_text(GTK_EDITABLE(gtk_bin_get_child(GTK_BIN((widget)))));
-}
-
 GtkWidget *
 pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *sg, GtkWidget *widget, gboolean expand, GtkWidget **p_label)
 {

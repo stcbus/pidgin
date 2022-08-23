@@ -203,28 +203,6 @@ gboolean pidgin_tree_view_search_equal_func(GtkTreeModel *model, gint column,
 			const gchar *key, GtkTreeIter *iter, gpointer data);
 
 /**
- * pidgin_text_combo_box_entry_new:
- * @default_item: Initial contents of GtkEntry
- * @items: (element-type utf8): GList containing strings to add to GtkComboBox
- *
- * Create a simple text GtkComboBoxEntry equivalent
- *
- * Returns: (transfer full): A newly created text GtkComboBox containing a GtkEntry
- *          child.
- */
-GtkWidget *pidgin_text_combo_box_entry_new(const char *default_item, GList *items);
-
-/**
- * pidgin_text_combo_box_entry_get_text:
- * @widget:         The simple text GtkComboBoxEntry equivalent widget
- *
- * Retrieve the text from the entry of the simple text GtkComboBoxEntry equivalent
- *
- * Returns:               The text in the widget's entry. It must not be freed
- */
-const char *pidgin_text_combo_box_entry_get_text(GtkWidget *widget);
-
-/**
  * pidgin_auto_parent_window:
  * @window:    The window to make transient.
  *
