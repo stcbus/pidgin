@@ -55,22 +55,6 @@ typedef gboolean (*PidginFilterBuddyCompletionEntryFunc) (const PidginBuddyCompl
 G_BEGIN_DECLS
 
 /**
- * pidgin_new_menu_item:
- * @menu:       The menu to which to append the menu item.
- * @mnemonic:   The title for the menu item.
- * @icon:       An icon to place to the left of the menu item,
- *                   or %NULL for no icon.
- * @cb: (scope call): A function to call when the menu item is activated.
- * @data:       Data to pass to the signal function.
- *
- * Creates a menu item.
- *
- * Returns: (transfer full): The newly created menu item.
- */
-GtkWidget *pidgin_new_menu_item(GtkWidget *menu, const char *mnemonic,
-                const char *icon, GCallback cb, gpointer data);
-
-/**
  * pidgin_make_frame:
  * @parent: The widget to put the frame into.
  * @title:  The title for the frame.
@@ -147,17 +131,6 @@ void pidgin_set_accessible_label(GtkWidget *w, GtkLabel *l);
  * Sets the labelled-by and label-for ATK relationships.
  */
 void pidgin_set_accessible_relations(GtkWidget *w, GtkLabel *l);
-
-/**
- * pidgin_menu_popup_at_treeview_selection:
- * @menu: The menu to show.
- * @treeview: The treeview to use for positioning.
- *
- * Open a menu popup at the position determined by the selection of a given
- * treeview. This function is similar to @gtk_menu_popup_at_pointer, but should
- * be used when the menu is activated via a keyboard shortcut.
- */
-void pidgin_menu_popup_at_treeview_selection(GtkWidget *menu, GtkWidget *treeview);
 
 /**
  * pidgin_buddy_icon_get_scale_size:

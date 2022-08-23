@@ -99,39 +99,6 @@ struct _icon_chooser {
  * Code
  *****************************************************************************/
 
-GtkWidget *pidgin_new_menu_item(GtkWidget *menu, const char *mnemonic,
-                const char *icon, GCallback cb, gpointer data)
-{
-	GtkWidget *menuitem;
-	GtkWidget *box;
-	GtkWidget *label;
-
-        box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-
-        menuitem = gtk_menu_item_new();
-
-	if (cb)
-		g_signal_connect(G_OBJECT(menuitem), "activate", cb, data);
-
-        if (icon) {
-                GtkWidget *image;
-                image = gtk_image_new_from_icon_name(icon, GTK_ICON_SIZE_MENU);
-                gtk_container_add(GTK_CONTAINER(box), image);
-        }
-
-        label = gtk_label_new_with_mnemonic(mnemonic);
-        gtk_container_add(GTK_CONTAINER(box), label);
-
-        gtk_container_add(GTK_CONTAINER(menuitem), box);
-
-	if (menu)
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-	gtk_widget_show_all(menuitem);
-
-	return menuitem;
-}
-
 GtkWidget *
 pidgin_make_frame(GtkWidget *parent, const char *title)
 {
@@ -324,27 +291,6 @@ pidgin_set_accessible_relations (GtkWidget *w, GtkLabel *l)
 	atk_relation_set_add (set, relation);
 	g_object_unref (relation);
 	g_object_unref(set);
-}
-
-void
-pidgin_menu_popup_at_treeview_selection(GtkWidget *menu, GtkWidget *treeview)
-{
-	GtkTreePath *path;
-	GtkTreeViewColumn *column;
-	GdkWindow *bin_window;
-	GdkRectangle rect;
-
-	gtk_tree_view_get_cursor(GTK_TREE_VIEW(treeview), &path, &column);
-	g_return_if_fail(path != NULL);
-	if (column == NULL)
-		column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0);
-	bin_window = gtk_tree_view_get_bin_window(GTK_TREE_VIEW(treeview));
-	gtk_tree_view_get_cell_area(GTK_TREE_VIEW(treeview), path, column, &rect);
-	gtk_menu_popup_at_rect(GTK_MENU(menu), bin_window, &rect,
-	                       GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST,
-	                       NULL);
-
-	gtk_tree_path_free(path);
 }
 
 void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec, PurpleBuddyIconScaleFlags rules, int *width, int *height)
