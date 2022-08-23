@@ -346,7 +346,9 @@ struct _jabber_add_permit {
 	char *who;
 };
 
-static void authorize_add_cb(const char *message, gpointer data)
+static void
+authorize_add_cb(G_GNUC_UNUSED PurpleAuthorizationRequest *request,
+                 gpointer data)
 {
 	struct _jabber_add_permit *jap = data;
 
@@ -359,7 +361,9 @@ static void authorize_add_cb(const char *message, gpointer data)
 	g_free(jap);
 }
 
-static void deny_add_cb(const char *message, gpointer data)
+static void
+deny_add_cb(G_GNUC_UNUSED PurpleAuthorizationRequest *request,
+            const char *message, gpointer data)
 {
 	struct _jabber_add_permit *jap = data;
 
@@ -927,6 +931,9 @@ void jabber_presence_parse(JabberStream *js, PurpleXmlNode *packet)
 		struct _jabber_add_permit *jap = g_new0(struct _jabber_add_permit, 1);
 		gboolean onlist = FALSE;
 		PurpleAccount *account;
+		PurpleAuthorizationRequest *request = NULL;
+		PurpleNotification *notification = NULL;
+		PurpleNotificationManager *manager = NULL;
 		PurpleBuddy *buddy;
 		PurpleXmlNode *nick;
 
@@ -945,8 +952,18 @@ void jabber_presence_parse(JabberStream *js, PurpleXmlNode *packet)
 		jap->who = g_strdup(presence.from);
 		jap->js = js;
 
-		purple_account_request_authorization(account, presence.from, NULL, presence.nickname,
-				NULL, onlist, authorize_add_cb, deny_add_cb, jap);
+		request = purple_authorization_request_new(account, presence.from);
+		purple_authorization_request_set_alias(request, presence.nickname);
+		purple_authorization_request_set_add(request, !onlist);
+		g_signal_connect(request, "accepted", G_CALLBACK(authorize_add_cb),
+		                 jap);
+		g_signal_connect(request, "denied", G_CALLBACK(deny_add_cb), jap);
+
+		notification = purple_notification_new_from_authorization_request(request);
+		manager = purple_notification_manager_get_default();
+		purple_notification_manager_add(manager, notification);
+
+		g_object_unref(notification);
 
 		goto out;
 	} else if (presence.type == JABBER_PRESENCE_SUBSCRIBED) {

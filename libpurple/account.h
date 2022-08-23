@@ -52,17 +52,6 @@ typedef void (*PurpleAccountUnregistrationCb)(PurpleAccount *account, gboolean s
 #include "xmlnode.h"
 
 /**
- * PurpleAccountRequestType:
- * @PURPLE_ACCOUNT_REQUEST_AUTHORIZATION: Account authorization request
- *
- * Account request types.
- */
-typedef enum
-{
-	PURPLE_ACCOUNT_REQUEST_AUTHORIZATION = 0
-} PurpleAccountRequestType;
-
-/**
  * PurpleAccountRequestResponse:
  * @PURPLE_ACCOUNT_RESPONSE_IGNORE: Silently ignore the request.
  * @PURPLE_ACCOUNT_RESPONSE_DENY: Block the request potentially informing the
@@ -231,30 +220,6 @@ gboolean purple_account_is_disconnecting(PurpleAccount *account);
 void purple_account_request_add(PurpleAccount *account, const char *remote_user,
                               const char *id, const char *alias,
                               const char *message);
-
-/**
- * purple_account_request_authorization:
- * @account:      The account that was added
- * @remote_user:  The name of the user that added this account.
- * @id:           The optional ID of the local account. Rarely used.
- * @alias:        The optional alias of the remote user.
- * @message:      The optional message sent by the user wanting to add you.
- * @on_list:      Is the remote user already on the buddy list?
- * @auth_cb:      (scope call): The callback called when the local user accepts
- * @deny_cb:      (scope call): The callback called when the local user rejects
- * @user_data:    Data to be passed back to the above callbacks
- *
- * Notifies the user that a remote user has wants to add the local user
- * to his or her buddy list and requires authorization to do so.
- *
- * This will present a dialog informing the user of this and ask if the
- * user authorizes or denies the remote user from adding him.
- *
- * Returns: A UI-specific handle.
- */
-void *purple_account_request_authorization(PurpleAccount *account, const char *remote_user,
-					const char *id, const char *alias, const char *message, gboolean on_list,
-					PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
 /**
  * purple_account_request_close_with_account:

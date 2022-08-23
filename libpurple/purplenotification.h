@@ -27,6 +27,7 @@
 #include <glib-object.h>
 
 #include "account.h"
+#include "purpleauthorizationrequest.h"
 
 G_BEGIN_DECLS
 
@@ -39,7 +40,7 @@ typedef enum {
     PURPLE_NOTIFICATION_TYPE_UNKNOWN,
     PURPLE_NOTIFICATION_TYPE_GENERIC,
     PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR,
-    PURPLE_NOTIFICATION_TYPE_CONTACT_AUTHORIZATION,
+    PURPLE_NOTIFICATION_TYPE_AUTHORIZATION_REQUEST,
     PURPLE_NOTIFICATION_TYPE_FILE_TRANSFER,
     PURPLE_NOTIFICATION_TYPE_CHAT_INVITE,
     PURPLE_NOTIFICATION_TYPE_MENTION,
@@ -76,6 +77,21 @@ G_DECLARE_FINAL_TYPE(PurpleNotification, purple_notification, PURPLE,
  * Since: 3.0.0
  */
 PurpleNotification *purple_notification_new(PurpleNotificationType type, PurpleAccount *account, gpointer data, GDestroyNotify data_destroy_func);
+
+/**
+ * purple_notification_new_from_authorization_request:
+ * @authorization_request: (transfer full): The [class@AuthorizationRequest]
+ *                         instance.
+ *
+ * Creates a new [class@PurpleNotification] for the @authorization_request. This
+ * helper will automatically fill out the notification according to the
+ * information in @authorization_request.
+ *
+ * Returns: (transfer full): The new notification.
+ *
+ * Since: 3.0.0
+ */
+PurpleNotification *purple_notification_new_from_authorization_request(PurpleAuthorizationRequest *authorization_request);
 
 /**
  * purple_notification_get_id:
@@ -259,6 +275,20 @@ gpointer purple_notification_get_data(PurpleNotification *notification);
  * Since: 3.0.0
  */
 gint purple_notification_compare(gconstpointer a, gconstpointer b);
+
+/**
+ * purple_notification_delete:
+ * @notification: The instance.
+ *
+ * Emits the [signal@PurpleNotification::deleted] signal. This is typically
+ * called by a user interface when the user has deleted a notification.
+ *
+ * If this is called more than once for @notification, the signal will not be
+ * emitted.
+ *
+ * Since: 3.0.0
+ */
+void purple_notification_delete(PurpleNotification *notification);
 
 G_END_DECLS
 

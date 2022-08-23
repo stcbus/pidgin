@@ -24,6 +24,7 @@
     <file compressed="true">Keypad/keypad.ui</file>
     <file compressed="true">Log/log-viewer.ui</file>
     <file compressed="true">Media/window.ui</file>
+    <file compressed="true">Notifications/authorizationrequest.ui</file>
     <file compressed="true">Notifications/connectionerror.ui</file>
     <file compressed="true">Notifications/list.ui</file>
     <file compressed="true">Plugins/dialog.ui</file>

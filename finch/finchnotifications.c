@@ -63,8 +63,9 @@ finch_notification_delete_notification(PurpleNotification *notification) {
 	if(PURPLE_IS_NOTIFICATION(notification)) {
 		PurpleNotificationManager *manager = NULL;
 
-		manager = purple_notification_manager_get_default();
+		purple_notification_delete(notification);
 
+		manager = purple_notification_manager_get_default();
 		purple_notification_manager_remove(manager, notification);
 	}
 }
@@ -123,6 +124,59 @@ finch_notification_modify_account(G_GNUC_UNUSED GntWidget *widget,
 	gnt_widget_destroy(GNT_WIDGET(data));
 }
 
+static void
+finch_notification_contact_authorize(G_GNUC_UNUSED GntWidget *widget,
+                                     gpointer data)
+{
+	PurpleAccount *account = NULL;
+	PurpleNotification *notification = NULL;
+	PurpleNotificationManager *manager = NULL;
+	PurpleAuthorizationRequest *auth_request = NULL;
+	const gchar *alias = NULL, *username = NULL;
+
+	/* Get the notification and authorization request from the data. */
+	notification = g_object_get_data(data, "notification");
+	auth_request = purple_notification_get_data(notification);
+
+	/* Accept the authorization request. */
+	purple_authorization_request_accept(auth_request);
+
+	/* Remove the notification from the manager. */
+	manager = purple_notification_manager_get_default();
+	purple_notification_manager_remove(manager, notification);
+
+	/* Request the user to add the person they just authorized. */
+	account = purple_authorization_request_get_account(auth_request);
+	alias = purple_authorization_request_get_alias(auth_request);
+	username = purple_authorization_request_get_username(auth_request);
+	purple_blist_request_add_buddy(account, username, NULL, alias);
+
+	/* Destroy the dialog. */
+	gnt_widget_destroy(GNT_WIDGET(data));
+}
+
+static void
+finch_notification_contact_deny(G_GNUC_UNUSED GntWidget *widget, gpointer data)
+{
+	PurpleNotification *notification = NULL;
+	PurpleNotificationManager *manager = NULL;
+	PurpleAuthorizationRequest *auth_request = NULL;
+
+	/* Get the notification and authorization request from the data. */
+	notification = g_object_get_data(data, "notification");
+	auth_request = purple_notification_get_data(notification);
+
+	/* Deny the request. */
+	purple_authorization_request_deny(auth_request, NULL);
+
+	/* Remove the notification from the manager. */
+	manager = purple_notification_manager_get_default();
+	purple_notification_manager_remove(manager, notification);
+
+	/* Destroy the dialog. */
+	gnt_widget_destroy(GNT_WIDGET(data));
+}
+
 /*******************************************************************************
  * Finch Notification API
  ******************************************************************************/
@@ -155,7 +209,7 @@ finch_notification_show(PurpleNotification *notification) {
 	} else if(type == PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR) {
 		PurpleConnectionErrorInfo *info = data;
 
-		/* Set the title and name */
+		/* Set the title. */
 		gnt_box_set_title(GNT_BOX(dialog), _("Connection Error"));
 
 		/* Add the connection error reason. */
@@ -180,6 +234,33 @@ finch_notification_show(PurpleNotification *notification) {
 		g_signal_connect(button, "activate",
 		                 G_CALLBACK(finch_notification_modify_account),
 		                 dialog);
+		gnt_box_add_widget(GNT_BOX(hbox), button);
+	} else if(type == PURPLE_NOTIFICATION_TYPE_AUTHORIZATION_REQUEST) {
+		PurpleAuthorizationRequest *auth_request = NULL;
+		const gchar *message = NULL;
+
+		/* Set the title. */
+		gnt_box_set_title(GNT_BOX(dialog), _("Authorization Request"));
+
+		auth_request = purple_notification_get_data(notification);
+		message = purple_authorization_request_get_message(auth_request);
+
+		/* Add the message if we have one. */
+		if(message != NULL && *message != '\0') {
+			label = gnt_label_new(message);
+			gnt_box_add_widget(GNT_BOX(dialog), label);
+		}
+
+		/* Add the buttons. */
+		button = gnt_button_new(_("Authorize"));
+		g_signal_connect(button, "activate",
+		                 G_CALLBACK(finch_notification_contact_authorize),
+		                 dialog);
+		gnt_box_add_widget(GNT_BOX(hbox), button);
+
+		button = gnt_button_new(_("Deny"));
+		g_signal_connect(button, "activate",
+		                 G_CALLBACK(finch_notification_contact_deny), dialog);
 		gnt_box_add_widget(GNT_BOX(hbox), button);
 	}
 

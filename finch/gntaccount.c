@@ -651,6 +651,7 @@ modify_account_cb(GntWidget *widget, GntTree *tree)
 static void
 really_delete_account(PurpleAccount *account)
 {
+	PurpleNotificationManager *manager = NULL;
 	GList *iter;
 	for (iter = accountdialogs; iter; iter = iter->next)
 	{
@@ -661,7 +662,10 @@ really_delete_account(PurpleAccount *account)
 			break;
 		}
 	}
-	purple_request_close_with_handle(account); /* Close any other opened delete window */
+
+	manager = purple_notification_manager_get_default();
+	purple_notification_manager_remove_with_account(manager, account);
+
 	purple_accounts_delete(account);
 }
 
@@ -982,124 +986,6 @@ typedef struct {
 } auth_and_add;
 
 static void
-free_auth_and_add(auth_and_add *aa)
-{
-	g_free(aa->username);
-	g_free(aa->alias);
-	g_free(aa);
-}
-
-static void
-authorize_and_add_cb(auth_and_add *aa)
-{
-	aa->auth_cb(NULL, aa->data);
-	purple_blist_request_add_buddy(aa->account, aa->username,
-	 	                    NULL, aa->alias);
-}
-
-static void
-deny_no_add_cb(auth_and_add *aa)
-{
-	aa->deny_cb(NULL, aa->data);
-}
-
-static void *
-finch_request_authorize(PurpleAccount *account,
-                        const char *remote_user,
-                        const char *id,
-                        const char *alias,
-                        const char *message,
-                        gboolean on_list,
-                        PurpleAccountRequestAuthorizationCb auth_cb,
-                        PurpleAccountRequestAuthorizationCb deny_cb,
-                        void *user_data)
-{
-	char *buffer;
-	PurpleConnection *gc;
-	void *uihandle;
-
-	gc = purple_account_get_connection(account);
-	if (message != NULL && *message == '\0')
-		message = NULL;
-
-	buffer = g_strdup_printf(_("%s%s%s%s wants to add %s to his or her buddy list%s%s"),
-				remote_user,
-	 	                (alias != NULL ? " ("  : ""),
-		                (alias != NULL ? alias : ""),
-		                (alias != NULL ? ")"   : ""),
-		                (id != NULL
-		                ? id
-		                : (purple_connection_get_display_name(gc) != NULL
-		                ? purple_connection_get_display_name(gc)
-		                : purple_account_get_username(account))),
-		                (message != NULL ? ": " : "."),
-		                (message != NULL ? message  : ""));
-	if (!on_list) {
-		GntWidget *widget;
-		GList *iter;
-		auth_and_add *aa = g_new(auth_and_add, 1);
-
-		aa->auth_cb = auth_cb;
-		aa->deny_cb = deny_cb;
-		aa->data = user_data;
-		aa->username = g_strdup(remote_user);
-		aa->alias = g_strdup(alias);
-		aa->account = account;
-
-		uihandle = gnt_vwindow_new(FALSE);
-		gnt_box_set_title(GNT_BOX(uihandle), _("Authorize buddy?"));
-		gnt_box_set_pad(GNT_BOX(uihandle), 0);
-
-		widget = purple_request_action(NULL, _("Authorize buddy?"), buffer, NULL,
-			PURPLE_DEFAULT_ACTION_NONE,
-			purple_request_cpar_from_account(account),
-			aa, 2,
-			_("Authorize"), authorize_and_add_cb,
-			_("Deny"), deny_no_add_cb);
-		/* Since GntWindow is a GntBox, hide it so it's unmapped, then
-		 * add it to the outer window, and make it visible again. */
-		gnt_widget_hide(widget);
-		gnt_box_set_toplevel(GNT_BOX(widget), FALSE);
-		gnt_box_add_widget(GNT_BOX(uihandle), widget);
-		gnt_widget_set_visible(widget, TRUE);
-
-		gnt_box_add_widget(GNT_BOX(uihandle), gnt_hline_new());
-
-		widget = finch_retrieve_user_info(purple_account_get_connection(account), remote_user);
-		for (iter = gnt_box_get_children(GNT_BOX(widget)); iter;
-		     iter = g_list_delete_link(iter, iter)) {
-			if (GNT_IS_BUTTON(iter->data)) {
-				gnt_widget_destroy(iter->data);
-				gnt_box_remove(GNT_BOX(widget), iter->data);
-				g_list_free(iter);
-				break;
-			}
-		}
-		/* Since GntWindow is a GntBox, hide it so it's unmapped, then
-		 * add it to the outer window, and make it visible again. */
-		gnt_widget_hide(widget);
-		gnt_box_set_toplevel(GNT_BOX(widget), FALSE);
-		gnt_box_add_widget(GNT_BOX(uihandle), widget);
-		gnt_widget_set_visible(widget, TRUE);
-
-		gnt_widget_show(uihandle);
-
-		g_signal_connect_swapped(G_OBJECT(uihandle), "destroy", G_CALLBACK(free_auth_and_add), aa);
-	} else {
-		uihandle = purple_request_action(NULL, _("Authorize buddy?"), buffer, NULL,
-			PURPLE_DEFAULT_ACTION_NONE,
-			purple_request_cpar_from_account(account),
-			user_data, 2,
-			_("Authorize"), auth_cb,
-			_("Deny"), deny_cb);
-	}
-	g_signal_connect(G_OBJECT(uihandle), "destroy",
-		G_CALLBACK(purple_account_request_close), NULL);
-	g_free(buffer);
-	return uihandle;
-}
-
-static void
 finch_request_close(void *uihandle)
 {
 	purple_request_close(PURPLE_REQUEST_ACTION, uihandle);
@@ -1108,7 +994,6 @@ finch_request_close(void *uihandle)
 static PurpleAccountUiOps ui_ops =
 {
 	.request_add = request_add,
-	.request_authorize = finch_request_authorize,
 	.close_account_request = finch_request_close,
 };
 

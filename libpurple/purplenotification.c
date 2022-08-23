@@ -16,6 +16,8 @@
  * License along with this library; if not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <glib/gi18n-lib.h>
+
 #include "purplenotification.h"
 
 #include "purpleenums.h"
@@ -35,7 +37,15 @@ struct _PurpleNotification {
 
 	gpointer data;
 	GDestroyNotify data_destroy_func;
+
+	gboolean deleted;
 };
+
+enum {
+	SIG_DELETED,
+	N_SIGNALS
+};
+static guint signals[N_SIGNALS] = {0, };
 
 enum {
 	PROP_0,
@@ -256,7 +266,27 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 	obj_class->finalize = purple_notification_finalize;
 
 	/**
-	 * PurpleNotification::id:
+	 * PurpleNotification::deleted:
+	 * @notification: The instance.
+	 *
+	 * Emitted when the notification is deleted. This is typically done by a
+	 * user interface calling [method@PurpleNotification.delete].
+	 *
+	 * Since: 3.0.0
+	 */
+	signals[SIG_DELETED] = g_signal_new_class_handler(
+		"deleted",
+		G_OBJECT_CLASS_TYPE(klass),
+		G_SIGNAL_RUN_LAST,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		G_TYPE_NONE,
+		0);
+
+	/**
+	 * PurpleNotification:id:
 	 *
 	 * The ID of the notification. Used for things that need to address it.
 	 * This is auto populated at creation time.
@@ -271,7 +301,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 	);
 
 	/**
-	 * PurpleNotification::type:
+	 * PurpleNotification:type:
 	 *
 	 * The [enum@NotificationType] of this notification.
 	 *
@@ -285,7 +315,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::account:
+	 * PurpleNotification:account:
 	 *
 	 * An optional [class@Account] that this notification is for.
 	 *
@@ -298,7 +328,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::created-timestamp:
+	 * PurpleNotification:created-timestamp:
 	 *
 	 * The creation time of this notification. This always represented as UTC
 	 * internally, and will be set to UTC now by default.
@@ -312,7 +342,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::title:
+	 * PurpleNotification:title:
 	 *
 	 * An optional title for this notification. A user interface may or may not
 	 * choose to use this when displaying the notification. Regardless, this
@@ -327,7 +357,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::icon-name:
+	 * PurpleNotification:icon-name:
 	 *
 	 * The icon-name in the icon theme to use for the notification. A user
 	 * interface may or may not choose to use this when display the
@@ -342,7 +372,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::read:
+	 * PurpleNotification:read:
 	 *
 	 * Whether or not the notification has been read.
 	 *
@@ -355,7 +385,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::interactive:
+	 * PurpleNotification:interactive:
 	 *
 	 * Whether or not the notification can be interacted with.
 	 *
@@ -368,7 +398,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::data:
+	 * PurpleNotification:data:
 	 *
 	 * Data specific to the [enum@NotificationType] for the notification.
 	 *
@@ -380,10 +410,9 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleNotification::data-destroy-func:
+	 * PurpleNotification:data-destroy-func:
 	 *
-	 * A [func@GLib.DestroyFunc] to call to free
-	 * [property@PurpleNotification:data].
+	 * A function to call to free [property@PurpleNotification:data].
 	 *
 	 * Since: 3.0.0
 	 */
@@ -393,6 +422,7 @@ purple_notification_class_init(PurpleNotificationClass *klass) {
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPERTIES, properties);
+
 }
 
 /******************************************************************************
@@ -408,6 +438,42 @@ purple_notification_new(PurpleNotificationType type, PurpleAccount *account,
 	                    "data", data,
 	                    "data-destroy-func", data_destroy_func,
 	                    NULL);
+}
+
+PurpleNotification *
+purple_notification_new_from_authorization_request(PurpleAuthorizationRequest *authorization_request)
+{
+	PurpleAccount *account = NULL;
+	PurpleNotification *notification = NULL;
+	gchar *title = NULL;
+	const gchar *alias = NULL, *username = NULL;
+
+	g_return_val_if_fail(PURPLE_IS_AUTHORIZATION_REQUEST(authorization_request),
+	                     NULL);
+
+	account = purple_authorization_request_get_account(authorization_request);
+	notification = purple_notification_new(PURPLE_NOTIFICATION_TYPE_AUTHORIZATION_REQUEST,
+	                                       account, authorization_request,
+	                                       g_object_unref);
+
+	username = purple_authorization_request_get_username(authorization_request);
+	alias = purple_authorization_request_get_alias(authorization_request);
+
+	if(alias != NULL && *alias != '\0') {
+		title = g_strdup_printf(_("%s (%s) would like to add %s to their"
+		                          " contact list"),
+		                        alias, username,
+		                        purple_account_get_username(account));
+	} else {
+		title = g_strdup_printf(_("%s would like to add %s to their contact"
+		                          " list"),
+		                        username, purple_account_get_username(account));
+	}
+
+	purple_notification_set_title(notification, title);
+	g_free(title);
+
+	return notification;
 }
 
 const gchar *
@@ -564,4 +630,16 @@ purple_notification_compare(gconstpointer a, gconstpointer b) {
 
 	return g_date_time_compare(notification_a->created_timestamp,
 	                           notification_b->created_timestamp);
+}
+
+void
+purple_notification_delete(PurpleNotification *notification) {
+	g_return_if_fail(PURPLE_IS_NOTIFICATION(notification));
+
+	/* Calling this multiple times is a programming error. */
+	g_return_if_fail(notification->deleted == FALSE);
+
+	notification->deleted = TRUE;
+
+	g_signal_emit(notification, signals[SIG_DELETED], 0);
 }

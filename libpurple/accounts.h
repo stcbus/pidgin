@@ -38,13 +38,6 @@ typedef struct _PurpleAccountUiOps  PurpleAccountUiOps;
  * @status_changed:        This account's status changed.
  * @request_add:           Someone we don't have on our list added us; prompt
  *                         to add them.
- * @request_authorize:     Prompt for authorization when someone adds this
- *                         account to their buddy list.  To authorize them to
- *                         see this account's presence, call
- *                         @authorize_cb (@message, @user_data) otherwise call
- *                         @deny_cb (@message, @user_data).
- *                         <sbr/>Returns: A UI-specific handle, as passed to
- *                         @close_account_request.
  * @close_account_request: Close a pending request for authorization.
  *                         @ui_handle is a handle as returned by
  *                         @request_authorize.
@@ -68,16 +61,6 @@ struct _PurpleAccountUiOps
 	                    const char *id,
 	                    const char *alias,
 	                    const char *message);
-
-	void *(*request_authorize)(PurpleAccount *account,
-	                           const char *remote_user,
-	                           const char *id,
-	                           const char *alias,
-	                           const char *message,
-	                           gboolean on_list,
-	                           PurpleAccountRequestAuthorizationCb authorize_cb,
-	                           PurpleAccountRequestAuthorizationCb deny_cb,
-	                           void *user_data);
 
 	void (*close_account_request)(void *ui_handle);
 

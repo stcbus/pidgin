@@ -109,18 +109,6 @@ typedef struct
 
 typedef struct
 {
-	PurpleAccountRequestType type;
-	PurpleAccount *account;
-	void *ui_handle;
-	char *user;
-	gpointer userdata;
-	PurpleAccountRequestAuthorizationCb auth_cb;
-	PurpleAccountRequestAuthorizationCb deny_cb;
-	guint ref;
-} PurpleAccountRequestInfo;
-
-typedef struct
-{
 	PurpleAccount *account;
 	GCallback cb;
 	gpointer data;
@@ -144,7 +132,6 @@ enum
 };
 
 static GParamSpec    *properties[PROP_LAST];
-static GList         *handles = NULL;
 
 G_DEFINE_TYPE_WITH_PRIVATE(PurpleAccount, purple_account, G_TYPE_OBJECT);
 
@@ -353,63 +340,6 @@ purple_account_connect_got_password_cb(GObject *obj, GAsyncResult *res,
 	}
 
 	g_free(password);
-}
-
-static PurpleAccountRequestInfo *
-purple_account_request_info_unref(PurpleAccountRequestInfo *info)
-{
-	if (--info->ref)
-		return info;
-
-	/* TODO: This will leak info->user_data, but there is no callback to just clean that up */
-	g_free(info->user);
-	g_free(info);
-	return NULL;
-}
-
-static void
-purple_account_request_close_info(PurpleAccountRequestInfo *info)
-{
-	PurpleAccountUiOps *ops;
-
-	ops = purple_accounts_get_ui_ops();
-
-	if (ops != NULL && ops->close_account_request != NULL)
-		ops->close_account_request(info->ui_handle);
-
-	purple_account_request_info_unref(info);
-}
-
-static void
-request_auth_cb(const char *message, void *data)
-{
-	PurpleAccountRequestInfo *info = data;
-
-	handles = g_list_remove(handles, info);
-
-	if (info->auth_cb != NULL)
-		info->auth_cb(message, info->userdata);
-
-	purple_signal_emit(purple_accounts_get_handle(),
-			"account-authorization-granted", info->account, info->user, message);
-
-	purple_account_request_info_unref(info);
-}
-
-static void
-request_deny_cb(const char *message, void *data)
-{
-	PurpleAccountRequestInfo *info = data;
-
-	handles = g_list_remove(handles, info);
-
-	if (info->deny_cb != NULL)
-		info->deny_cb(message, info->userdata);
-
-	purple_signal_emit(purple_accounts_get_handle(),
-			"account-authorization-denied", info->account, info->user, message);
-
-	purple_account_request_info_unref(info);
 }
 
 static void
@@ -1247,108 +1177,14 @@ purple_account_request_add(PurpleAccount *account, const char *remote_user,
 		ui_ops->request_add(account, remote_user, id, alias, message);
 }
 
-void *
-purple_account_request_authorization(PurpleAccount *account, const char *remote_user,
-				     const char *id, const char *alias, const char *message, gboolean on_list,
-				     PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data)
-{
-	PurpleAccountUiOps *ui_ops;
-	PurpleAccountRequestInfo *info;
-	int plugin_return;
-	char *response = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
-	g_return_val_if_fail(remote_user != NULL, NULL);
-
-	ui_ops = purple_accounts_get_ui_ops();
-
-	plugin_return = GPOINTER_TO_INT(
-			purple_signal_emit_return_1(
-				purple_accounts_get_handle(),
-				"account-authorization-requested",
-				account, remote_user, message, &response
-			));
-
-	switch (plugin_return)
-	{
-		case PURPLE_ACCOUNT_RESPONSE_IGNORE:
-			g_free(response);
-			return NULL;
-		case PURPLE_ACCOUNT_RESPONSE_ACCEPT:
-			if (auth_cb != NULL)
-				auth_cb(response, user_data);
-			g_free(response);
-			return NULL;
-		case PURPLE_ACCOUNT_RESPONSE_DENY:
-			if (deny_cb != NULL)
-				deny_cb(response, user_data);
-			g_free(response);
-			return NULL;
-	}
-
-	g_free(response);
-
-	if (ui_ops != NULL && ui_ops->request_authorize != NULL) {
-		info            = g_new0(PurpleAccountRequestInfo, 1);
-		info->type      = PURPLE_ACCOUNT_REQUEST_AUTHORIZATION;
-		info->account   = account;
-		info->auth_cb   = auth_cb;
-		info->deny_cb   = deny_cb;
-		info->userdata  = user_data;
-		info->user      = g_strdup(remote_user);
-		info->ref       = 2;  /* We hold an extra ref to make sure info remains valid
-		                         if any of the callbacks are called synchronously. We
-		                         unref it after the function call */
-
-		info->ui_handle = ui_ops->request_authorize(account, remote_user, id, alias, message,
-							    on_list, request_auth_cb, request_deny_cb, info);
-
-		info = purple_account_request_info_unref(info);
-		if (info) {
-			handles = g_list_append(handles, info);
-			return info->ui_handle;
-		}
-	}
-
-	return NULL;
-}
-
 void
-purple_account_request_close_with_account(PurpleAccount *account)
-{
-	GList *l, *l_next;
+purple_account_request_close_with_account(PurpleAccount *account) {
+	PurpleNotificationManager *manager = NULL;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	for (l = handles; l != NULL; l = l_next) {
-		PurpleAccountRequestInfo *info = l->data;
-
-		l_next = l->next;
-
-		if (info->account == account) {
-			handles = g_list_delete_link(handles, l);
-			purple_account_request_close_info(info);
-		}
-	}
-}
-
-void
-purple_account_request_close(void *ui_handle)
-{
-	GList *l, *l_next;
-
-	g_return_if_fail(ui_handle != NULL);
-
-	for (l = handles; l != NULL; l = l_next) {
-		PurpleAccountRequestInfo *info = l->data;
-
-		l_next = l->next;
-
-		if (info->ui_handle == ui_handle) {
-			handles = g_list_delete_link(handles, l);
-			purple_account_request_close_info(info);
-		}
-	}
+	manager = purple_notification_manager_get_default();
+	purple_notification_manager_remove_with_account(manager, account);
 }
 
 void

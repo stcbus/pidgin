@@ -142,6 +142,8 @@ pidgin_notification_connection_error_remove_cb(G_GNUC_UNUSED GtkButton *button,
 	PidginNotificationConnectionError *error = data;
 	PurpleNotificationManager *manager = NULL;
 
+	purple_notification_delete(error->notification);
+
 	manager = purple_notification_manager_get_default();
 	purple_notification_manager_remove(manager, error->notification);
 }

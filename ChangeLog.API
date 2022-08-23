@@ -331,6 +331,8 @@ version 3.0.0 (??/??/????):
 		* network-configuration-changed signal
 		* PurpleAccount->ui_data
 		* PurpleAccountPrefsUiOps
+		* PurpleAccountRequestType
+		* PurpleAccountUiOps:request_authorization
 		* purple_account_add_buddies_with_invite
 		* purple_account_add_buddy_with_invite
 		* purple_account_destroy_log
@@ -343,6 +345,8 @@ version 3.0.0 (??/??/????):
 		* purple_account_get_ui_string
 		* purple_account_get_ui_bool
 		* purple_account_notify_added
+		* purple_account_request_authorization
+		* purple_account_request_close
 		* purple_account_set_check_mail
 		* purple_account_set_current_error
 		* purple_account_set_password.  Use
