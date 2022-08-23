@@ -88,7 +88,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
         <child>
           <object class="GtkComboBox" id="proxy_type">
             <property name="hexpand">1</property>
-            <property name="halign">GTK_ALIGN_FILL</property>
+            <property name="halign">fill</property>
             <property name="model">filter</property>
             <signal name="changed" handler="pidgin_proxy_options_proxy_type_changed_cb" object="PidginProxyOptions" swapped="no"/>
             <child>
@@ -120,7 +120,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkEntry" id="hostname">
                 <property name="hexpand">1</property>
-                <property name="halign">GTK_ALIGN_FILL</property>
+                <property name="halign">fill</property>
                 <property name="focusable">1</property>
               </object>
             </child>
@@ -140,12 +140,10 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkSpinButton" id="port">
                 <property name="hexpand">1</property>
-                <property name="halign">GTK_ALIGN_FILL</property>
+                <property name="halign">fill</property>
                 <property name="focusable">1</property>
-                <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
                 <property name="adjustment">port_adjustment</property>
                 <property name="numeric">1</property>
-                <property name="extra-menu">extra</property>
               </object>
             </child>
           </object>
@@ -164,7 +162,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkEntry" id="username">
                 <property name="hexpand">1</property>
-                <property name="halign">GTK_ALIGN_FILL</property>
+                <property name="halign">fill</property>
                 <property name="focusable">1</property>
               </object>
             </child>
@@ -184,7 +182,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkEntry" id="password">
                 <property name="hexpand">1</property>
-                <property name="halign">GTK_ALIGN_FILL</property>
+                <property name="halign">fill</property>
                 <property name="focusable">1</property>
               </object>
             </child>

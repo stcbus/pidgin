@@ -210,14 +210,14 @@ set_account_protocol_cb(GtkWidget *widget, AccountPrefsDialog *dialog) {
 	if (!dialog->protocol ||
 	    !PURPLE_PROTOCOL_IMPLEMENTS(dialog->protocol, SERVER, register_user))
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->register_button), FALSE);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->register_button), FALSE);
 		gtk_widget_hide(dialog->register_button);
 	} else {
 		if (purple_protocol_get_options(dialog->protocol) &
 		    OPT_PROTO_REGISTER_NOSCREENNAME) {
 			gtk_widget_set_sensitive(dialog->register_button, TRUE);
 		} else {
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+			gtk_check_button_set_active(GTK_CHECK_BUTTON(
 				dialog->register_button), FALSE);
 			gtk_widget_set_sensitive(dialog->register_button, FALSE);
 		}
@@ -235,8 +235,8 @@ username_changed_cb(GtkEntry *entry, AccountPrefsDialog *dialog)
 
 	if (dialog->ok_button) {
 		if (opt_noscreenname && dialog->register_button &&
-			gtk_toggle_button_get_active(
-				GTK_TOGGLE_BUTTON(dialog->register_button)))
+			gtk_check_button_get_active(
+				GTK_CHECK_BUTTON(dialog->register_button)))
 			gtk_widget_set_sensitive(dialog->ok_button, TRUE);
 		else
 			gtk_widget_set_sensitive(dialog->ok_button,
@@ -255,8 +255,8 @@ username_changed_cb(GtkEntry *entry, AccountPrefsDialog *dialog)
 static void
 register_button_cb(GtkWidget *checkbox, AccountPrefsDialog *dialog)
 {
-	int register_checked = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(dialog->register_button));
+	int register_checked = gtk_check_button_get_active(
+		GTK_CHECK_BUTTON(dialog->register_button));
 	int opt_noscreenname = (dialog->protocol != NULL &&
 		(purple_protocol_get_options(dialog->protocol) & OPT_PROTO_REGISTER_NOSCREENNAME));
 	int register_noscreenname = (opt_noscreenname && register_checked);
@@ -531,7 +531,7 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 static void
 icon_check_cb(GtkWidget *checkbox, AccountPrefsDialog *dialog)
 {
-	gtk_widget_set_sensitive(dialog->icon_hbox, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)));
+	gtk_widget_set_sensitive(dialog->icon_hbox, gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)));
 }
 
 static void
@@ -570,7 +570,7 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	gtk_box_append(GTK_BOX(vbox), dialog->icon_check);
 
 	dialog->icon_hbox = hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_widget_set_sensitive(hbox, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)));
+	gtk_widget_set_sensitive(hbox, gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)));
 	gtk_box_append(GTK_BOX(vbox), hbox);
 
 	label = gtk_label_new("    ");
@@ -626,7 +626,7 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 			                      purple_account_get_private_alias(dialog->account));
 		}
 
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->icon_check),
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->icon_check),
 					     !purple_account_get_bool(dialog->account, "use-global-buddyicon",
 								       TRUE));
 
@@ -734,8 +734,8 @@ add_account_options(AccountPrefsDialog *dialog)
 				opt_entry->widget = check = gtk_check_button_new_with_mnemonic(tmp);
 				g_free(tmp);
 
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
-											 bool_value);
+				gtk_check_button_set_active(GTK_CHECK_BUTTON(check),
+				                            bool_value);
 
 				gtk_box_append(GTK_BOX(vbox), check);
 				break;
@@ -911,16 +911,15 @@ add_voice_options(AccountPrefsDialog *dialog)
 	}
 
 	if (dialog->account) {
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->suppression_check),
-		                             purple_account_get_silence_suppression(dialog->account));
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->suppression_check),
+		                            purple_account_get_silence_suppression(dialog->account));
 	} else {
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->suppression_check), FALSE);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->suppression_check), FALSE);
 	}
 }
 
-static gboolean
-account_win_destroy_cb(GtkWidget *w, GdkEvent *event,
-					   AccountPrefsDialog *dialog)
+static void
+account_win_destroy_cb(AccountPrefsDialog *dialog)
 {
 	gtk_window_destroy(GTK_WINDOW(dialog->window));
 
@@ -937,7 +936,6 @@ account_win_destroy_cb(GtkWidget *w, GdkEvent *event,
 	purple_signals_disconnect_by_handle(dialog);
 
 	g_free(dialog);
-	return FALSE;
 }
 
 static void
@@ -1048,13 +1046,13 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 		const char *filename;
 
 		if (new_acct || purple_account_get_bool(account, "use-global-buddyicon", TRUE) ==
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)))
+			gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)))
 		{
 			icon_change = TRUE;
 		}
-		purple_account_set_bool(account, "use-global-buddyicon", !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)));
+		purple_account_set_bool(account, "use-global-buddyicon", !gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)));
 
-		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)))
+		if (gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)))
 		{
 			if (dialog->icon_img)
 			{
@@ -1112,7 +1110,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 
 				case PURPLE_PREF_BOOLEAN:
 					bool_value =
-						gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(opt_entry->widget));
+						gtk_check_button_get_active(GTK_CHECK_BUTTON(opt_entry->widget));
 					purple_account_set_bool(account, opt_entry->setting, bool_value);
 					break;
 
@@ -1135,7 +1133,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	/* Voice and Video settings */
 	if (dialog->voice_frame) {
 		purple_account_set_silence_suppression(account,
-				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->suppression_check)));
+				gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->suppression_check)));
 	}
 
 	/* If this is a new account, add it to our list */
@@ -1146,7 +1144,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	}
 
 	/* If this is a new account, then sign on! */
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->register_button))) {
+	if (gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->register_button))) {
 		purple_account_set_register_callback(account, account_register_cb, NULL);
 		purple_account_register(account);
 	} else if (new_acct) {
@@ -1160,7 +1158,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	}
 
 	/* We no longer need the data from the dialog window */
-	account_win_destroy_cb(NULL, NULL, dialog);
+	account_win_destroy_cb(dialog);
 }
 
 static void
@@ -1172,7 +1170,8 @@ account_prefs_response_cb(GtkDialog *dialog, gint response_id, gpointer data) {
 			account_prefs_save(window);
 			break;
 		case RESPONSE_CLOSE:
-			account_win_destroy_cb(NULL, NULL, window);
+        case GTK_RESPONSE_DELETE_EVENT:
+			account_win_destroy_cb(window);
 			break;
 		default:
 			break;
@@ -1210,8 +1209,6 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 	dialog->window = win = pidgin_dialog_new((type == PIDGIN_ADD_ACCOUNT_DIALOG) ? _("Add Account") : _("Modify Account"),
 		6, "account", FALSE);
 
-	g_signal_connect(win, "delete_event", G_CALLBACK(account_win_destroy_cb),
-	                 dialog);
 	g_signal_connect(win, "response", G_CALLBACK(account_prefs_response_cb),
 	                 dialog);
 
