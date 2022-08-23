@@ -3075,7 +3075,7 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 {
 	GSimpleActionGroup *action_group = NULL;
 	void *handle;
-	GtkWidget *sep;
+	GtkWidget *sep, *sw;
 	GtkEventController *key_controller = NULL;
 	GtkTreeSelection *selection;
 
@@ -3143,9 +3143,15 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(gtkblist->treeview),
 			pidgin_blist_search_equal_func, NULL, NULL);
 
-	gtk_box_pack_start(GTK_BOX(gtkblist->vbox),
-		pidgin_make_scrollable(gtkblist->treeview, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC, -1, -1),
-		TRUE, TRUE, 0);
+	sw = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+	                               GTK_POLICY_AUTOMATIC,
+	                               GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), gtkblist->treeview);
+
+	gtk_widget_set_vexpand(sw, TRUE);
+	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(gtkblist->vbox), sw);
 
 	sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_pack_start(GTK_BOX(gtkblist->vbox), sep, FALSE, FALSE, 0);

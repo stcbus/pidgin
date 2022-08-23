@@ -2108,6 +2108,7 @@ static GtkWidget *
 get_config_frame(PurplePlugin *plugin)
 {
 	GtkWidget *ret, *vbox;
+	GtkWidget *sw;
 	GtkWidget *hbox;
 	GtkWidget *button;
 	GtkSizeGroup *sg;
@@ -2181,10 +2182,14 @@ get_config_frame(PurplePlugin *plugin)
 
 	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree)),
 		 GTK_SELECTION_MULTIPLE);
-	gtk_box_pack_start(GTK_BOX(vbox),
-		pidgin_make_scrollable(tree, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS, GTK_SHADOW_IN, -1, -1),
-		TRUE, TRUE, 0);
-	gtk_widget_show(tree);
+
+	sw = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER,
+	                               GTK_POLICY_ALWAYS);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), tree);
+	gtk_widget_set_vexpand(sw, TRUE);
+	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(vbox), sw);
 
 	hbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);

@@ -1181,7 +1181,11 @@ create_string_field(PurpleRequestField *field)
 							 G_CALLBACK(req_entry_field_changed_cb), field);
 	    }
 
-		widget = pidgin_make_scrollable(textview, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS, -1, 75);
+		widget = gtk_scrolled_window_new();
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+		                               GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+		gtk_widget_set_size_request(widget, -1, 75);
+		gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(widget), textview);
 	}
 	else
 	{
@@ -1454,6 +1458,7 @@ list_field_select_changed_cb(GtkTreeSelection *sel, PurpleRequestField *field)
 static GtkWidget *
 create_list_field(PurpleRequestField *field)
 {
+	GtkWidget *sw;
 	GtkWidget *treeview;
 	GtkListStore *store;
 	GtkCellRenderer *renderer;
@@ -1540,7 +1545,12 @@ create_list_field(PurpleRequestField *field)
 	g_signal_connect(G_OBJECT(sel), "changed",
 					 G_CALLBACK(list_field_select_changed_cb), field);
 
-	return pidgin_make_scrollable(treeview, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC, -1, -1);
+
+	sw = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+	                               GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), treeview);
+	return sw;
 }
 
 static GdkPixbuf*

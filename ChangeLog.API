@@ -974,6 +974,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_idle_get_ui_ops
 		* pidgin_load_accels
 		* pidgin_make_mini_dialog_with_custom_icon
+		* pidgin_make_scrollable
 		* pidgin_mini_dialog_new_with_custom_icon
 		* pidgin_mini_dialog_set_custom_icon
 		* pidgin_make_pretty_arrows
