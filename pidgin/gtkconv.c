@@ -322,129 +322,171 @@ chat_do_im(PidginConversation *gtkconv, const char *who)
 
 static void pidgin_conv_chat_update_user(PurpleChatUser *chatuser);
 
-static void
-ignore_cb(GtkWidget *w, PidginConversation *gtkconv)
-{
-	PurpleChatConversation *chat = PURPLE_CHAT_CONVERSATION(gtkconv->active_conv);
-	const char *name;
+static gchar *
+menu_chat_get_selected_username(PidginConversation *gtkconv) {
+	GtkTreeSelection *selection = NULL;
+	GtkTreeIter iter;
+	GtkTreeModel *model = NULL;
 
-	name = g_object_get_data(G_OBJECT(w), "user_data");
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtkconv->list));
 
-	if (name == NULL)
-		return;
+	if(gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		gchar *username = NULL;
 
-	if (purple_chat_conversation_is_ignored_user(chat, name))
-		purple_chat_conversation_unignore(chat, name);
-	else
-		purple_chat_conversation_ignore(chat, name);
+		gtk_tree_model_get(model, &iter, CHAT_USERS_NAME_COLUMN, &username, -1);
 
-	pidgin_conv_chat_update_user(purple_chat_conversation_find_user(chat, name));
+		return username;
+	}
+
+	return NULL;
 }
 
 static void
-menu_chat_im_cb(GtkWidget *w, PidginConversation *gtkconv)
+menu_chat_im_cb(G_GNUC_UNUSED GSimpleAction *action,
+                G_GNUC_UNUSED GVariant *parameter,
+                gpointer data)
 {
-	const char *who = g_object_get_data(G_OBJECT(w), "user_data");
+	PidginConversation *gtkconv = data;
+	gchar *username = menu_chat_get_selected_username(gtkconv);
 
-	chat_do_im(gtkconv, who);
+	chat_do_im(gtkconv, username);
+
+	g_free(username);
 }
 
 static void
-menu_chat_send_file_cb(GtkWidget *w, PidginConversation *gtkconv)
+menu_chat_send_file_cb(G_GNUC_UNUSED GSimpleAction *action,
+                       G_GNUC_UNUSED GVariant *parmeter,
+                       gpointer data)
 {
+	PidginConversation *gtkconv = data;
 	PurpleProtocol *protocol;
 	PurpleConversation *conv = gtkconv->active_conv;
-	const char *who = g_object_get_data(G_OBJECT(w), "user_data");
 	PurpleConnection *gc  = purple_conversation_get_connection(conv);
-	gchar *real_who = NULL;
+	gchar *username = NULL, *real_who = NULL;
 
 	g_return_if_fail(gc != NULL);
+
+	username = menu_chat_get_selected_username(gtkconv);
 
 	protocol = purple_connection_get_protocol(gc);
 
 	if(protocol) {
 		real_who = purple_protocol_chat_get_user_real_name(PURPLE_PROTOCOL_CHAT(protocol), gc,
-				purple_chat_conversation_get_id(PURPLE_CHAT_CONVERSATION(conv)), who);
+				purple_chat_conversation_get_id(PURPLE_CHAT_CONVERSATION(conv)), username);
 	}
 
-	purple_serv_send_file(gc, real_who ? real_who : who, NULL);
+	purple_serv_send_file(gc, real_who ? real_who : username, NULL);
 	g_free(real_who);
+	g_free(username);
 }
 
 static void
-menu_chat_info_cb(GtkWidget *w, PidginConversation *gtkconv)
+menu_chat_ignore_cb(G_GNUC_UNUSED GSimpleAction *action,
+                    G_GNUC_UNUSED GVariant *GVariant,
+                    gpointer data)
 {
-	char *who;
+	PidginConversation *gtkconv = data;
+	PurpleChatConversation *chat = PURPLE_CHAT_CONVERSATION(gtkconv->active_conv);
+	gchar *username = NULL;
 
-	who = g_object_get_data(G_OBJECT(w), "user_data");
+	username = menu_chat_get_selected_username(gtkconv);
+	if(username == NULL) {
+		return;
+	}
 
-	chat_do_info(gtkconv, who);
+	if(purple_chat_conversation_is_ignored_user(chat, username)) {
+		purple_chat_conversation_unignore(chat, username);
+	} else {
+		purple_chat_conversation_ignore(chat, username);
+	}
+
+	pidgin_conv_chat_update_user(purple_chat_conversation_find_user(chat,
+	                                                                username));
+
+	g_free(username);
 }
 
 static void
-menu_chat_add_remove_cb(GtkWidget *w, PidginConversation *gtkconv)
+menu_chat_info_cb(G_GNUC_UNUSED GSimpleAction *action,
+                  G_GNUC_UNUSED GVariant *parmeter,
+                  gpointer data)
 {
+	PidginConversation *gtkconv = data;
+	gchar *username = menu_chat_get_selected_username(gtkconv);
+
+	chat_do_info(gtkconv, username);
+
+	g_free(username);
+}
+
+static void
+menu_chat_add_remove_cb(G_GNUC_UNUSED GSimpleAction *action,
+                        G_GNUC_UNUSED GVariant *parmeter,
+                        gpointer data)
+{
+	PidginConversation *gtkconv = data;
 	PurpleConversation *conv = gtkconv->active_conv;
 	PurpleAccount *account;
 	PurpleBuddy *b;
-	char *name;
+	gchar *username;
 
 	account = purple_conversation_get_account(conv);
-	name    = g_object_get_data(G_OBJECT(w), "user_data");
-	b       = purple_blist_find_buddy(account, name);
+	username = menu_chat_get_selected_username(gtkconv);
+	b = purple_blist_find_buddy(account, username);
 
-	if (b != NULL)
+	if (b != NULL) {
 		pidgin_dialogs_remove_buddy(b);
-	else if (account != NULL && purple_account_is_connected(account))
-		purple_blist_request_add_buddy(account, name, NULL, NULL);
+	} else if (account != NULL && purple_account_is_connected(account)) {
+		purple_blist_request_add_buddy(account, username, NULL, NULL);
+	}
 
 	gtk_widget_grab_focus(PIDGIN_CONVERSATION(conv)->entry);
+
+	g_free(username);
 }
 
-static GtkWidget *
-create_chat_menu(PurpleChatConversation *chat, const char *who, PurpleConnection *gc)
+static GMenu *
+create_chat_menu(PurpleChatConversation *chat, const char *who,
+                 PurpleConnection *gc, PidginConversation *gtkconv)
 {
-	static GtkWidget *menu = NULL;
+	GMenu *menu = NULL;
+	GSimpleAction *action = NULL;
+	GSimpleActionGroup *group = NULL;
 	PurpleProtocol *protocol = NULL;
 	PurpleConversation *conv = PURPLE_CONVERSATION(chat);
 	PurpleAccount *account = purple_conversation_get_account(conv);
 	gboolean is_me = FALSE;
-	GtkWidget *button;
 
 	if (gc != NULL)
 		protocol = purple_connection_get_protocol(gc);
 
-	/*
-	 * If a menu already exists, destroy it before creating a new one,
-	 * thus freeing-up the memory it occupied.
-	 */
-	if (menu)
-		gtk_widget_destroy(menu);
-
 	if (purple_strequal(purple_chat_conversation_get_nick(chat), purple_normalize(account, who)))
 		is_me = TRUE;
 
-	menu = gtk_menu_new();
+	menu = g_menu_new();
+	group = g_simple_action_group_new();
 
 	if (!is_me) {
-                button = pidgin_new_menu_item(menu, _("IM"),
-                                NULL,
-                                G_CALLBACK(menu_chat_im_cb),
-                                PIDGIN_CONVERSATION(conv));
+		g_menu_append(menu, _("IM"), "chat.im");
 
-		if (gc == NULL)
-			gtk_widget_set_sensitive(button, FALSE);
-		else
-			g_object_set_data_full(G_OBJECT(button), "user_data", g_strdup(who), g_free);
-
+		if(gc != NULL) {
+			action = g_simple_action_new("im", NULL);
+			g_signal_connect(action, "activate",
+			                 G_CALLBACK(menu_chat_im_cb), gtkconv);
+			g_action_map_add_action(G_ACTION_MAP(group), G_ACTION(action));
+		}
 
 		if (protocol && PURPLE_IS_PROTOCOL_XFER(protocol))
 		{
 			gboolean can_receive_file = TRUE;
 
-			button = pidgin_new_menu_item(menu, _("Send File"),
-				NULL, G_CALLBACK(menu_chat_send_file_cb),
-				PIDGIN_CONVERSATION(conv));
+			g_menu_append(menu, _("Send File"), "chat.send-file");
+
+			action = g_simple_action_new("send-file", NULL);
+			g_signal_connect(action, "activate",
+			                 G_CALLBACK(menu_chat_send_file_cb), gtkconv);
+			g_action_map_add_action(G_ACTION_MAP(group), G_ACTION(action));
 
 			if (gc == NULL) {
 				can_receive_file = FALSE;
@@ -462,57 +504,52 @@ create_chat_menu(PurpleChatConversation *chat, const char *who, PurpleConnection
 				g_free(real_who);
 			}
 
-			if (!can_receive_file)
-				gtk_widget_set_sensitive(button, FALSE);
-			else
-				g_object_set_data_full(G_OBJECT(button), "user_data", g_strdup(who), g_free);
+			g_simple_action_set_enabled(action, can_receive_file);
 		}
 
 
-		if (purple_chat_conversation_is_ignored_user(chat, who))
-			button = pidgin_new_menu_item(menu, _("Un-Ignore"),
-                                        NULL, G_CALLBACK(ignore_cb),
-                                        PIDGIN_CONVERSATION(conv));
-		else
-			button = pidgin_new_menu_item(menu, _("Ignore"),
-                                        NULL, G_CALLBACK(ignore_cb),
-                                        PIDGIN_CONVERSATION(conv));
+		if (purple_chat_conversation_is_ignored_user(chat, who)) {
+			g_menu_append(menu, _("Un-Ignore"), "chat.ignore");
+		} else {
+			g_menu_append(menu, _("Ignore"), "chat.ignore");
+		}
 
-		if (gc == NULL)
-			gtk_widget_set_sensitive(button, FALSE);
-		else
-			g_object_set_data_full(G_OBJECT(button), "user_data", g_strdup(who), g_free);
+		if(gc != NULL) {
+			action = g_simple_action_new("ignore", NULL);
+			g_signal_connect(action, "activate",
+			                 G_CALLBACK(menu_chat_ignore_cb), gtkconv);
+			g_action_map_add_action(G_ACTION_MAP(group), G_ACTION(action));
+		}
 	}
 
 	if (protocol && PURPLE_PROTOCOL_IMPLEMENTS(protocol, SERVER, get_info)) {
-		button = pidgin_new_menu_item(menu, _("Info"),
-                                NULL,
-                                G_CALLBACK(menu_chat_info_cb),
-                                PIDGIN_CONVERSATION(conv));
+		g_menu_append(menu, _("Info"), "chat.info");
 
-		if (gc == NULL)
-			gtk_widget_set_sensitive(button, FALSE);
-		else
-			g_object_set_data_full(G_OBJECT(button), "user_data", g_strdup(who), g_free);
+		if(gc != NULL) {
+			action = g_simple_action_new("info", NULL);
+			g_signal_connect(action, "activate",
+			                 G_CALLBACK(menu_chat_info_cb), gtkconv);
+			g_action_map_add_action(G_ACTION_MAP(group), G_ACTION(action));
+		}
 	}
 
 	if (!is_me && protocol && !(purple_protocol_get_options(protocol) & OPT_PROTO_UNIQUE_CHATNAME) && PURPLE_PROTOCOL_IMPLEMENTS(protocol, SERVER, add_buddy)) {
-		if (purple_blist_find_buddy(account, who) != NULL)
-			button = pidgin_new_menu_item(menu, _("Remove"),
-                                        NULL,
-                                        G_CALLBACK(menu_chat_add_remove_cb),
-                                        PIDGIN_CONVERSATION(conv));
-		else
-			button = pidgin_new_menu_item(menu, _("Add"),
-                                        NULL,
-                                        G_CALLBACK(menu_chat_add_remove_cb),
-                                        PIDGIN_CONVERSATION(conv));
+		if (purple_blist_find_buddy(account, who) != NULL) {
+			g_menu_append(menu, _("Remove"), "chat.addremove");
+		} else {
+			g_menu_append(menu, _("Add"), "chat.addremove");
+		}
 
-		if (gc == NULL)
-			gtk_widget_set_sensitive(button, FALSE);
-		else
-			g_object_set_data_full(G_OBJECT(button), "user_data", g_strdup(who), g_free);
+		if(gc != NULL) {
+			action = g_simple_action_new("addremove", NULL);
+			g_signal_connect(action, "activate",
+			                 G_CALLBACK(menu_chat_add_remove_cb), gtkconv);
+			g_action_map_add_action(G_ACTION_MAP(group), G_ACTION(action));
+		}
 	}
+
+	gtk_widget_insert_action_group(gtkconv->list, "chat",
+	                               G_ACTION_GROUP(group));
 
 	return menu;
 }
@@ -527,7 +564,8 @@ gtkconv_chat_popup_menu_cb(GtkWidget *widget, PidginConversation *gtkconv)
 	GtkTreeSelection *sel;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
-	GtkWidget *menu;
+	GtkWidget *popover_menu = NULL;
+	GMenu *menu = NULL;
 	gchar *who;
 
 	gtkconv = PIDGIN_CONVERSATION(conv);
@@ -541,8 +579,15 @@ gtkconv_chat_popup_menu_cb(GtkWidget *widget, PidginConversation *gtkconv)
 		return FALSE;
 
 	gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, CHAT_USERS_NAME_COLUMN, &who, -1);
-	menu = create_chat_menu (PURPLE_CHAT_CONVERSATION(conv), who, gc);
-	pidgin_menu_popup_at_treeview_selection(menu, widget);
+	menu = create_chat_menu(PURPLE_CHAT_CONVERSATION(conv), who, gc, gtkconv);
+
+	popover_menu = gtk_popover_menu_new();
+	gtk_popover_bind_model(GTK_POPOVER(popover_menu), G_MENU_MODEL(menu),
+	                       NULL);
+	gtk_popover_set_relative_to(GTK_POPOVER(popover_menu), gtkconv->list);
+
+	gtk_popover_popup(GTK_POPOVER(popover_menu));
+
 	g_free(who);
 
 	return TRUE;
@@ -595,8 +640,18 @@ right_click_chat_cb(GtkWidget *widget, GdkEventButton *event,
 	if (event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS) {
 		chat_do_im(gtkconv, who);
 	} else if (gdk_event_triggers_context_menu((GdkEvent *)event)) {
-		GtkWidget *menu = create_chat_menu (PURPLE_CHAT_CONVERSATION(conv), who, gc);
-		gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+		GtkWidget *popover_menu = gtk_popover_menu_new();
+		GMenu *menu = create_chat_menu(PURPLE_CHAT_CONVERSATION(conv), who, gc,
+		                               gtkconv);
+
+		gtk_popover_bind_model(GTK_POPOVER(popover_menu), G_MENU_MODEL(menu),
+		                       NULL);
+		gtk_popover_set_relative_to(GTK_POPOVER(popover_menu), gtkconv->list);
+		gtk_popover_set_position(GTK_POPOVER(popover_menu), GTK_POS_BOTTOM);
+		gtk_popover_set_pointing_to(GTK_POPOVER(popover_menu),
+		                            &(const GdkRectangle){(int)event->x, (int)event->y, 1, 1});
+
+		gtk_popover_popup(GTK_POPOVER(popover_menu));
 	}
 
 handled:
