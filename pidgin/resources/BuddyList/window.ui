@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <template class="PidginContactListWindow" parent="GtkApplicationWindow">
     <property name="title" translatable="1">Contact List</property>
+    <property name="show-menubar">1</property>
     <child>
       <object class="GtkBox" id="vbox">
         <property name="orientation">vertical</property>

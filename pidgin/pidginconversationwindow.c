@@ -530,7 +530,10 @@ pidgin_conversation_window_get_default(void) {
 
 GtkWidget *
 pidgin_conversation_window_new(void) {
-	return GTK_WIDGET(g_object_new(PIDGIN_TYPE_CONVERSATION_WINDOW, NULL));
+	return g_object_new(
+		PIDGIN_TYPE_CONVERSATION_WINDOW,
+		"show-menubar", TRUE,
+		NULL);
 }
 
 void

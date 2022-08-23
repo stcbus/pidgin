@@ -37,6 +37,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
     </columns>
   </object>
   <template class="PidginConversationWindow" parent="GtkApplicationWindow">
+    <property name="show-menubar">1</property>
     <child>
       <object class="GtkEventControllerKey">
         <property name="propagation-phase">capture</property>
