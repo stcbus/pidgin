@@ -119,7 +119,6 @@ static void redo_buddy_list(PurpleBuddyList *list, gboolean remove, gboolean rer
 static void pidgin_blist_collapse_contact_cb(GtkWidget *w, PurpleBlistNode *node);
 static char *pidgin_get_group_title(PurpleBlistNode *gnode, gboolean expanded);
 static void pidgin_blist_expand_contact_cb(GtkWidget *w, PurpleBlistNode *node);
-static void set_urgent(void);
 
 typedef struct {
 	GtkTreeRowReference *row;
@@ -2935,15 +2934,6 @@ treeview_style_set(GtkWidget *widget,
 /* End of connection error handling stuff */
 /******************************************/
 
-static int
-blist_focus_cb(GtkWidget *widget, GdkEventFocus *event, PidginBuddyList *gtkblist)
-{
-	if(event->in) {
-		gtk_window_set_urgency_hint(GTK_WINDOW(gtkblist->window), FALSE);
-	}
-	return 0;
-}
-
 /* builds the blist layout according to to the current theme */
 static void
 pidgin_blist_build_layout(PurpleBuddyList *list)
@@ -3094,10 +3084,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	gtkblist = PIDGIN_BUDDY_LIST(list);
 
 	gtkblist->window = pidgin_contact_list_window_new();
-	g_signal_connect(G_OBJECT(gtkblist->window), "focus-in-event",
-			 G_CALLBACK(blist_focus_cb), gtkblist);
-	g_signal_connect(G_OBJECT(gtkblist->window), "focus-out-event",
-			 G_CALLBACK(blist_focus_cb), gtkblist);
 
 	/* the main vbox is already packed and shown via glade, we just need a
 	 * reference to it to pack the rest of our widgets here.
@@ -3782,14 +3768,6 @@ pidgin_blist_request_add_group(PurpleBuddyList *list)
 void pidgin_blist_add_alert(GtkWidget *widget)
 {
 	gtk_container_add(GTK_CONTAINER(gtkblist->scrollbook), widget);
-	set_urgent();
-}
-
-static void
-set_urgent(void) {
-	if(gtkblist->window && !gtk_widget_has_focus(gtkblist->window)) {
-		gtk_window_set_urgency_hint(GTK_WINDOW(gtkblist->window), TRUE);
-	}
 }
 
 PidginBuddyList *
