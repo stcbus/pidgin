@@ -151,13 +151,15 @@ alert(PurpleConversation *conv)
 	gint count;
 	PidginConversation *gtkconv = NULL;
 	PidginConversationWindow *convwin = NULL;
+	GtkRoot *root = NULL;
 	GtkWidget *win = NULL;
 
 	if (conv == NULL || PIDGIN_CONVERSATION(conv) == NULL)
 		return 0;
 
 	gtkconv = PIDGIN_CONVERSATION(conv);
-	win = gtk_widget_get_toplevel(gtkconv->tab_cont);
+	root = gtk_widget_get_root(gtkconv->tab_cont);
+	win = GTK_WIDGET(root);
 	convwin = PIDGIN_CONVERSATION_WINDOW(win);
 
 	if (!gtk_widget_has_focus(win) ||
@@ -285,16 +287,19 @@ message_source_activated(MessagingMenuApp *app, const gchar *id,
 	}
 
 	if (conv) {
+		GtkRoot *root = NULL;
 		GtkWidget *win = NULL;
 		PidginConversationWindow *convwin = NULL;
 
-		win = gtk_widget_get_toplevel(PIDGIN_CONVERSATION(conv)->tab_cont);
+		root = gtk_widget_get_root(PIDGIN_CONVERSATION(conv)->tab_cont);
+		win = GTK_WIDGET(root);
 		convwin = PIDGIN_CONVERSATION_WINDOW(win);
 
 		unalert(conv);
 
 		pidgin_conversation_window_select(convwin, conv);
-		gdk_window_focus(gtk_widget_get_window(win), time(NULL));
+
+		gtk_root_set_focus(root, PIDGIN_CONVERSATION(conv)->entry);
 	}
 	g_strfreev (sections);
 }
@@ -479,20 +484,19 @@ static GtkWidget *
 get_config_frame(PurplePlugin *plugin)
 {
 	GtkWidget *ret = NULL, *frame = NULL;
-	GtkWidget *vbox = NULL, *toggle = NULL;
+	GtkWidget *vbox = NULL, *toggle = NULL, *group = NULL;
 
 	ret = gtk_box_new(GTK_ORIENTATION_VERTICAL, 18);
-	gtk_container_set_border_width(GTK_CONTAINER (ret), 12);
 
 	/* Alerts */
 
 	frame = pidgin_make_frame(ret, _("Chatroom alerts"));
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add(GTK_CONTAINER(frame), vbox);
+	gtk_box_append(GTK_BOX(frame), vbox);
 
 	toggle = gtk_check_button_new_with_mnemonic(_("Chatroom message alerts _only where someone says your username"));
-	gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
+	gtk_box_append(GTK_BOX(vbox), toggle);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(toggle),
 			purple_prefs_get_bool("/plugins/gtk/unity/alert_chat_nick"));
 	g_signal_connect(G_OBJECT(toggle), "toggled",
 			G_CALLBACK(alert_config_cb), NULL);
@@ -501,27 +505,32 @@ get_config_frame(PurplePlugin *plugin)
 
 	frame = pidgin_make_frame(ret, _("Launcher Icon"));
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add(GTK_CONTAINER(frame), vbox);
+	gtk_box_append(GTK_BOX(frame), vbox);
 
-	toggle = gtk_radio_button_new_with_mnemonic(NULL, _("_Disable launcher integration"));
-	gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
+	toggle = gtk_check_button_new_with_mnemonic(_("_Disable launcher integration"));
+	group = toggle;
+	gtk_box_append(GTK_BOX(vbox), toggle);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(toggle),
 		purple_prefs_get_int("/plugins/gtk/unity/launcher_count") == LAUNCHER_COUNT_DISABLE);
 	g_signal_connect(G_OBJECT(toggle), "toggled",
 			G_CALLBACK(launcher_config_cb), GUINT_TO_POINTER(LAUNCHER_COUNT_DISABLE));
 
-	toggle = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(toggle),
+	toggle = gtk_check_button_new_with_mnemonic(
 			_("Show number of unread _messages on launcher icon"));
-	gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
+	gtk_check_button_set_group(GTK_CHECK_BUTTON(toggle),
+	                           GTK_CHECK_BUTTON(group));
+	gtk_box_append(GTK_BOX(vbox), toggle);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(toggle),
 		purple_prefs_get_int("/plugins/gtk/unity/launcher_count") == LAUNCHER_COUNT_MESSAGES);
 	g_signal_connect(G_OBJECT(toggle), "toggled",
 			G_CALLBACK(launcher_config_cb), GUINT_TO_POINTER(LAUNCHER_COUNT_MESSAGES));
 
-	toggle = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(toggle),
+	toggle = gtk_check_button_new_with_mnemonic(
 			_("Show number of unread co_nversations on launcher icon"));
-	gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
+	gtk_check_button_set_group(GTK_CHECK_BUTTON(toggle),
+	                           GTK_CHECK_BUTTON(group));
+	gtk_box_append(GTK_BOX(vbox), toggle);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(toggle),
 		purple_prefs_get_int("/plugins/gtk/unity/launcher_count") == LAUNCHER_COUNT_SOURCES);
 	g_signal_connect(G_OBJECT(toggle), "toggled",
 			G_CALLBACK(launcher_config_cb), GUINT_TO_POINTER(LAUNCHER_COUNT_SOURCES));
@@ -530,25 +539,27 @@ get_config_frame(PurplePlugin *plugin)
 
 	frame = pidgin_make_frame(ret, _("Messaging Menu"));
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add(GTK_CONTAINER(frame), vbox);
+	gtk_box_append(GTK_BOX(frame), vbox);
 
-	toggle = gtk_radio_button_new_with_mnemonic(NULL,
+	toggle = gtk_check_button_new_with_mnemonic(
 			_("Show number of _unread messages for conversations in messaging menu"));
-	gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
+	group = toggle;
+	gtk_box_append(GTK_BOX(vbox), toggle);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(toggle),
 		purple_prefs_get_int("/plugins/gtk/unity/messaging_menu_text") == MESSAGING_MENU_COUNT);
 	g_signal_connect(G_OBJECT(toggle), "toggled",
 			G_CALLBACK(messaging_menu_config_cb), GUINT_TO_POINTER(MESSAGING_MENU_COUNT));
 
-	toggle = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(toggle),
+	toggle = gtk_check_button_new_with_mnemonic(
 			_("Show _elapsed time for unread conversations in messaging menu"));
-	gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),
+	gtk_check_button_set_group(GTK_CHECK_BUTTON(toggle),
+	                           GTK_CHECK_BUTTON(group));
+	gtk_box_append(GTK_BOX(vbox), toggle);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(toggle),
 		purple_prefs_get_int("/plugins/gtk/unity/messaging_menu_text") == MESSAGING_MENU_TIME);
 	g_signal_connect(G_OBJECT(toggle), "toggled",
 			G_CALLBACK(messaging_menu_config_cb), GUINT_TO_POINTER(MESSAGING_MENU_TIME));
 
-	gtk_widget_show_all(ret);
 	return ret;
 }
 
