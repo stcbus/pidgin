@@ -65,7 +65,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <template class="PidginProxyPrefs" parent="AdwPreferencesPage">
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Proxy Server</property>
+        <property name="title" translatable="1">Proxy Server</property>
         <child>
           <object class="GtkStack" id="stack">
             <property name="margin-start">12</property>
@@ -80,7 +80,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label" translatable="yes">Proxy preferences are configured in GNOME preferences</property>
+                        <property name="label" translatable="1">Proxy preferences are configured in GNOME preferences</property>
                         <property name="xalign">0</property>
                       </object>
                     </child>
@@ -89,7 +89,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <property name="spacing">6</property>
                         <child>
                           <object class="GtkLabel" id="gnome_not_found">
-                            <property name="label" translatable="yes">Proxy configuration program was not found.</property>
+                            <property name="label" translatable="1">Proxy configuration program was not found.</property>
                             <attributes>
                               <attribute name="weight" value="bold"></attribute>
                             </attributes>
@@ -97,7 +97,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         </child>
                         <child>
                           <object class="GtkButton" id="gnome_program">
-                            <property name="label" translatable="yes">Configure _Proxy</property>
+                            <property name="label" translatable="1">Configure _Proxy</property>
                             <property name="focusable">1</property>
                             <property name="receives-default">1</property>
                             <property name="use-underline">1</property>
@@ -113,14 +113,13 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkStackPage">
                 <property name="name">nongnome</property>
-                <property name="position">1</property>
                 <property name="child">
                   <object class="GtkBox">
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkCheckButton" id="socks4_remotedns">
-                        <property name="label" translatable="yes">Use remote _DNS with SOCKS4 proxies</property>
+                        <property name="label" translatable="1">Use remote _DNS with SOCKS4 proxies</property>
                         <property name="focusable">1</property>
                         <property name="use-underline">1</property>
                       </object>
@@ -130,7 +129,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <property name="spacing">6</property>
                         <child>
                           <object class="GtkLabel">
-                            <property name="label" translatable="yes">Proxy t_ype:</property>
+                            <property name="label" translatable="1">Proxy t_ype:</property>
                             <property name="use-underline">1</property>
                             <property name="mnemonic-widget">type.combo</property>
                           </object>
@@ -154,14 +153,11 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <property name="row-spacing">10</property>
                         <property name="column-spacing">5</property>
                         <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="yes">_Host:</property>
+                          <object class="GtkLabel" id="host-label">
+                            <property name="label" translatable="1">_Host:</property>
                             <property name="use-underline">1</property>
                             <property name="mnemonic-widget">host</property>
                             <property name="xalign">1</property>
-                            <accessibility>
-                              <relation type="label-for" target="host"/>
-                            </accessibility>
                             <layout>
                               <property name="column">0</property>
                               <property name="row">0</property>
@@ -172,6 +168,9 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                           <object class="GtkEntry" id="host">
                             <property name="focusable">1</property>
                             <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                            <accessibility>
+                              <relation name="labelled-by">host-label</relation>
+                            </accessibility>
                             <layout>
                               <property name="column">1</property>
                               <property name="row">0</property>
@@ -179,13 +178,10 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="yes">P_ort:</property>
+                          <object class="GtkLabel" id="port-label">
+                            <property name="label" translatable="1">P_ort:</property>
                             <property name="use-underline">1</property>
                             <property name="xalign">1</property>
-                            <accessibility>
-                              <relation type="label-for" target="port"/>
-                            </accessibility>
                             <layout>
                               <property name="column">2</property>
                               <property name="row">0</property>
@@ -195,10 +191,13 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <child>
                           <object class="GtkSpinButton" id="port">
                             <property name="focusable">1</property>
-                            <property name="text" translatable="yes">0</property>
+                            <property name="text" translatable="1">0</property>
                             <property name="adjustment">port.adjustment</property>
                             <property name="numeric">1</property>
                             <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                            <accessibility>
+                              <relation name="labelled-by">port-label</relation>
+                            </accessibility>
                             <layout>
                               <property name="column">3</property>
                               <property name="row">0</property>
@@ -207,7 +206,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         </child>
                         <child>
                           <object class="GtkLabel">
-                            <property name="label" translatable="yes">User_name:</property>
+                            <property name="label" translatable="1">User_name:</property>
                             <property name="use-underline">1</property>
                             <property name="mnemonic-widget">username</property>
                             <property name="xalign">1</property>
@@ -228,14 +227,11 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="yes">Pa_ssword:</property>
+                          <object class="GtkLabel" id="password-label">
+                            <property name="label" translatable="1">Pa_ssword:</property>
                             <property name="use-underline">1</property>
                             <property name="mnemonic-widget">password</property>
                             <property name="xalign">1</property>
-                            <accessibility>
-                              <relation type="label-for" target="password"/>
-                            </accessibility>
                             <layout>
                               <property name="column">2</property>
                               <property name="row">1</property>
@@ -249,6 +245,9 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                             <property name="invisible-char">●</property>
                             <property name="input-purpose">password</property>
                             <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                            <accessibility>
+                              <relation name="labelled-by">password-label</relation>
+                            </accessibility>
                             <layout>
                               <property name="column">3</property>
                               <property name="row">1</property>

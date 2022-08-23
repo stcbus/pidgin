@@ -136,7 +136,7 @@ auto_ip_button_clicked_cb(GtkWidget *button, gpointer null)
 	}
 
 	auto_ip_text = g_strdup_printf(_("Use _automatically detected IP address: %s"), ip);
-	gtk_button_set_label(GTK_BUTTON(button), auto_ip_text);
+	gtk_check_button_set_label(GTK_CHECK_BUTTON(button), auto_ip_text);
 	g_free(auto_ip_text);
 	g_list_free_full(list, g_free);
 }

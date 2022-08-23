@@ -77,7 +77,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <template class="PidginAwayPrefs" parent="AdwPreferencesPage">
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Idle</property>
+        <property name="title" translatable="1">Idle</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -88,7 +88,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label12">
-                    <property name="label" translatable="yes">_Report idle time:</property>
+                    <property name="label" translatable="1">_Report idle time:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">idle_reporting.combo</property>
                     <property name="xalign">0</property>
@@ -112,7 +112,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label13">
-                    <property name="label" translatable="yes">_Minutes before becoming idle:</property>
+                    <property name="label" translatable="1">_Minutes before becoming idle:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">mins_before_away</property>
                     <property name="xalign">0</property>
@@ -132,7 +132,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkCheckButton" id="away_when_idle">
-                    <property name="label" translatable="yes">Change to this status when _idle:</property>
+                    <property name="label" translatable="1">Change to this status when _idle:</property>
                     <property name="focusable">1</property>
                     <property name="use-underline">1</property>
                   </object>
@@ -148,7 +148,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Away</property>
+        <property name="title" translatable="1">Away</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -158,7 +158,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label14">
-                    <property name="label" translatable="yes">_Auto-reply:</property>
+                    <property name="label" translatable="1">_Auto-reply:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">auto_reply.combo</property>
                     <property name="xalign">0</property>
@@ -183,7 +183,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Status at Startup</property>
+        <property name="title" translatable="1">Status at Startup</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -191,7 +191,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             <property name="spacing">6</property>
             <child>
               <object class="GtkCheckButton" id="startup_current_status">
-                <property name="label" translatable="yes">Use status from last _exit at startup</property>
+                <property name="label" translatable="1">Use status from last _exit at startup</property>
                 <property name="focusable">1</property>
                 <property name="use-underline">1</property>
               </object>
@@ -201,7 +201,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="startup_label">
-                    <property name="label" translatable="yes">Status to a_pply at startup:</property>
+                    <property name="label" translatable="1">Status to a_pply at startup:</property>
                     <property name="use-underline">1</property>
                     <property name="xalign">0</property>
                   </object>

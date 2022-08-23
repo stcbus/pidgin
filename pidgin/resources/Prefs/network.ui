@@ -46,7 +46,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <template class="PidginNetworkPrefs" parent="AdwPreferencesPage">
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">IP Address</property>
+        <property name="title" translatable="1">IP Address</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -57,7 +57,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label8">
-                    <property name="label" translatable="yes">ST_UN server:</property>
+                    <property name="label" translatable="1">ST_UN server:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">stun_server</property>
                   </object>
@@ -67,7 +67,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="halign">fill</property>
                     <property name="hexpand">1</property>
                     <property name="focusable">1</property>
-                    <property name="placeholder-text" translatable="yes">Example: stunserver.org</property>
+                    <property name="placeholder-text" translatable="1">Example: stunserver.org</property>
                     <property name="input-purpose">url</property>
                     <child>
                       <object class="GtkEventControllerFocus">
@@ -80,7 +80,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             </child>
             <child>
               <object class="GtkCheckButton" id="auto_ip">
-                <property name="label" translatable="yes">Use _automatically detected IP address</property>
+                <property name="label" translatable="1">Use _automatically detected IP address</property>
                 <property name="focusable">1</property>
                 <property name="use-underline">1</property>
                 <signal name="toggled" handler="auto_ip_button_clicked_cb" after="yes" swapped="no"/>
@@ -91,7 +91,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label9">
-                    <property name="label" translatable="yes">Public _IP:</property>
+                    <property name="label" translatable="1">Public _IP:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">public_ip</property>
                     <property name="xalign">0</property>
@@ -111,7 +111,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Ports</property>
+        <property name="title" translatable="1">Ports</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -119,7 +119,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             <property name="spacing">6</property>
             <child>
               <object class="GtkCheckButton" id="map_ports">
-                <property name="label" translatable="yes">_Enable automatic router port forwarding</property>
+                <property name="label" translatable="1">_Enable automatic router port forwarding</property>
                 <property name="focusable">1</property>
                 <property name="use-underline">1</property>
               </object>
@@ -129,7 +129,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkCheckButton" id="ports_range_use">
-                    <property name="label" translatable="yes">_Manually specify range of ports to listen on:</property>
+                    <property name="label" translatable="1">_Manually specify range of ports to listen on:</property>
                     <property name="focusable">1</property>
                     <property name="use-underline">1</property>
                   </object>
@@ -139,21 +139,21 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label" translatable="yes">_Start:</property>
+                        <property name="label" translatable="1">_Start:</property>
                         <property name="use-underline">1</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSpinButton" id="ports_range_start">
                         <property name="focusable">1</property>
-                        <property name="text" translatable="yes">0</property>
+                        <property name="text" translatable="1">0</property>
                         <property name="adjustment">ports_range_start.adjustment</property>
                         <property name="numeric">1</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label" translatable="yes">_End:</property>
+                        <property name="label" translatable="1">_End:</property>
                         <property name="use-underline">1</property>
                         <property name="mnemonic-widget">ports_range_end</property>
                       </object>
@@ -161,7 +161,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <child>
                       <object class="GtkSpinButton" id="ports_range_end">
                         <property name="focusable">1</property>
-                        <property name="text" translatable="yes">0</property>
+                        <property name="text" translatable="1">0</property>
                         <property name="adjustment">ports_range_end.adjustment</property>
                         <property name="numeric">1</property>
                       </object>
@@ -176,7 +176,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Relay Server (TURN)</property>
+        <property name="title" translatable="1">Relay Server (TURN)</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -187,7 +187,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label10">
-                    <property name="label" translatable="yes">_TURN server:</property>
+                    <property name="label" translatable="1">_TURN server:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">turn_server</property>
                     <property name="xalign">0</property>
@@ -205,7 +205,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes">_UDP Port:</property>
+                    <property name="label" translatable="1">_UDP Port:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">turn_port_udp</property>
                   </object>
@@ -219,7 +219,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes">T_CP Port:</property>
+                    <property name="label" translatable="1">T_CP Port:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">turn_port_tcp</property>
                   </object>
@@ -238,7 +238,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label11">
-                    <property name="label" translatable="yes">Use_rname:</property>
+                    <property name="label" translatable="1">Use_rname:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">turn_username</property>
                     <property name="xalign">0</property>
@@ -251,7 +251,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes">Pass_word:</property>
+                    <property name="label" translatable="1">Pass_word:</property>
                     <property name="use-underline">1</property>
                     <property name="mnemonic-widget">turn_password</property>
                   </object>

@@ -370,7 +370,7 @@ static void
 set_bool_pref(GtkWidget *w, const char *key)
 {
 	purple_prefs_set_bool(key,
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)));
+			gtk_check_button_get_active(GTK_CHECK_BUTTON(w)));
 }
 
 GtkWidget *
@@ -379,7 +379,7 @@ pidgin_prefs_checkbox(const char *text, const char *key, GtkWidget *page)
 	GtkWidget *button;
 
 	button = gtk_check_button_new_with_mnemonic(text);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(button),
 			purple_prefs_get_bool(key));
 
 	gtk_box_append(GTK_BOX(page), button);
@@ -393,7 +393,7 @@ pidgin_prefs_checkbox(const char *text, const char *key, GtkWidget *page)
 void
 pidgin_prefs_bind_checkbox(const char *key, GtkWidget *button)
 {
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(button),
 			purple_prefs_get_bool(key));
 	g_signal_connect(G_OBJECT(button), "toggled",
 			G_CALLBACK(set_bool_pref), (char *)key);

@@ -68,7 +68,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <template class="PidginVVPrefs" parent="AdwPreferencesPage">
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Audio</property>
+        <property name="title" translatable="1">Audio</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -82,7 +82,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="label1">
-                        <property name="label" translatable="yes" context="Device for Audio Input">Device</property>
+                        <property name="label" translatable="1" context="Device for Audio Input">Device</property>
                         <property name="xalign">0</property>
                       </object>
                     </child>
@@ -102,7 +102,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </property>
                 <child type="label">
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes" context="Input for Audio">Input</property>
+                    <property name="label" translatable="1" context="Input for Audio">Input</property>
                     <attributes>
                       <attribute name="weight" value="bold"></attribute>
                     </attributes>
@@ -118,7 +118,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="label2">
-                        <property name="label" translatable="yes" context="Device for Audio Output">Device</property>
+                        <property name="label" translatable="1" context="Device for Audio Output">Device</property>
                         <property name="xalign">0</property>
                       </object>
                     </child>
@@ -138,7 +138,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </property>
                 <child type="label">
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes" context="Output for Audio">Output</property>
+                    <property name="label" translatable="1" context="Output for Audio">Output</property>
                     <attributes>
                       <attribute name="weight" value="bold"></attribute>
                     </attributes>
@@ -151,7 +151,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes">Volume:</property>
+                    <property name="label" translatable="1">Volume:</property>
                   </object>
                 </child>
                 <child>
@@ -162,31 +162,13 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="orientation">vertical</property>
                     <property name="adjustment">adjustment2</property>
                     <signal name="value-changed" handler="volume_changed_cb" swapped="no"/>
-                    <child internal-child="plus_button">
-                      <object class="GtkButton">
-                        <property name="visible">0</property>
-                        <property name="focusable">1</property>
-                        <property name="receives-default">1</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                    <child internal-child="minus_button">
-                      <object class="GtkButton">
-                        <property name="visible">0</property>
-                        <property name="focusable">1</property>
-                        <property name="receives-default">1</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
             </child>
             <child>
               <object class="GtkLabel" id="voice.threshold_label">
-                <property name="label" translatable="yes">Silence threshold:</property>
+                <property name="label" translatable="1">Silence threshold:</property>
                 <property name="xalign">0</property>
               </object>
             </child>
@@ -201,7 +183,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             </child>
             <child>
               <object class="GtkToggleButton" id="voice.test">
-                <property name="label" translatable="yes">Test Audio</property>
+                <property name="label" translatable="1">Test Audio</property>
                 <property name="focusable">1</property>
                 <property name="receives-default">1</property>
                 <signal name="toggled" handler="toggle_voice_test_cb" object="PidginVVPrefs" swapped="no"/>
@@ -218,7 +200,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Video</property>
+        <property name="title" translatable="1">Video</property>
         <child>
           <object class="GtkBox">
             <property name="margin-start">12</property>
@@ -232,7 +214,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="label3">
-                        <property name="label" translatable="yes" context="Device for Video Input">Device</property>
+                        <property name="label" translatable="1" context="Device for Video Input">Device</property>
                         <property name="xalign">0</property>
                       </object>
                     </child>
@@ -252,7 +234,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </property>
                 <child type="label">
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes" context="Input for Video">Input</property>
+                    <property name="label" translatable="1" context="Input for Video">Input</property>
                     <attributes>
                       <attribute name="weight" value="bold"></attribute>
                     </attributes>
@@ -268,7 +250,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="label4">
-                        <property name="label" translatable="yes" context="Device for Video Output">Device</property>
+                        <property name="label" translatable="1" context="Device for Video Output">Device</property>
                         <property name="xalign">0</property>
                       </object>
                     </child>
@@ -288,7 +270,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </property>
                 <child type="label">
                   <object class="GtkLabel">
-                    <property name="label" translatable="yes" context="Output for Video">Output</property>
+                    <property name="label" translatable="1" context="Output for Video">Output</property>
                     <attributes>
                       <attribute name="weight" value="bold"></attribute>
                     </attributes>
@@ -308,7 +290,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             </child>
             <child>
               <object class="GtkToggleButton" id="video.test">
-                <property name="label" translatable="yes">Test Video</property>
+                <property name="label" translatable="1">Test Video</property>
                 <property name="focusable">1</property>
                 <property name="receives-default">1</property>
                 <signal name="toggled" handler="toggle_video_test_cb" object="PidginVVPrefs" swapped="no"/>
