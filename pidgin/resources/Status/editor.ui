@@ -168,9 +168,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
       <widget name="label3"/>
     </widgets>
   </object>
-  <object class="TalkatuTagTable" id="tag_table"/>
-  <object class="TalkatuHtmlBuffer" id="buffer">
-    <property name="tag-table">tag_table</property>
-  </object>
+  <object class="TalkatuHtmlBuffer" id="buffer"/>
   <object class="PidginStatusPrimitiveStore" id="primitive_store"/>
 </interface>

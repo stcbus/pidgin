@@ -19,7 +19,7 @@ License along with this library; if not, see <https://www.gnu.org/licenses/>.
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk" version="4.0"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
@@ -41,144 +41,124 @@ License along with this library; if not, see <https://www.gnu.org/licenses/>.
     </columns>
   </object>
   <template class="PidginStatusManager" parent="GtkDialog">
-    <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Saved Statuses</property>
+    <property name="title" translatable="1">Saved Statuses</property>
     <property name="default-width">550</property>
     <property name="default-height">250</property>
-    <property name="type-hint">dialog</property>
     <signal name="response" handler="pidgin_status_manager_response_cb" swapped="no"/>
-    <child internal-child="vbox">
-      <object class="GtkBox">
-        <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+    <child internal-child="content_area">
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">1</property>
+        <property name="valign">fill</property>
+        <property name="focusable">1</property>
         <child>
-          <object class="GtkScrolledWindow">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="shadow-type">in</property>
+          <object class="GtkTreeView">
+            <property name="focusable">1</property>
+            <property name="model">model</property>
+            <property name="search-column">0</property>
+            <signal name="row-activated" handler="pidgin_status_manager_row_activated_cb" object="PidginStatusManager" swapped="no"/>
+            <child internal-child="selection">
+              <object class="GtkTreeSelection" id="selection">
+                <signal name="changed" handler="pidgin_status_manager_selection_changed_cb" object="PidginStatusManager" swapped="no"/>
+              </object>
+            </child>
             <child>
-              <object class="GtkTreeView">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="model">model</property>
-                <property name="search-column">0</property>
-                <signal name="row-activated" handler="pidgin_status_manager_row_activated_cb" object="PidginStatusManager" swapped="no"/>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection" id="selection">
-                    <signal name="changed" handler="pidgin_status_manager_selection_changed_cb" object="PidginStatusManager" swapped="no"/>
+              <object class="GtkTreeViewColumn">
+                <property name="resizable">1</property>
+                <property name="min-width">100</property>
+                <property name="title" translatable="1">Title</property>
+                <property name="clickable">1</property>
+                <property name="sort-column-id">0</property>
+                <child>
+                  <object class="GtkCellRendererText">
+                    <property name="ellipsize">end</property>
                   </object>
+                  <attributes>
+                    <attribute name="markup">0</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn">
+                <property name="resizable">1</property>
+                <property name="title" translatable="1">Type</property>
+                <property name="clickable">1</property>
+                <property name="sort-column-id">2</property>
+                <child>
+                  <object class="GtkCellRendererPixbuf"/>
+                  <attributes>
+                    <attribute name="icon-name">1</attribute>
+                  </attributes>
                 </child>
                 <child>
-                  <object class="GtkTreeViewColumn">
-                    <property name="resizable">True</property>
-                    <property name="min-width">100</property>
-                    <property name="title" translatable="yes">Title</property>
-                    <property name="clickable">True</property>
-                    <property name="sort-column-id">0</property>
-                    <child>
-                      <object class="GtkCellRendererText">
-                        <property name="ellipsize">end</property>
-                      </object>
-                      <attributes>
-                        <attribute name="markup">0</attribute>
-                      </attributes>
-                    </child>
-                  </object>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="markup">2</attribute>
+                  </attributes>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn">
+                <property name="resizable">1</property>
+                <property name="title" translatable="1">Message</property>
+                <property name="clickable">1</property>
+                <property name="sort-column-id">4</property>
                 <child>
-                  <object class="GtkTreeViewColumn">
-                    <property name="resizable">True</property>
-                    <property name="title" translatable="yes">Type</property>
-                    <property name="clickable">True</property>
-                    <property name="sort-column-id">2</property>
-                    <child>
-                      <object class="GtkCellRendererPixbuf"/>
-                      <attributes>
-                        <attribute name="icon-name">1</attribute>
-                      </attributes>
-                    </child>
-                    <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="markup">2</attribute>
-                      </attributes>
-                    </child>
+                  <object class="GtkCellRendererText">
+                    <property name="ellipsize">end</property>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkTreeViewColumn">
-                    <property name="resizable">True</property>
-                    <property name="title" translatable="yes">Message</property>
-                    <property name="clickable">True</property>
-                    <property name="sort-column-id">4</property>
-                    <child>
-                      <object class="GtkCellRendererText">
-                        <property name="ellipsize">end</property>
-                      </object>
-                      <attributes>
-                        <attribute name="markup">3</attribute>
-                      </attributes>
-                    </child>
-                  </object>
+                  <attributes>
+                    <attribute name="markup">3</attribute>
+                  </attributes>
                 </child>
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="use_button">
-        <property name="label" translatable="yes">_Use</property>
-        <property name="visible">True</property>
-        <property name="sensitive">False</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="label" translatable="1">_Use</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="button1">
-        <property name="label" translatable="yes">_Add</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="label" translatable="1">_Add</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="modify_button">
-        <property name="label" translatable="yes">_Modify</property>
-        <property name="visible">True</property>
-        <property name="sensitive">False</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="label" translatable="1">_Modify</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="remove_button">
-        <property name="label" translatable="yes">_Remove</property>
-        <property name="visible">True</property>
-        <property name="sensitive">False</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="label" translatable="1">_Remove</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="button2">
-        <property name="label" translatable="yes">_Close</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="label" translatable="1">_Close</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
       </object>
     </child>
     <action-widgets>
