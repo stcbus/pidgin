@@ -44,6 +44,7 @@
 #include "pidgin/pidgincontactlistwindow.h"
 #include "pidgin/pidgincore.h"
 #include "pidgin/pidgindebug.h"
+#include "pidgin/pidginiconname.h"
 #include "pidgin/pidginmooddialog.h"
 #include "pidgin/pidginplugininfo.h"
 
@@ -1917,16 +1918,73 @@ add_tip_for_account(GtkWidget *grid, gint row, PurpleAccount *account)
 	gtk_grid_attach(GTK_GRID(grid), name, 1, row, 1, 1);
 }
 
+static const gchar *
+pidgin_blist_get_status_icon_name(PurpleBlistNode *node) {
+	const char *icon = NULL;
+	PidginBlistNode *gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
+	PidginBlistNode *gtkbuddynode = NULL;
+	PurpleBuddy *buddy = NULL;
+	PurpleChat *chat = NULL;
+
+	if(PURPLE_IS_CONTACT(node)) {
+		if(!gtknode->contact_expanded) {
+			buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+			if(buddy != NULL) {
+				gtkbuddynode = g_object_get_data(G_OBJECT(buddy), UI_DATA);
+			}
+		}
+	} else if(PURPLE_IS_BUDDY(node)) {
+		buddy = (PurpleBuddy*)node;
+		gtkbuddynode = g_object_get_data(G_OBJECT(node), UI_DATA);
+	} else if(PURPLE_IS_CHAT(node)) {
+		chat = (PurpleChat*)node;
+	} else {
+		return NULL;
+	}
+
+	if(buddy || chat) {
+		PurpleAccount *account;
+		PurpleProtocol *protocol;
+
+		if(buddy)
+			account = purple_buddy_get_account(buddy);
+		else
+			account = purple_chat_get_account(chat);
+
+		protocol = purple_account_get_protocol(account);
+		if(!protocol)
+			return NULL;
+	}
+
+	if(buddy) {
+		PurplePresence *p = purple_buddy_get_presence(buddy);
+
+		if (PURPLE_BUDDY_IS_ONLINE(buddy) && gtkbuddynode && gtkbuddynode->recent_signonoff) {
+			icon = "log-in";
+		} else if (gtkbuddynode && gtkbuddynode->recent_signonoff) {
+			icon = "log-out";
+		} else {
+			icon = pidgin_icon_name_from_presence(p, "pidgin-user-available");
+		}
+	} else if (chat) {
+		icon = "chat";
+	} else {
+		icon = "person";
+	}
+
+	return icon;
+}
+
 static void
 add_tip_for_node(GtkWidget *grid, gint row, PurpleBlistNode *node, gboolean full)
 {
-	GdkPixbuf *status_icon = NULL;
 	GtkWidget *image = NULL;
 	GtkWidget *name = NULL;
 	GdkPixbuf *avatar = NULL;
 	GtkWidget *avatar_image = NULL;
 	PurpleAccount *account = NULL;
 	char *tmp = NULL, *node_name = NULL, *tooltip_text = NULL;
+	const gchar *status_icon = NULL;
 
 	if (PURPLE_IS_BUDDY(node)) {
 		account = purple_buddy_get_account(PURPLE_BUDDY(node));
@@ -1934,11 +1992,10 @@ add_tip_for_node(GtkWidget *grid, gint row, PurpleBlistNode *node, gboolean full
 		account = purple_chat_get_account(PURPLE_CHAT(node));
 	}
 
-	status_icon = pidgin_blist_get_status_icon(node, PIDGIN_STATUS_ICON_LARGE);
-	image = gtk_image_new_from_pixbuf(status_icon);
+	status_icon = pidgin_blist_get_status_icon_name(node);
+	image = gtk_image_new_from_icon_name(status_icon);
 	gtk_image_set_pixel_size(GTK_IMAGE(image), STATUS_SIZE);
 	gtk_grid_attach(GTK_GRID(grid), image, 0, row, 1, 1);
-	g_clear_object(&status_icon);
 
 	if (PURPLE_IS_BUDDY(node)) {
 		tmp = g_markup_escape_text(purple_buddy_get_name(PURPLE_BUDDY(node)), -1);
@@ -2537,86 +2594,6 @@ pidgin_blist_get_emblem(PurpleBlistNode *node)
 }
 
 
-GdkPixbuf *
-pidgin_blist_get_status_icon(PurpleBlistNode *node, PidginStatusIconSize size)
-{
-	GdkPixbuf *ret;
-	const char *icon = NULL;
-	gboolean trans = FALSE;
-	PidginBlistNode *gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
-	PidginBlistNode *gtkbuddynode = NULL;
-	PurpleBuddy *buddy = NULL;
-	PurpleChat *chat = NULL;
-	gint icon_size = (size == PIDGIN_STATUS_ICON_LARGE) ? 16 : 11;
-
-	if(PURPLE_IS_CONTACT(node)) {
-		if(!gtknode->contact_expanded) {
-			buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
-			if(buddy != NULL) {
-				gtkbuddynode = g_object_get_data(G_OBJECT(buddy), UI_DATA);
-			}
-		}
-	} else if(PURPLE_IS_BUDDY(node)) {
-		buddy = (PurpleBuddy*)node;
-		gtkbuddynode = g_object_get_data(G_OBJECT(node), UI_DATA);
-	} else if(PURPLE_IS_CHAT(node)) {
-		chat = (PurpleChat*)node;
-	} else {
-		return NULL;
-	}
-
-	if(buddy || chat) {
-		PurpleAccount *account;
-		PurpleProtocol *protocol;
-
-		if(buddy)
-			account = purple_buddy_get_account(buddy);
-		else
-			account = purple_chat_get_account(chat);
-
-		protocol = purple_account_get_protocol(account);
-		if(!protocol)
-			return NULL;
-	}
-
-	if(buddy) {
-		PurplePresence *p = purple_buddy_get_presence(buddy);
-		trans = purple_presence_is_idle(p);
-
-		if (PURPLE_BUDDY_IS_ONLINE(buddy) && gtkbuddynode && gtkbuddynode->recent_signonoff) {
-			icon = "log-in";
-		} else if (gtkbuddynode && gtkbuddynode->recent_signonoff) {
-			icon = "log-out";
-		} else if (purple_presence_is_status_primitive_active(p, PURPLE_STATUS_UNAVAILABLE)) {
-			icon = "pidgin-user-busy";
-		} else if (purple_presence_is_status_primitive_active(p, PURPLE_STATUS_AWAY)) {
-			icon = "pidgin-user-away";
-		} else if (purple_presence_is_status_primitive_active(p, PURPLE_STATUS_EXTENDED_AWAY)) {
-			icon = "pidgin-user-extended-away";
-		} else if (purple_presence_is_status_primitive_active(p, PURPLE_STATUS_OFFLINE)) {
-			icon = "pidgin-user-offline";
-		} else if (purple_presence_is_status_primitive_active(p, PURPLE_STATUS_INVISIBLE)) {
-			icon = "pidgin-user-invisible";
-		} else {
-			icon = "pidgin-user-available";
-		}
-	} else if (chat) {
-		icon = "chat";
-	} else {
-		icon = "person";
-	}
-
-	ret = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), icon, icon_size, 0, NULL);
-	if (trans) {
-		GdkPixbuf *copy = gdk_pixbuf_copy(ret);
-		g_object_unref(ret);
-		do_alphashift(copy, 77);
-		ret = copy;
-	}
-
-	return ret;
-}
-
 gchar *
 pidgin_blist_get_name_markup(PurpleBuddy *b, gboolean selected, gboolean aliased)
 {
@@ -2940,7 +2917,7 @@ pidgin_blist_build_layout(PurpleBuddyList *list)
 	rend = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(column, rend, FALSE);
 	gtk_tree_view_column_set_attributes(column, rend,
-					    "pixbuf", STATUS_ICON_COLUMN,
+					    "icon-name", STATUS_ICON_COLUMN,
 					    "visible", STATUS_ICON_VISIBLE_COLUMN,
 					    NULL);
 	g_object_set(rend, "xalign", 0.0, "xpad", 6, "ypad", 0, NULL);
@@ -3083,7 +3060,7 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 
 	/****************************** GtkTreeView **********************************/
 	gtkblist->treemodel = gtk_tree_store_new(BLIST_COLUMNS,
-						 GDK_TYPE_PIXBUF, /* Status icon */
+						 G_TYPE_STRING, /* Status icon */
 						 G_TYPE_BOOLEAN,  /* Status icon visible */
 						 G_TYPE_STRING,   /* Name */
 						 GDK_TYPE_PIXBUF, /* Buddy icon */
@@ -3463,18 +3440,17 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 {
 	PurplePresence *presence = purple_buddy_get_presence(buddy);
 	PurpleProtocol *protocol = NULL;
-	GdkPixbuf *status, *avatar, *emblem;
+	GdkPixbuf *avatar, *emblem;
 	char *mark;
 	char *idle = NULL;
 	gboolean selected = (gtkblist->selected_node == node);
-	const gchar *protocol_icon_name = NULL;
+	const gchar *protocol_icon_name = NULL, *status_icon_name = NULL;
 
 	if(editing_blist) {
 		return;
 	}
 
-	status = pidgin_blist_get_status_icon(PURPLE_BLIST_NODE(buddy),
-	                                      PIDGIN_STATUS_ICON_LARGE);
+	status_icon_name = pidgin_blist_get_status_icon_name(PURPLE_BLIST_NODE(buddy));
 	avatar = pidgin_blist_get_buddy_icon(PURPLE_BLIST_NODE(buddy), TRUE, TRUE);
 
 	if(avatar != NULL) {
@@ -3490,7 +3466,7 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 	protocol_icon_name = purple_protocol_get_icon_name(protocol);
 
 	gtk_tree_store_set(gtkblist->treemodel, iter,
-			   STATUS_ICON_COLUMN, status,
+			   STATUS_ICON_COLUMN, status_icon_name,
 			   STATUS_ICON_VISIBLE_COLUMN, TRUE,
 			   NAME_COLUMN, mark,
 			   BUDDY_ICON_COLUMN, avatar,
@@ -3503,8 +3479,6 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 	g_free(idle);
 	if(emblem)
 		g_object_unref(emblem);
-	if(status)
-		g_object_unref(status);
 	if(avatar)
 		g_object_unref(avatar);
 }
@@ -3547,23 +3521,20 @@ static void pidgin_blist_update_contact(PurpleBuddyList *list, PurpleBlistNode *
 		gtknode = g_object_get_data(G_OBJECT(cnode), UI_DATA);
 
 		if(gtknode->contact_expanded) {
-			GdkPixbuf *status;
 			gchar *mark;
+			const gchar *icon_name = NULL;
 
 			mark = g_markup_escape_text(purple_contact_get_alias(contact), -1);
 
-			status = pidgin_blist_get_status_icon(cnode,
-			                                      PIDGIN_STATUS_ICON_LARGE);
+			icon_name = pidgin_blist_get_status_icon_name(cnode);
 
 			gtk_tree_store_set(gtkblist->treemodel, &iter,
-					   STATUS_ICON_COLUMN, status,
+					   STATUS_ICON_COLUMN, icon_name,
 					   STATUS_ICON_VISIBLE_COLUMN, TRUE,
 					   NAME_COLUMN, mark,
 					   BUDDY_ICON_COLUMN, NULL,
 					-1);
 			g_free(mark);
-			if(status)
-				g_object_unref(status);
 		} else {
 			buddy_node(buddy, &iter, cnode);
 		}
@@ -3623,17 +3594,17 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 	if(purple_account_is_connected(purple_chat_get_account(chat))) {
 		PurpleProtocol *protocol = NULL;
 		GtkTreeIter iter;
-		GdkPixbuf *status, *avatar, *emblem;
+		GdkPixbuf *avatar, *emblem;
 		const gchar *color = NULL;
 		gchar *mark, *tmp;
 		gboolean selected = (gtkblist->selected_node == node);
 		gboolean nick_said = FALSE;
-		const gchar *protocol_icon_name = NULL;
+		const gchar *protocol_icon_name = NULL, *status_icon_name = NULL;
 
 		if (!insert_node(list, node, &iter))
 			return;
 
-		status = pidgin_blist_get_status_icon(node, PIDGIN_STATUS_ICON_LARGE);
+		status_icon_name = pidgin_blist_get_status_icon_name(node);
 		emblem = pidgin_blist_get_emblem(node);
 		avatar = pidgin_blist_get_buddy_icon(node, TRUE, FALSE);
 
@@ -3654,7 +3625,7 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 		protocol_icon_name = purple_protocol_get_icon_name(protocol);
 
 		gtk_tree_store_set(gtkblist->treemodel, &iter,
-				STATUS_ICON_COLUMN, status,
+				STATUS_ICON_COLUMN, status_icon_name,
 				STATUS_ICON_VISIBLE_COLUMN, TRUE,
 				BUDDY_ICON_COLUMN, avatar,
 				EMBLEM_COLUMN, emblem,
@@ -3666,8 +3637,6 @@ static void pidgin_blist_update_chat(PurpleBuddyList *list, PurpleBlistNode *nod
 		g_free(mark);
 		if(emblem)
 			g_object_unref(emblem);
-		if(status)
-			g_object_unref(status);
 		if(avatar)
 			g_object_unref(avatar);
 	} else {

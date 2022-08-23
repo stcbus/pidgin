@@ -143,16 +143,6 @@ GdkPixbuf *
 pidgin_blist_get_emblem(PurpleBlistNode *node);
 
 /**
- * pidgin_blist_get_status_icon:
- *
- * Useful for the buddy ticker
- *
- * Returns: (transfer full): A #GdkPixbuf of status icon.
- */
-GdkPixbuf *pidgin_blist_get_status_icon(PurpleBlistNode *node,
-		PidginStatusIconSize size);
-
-/**
  * pidgin_blist_node_is_contact_expanded:
  * @node: The node in question.
  *

@@ -829,6 +829,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_append_menu_action
 		* pidgin_blist_add_alert
 		* pidgin_blist_draw_tooltip
+		* pidgin_blist_get_status_icon
 		* pidgin_blist_get_theme
 		* pidgin_blist_layout_get_type
 		* pidgin_blist_make_buddy_menu
