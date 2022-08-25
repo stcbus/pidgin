@@ -678,9 +678,7 @@ static void
 pidgin_application_startup(GApplication *application) {
 	PurpleAccountManager *manager = NULL;
 	PurpleUiInfo *ui_info = NULL;
-	GtkCssProvider *provider = NULL;
 	GList *active_accounts = NULL;
-	gchar *search_path = NULL;
 	gpointer handle = NULL;
 
 	G_APPLICATION_CLASS(pidgin_application_parent_class)->startup(application);
@@ -709,16 +707,6 @@ pidgin_application_startup(GApplication *application) {
 #else
 	pidgin_debug_set_print_enabled(opt_debug);
 #endif
-
-	provider = gtk_css_provider_new();
-
-	search_path = g_build_filename(purple_config_dir(), "gtk-3.0.css", NULL);
-	gtk_css_provider_load_from_path(provider, search_path);
-	gtk_style_context_add_provider_for_display(gdk_display_get_default(),
-	                                           GTK_STYLE_PROVIDER(provider),
-	                                           GTK_STYLE_PROVIDER_PRIORITY_USER);
-
-	g_free(search_path);
 
 #ifdef _WIN32
 	winpidgin_init();
