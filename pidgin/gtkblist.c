@@ -1664,27 +1664,6 @@ gtk_blist_button_press_cb(GtkGestureClick *click, gint n_press, gdouble x,
 #endif
 	gtk_tree_path_free(path);
 
-	return FALSE;
-}
-
-static gboolean
-pidgin_blist_popup_menu_cb(GtkWidget *tv, gpointer data)
-{
-	PidginBuddyList *gtkblist = data;
-	PurpleBlistNode *node;
-	GtkTreeIter iter;
-	GtkTreeSelection *sel;
-	gboolean handled = FALSE;
-
-	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(tv));
-	if (!gtk_tree_selection_get_selected(sel, NULL, &iter))
-		return FALSE;
-
-	gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &iter, NODE_COLUMN, &node, -1);
-
-	/* Shift+F10 draws a context menu */
-	handled = pidgin_blist_show_context_menu(tv, node, -1, -1);
-
 	return handled;
 }
 
@@ -3114,6 +3093,7 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	                 G_CALLBACK(gtk_blist_row_collapsed_cb), gtkblist);
 
 	click = gtk_gesture_click_new();
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click), 0);
 	g_signal_connect(click, "pressed", G_CALLBACK(gtk_blist_button_press_cb),
 	                 gtkblist);
 	gtk_widget_add_controller(gtkblist->treeview, GTK_EVENT_CONTROLLER(click));
@@ -3122,9 +3102,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	g_signal_connect(G_OBJECT(key_controller), "key-pressed",
 	                 G_CALLBACK(pidgin_blist_key_press_cb), gtkblist);
 	gtk_widget_add_controller(gtkblist->treeview, key_controller);
-
-	g_signal_connect(gtkblist->treeview, "popup-menu",
-	                 G_CALLBACK(pidgin_blist_popup_menu_cb), gtkblist);
 
 	/* Enable CTRL+F searching */
 	gtk_tree_view_set_search_column(GTK_TREE_VIEW(gtkblist->treeview), NAME_COLUMN);
