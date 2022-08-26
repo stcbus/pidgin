@@ -108,8 +108,12 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
                   <object class="GtkStackPage">
                     <property name="name">__notifications__</property>
                     <property name="child">
-                      <object class="PidginNotificationList" id="notification_list">
-                        <property name="orientation">vertical</property>
+                      <object class="GtkScrolledWindow">
+                        <child>
+                          <object class="PidginNotificationList" id="notification_list">
+                            <property name="orientation">vertical</property>
+                          </object>
+                        </child>
                       </object>
                     </property>
                   </object>
