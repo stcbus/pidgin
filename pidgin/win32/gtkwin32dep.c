@@ -34,7 +34,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkwin32.h>
 
 #include <purple.h>
 
@@ -130,39 +129,6 @@ int winpidgin_gz_decompress(const char* in, const char* out) {
 	}
 
 	return 1;
-}
-
-void winpidgin_shell_execute(const char *target, const char *verb, const char *clazz) {
-
-	SHELLEXECUTEINFOW wsinfo;
-	wchar_t *w_uri, *w_verb, *w_clazz = NULL;
-
-	g_return_if_fail(target != NULL);
-	g_return_if_fail(verb != NULL);
-
-	w_uri = g_utf8_to_utf16(target, -1, NULL, NULL, NULL);
-	w_verb = g_utf8_to_utf16(verb, -1, NULL, NULL, NULL);
-
-	memset(&wsinfo, 0, sizeof(wsinfo));
-	wsinfo.cbSize = sizeof(wsinfo);
-	wsinfo.lpVerb = w_verb;
-	wsinfo.lpFile = w_uri;
-	wsinfo.nShow = SW_SHOWNORMAL;
-	wsinfo.fMask |= SEE_MASK_FLAG_NO_UI;
-	if (clazz != NULL) {
-		w_clazz = g_utf8_to_utf16(clazz, -1, NULL, NULL, NULL);
-		wsinfo.fMask |= SEE_MASK_CLASSNAME;
-		wsinfo.lpClass = w_clazz;
-	}
-
-	if(!ShellExecuteExW(&wsinfo))
-		purple_debug_error("winpidgin", "Error opening URI: %s error: %d\n",
-			target, (int) wsinfo.hInstApp);
-
-	g_free(w_uri);
-	g_free(w_verb);
-	g_free(w_clazz);
-
 }
 
 #define PIDGIN_WM_FOCUS_REQUEST (WM_APP + 13)
@@ -300,9 +266,6 @@ void winpidgin_init(void) {
 		g_free(locale_debug_dir);
 	}
 
-	purple_debug_info("winpidgin", "GTK: %u.%u.%u\n",
-		gtk_major_version, gtk_minor_version, gtk_micro_version);
-
 	messagewin_hwnd = winpidgin_message_window_init();
 
 	if (purple_debug_is_verbose())
@@ -327,134 +290,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	return TRUE;
 }
 
-static gboolean
-get_WorkingAreaRectForWindow(HWND hwnd, RECT *workingAreaRc) {
-
-	HMONITOR monitor;
-	MONITORINFO info;
-
-	monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
-
-	info.cbSize = sizeof(info);
-	if(!GetMonitorInfo(monitor, &info))
-		return FALSE;
-
-	CopyRect(workingAreaRc, &(info.rcWork));
-	return TRUE;
-}
-
 typedef HRESULT (WINAPI* DwmIsCompositionEnabledFunction)(BOOL*);
 typedef HRESULT (WINAPI* DwmGetWindowAttributeFunction)(HWND, DWORD, PVOID, DWORD);
-static HMODULE dwmapi_module = NULL;
-static DwmIsCompositionEnabledFunction DwmIsCompositionEnabled = NULL;
-static DwmGetWindowAttributeFunction DwmGetWindowAttribute = NULL;
 #ifndef DWMWA_EXTENDED_FRAME_BOUNDS
 #	define DWMWA_EXTENDED_FRAME_BOUNDS 9
 #endif
-
-static void
-get_actualWindowRect(HWND hwnd, RECT *winR)
-{
-	GetWindowRect(hwnd, winR);
-
-	if (dwmapi_module == NULL) {
-		dwmapi_module = GetModuleHandleW(L"dwmapi.dll");
-		if (dwmapi_module != NULL) {
-			DwmIsCompositionEnabled = (DwmIsCompositionEnabledFunction) GetProcAddress(dwmapi_module, "DwmIsCompositionEnabled");
-			DwmGetWindowAttribute = (DwmGetWindowAttributeFunction) GetProcAddress(dwmapi_module, "DwmGetWindowAttribute");
-		}
-	}
-
-	if (DwmIsCompositionEnabled != NULL && DwmGetWindowAttribute != NULL) {
-		BOOL pfEnabled;
-		if (SUCCEEDED(DwmIsCompositionEnabled(&pfEnabled))) {
-			RECT tempR;
-			if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &tempR, sizeof(tempR)))) {
-				*winR = tempR;
-			}
-		}
-	}
-}
-
-void winpidgin_ensure_onscreen(GtkWidget *win) {
-	RECT winR, wAR, intR;
-	HWND hwnd = GDK_WINDOW_HWND(gtk_widget_get_window(win));
-
-	g_return_if_fail(hwnd != NULL);
-	get_actualWindowRect(hwnd, &winR);
-
-	purple_debug_info("win32placement",
-			"Window RECT: L:%ld R:%ld T:%ld B:%ld\n",
-			winR.left, winR.right,
-			winR.top, winR.bottom);
-
-	if(!get_WorkingAreaRectForWindow(hwnd, &wAR)) {
-		purple_debug_info("win32placement",
-				"Couldn't get multimonitor working area\n");
-		if(!SystemParametersInfo(SPI_GETWORKAREA, 0, &wAR, FALSE)) {
-			/* I don't think this will ever happen */
-			wAR.left = 0;
-			wAR.top = 0;
-			wAR.bottom = GetSystemMetrics(SM_CYSCREEN);
-			wAR.right = GetSystemMetrics(SM_CXSCREEN);
-		}
-	}
-
-	purple_debug_info("win32placement",
-			"Working Area RECT: L:%ld R:%ld T:%ld B:%ld\n",
-			wAR.left, wAR.right,
-			wAR.top, wAR.bottom);
-
-	/** If the conversation window doesn't intersect perfectly, move it to do so */
-	if(!(IntersectRect(&intR, &winR, &wAR)
-				&& EqualRect(&intR, &winR))) {
-		purple_debug_info("win32placement",
-				"conversation window out of working area, relocating\n");
-
-		/* Make sure the working area is big enough. */
-		if ((winR.right - winR.left) <= (wAR.right - wAR.left)
-				&& (winR.bottom - winR.top) <= (wAR.bottom - wAR.top)) {
-			/* Is it off the bottom? */
-			if (winR.bottom > wAR.bottom) {
-				winR.top = wAR.bottom - (winR.bottom - winR.top);
-				winR.bottom = wAR.bottom;
-			}
-			/* Is it off the top? */
-			else if (winR.top < wAR.top) {
-				winR.bottom = wAR.top + (winR.bottom - winR.top);
-				winR.top = wAR.top;
-			}
-
-			/* Is it off the left? */
-			if (winR.left < wAR.left) {
-				winR.right = wAR.left + (winR.right - winR.left);
-				winR.left = wAR.left;
-			}
-			/* Is it off the right? */
-			else  if (winR.right > wAR.right) {
-				winR.left = wAR.right - (winR.right - winR.left);
-				winR.right = wAR.right;
-			}
-
-		} else {
- 			/* We couldn't salvage it; move it to the top left corner of the working area */
- 			winR.right = wAR.left + (winR.right - winR.left);
- 			winR.bottom = wAR.top + (winR.bottom - winR.top);
- 			winR.left = wAR.left;
- 			winR.top = wAR.top;
-		}
-
-		purple_debug_info("win32placement",
-			"Relocation RECT: L:%ld R:%ld T:%ld B:%ld\n",
-			winR.left, winR.right,
-			winR.top, winR.bottom);
-
-		MoveWindow(hwnd, winR.left, winR.top,
-				   (winR.right - winR.left),
-				   (winR.bottom - winR.top), TRUE);
-	}
-
-}
 
 DWORD winpidgin_get_lastactive() {
 	DWORD result = 0;

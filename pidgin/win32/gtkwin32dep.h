@@ -36,8 +36,6 @@ int winpidgin_gz_decompress(const char* in, const char* out);
 int winpidgin_gz_untar(const char* filename, const char* destdir);
 
 /* Misc */
-void winpidgin_shell_execute(const char *target, const char *verb, const char *clazz);
-void winpidgin_ensure_onscreen(GtkWidget *win);
 DWORD winpidgin_get_lastactive(void);
 
 /* init / cleanup */

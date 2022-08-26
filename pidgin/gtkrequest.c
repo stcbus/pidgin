@@ -2280,6 +2280,7 @@ pidgin_request_file(const char *title, const char *filename,
 	PidginRequestData *data;
 	GtkFileChooserNative *filesel;
 #ifdef _WIN32
+	GFile *file = NULL;
 	const gchar *current_folder;
 	gboolean folder_set = FALSE;
 #endif
@@ -2321,20 +2322,27 @@ pidgin_request_file(const char *title, const char *filename,
 	}
 
 	if ((filename == NULL || *filename == '\0' || !g_file_test(filename, G_FILE_TEST_EXISTS)) &&
-				(current_folder != NULL) && (*current_folder != '\0')) {
-		folder_set = gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filesel), current_folder);
+		(current_folder != NULL) && (*current_folder != '\0'))
+	{
+		file = g_file_new_for_path(current_folder);
+		folder_set = gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filesel), file, NULL);
 	}
 
 	if (!folder_set && (filename == NULL || *filename == '\0' || !g_file_test(filename, G_FILE_TEST_EXISTS))) {
 		char *my_documents = wpurple_get_special_folder(CSIDL_PERSONAL);
 
+		g_clear_object(&file);
+
 		if (my_documents != NULL) {
+			file = g_file_new_for_path(my_documents);
 			gtk_file_chooser_set_current_folder(
-					GTK_FILE_CHOOSER(filesel), my_documents);
+					GTK_FILE_CHOOSER(filesel), file, NULL);
 
 			g_free(my_documents);
 		}
 	}
+
+	g_clear_object(&file);
 #endif
 
 	g_signal_connect(G_OBJECT(GTK_FILE_CHOOSER(filesel)), "response",

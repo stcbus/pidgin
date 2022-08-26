@@ -551,11 +551,6 @@ pidgin_xfer_dialog_init(PidginXferDialog *dialog)
 	        GTK_TOGGLE_BUTTON(dialog->auto_clear),
 	        purple_prefs_get_bool(PIDGIN_PREFS_ROOT
 	                              "/filetransfer/clear_finished"));
-
-#ifdef _WIN32
-	g_signal_connect(G_OBJECT(dialog), "show",
-	                 G_CALLBACK(winpidgin_ensure_onscreen), NULL);
-#endif
 }
 
 void
