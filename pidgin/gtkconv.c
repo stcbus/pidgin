@@ -1572,10 +1572,11 @@ setup_common_pane(PidginConversation *gtkconv)
 
 	/* Setup the info pane */
 	gtkconv->infopane = pidgin_info_pane_new(conv);
+	gtk_widget_set_vexpand(gtkconv->infopane, FALSE);
 	gtk_box_append(GTK_BOX(vbox), gtkconv->infopane);
 
 	/* Setup the history widget */
-	gtkconv->history_sw = talkatu_scrolled_window_new();
+	gtkconv->history_sw = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_policy(
 		GTK_SCROLLED_WINDOW(gtkconv->history_sw),
 		GTK_POLICY_NEVER,
@@ -1583,8 +1584,8 @@ setup_common_pane(PidginConversation *gtkconv)
 	);
 
 	gtkconv->history = talkatu_history_new();
-	talkatu_scrolled_window_set_child(TALKATU_SCROLLED_WINDOW(gtkconv->history_sw),
-	                                  gtkconv->history);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(gtkconv->history_sw),
+	                              gtkconv->history);
 
 	/* Add the topic */
 	setup_chat_topic(gtkconv, vbox);
