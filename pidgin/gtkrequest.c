@@ -187,7 +187,7 @@ choice_response_cb(GtkDialog *dialog, gint id, PidginRequestData *data)
 
 	if (id >= 0 && (gsize)id < data->cb_count && data->cbs[id] != NULL)
 		while (group) {
-			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(group->data))) {
+			if (gtk_check_button_get_active(GTK_CHECK_BUTTON(group->data))) {
 				((PurpleRequestChoiceCb)data->cbs[id])(data->user_data, g_object_get_data(G_OBJECT(group->data), "choice_value"));
 				break;
 			}
@@ -226,10 +226,10 @@ field_string_focus_out_cb(GtkEventControllerFocus *controller,
 }
 
 static void
-field_bool_cb(GtkToggleButton *button, PurpleRequestField *field)
+field_bool_cb(GtkCheckButton *button, PurpleRequestField *field)
 {
 	purple_request_field_bool_set_value(field,
-			gtk_toggle_button_get_active(button));
+			gtk_check_button_get_active(button));
 }
 
 static void
@@ -253,8 +253,9 @@ field_choice_option_cb(GtkCheckButton *button, PurpleRequestField *field)
 	gpointer *values = g_object_get_data(G_OBJECT(g_object_get_data(
 		G_OBJECT(button), "box")), "values");
 
-	if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+	if (!gtk_check_button_get_active(GTK_CHECK_BUTTON(button))) {
 		return;
+	}
 
 	active = (g_slist_length(gtk_radio_button_get_group(button)) -
 		g_slist_index(gtk_radio_button_get_group(button), button)) - 1;
@@ -751,8 +752,9 @@ pidgin_request_choice(const char *title, const char *primary,
 		gtk_box_append(GTK_BOX(vbox2), radio);
 
 		g_object_set_data(G_OBJECT(radio), "choice_value", resp);
-		if (resp == default_value)
-		   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
+		if (resp == default_value) {
+			gtk_check_button_set_active(GTK_CHECK_BUTTON(radio), TRUE);
+		}
 	}
 
 	g_object_set_data(G_OBJECT(dialog), "radio", first_radio);
@@ -1248,7 +1250,7 @@ create_bool_field(PurpleRequestField *field,
 
 	gtk_widget_set_tooltip_text(widget, purple_request_field_get_tooltip(field));
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(widget),
 		purple_request_field_bool_get_default_value(field));
 
 	g_signal_connect(G_OBJECT(widget), "toggled",
@@ -1332,7 +1334,7 @@ create_choice_field(PurpleRequestField *field,
 			}
 
 			if (choice->value == default_value) {
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
+				gtk_check_button_set_active(GTK_CHECK_BUTTON(radio), TRUE);
 				default_found = TRUE;
 			}
 			values[i++] = choice->value;
