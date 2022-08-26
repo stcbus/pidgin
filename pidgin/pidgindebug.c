@@ -82,24 +82,6 @@ static guint debug_enabled_timer = 0;
 
 G_DEFINE_TYPE(PidginDebugWindow, pidgin_debug_window, GTK_TYPE_WINDOW);
 
-static gint
-debug_window_destroy(GtkWidget *w, GdkEvent *event, void *unused)
-{
-	purple_prefs_disconnect_by_handle(pidgin_debug_get_handle());
-
-	if (debug_win->regex != NULL)
-		g_regex_unref(debug_win->regex);
-
-	/* If the "Save Log" dialog is open then close it */
-	purple_request_close_with_handle(debug_win);
-
-	debug_win = NULL;
-
-	purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/debug/enabled", FALSE);
-
-	return FALSE;
-}
-
 static gboolean
 save_default_size_cb(GObject *gobject, G_GNUC_UNUSED GParamSpec *pspec,
                      G_GNUC_UNUSED gpointer data)
@@ -125,32 +107,82 @@ view_near_bottom(PidginDebugWindow *win)
 }
 
 static void
-save_writefile_cb(void *user_data, const char *filename)
+save_response_cb(GtkNativeDialog *self, gint response_id, gpointer data)
 {
-	PidginDebugWindow *win = (PidginDebugWindow *)user_data;
-	FILE *fp;
-	GtkTextIter start, end;
-	char *tmp;
+	PidginDebugWindow *win = (PidginDebugWindow *)data;
 
-	if ((fp = g_fopen(filename, "w+")) == NULL) {
-		purple_notify_error(win, NULL, _("Unable to open file."), NULL, NULL);
-		return;
+	if(response_id == GTK_RESPONSE_ACCEPT) {
+		GFile *file = NULL;
+		GFileOutputStream *output = NULL;
+		GtkTextIter start, end;
+		gchar *tmp = NULL;
+		GError *error = NULL;
+
+		file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(self));
+		output = g_file_replace(file, NULL, FALSE, G_FILE_CREATE_NONE, NULL,
+		                        &error);
+		g_object_unref(file);
+
+		if(output == NULL) {
+			purple_debug_error("debug",
+			                   "Unable to open file to save debug log: %s",
+			                   error->message);
+			g_error_free(error);
+			g_object_unref(self);
+			return;
+		}
+
+		tmp = g_strdup_printf("Pidgin Debug Log : %s\n", purple_date_format_full(NULL));
+		g_output_stream_write_all(G_OUTPUT_STREAM(output), tmp, strlen(tmp),
+		                          NULL, NULL, &error);
+		g_free(tmp);
+
+		if(error != NULL) {
+			purple_debug_error("debug", "Unable to save debug log: %s",
+			                   error->message);
+			g_error_free(error);
+			g_object_unref(output);
+			g_object_unref(self);
+			return;
+		}
+
+		gtk_text_buffer_get_bounds(win->buffer, &start, &end);
+		tmp = gtk_text_buffer_get_text(win->buffer, &start, &end, TRUE);
+		g_output_stream_write_all(G_OUTPUT_STREAM(output), tmp, strlen(tmp),
+		                          NULL, NULL, &error);
+		g_free(tmp);
+
+		if(error != NULL) {
+			purple_debug_error("debug", "Unable to save debug log: %s",
+			                   error->message);
+			g_error_free(error);
+			g_object_unref(output);
+			g_object_unref(self);
+			return;
+		}
+
+		g_object_unref(output);
 	}
 
-	gtk_text_buffer_get_bounds(win->buffer, &start, &end);
-	tmp = gtk_text_buffer_get_text(win->buffer, &start, &end, TRUE);
-	fprintf(fp, "Pidgin Debug Log : %s\n", purple_date_format_full(NULL));
-	fprintf(fp, "%s", tmp);
-	g_free(tmp);
-
-	fclose(fp);
+	g_object_unref(self);
 }
 
 static void
 save_cb(GtkWidget *w, PidginDebugWindow *win)
 {
-	purple_request_file(win, _("Save Debug Log"), "purple-debug.log", TRUE,
-		G_CALLBACK(save_writefile_cb), NULL, NULL, win);
+	GtkFileChooserNative *filesel;
+
+	filesel = gtk_file_chooser_native_new(_("Save Debug Log"), GTK_WINDOW(win),
+	                                      GTK_FILE_CHOOSER_ACTION_SAVE,
+	                                      _("_Save"), _("_Cancel"));
+
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(filesel),
+	                                  "purple-debug.log");
+
+	g_signal_connect(filesel, "response", G_CALLBACK(save_response_cb), win);
+
+	gtk_native_dialog_set_modal(GTK_NATIVE_DIALOG(filesel), TRUE);
+	gtk_native_dialog_show(GTK_NATIVE_DIALOG(filesel));
 }
 
 static void
@@ -180,8 +212,7 @@ pause_cb(GtkWidget *w, PidginDebugWindow *win)
 static void
 regex_clear_color(GtkWidget *w) {
 	GtkStyleContext *context = gtk_widget_get_style_context(w);
-	gtk_style_context_remove_class(context, "good-filter");
-	gtk_style_context_remove_class(context, "bad-filter");
+	gtk_style_context_remove_class(context, "error");
 }
 
 static void
@@ -189,11 +220,9 @@ regex_change_color(GtkWidget *w, gboolean success) {
 	GtkStyleContext *context = gtk_widget_get_style_context(w);
 
 	if (success) {
-		gtk_style_context_add_class(context, "good-filter");
-		gtk_style_context_remove_class(context, "bad-filter");
+		gtk_style_context_remove_class(context, "error");
 	} else {
-		gtk_style_context_add_class(context, "bad-filter");
-		gtk_style_context_remove_class(context, "good-filter");
+		gtk_style_context_add_class(context, "error");
 	}
 }
 
@@ -301,16 +330,6 @@ regex_pref_filter_cb(const gchar *name, PurplePrefType type,
 }
 
 static void
-regex_pref_expression_cb(const gchar *name, PurplePrefType type,
-						 gconstpointer val, gpointer data)
-{
-	PidginDebugWindow *win = (PidginDebugWindow *)data;
-	const gchar *exp = (const gchar *)val;
-
-	gtk_editable_set_text(GTK_EDITABLE(win->expression), exp);
-}
-
-static void
 regex_pref_invert_cb(const gchar *name, PurplePrefType type,
 					 gconstpointer val, gpointer data)
 {
@@ -396,7 +415,7 @@ regex_menu_cb(GtkWidget *item, PidginDebugWindow *win)
 {
 	gboolean active;
 
-	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item));
+	active = gtk_check_button_get_active(GTK_CHECK_BUTTON(item));
 
 	if (item == win->popover_highlight) {
 		purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/debug/highlight", active);
@@ -405,22 +424,16 @@ regex_menu_cb(GtkWidget *item, PidginDebugWindow *win)
 	}
 }
 
-#if 0
-/* FIXME: may not work with GTK4's SearchEntry */
 static void
-regex_popup_cb(GtkEntry *entry, GtkEntryIconPosition icon_pos, GdkEvent *event,
-		PidginDebugWindow *win)
+regex_popup_cb(G_GNUC_UNUSED GtkGestureClick* self, G_GNUC_UNUSED gint n_press,
+               gdouble x, gdouble y, gpointer data)
 {
-	GdkRectangle rect;
-	if (icon_pos != GTK_ENTRY_ICON_PRIMARY) {
-		return;
-	}
+	PidginDebugWindow *win = data;
 
-	gtk_entry_get_icon_area(entry, icon_pos, &rect);
-	gtk_popover_set_pointing_to(GTK_POPOVER(win->popover), &rect);
+	gtk_popover_set_pointing_to(GTK_POPOVER(win->popover),
+	                            &(const GdkRectangle){(int)x, (int)y, 0, 0});
 	gtk_popover_popup(GTK_POPOVER(win->popover));
 }
-#endif
 
 static void
 regex_filter_toggled_cb(GtkToggleButton *button, PidginDebugWindow *win)
@@ -472,8 +485,37 @@ filter_level_changed_cb(GtkWidget *combo, gpointer null)
 }
 
 static void
+pidgin_debug_window_dispose(GObject *object)
+{
+	PidginDebugWindow *win = PIDGIN_DEBUG_WINDOW(object);
+
+	gtk_widget_unparent(win->popover);
+
+	G_OBJECT_CLASS(pidgin_debug_window_parent_class)->dispose(object);
+}
+
+static void
+pidgin_debug_window_finalize(GObject *object)
+{
+	PidginDebugWindow *win = PIDGIN_DEBUG_WINDOW(object);
+
+	purple_prefs_disconnect_by_handle(pidgin_debug_get_handle());
+
+	g_clear_pointer(&win->regex, g_regex_unref);
+
+	debug_win = NULL;
+	purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/debug/enabled", FALSE);
+
+	G_OBJECT_CLASS(pidgin_debug_window_parent_class)->finalize(object);
+}
+
+static void
 pidgin_debug_window_class_init(PidginDebugWindowClass *klass) {
+	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+
+	obj_class->dispose = pidgin_debug_window_dispose;
+	obj_class->finalize = pidgin_debug_window_finalize;
 
 	gtk_widget_class_set_template_from_resource(
 		widget_class,
@@ -527,9 +569,7 @@ pidgin_debug_window_class_init(PidginDebugWindowClass *klass) {
 			regex_filter_toggled_cb);
 	gtk_widget_class_bind_template_callback(widget_class,
 			regex_changed_cb);
-#if 0
 	gtk_widget_class_bind_template_callback(widget_class, regex_popup_cb);
-#endif
 	gtk_widget_class_bind_template_callback(widget_class, regex_menu_cb);
 	gtk_widget_class_bind_template_callback(widget_class,
 			regex_key_released_cb);
@@ -543,11 +583,10 @@ pidgin_debug_window_init(PidginDebugWindow *win)
 	gint width, height;
 	void *handle;
 	GtkTextIter end;
-	GtkStyleContext *context;
-	GtkCssProvider *filter_css;
-	const gchar *res = "/im/pidgin/Pidgin3/Debug/filter.css";
 
 	gtk_widget_init_template(GTK_WIDGET(win));
+
+	gtk_widget_set_parent(win->popover, win->filter);
 
 	width  = purple_prefs_get_int(PIDGIN_PREFS_ROOT "/debug/width");
 	height = purple_prefs_get_int(PIDGIN_PREFS_ROOT "/debug/height");
@@ -557,8 +596,6 @@ pidgin_debug_window_init(PidginDebugWindow *win)
 
 	gtk_window_set_default_size(GTK_WINDOW(win), width, height);
 
-	g_signal_connect(G_OBJECT(win), "delete_event",
-	                 G_CALLBACK(debug_window_destroy), NULL);
 	g_signal_connect(G_OBJECT(win), "notify::default-width",
 	                 G_CALLBACK(save_default_size_cb), NULL);
 	g_signal_connect(G_OBJECT(win), "notify::default-height",
@@ -580,18 +617,8 @@ pidgin_debug_window_init(PidginDebugWindow *win)
 									regex_pref_filter_cb, win);
 
 		/* regex entry */
-		filter_css = gtk_css_provider_new();
-		gtk_css_provider_load_from_resource(filter_css, res);
-
-		context = gtk_widget_get_style_context(win->expression);
-		gtk_style_context_add_provider(context,
-		                               GTK_STYLE_PROVIDER(filter_css),
-		                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
 		gtk_editable_set_text(GTK_EDITABLE(win->expression),
 		                      purple_prefs_get_string(PIDGIN_PREFS_ROOT "/debug/regex"));
-		purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/regex",
-									regex_pref_expression_cb, win);
 
 		/* connect the rest of our pref callbacks */
 		win->invert = purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/invert");
@@ -608,10 +635,10 @@ pidgin_debug_window_init(PidginDebugWindow *win)
 		purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/filterlevel",
 						filter_level_pref_changed, win);
 
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(win->popover_invert),
-				win->invert);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(win->popover_highlight),
-				win->highlight);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(win->popover_invert),
+		                            win->invert);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(win->popover_highlight),
+		                            win->highlight);
 	}
 
 	/* The *start* and *end* marks bound the beginning and end of an
@@ -827,7 +854,6 @@ pidgin_debug_window_hide(void)
 {
 	if (debug_win != NULL) {
 		gtk_window_destroy(GTK_WINDOW(debug_win));
-		debug_window_destroy(NULL, NULL, NULL);
 	}
 }
 

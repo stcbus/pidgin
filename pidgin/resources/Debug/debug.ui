@@ -69,32 +69,32 @@ funky is going on. The raw text is below for pasting.
   <object class="GtkTextTagTable" id="message-format">
     <child type="tag">
       <object class="GtkTextTag" id="tags.level[0]">
-        <property name="foreground-rgba">rgb(0,0,0)</property>
+        <property name="foreground">rgb(0,0,0)</property>
       </object>
     </child>
     <child type="tag">
       <object class="GtkTextTag" id="tags.level[1]">
-        <property name="foreground-rgba">rgb(102,102,102)</property>
+        <property name="foreground">rgb(102,102,102)</property>
       </object>
     </child>
     <child type="tag">
       <object class="GtkTextTag" id="tags.level[2]">
-        <property name="foreground-rgba">rgb(0,0,0)</property>
+        <property name="foreground">rgb(0,0,0)</property>
       </object>
     </child>
     <child type="tag">
       <object class="GtkTextTag" id="tags.level[3]">
-        <property name="foreground-rgba">rgb(102,0,0)</property>
+        <property name="foreground">rgb(102,0,0)</property>
       </object>
     </child>
     <child type="tag">
       <object class="GtkTextTag" id="tags.level[4]">
-        <property name="foreground-rgba">rgb(255,0,0)</property>
+        <property name="foreground">rgb(255,0,0)</property>
       </object>
     </child>
     <child type="tag">
       <object class="GtkTextTag" id="tags.level[5]">
-        <property name="foreground-rgba">rgb(255,0,0)</property>
+        <property name="foreground">rgb(255,0,0)</property>
         <property name="weight">700</property>
       </object>
     </child>
@@ -116,7 +116,7 @@ funky is going on. The raw text is below for pasting.
     </child>
     <child type="tag">
       <object class="GtkTextTag" id="tags.match">
-        <property name="background-rgba">rgb(255,175,175)</property>
+        <property name="background">rgb(255,175,175)</property>
         <property name="weight">700</property>
       </object>
     </child>
@@ -130,7 +130,7 @@ funky is going on. The raw text is below for pasting.
     <property name="tag-table">message-format</property>
   </object>
   <template class="PidginDebugWindow" parent="GtkWindow">
-    <property name="title" translatable="yes">Debug Window</property>
+    <property name="title" translatable="1">Debug Window</property>
     <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>
@@ -141,8 +141,8 @@ funky is going on. The raw text is below for pasting.
             </style>
             <child>
               <object class="GtkButton" id="save">
-                <property name="tooltip-text" translatable="yes">Save</property>
-                <property name="label" translatable="yes">_Save...</property>
+                <property name="tooltip-text" translatable="1">Save</property>
+                <property name="label" translatable="1">_Save...</property>
                 <property name="use-underline">1</property>
                 <property name="icon-name">document-save</property>
                 <signal name="clicked" handler="save_cb" object="PidginDebugWindow" swapped="no"/>
@@ -150,8 +150,8 @@ funky is going on. The raw text is below for pasting.
             </child>
             <child>
               <object class="GtkButton" id="clear">
-                <property name="tooltip-text" translatable="yes">Clear</property>
-                <property name="label" translatable="yes">_Clear</property>
+                <property name="tooltip-text" translatable="1">Clear</property>
+                <property name="label" translatable="1">_Clear</property>
                 <property name="use-underline">1</property>
                 <property name="icon-name">edit-clear</property>
                 <signal name="clicked" handler="clear_cb" object="PidginDebugWindow" swapped="no"/>
@@ -164,11 +164,11 @@ funky is going on. The raw text is below for pasting.
             </child>
             <child>
               <object class="GtkToggleButton" id="pause">
-                <property name="tooltip-text" translatable="yes">Pause</property>
-                <property name="label" translatable="yes">_Pause</property>
+                <property name="tooltip-text" translatable="1">Pause</property>
+                <property name="label" translatable="1">_Pause</property>
                 <property name="use-underline">1</property>
                 <property name="icon-name">media-playback-pause</property>
-                <signal name="clicked" handler="pause_cb" object="PidginDebugWindow" swapped="no"/>
+                <signal name="toggled" handler="pause_cb" object="PidginDebugWindow" swapped="no"/>
               </object>
             </child>
             <child>
@@ -178,11 +178,17 @@ funky is going on. The raw text is below for pasting.
             </child>
             <child>
               <object class="GtkToggleButton" id="filter">
-                <property name="tooltip-text" translatable="yes">Filter</property>
-                <property name="label" translatable="yes">_Filter</property>
+                <property name="tooltip-text" translatable="1">Filter</property>
+                <property name="label" translatable="1">_Filter</property>
                 <property name="use-underline">1</property>
                 <property name="icon-name">edit-find</property>
-                <signal name="clicked" handler="regex_filter_toggled_cb" object="PidginDebugWindow" swapped="no"/>
+                <signal name="toggled" handler="regex_filter_toggled_cb" object="PidginDebugWindow" swapped="no"/>
+                <child>
+                  <object class="GtkGestureClick">
+                    <property name="button">3</property>
+                    <signal name="pressed" handler="regex_popup_cb" object="PidginDebugWindow" swapped="no"/>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -193,9 +199,6 @@ funky is going on. The raw text is below for pasting.
                   </object>
                 </child>
                 <property name="focusable">1</property>
-                <property name="primary-icon-tooltip-text" translatable="yes">Click for more options.</property>
-                <!--<signal name="icon-press" handler="regex_popup_cb" object="PidginDebugWindow" swapped="no"/>-->
-                <property name="sensitive">0</property>
                 <signal name="search-changed" handler="regex_changed_cb" object="PidginDebugWindow" swapped="no"/>
               </object>
             </child>
@@ -205,16 +208,13 @@ funky is going on. The raw text is below for pasting.
               </object>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="yes">Level </property>
-                <accessibility>
-                  <relation type="label-for" target="filterlevel"/>
-                </accessibility>
+              <object class="GtkLabel" id="filterlevel-label">
+                <property name="label" translatable="1">Level </property>
               </object>
             </child>
             <child>
-            <object class="GtkComboBoxText" id="filterlevel">
-                <property name="tooltip-text" translatable="yes">Select the debug filter level.</property>
+              <object class="GtkComboBoxText" id="filterlevel">
+                <property name="tooltip-text" translatable="1">Select the debug filter level.</property>
                 <property name="active">0</property>
                 <items>
                   <item translatable="yes">All</item>
@@ -225,6 +225,9 @@ funky is going on. The raw text is below for pasting.
                   <item translatable="yes">Fatal Error</item>
                 </items>
                 <signal name="changed" handler="filter_level_changed_cb" object="PidginDebugWindow" swapped="no"/>
+                <accessibility>
+                  <relation name="labelled-by">filterlevel-label</relation>
+                </accessibility>
               </object>
             </child>
           </object>
@@ -247,19 +250,20 @@ funky is going on. The raw text is below for pasting.
     </property>
   </template>
   <object class="GtkPopover" id="popover">
+    <property name="position">bottom</property>
     <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkCheckButton" id="popover_invert">
-            <property name="label" translatable="yes">Invert</property>
+            <property name="label" translatable="1">Invert</property>
             <property name="focusable">1</property>
             <signal name="toggled" handler="regex_menu_cb" object="PidginDebugWindow" swapped="no"/>
           </object>
         </child>
         <child>
           <object class="GtkCheckButton" id="popover_highlight">
-            <property name="label" translatable="yes">Highlight matches</property>
+            <property name="label" translatable="1">Highlight matches</property>
             <property name="focusable">1</property>
             <signal name="toggled" handler="regex_menu_cb" object="PidginDebugWindow" swapped="no"/>
           </object>
