@@ -364,6 +364,8 @@ pidgin_whiteboard_clear_response(GtkDialog *self, guint response,
 		/* Do protocol specific clearing procedures */
 		purple_whiteboard_send_clear(gtkwb->wb);
 	}
+
+	gtk_window_destroy(GTK_WINDOW(self));
 }
 
 static void

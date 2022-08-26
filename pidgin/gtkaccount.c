@@ -1170,7 +1170,7 @@ account_prefs_response_cb(GtkDialog *dialog, gint response_id, gpointer data) {
 			account_prefs_save(window);
 			break;
 		case RESPONSE_CLOSE:
-        case GTK_RESPONSE_DELETE_EVENT:
+		case GTK_RESPONSE_DELETE_EVENT:
 			account_win_destroy_cb(window);
 			break;
 		default:

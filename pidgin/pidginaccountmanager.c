@@ -246,9 +246,8 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 			g_clear_object(&account);
 
 			break;
-		case GTK_RESPONSE_DELETE_EVENT:
-			/* fallthrough */
 		case GTK_RESPONSE_CLOSE:
+		case GTK_RESPONSE_DELETE_EVENT:
 			gtk_window_destroy(GTK_WINDOW(dialog));
 			break;
 		default:
