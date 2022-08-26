@@ -39,7 +39,6 @@ pidgin_account_store_add_account(PidginAccountStore *store,
 {
 	PurpleProtocol *protocol = NULL;
 	GtkTreeIter iter;
-	GdkPixbuf *pixbuf = NULL;
 	gchar *markup = NULL;
 	const gchar *alias = NULL, *icon_name = NULL;
 
