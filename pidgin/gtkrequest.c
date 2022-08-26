@@ -611,17 +611,21 @@ pidgin_request_input(const char *title, const char *primary,
 
 		data->u.input.entry = input;
 	} else {
-		GtkWidget *entry = gtk_entry_new();
+		GtkWidget *entry = NULL;
 
-		gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+		if(masked) {
+			entry = gtk_password_entry_new();
+			g_object_set(entry, "activates-default", TRUE,
+			             "show-peek-icon", TRUE, NULL);
+		} else {
+			entry = gtk_entry_new();
+			gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+		}
+
 		gtk_box_append(GTK_BOX(vbox), entry);
 
 		if(default_value != NULL) {
 			gtk_editable_set_text(GTK_EDITABLE(entry), default_value);
-		}
-
-		if(masked) {
-			gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
 		}
 
 		data->u.input.entry = entry;
@@ -1093,7 +1097,7 @@ setup_entry_field(GtkWidget *entry, PurpleRequestField *field)
 {
 	const char *type_hint;
 
-	gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+	g_object_set(entry, "activates-default", TRUE, NULL);
 
 	g_signal_connect(G_OBJECT(entry), "changed",
 		G_CALLBACK(req_entry_field_changed_cb), field);
@@ -1190,7 +1194,13 @@ create_string_field(PurpleRequestField *field)
 	{
 		GtkEventController *controller = NULL;
 
-		widget = gtk_entry_new();
+		if (purple_request_field_string_is_masked(field)) {
+			widget = gtk_password_entry_new();
+			gtk_password_entry_set_show_peek_icon(GTK_PASSWORD_ENTRY(widget),
+			                                      TRUE);
+		} else {
+			widget = gtk_entry_new();
+		}
 
 		setup_entry_field(widget, field);
 
@@ -1199,11 +1209,6 @@ create_string_field(PurpleRequestField *field)
 		}
 
 		gtk_widget_set_tooltip_text(widget, purple_request_field_get_tooltip(field));
-
-		if (purple_request_field_string_is_masked(field))
-		{
-			gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
-		}
 
 		gtk_editable_set_editable(GTK_EDITABLE(widget), is_editable);
 

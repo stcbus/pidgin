@@ -239,11 +239,9 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                           </object>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="password">
+                          <object class="GtkPasswordEntry" id="password">
                             <property name="focusable">1</property>
-                            <property name="visibility">0</property>
-                            <property name="invisible-char">●</property>
-                            <property name="input-purpose">password</property>
+                            <property name="show-peek-icon">1</property>
                             <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
                             <accessibility>
                               <relation name="labelled-by">password-label</relation>

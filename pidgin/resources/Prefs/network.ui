@@ -257,11 +257,9 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                   </object>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="turn_password">
+                  <object class="GtkPasswordEntry" id="turn_password">
                     <property name="focusable">1</property>
-                    <property name="visibility">0</property>
-                    <property name="invisible-char">●</property>
-                    <property name="input-purpose">password</property>
+                    <property name="show-peek-icon">1</property>
                   </object>
                 </child>
               </object>
