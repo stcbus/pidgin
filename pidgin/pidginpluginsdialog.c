@@ -35,7 +35,23 @@
 
 struct _PidginPluginsDialog {
 	GtkDialog parent;
+
+	GtkWidget *view;
 };
+
+/******************************************************************************
+ * Callbacks
+ *****************************************************************************/
+static void
+pidgin_plugins_dialog_response_cb(GtkDialog* self, gint response_id,
+                                  G_GNUC_UNUSED gpointer data)
+{
+	switch(response_id) {
+		case GTK_RESPONSE_DELETE_EVENT:
+			gtk_window_destroy(GTK_WINDOW(self));
+			break;
+	}
+}
 
 /******************************************************************************
  * GObject Implementation
@@ -50,11 +66,22 @@ pidgin_plugins_dialog_class_init(PidginPluginsDialogClass *klass) {
 		widget_class,
 		"/im/pidgin/Pidgin3/Plugins/dialog.ui"
 	);
+
+	gtk_widget_class_bind_template_child(widget_class, PidginPluginsDialog,
+	                                     view);
+
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        pidgin_plugins_dialog_response_cb);
 }
 
 static void
 pidgin_plugins_dialog_init(PidginPluginsDialog *dialog) {
+	GPluginManager *manager = NULL;
+
 	gtk_widget_init_template(GTK_WIDGET(dialog));
+
+	manager = gplugin_manager_get_default();
+	gplugin_gtk_view_set_manager(GPLUGIN_GTK_VIEW(dialog->view), manager);
 }
 
 /******************************************************************************
