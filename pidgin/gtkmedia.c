@@ -116,12 +116,14 @@ enum {
 };
 
 static gboolean
-pidgin_media_delete_event_cb(GtkWidget *widget,
-		GdkEvent *event, PidginMedia *media)
-{
-	if (media->priv->media)
+pidgin_media_close_request_cb(GtkWindow *window, gpointer data) {
+	PidginMedia *media = data;
+
+	if(media->priv->media) {
 		g_action_group_activate_action(G_ACTION_GROUP(media),
 				"Hangup", NULL);
+	}
+
 	return FALSE;
 }
 
@@ -160,7 +162,7 @@ pidgin_media_class_init (PidginMediaClass *klass)
 	                                             statusbar);
 
 	gtk_widget_class_bind_template_callback(widget_class,
-	                                        pidgin_media_delete_event_cb);
+	                                        pidgin_media_close_request_cb);
 
 }
 

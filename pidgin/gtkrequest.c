@@ -318,8 +318,7 @@ multifield_extra_cb(GtkWidget *button, PidginRequestData *data)
 }
 
 static gboolean
-destroy_multifield_cb(GtkWidget *dialog, GdkEvent *event,
-					  PidginRequestData *data)
+destroy_multifield_cb(GtkWidget *self, PidginRequestData *data)
 {
 	multifield_cancel_cb(NULL, data);
 	return FALSE;
@@ -1262,10 +1261,8 @@ create_bool_field(PurpleRequestField *field,
 
 static GtkWidget *
 create_choice_field(PurpleRequestField *field,
-	PurpleRequestCommonParameters *cpar)
+                    PurpleRequestCommonParameters *cpar)
 {
-#warning please rewrite me
-#if 0
 	GtkWidget *widget;
 	GList *elements = purple_request_field_choice_get_elements(field);
 	guint num_labels = g_list_length(elements);
@@ -1361,7 +1358,6 @@ create_choice_field(PurpleRequestField *field,
 	g_object_set_data_full(G_OBJECT(widget), "values", values, g_free);
 
 	return widget;
-#endif
 
 	return NULL;
 }
@@ -1944,7 +1940,7 @@ pidgin_request_fields(const char *title, const char *primary,
 
 	data->dialog = win = pidgin_dialog_new(title, 12, "multifield", TRUE) ;
 
-	g_signal_connect(G_OBJECT(win), "delete_event",
+	g_signal_connect(G_OBJECT(win), "close-request",
 					 G_CALLBACK(destroy_multifield_cb), data);
 
 	/* Setup the main horizontal box */
