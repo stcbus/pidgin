@@ -260,6 +260,7 @@ static void
 pidgin_avatar_update(PidginAvatar *avatar) {
 	PurpleAccount *account = NULL;
 	GdkPixbufAnimation *animation = NULL;
+	GdkPixbuf *pixbuf = NULL;
 
 	if(PURPLE_IS_BUDDY(avatar->buddy)) {
 		animation = pidgin_avatar_find_buddy_icon(avatar->buddy, NULL);
@@ -282,18 +283,13 @@ pidgin_avatar_update(PidginAvatar *avatar) {
 
 	if(GDK_IS_PIXBUF_ANIMATION(avatar->animation)) {
 		if(avatar->animate) {
-			gtk_image_set_from_pixbuf(GTK_IMAGE(avatar->icon),
-			                          GDK_PIXBUF(avatar->animation));
+			pixbuf = GDK_PIXBUF(avatar->animation);
 		} else {
-			GdkPixbuf *frame = NULL;
-
-			frame = gdk_pixbuf_animation_get_static_image(avatar->animation);
-
-			gtk_image_set_from_pixbuf(GTK_IMAGE(avatar->icon), frame);
+			pixbuf = gdk_pixbuf_animation_get_static_image(avatar->animation);
 		}
-	} else {
-		gtk_image_clear(GTK_IMAGE(avatar->icon));
 	}
+
+	gtk_picture_set_pixbuf(GTK_PICTURE(avatar->icon), pixbuf);
 
 	g_clear_object(&animation);
 }
@@ -443,12 +439,6 @@ pidgin_avatar_init(PidginAvatar *avatar) {
 	GSimpleActionGroup *group = NULL;
 
 	gtk_widget_init_template(GTK_WIDGET(avatar));
-
-	/* For development/design purposes, the avatar defaults to the
-	 * "image-missing" icon.  However, we don't want to display that to users,
-	 * so we clear it during run time.
-	 */
-	gtk_image_clear(GTK_IMAGE(avatar->icon));
 
 	/* Now setup our actions. */
 	group = g_simple_action_group_new();

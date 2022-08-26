@@ -27,9 +27,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <template class="PidginAvatar" parent="GtkBox">
     <child>
-      <object class="GtkImage" id="icon">
-        <property name="icon-name">image-missing</property>
-        <property name="icon_size">3</property>
+      <object class="GtkPicture" id="icon">
+        <property name="height-request">64</property>
+        <property name="width-request">64</property>
+        <property name="content-fit">scale-down</property>
+        <property name="keep-aspect-ratio">1</property>
       </object>
     </child>
     <child>
