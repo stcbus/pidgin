@@ -56,7 +56,7 @@ struct _PidginRoomlistDialog {
 	GtkWidget *join_button;
 	GtkWidget *close_button;
 
-	GtkWidget *popover_menu;
+	GtkWidget *popover;
 
 	PurpleAccount *account;
 	PurpleRoomlist *roomlist;
@@ -297,6 +297,10 @@ pidgin_roomlist_response_cb(GtkDialog *gtk_dialog, gint response_id,
 	case RESPONSE_JOIN:
 		pidgin_roomlist_join(dialog);
 		break;
+	case GTK_RESPONSE_CLOSE:
+	case GTK_RESPONSE_DELETE_EVENT:
+		gtk_window_destroy(GTK_WINDOW(gtk_dialog));
+		break;
 	}
 }
 
@@ -362,28 +366,27 @@ row_activated_cb(GtkTreeView *tv, GtkTreePath *path, GtkTreeViewColumn *arg2,
 	g_clear_object(&room);
 }
 
-static gboolean
-room_click_cb(GtkWidget *tv, GdkEvent *event, gpointer data) {
+static void
+room_click_cb(G_GNUC_UNUSED GtkGestureClick *self, gint n_press, gdouble x,
+              gdouble y, gpointer data)
+{
 	PidginRoomlistDialog *dialog = data;
-	gdouble x, y;
 
-	if (!gdk_event_triggers_context_menu((GdkEvent *)event))
-		return FALSE;
+	if(n_press != 1) {
+		return;
+	}
 
-	gdk_event_get_position(event, &x, &y);
+	if(!gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(dialog->tree), (gint)x,
+	                                  (gint)y, NULL, NULL, NULL, NULL))
+	{
+		return;
+	}
 
-	if (!gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tv), x, y, NULL, NULL, NULL, NULL))
-		return FALSE;
-
-	gtk_popover_set_pointing_to(GTK_POPOVER(dialog->popover_menu),
+	gtk_popover_set_pointing_to(GTK_POPOVER(dialog->popover),
 	                            &(const GdkRectangle){(int)x, (int)y, 0, 0});
 
-	gtk_popover_popup(GTK_POPOVER(dialog->popover_menu));
-
-	return FALSE;
+	gtk_popover_popup(GTK_POPOVER(dialog->popover));
 }
-
-#define SMALL_SPACE 6
 
 static gboolean
 pidgin_roomlist_query_tooltip(GtkWidget *widget, int x, int y,
@@ -492,7 +495,7 @@ pidgin_roomlist_dialog_class_init(PidginRoomlistDialogClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, PidginRoomlistDialog,
 	                                     stop_button);
 	gtk_widget_class_bind_template_child(widget_class, PidginRoomlistDialog,
-	                                     popover_menu);
+	                                     popover);
 
 	gtk_widget_class_bind_template_callback(widget_class, close_request_cb);
 	gtk_widget_class_bind_template_callback(widget_class, row_activated_cb);

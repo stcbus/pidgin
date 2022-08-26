@@ -16,179 +16,148 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this library; if not, see <https://www.gnu.org/licenses/>.
 -->
-
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="pidgin" version="3.0"/>
+  <!-- interface-license-type gplv2 -->
+  <!-- interface-name Pidgin -->
+  <!-- interface-description Internet Messenger -->
+  <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <object class="PidginAccountStore" id="accounts"/>
   <template class="PidginRoomlistDialog" parent="GtkDialog">
     <property name="title" translatable="1">Room List</property>
-    <property name="role">room list</property>
-    <property name="type-hint">dialog</property>
     <signal name="close-request" handler="close_request_cb" swapped="no"/>
     <signal name="response" handler="pidgin_roomlist_response_cb" swapped="no"/>
     <child internal-child="content_area">
       <object class="GtkBox">
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+        <property name="spacing">12</property>
         <child>
           <object class="GtkBox">
-            <property name="orientation">vertical</property>
-            <property name="spacing">12</property>
+            <property name="spacing">5</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">5</property>
-                <child>
-                  <object class="GtkLabel" id="label1">
-                    <property name="halign">start</property>
-                    <property name="label" translatable="1">_Account:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">account_widget</property>
-                    <accessibility>
-                      <relation type="label-for" target="account_widget"/>
-                    </accessibility>
-                  </object>
-                </child>
-                <child>
-                  <object class="PidginAccountChooser" id="account_widget">
-                    <property name="hexpand">1</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="model">accounts</property>
-                    <property name="active">0</property>
-		    <property name="halign">fill</property>
-                    <signal name="changed" handler="dialog_select_account_cb" object="PidginRoomlistDialog" swapped="no"/>
-                    <accessibility>
-                      <relation type="labelled-by" target="label1"/>
-                    </accessibility>
-                  </object>
-                </child>
+              <object class="GtkLabel" id="label1">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">_Account:</property>
+                <property name="use-underline">1</property>
+                <property name="mnemonic-widget">account_widget</property>
               </object>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="sw">
-                <property name="vexpand">1</property>
+              <object class="PidginAccountChooser" id="account_widget">
+                <property name="hexpand">1</property>
+                <property name="can-focus">1</property>
+                <property name="model">accounts</property>
+                <property name="active">0</property>
+                <property name="halign">fill</property>
+                <signal name="changed" handler="dialog_select_account_cb" object="PidginRoomlistDialog" swapped="no"/>
+                <accessibility>
+                  <relation name="labelled-by">label1</relation>
+                </accessibility>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="sw">
+            <property name="vexpand">1</property>
+            <property name="focusable">1</property>
+            <property name="min-content-height">250</property>
+            <property name="child">
+              <object class="GtkTreeView" id="tree">
                 <property name="focusable">1</property>
-                <property name="shadow-type">in</property>
-                <property name="min-content-height">250</property>
-		<property name="valign">fill</property>
-                <property name="child">
-                  <object class="GtkTreeView" id="tree">
-                    <property name="focusable">1</property>
-                    <property name="search-column">1</property>
-                    <signal name="button-press-event" handler="room_click_cb" object="PidginRoomlistDialog" swapped="no"/>
-                    <signal name="query-tooltip" handler="pidgin_roomlist_query_tooltip" object="PidginRoomlistDialog" swapped="no"/>
-                    <signal name="row-activated" handler="row_activated_cb" object="PidginRoomlistDialog" swapped="no"/>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="tree_selection">
-                        <signal name="changed" handler="selection_changed_cb" object="PidginRoomlistDialog" swapped="no"/>
-                      </object>
-                    </child>
+                <property name="search-column">1</property>
+                <signal name="query-tooltip" handler="pidgin_roomlist_query_tooltip" object="PidginRoomlistDialog" swapped="no"/>
+                <signal name="row-activated" handler="row_activated_cb" object="PidginRoomlistDialog" swapped="no"/>
+                <child>
+                  <object class="GtkGestureClick">
+                    <property name="button">3</property>
+                    <signal name="pressed" handler="room_click_cb" object="PidginRoomlistDialog" swapped="no"/>
+                  </object>
+                </child>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection" id="tree_selection">
+                    <signal name="changed" handler="selection_changed_cb" object="PidginRoomlistDialog" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkPopoverMenu" id="popover">
+                    <property name="menu-model">popover_menu</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="1">Name</property>
                     <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="title" translatable="1">Name</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="markup">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="title" translatable="1">Description</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="markup">2</attribute>
-                          </attributes>
-                        </child>
-                      </object>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="markup">1</attribute>
+                      </attributes>
                     </child>
                   </object>
-                </property>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="1">Description</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="markup">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
               </object>
-            </child>
-            <child>
-              <object class="GtkProgressBar" id="progress" />
-            </child>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkProgressBar" id="progress">
           </object>
         </child>
       </object>
     </child>
-    <child>
-      <object class="GtkBox">
-        <property name="valign">center</property>
-        <property name="can-focus">False</property>
-        <child type="action">
-          <object class="GtkButton" id="stop_button">
-            <property name="label">_Stop</property>
-            <property name="sensitive">0</property>
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-            <property name="use-underline">1</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child type="action">
-          <object class="GtkButton" id="list_button">
-            <property name="label" translatable="1">_Get List</property>
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-            <property name="use-underline">1</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child type="action">
-          <object class="GtkButton" id="add_button">
-            <property name="label" translatable="1">_Add Chat</property>
-            <property name="sensitive">0</property>
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-            <property name="use-underline">1</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child type="action">
-          <object class="GtkButton" id="join_button">
-            <property name="label" translatable="1">_Join</property>
-            <property name="sensitive">0</property>
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-            <property name="use-underline">1</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child type="action">
-          <object class="GtkButton" id="close_button">
-            <property name="label">_Close</property>
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-            <property name="use-underline">1</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">4</property>
-          </packing>
-        </child>
+    <child type="action">
+      <object class="GtkButton" id="stop_button">
+        <property name="label">_Stop</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
+      </object>
+    </child>
+    <child type="action">
+      <object class="GtkButton" id="list_button">
+        <property name="label" translatable="1">_Get List</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
+      </object>
+    </child>
+    <child type="action">
+      <object class="GtkButton" id="add_button">
+        <property name="label" translatable="1">_Add Chat</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
+      </object>
+    </child>
+    <child type="action">
+      <object class="GtkButton" id="join_button">
+        <property name="label" translatable="1">_Join</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
+      </object>
+    </child>
+    <child type="action">
+      <object class="GtkButton" id="close_button">
+        <property name="label">_Close</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
       </object>
     </child>
     <action-widgets>
@@ -196,7 +165,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
       <action-widget response="1">list_button</action-widget>
       <action-widget response="2">add_button</action-widget>
       <action-widget response="3">join_button</action-widget>
-      <action-widget response="-6">close_button</action-widget>
+      <action-widget response="-7">close_button</action-widget>
     </action-widgets>
   </template>
   <menu id="popover_menu">
