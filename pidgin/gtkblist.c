@@ -2878,11 +2878,10 @@ static void _prefs_change_sort_method(const char *pref_name, PurplePrefType type
  * I'm sure other things in this code assumes that also.
  */
 static void
-treeview_style_set(GtkWidget *widget,
-		    gpointer data)
-{
+icon_theme_changed_cb(G_GNUC_UNUSED GtkIconTheme *self, gpointer data) {
 	PurpleBuddyList *list = data;
 	PurpleBlistNode *node = purple_blist_get_root(list);
+
 	while (node) {
 		pidgin_blist_update_group(list, node);
 		node = node->next;
@@ -3036,8 +3035,9 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 {
 	void *handle;
 	GtkWidget *sep, *sw;
-	GtkGesture *click = NULL;
 	GtkEventController *key_controller = NULL;
+	GtkGesture *click = NULL;
+	GtkIconTheme *icon_theme;
 	GtkTreeSelection *selection;
 
 	gtkblist = PIDGIN_BUDDY_LIST(list);
@@ -3066,9 +3066,10 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	gtk_widget_show(gtkblist->treeview);
 	gtk_widget_set_name(gtkblist->treeview, "pidgin_blist_treeview");
 
-	g_signal_connect(gtkblist->treeview,
-			 "style-updated",
-			 G_CALLBACK(treeview_style_set), list);
+	icon_theme = gtk_icon_theme_get_for_display(gdk_display_get_default());
+	g_signal_connect(icon_theme, "changed",
+	                 G_CALLBACK(icon_theme_changed_cb), list);
+
 	/* Set up selection stuff */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtkblist->treeview));
 	g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(pidgin_blist_selection_changed), NULL);
