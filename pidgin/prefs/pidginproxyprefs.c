@@ -32,12 +32,14 @@
 struct _PidginProxyPrefs {
 	AdwPreferencesPage parent;
 
-	GtkWidget *stack;
 	/* GNOME version */
+	GtkWidget *gnome;
 	GtkWidget *gnome_not_found;
 	GtkWidget *gnome_program;
 	gchar *gnome_program_path;
+
 	/* Non-GNOME version */
+	GtkWidget *nongnome;
 	GtkWidget *socks4_remotedns;
 	PidginPrefCombo type;
 	GtkWidget *options;
@@ -128,11 +130,14 @@ pidgin_proxy_prefs_class_init(PidginProxyPrefsClass *klass)
 	);
 
 	gtk_widget_class_bind_template_child(
-			widget_class, PidginProxyPrefs, stack);
+			widget_class, PidginProxyPrefs, gnome);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, gnome_not_found);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, gnome_program);
+
+	gtk_widget_class_bind_template_child(
+			widget_class, PidginProxyPrefs, nongnome);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, socks4_remotedns);
 	gtk_widget_class_bind_template_child(
@@ -163,8 +168,8 @@ pidgin_proxy_prefs_init(PidginProxyPrefs *prefs)
 	if(purple_running_gnome()) {
 		gchar *path = NULL;
 
-		gtk_stack_set_visible_child_name(GTK_STACK(prefs->stack),
-				"gnome");
+		gtk_widget_set_visible(prefs->gnome, TRUE);
+		gtk_widget_set_visible(prefs->nongnome, FALSE);
 
 		path = g_find_program_in_path("gnome-network-properties");
 		if (path == NULL) {
@@ -182,9 +187,10 @@ pidgin_proxy_prefs_init(PidginProxyPrefs *prefs)
 		prefs->gnome_program_path = path;
 		gtk_widget_set_visible(prefs->gnome_not_found, path == NULL);
 		gtk_widget_set_visible(prefs->gnome_program, path != NULL);
+
 	} else {
-		gtk_stack_set_visible_child_name(GTK_STACK(prefs->stack),
-				"nongnome");
+		gtk_widget_set_visible(prefs->gnome, FALSE);
+		gtk_widget_set_visible(prefs->nongnome, TRUE);
 
 		/* This is a global option that affects SOCKS4 usage even with
 		 * account-specific proxy settings */
