@@ -592,8 +592,6 @@ pidgin_media_add_audio_widget(PidginMedia *gtkmedia,
 			G_CALLBACK(destroy_parent_widget_cb),
 			volume_widget);
 
-	gtk_widget_show(volume_widget);
-
 	return volume_widget;
 }
 
@@ -623,8 +621,6 @@ pidgin_media_add_dtmf_widget(PidginMedia *gtkmedia,
 
 	g_object_set_data_full(G_OBJECT(win), "session-id",
 		g_strdup(_sid), g_free);
-
-	gtk_widget_show(keypad);
 
 	return keypad;
 }
@@ -664,7 +660,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		gtkmedia->priv->hold =
 				gtk_toggle_button_new_with_mnemonic(_("_Hold"));
 		gtk_box_prepend(GTK_BOX(button_widget), gtkmedia->priv->hold);
-		gtk_widget_show(gtkmedia->priv->hold);
 		gtk_actionable_set_action_name(
 				GTK_ACTIONABLE(gtkmedia->priv->hold),
 				"win.Hold");
@@ -719,7 +714,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		gtkmedia->priv->pause =
 				gtk_toggle_button_new_with_mnemonic(_("_Pause"));
 		gtk_box_prepend(GTK_BOX(button_widget), gtkmedia->priv->pause);
-		gtk_widget_show(gtkmedia->priv->pause);
 		gtk_actionable_set_action_name(
 				GTK_ACTIONABLE(gtkmedia->priv->pause),
 				"win.Pause");
@@ -738,7 +732,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		gtkmedia->priv->mute =
 				gtk_toggle_button_new_with_mnemonic(_("_Mute"));
 		gtk_box_prepend(GTK_BOX(button_widget), gtkmedia->priv->mute);
-		gtk_widget_show(gtkmedia->priv->mute);
 		gtk_actionable_set_action_name(
 				GTK_ACTIONABLE(gtkmedia->priv->mute),
 				"win.Mute");
@@ -759,13 +752,14 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 				gtkmedia);
 	}
 
-	if (send_widget != NULL)
+	if (send_widget != NULL) {
 		gtkmedia->priv->send_widget = send_widget;
-	if (recv_widget != NULL)
+	}
+	if (recv_widget != NULL) {
 		gtkmedia->priv->recv_widget = recv_widget;
+	}
 	if (button_widget != NULL) {
 		gtkmedia->priv->button_widget = button_widget;
-		gtk_widget_show(GTK_WIDGET(button_widget));
 	}
 
 	if (purple_media_is_initiator(media, sid, NULL) == FALSE) {
@@ -783,8 +777,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 	} else if (type & PURPLE_MEDIA_AUDIO) {
 		gtk_window_set_icon_name(GTK_WINDOW(gtkmedia), "audio-call");
 	}
-
-	gtk_widget_show(gtkmedia->priv->display);
 }
 
 static void
@@ -915,8 +907,8 @@ pidgin_media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 			purple_buddy_get_contact_alias(buddy) : screenname;
 	gtk_window_set_title(GTK_WINDOW(gtkmedia), alias);
 
-	if (purple_media_is_initiator(media, NULL, NULL) == TRUE)
-		gtk_widget_show(GTK_WIDGET(gtkmedia));
+	gtk_widget_set_visible(GTK_WIDGET(gtkmedia),
+	                       purple_media_is_initiator(media, NULL, NULL));
 
 	return TRUE;
 }

@@ -3062,8 +3062,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 						);
 
 	gtkblist->treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gtkblist->treemodel));
-
-	gtk_widget_show(gtkblist->treeview);
 	gtk_widget_set_name(gtkblist->treeview, "pidgin_blist_treeview");
 
 	icon_theme = gtk_icon_theme_get_for_display(gdk_display_get_default());

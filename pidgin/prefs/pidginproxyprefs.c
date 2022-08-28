@@ -59,11 +59,9 @@ proxy_changed_cb(const gchar *name, PurplePrefType type, gconstpointer value,
 	PidginProxyPrefs *prefs = data;
 	const char *proxy = value;
 
-	if (!purple_strequal(proxy, "none") && !purple_strequal(proxy, "envvar")) {
-		gtk_widget_show(prefs->options);
-	} else {
-		gtk_widget_hide(prefs->options);
-	}
+	gtk_widget_set_visible(prefs->options,
+	                       !purple_strequal(proxy, "none") &&
+	                       !purple_strequal(proxy, "envvar"));
 }
 
 static void

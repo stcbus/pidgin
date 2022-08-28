@@ -178,8 +178,6 @@ pidgin_add_chat_dialog_update_components(PidginAddChatDialog *dialog) {
 
 	g_hash_table_destroy(defaults);
 
-	gtk_widget_show(dialog->dynamic_box);
-
 	pidgin_add_chat_dialog_validate(dialog);
 }
 
