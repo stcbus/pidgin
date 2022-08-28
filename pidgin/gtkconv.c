@@ -553,44 +553,6 @@ create_chat_menu(PurpleChatConversation *chat, const char *who,
 	return menu;
 }
 
-
-static gint
-gtkconv_chat_popup_menu_cb(GtkWidget *widget, PidginConversation *gtkconv)
-{
-	PurpleConversation *conv = gtkconv->active_conv;
-	PurpleConnection *gc;
-	PurpleAccount *account;
-	GtkTreeSelection *sel;
-	GtkTreeIter iter;
-	GtkTreeModel *model;
-	GtkWidget *popover_menu = NULL;
-	GMenu *menu = NULL;
-	gchar *who;
-
-	gtkconv = PIDGIN_CONVERSATION(conv);
-	account = purple_conversation_get_account(conv);
-	gc      = purple_account_get_connection(account);
-
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(gtkconv->list));
-
-	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtkconv->list));
-	if(!gtk_tree_selection_get_selected(sel, NULL, &iter))
-		return FALSE;
-
-	gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, CHAT_USERS_NAME_COLUMN, &who, -1);
-	menu = create_chat_menu(PURPLE_CHAT_CONVERSATION(conv), who, gc, gtkconv);
-
-	popover_menu = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
-	gtk_widget_set_parent(popover_menu, gtkconv->list);
-
-	gtk_popover_popup(GTK_POPOVER(popover_menu));
-
-	g_free(who);
-
-	return TRUE;
-}
-
-
 static gint
 right_click_chat_cb(GtkGestureClick *click, gint n_press, gdouble x, gdouble y,
                     gpointer data)
@@ -1508,13 +1470,12 @@ setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(list), col);
 
 	click = gtk_gesture_click_new();
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click), 0);
 	g_signal_connect(click, "pressed", G_CALLBACK(right_click_chat_cb), gtkconv);
 	gtk_widget_add_controller(list, GTK_EVENT_CONTROLLER(click));
 
 	g_signal_connect(G_OBJECT(list), "row-activated",
 					 G_CALLBACK(activate_list_cb), gtkconv);
-	g_signal_connect(G_OBJECT(list), "popup-menu",
-			 G_CALLBACK(gtkconv_chat_popup_menu_cb), gtkconv);
 
 	gtk_widget_set_has_tooltip(list, TRUE);
 	g_signal_connect(list, "query-tooltip",
