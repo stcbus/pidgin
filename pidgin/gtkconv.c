@@ -1727,10 +1727,6 @@ private_gtkconv_new(PurpleConversation *conv, gboolean hidden)
 		purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/conversations/show_formatting_toolbar")
 	);
 
-	g_signal_connect_swapped(G_OBJECT(pane), "focus",
-	                         G_CALLBACK(gtk_widget_grab_focus),
-	                         gtkconv->editor);
-
 	pidgin_conv_placement_place(gtkconv);
 }
 
