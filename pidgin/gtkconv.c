@@ -757,6 +757,16 @@ conv_keypress_common(PidginConversation *gtkconv, guint keyval,
 				return TRUE;
 			}
 			break;
+		case GDK_KEY_Page_Up:
+		case GDK_KEY_KP_Page_Up:
+			talkatu_auto_scroller_decrement(TALKATU_AUTO_SCROLLER(gtkconv->vadjustment));
+			return TRUE;
+			break;
+		case GDK_KEY_Page_Down:
+		case GDK_KEY_KP_Page_Down:
+			talkatu_auto_scroller_increment(TALKATU_AUTO_SCROLLER(gtkconv->vadjustment));
+			return TRUE;
+			break;
 		}
 	}
 	return FALSE;
@@ -801,18 +811,6 @@ entry_key_press_cb(GtkEventControllerKey *controller, guint keyval,
 							conv, state & GDK_SHIFT_MASK));
 				return plugin_return;
 			}
-			break;
-
-		case GDK_KEY_Page_Up:
-		case GDK_KEY_KP_Page_Up:
-			talkatu_scrolled_window_page_up(TALKATU_SCROLLED_WINDOW(gtkconv->history_sw));
-			return TRUE;
-			break;
-
-		case GDK_KEY_Page_Down:
-		case GDK_KEY_KP_Page_Down:
-			talkatu_scrolled_window_page_down(TALKATU_SCROLLED_WINDOW(gtkconv->history_sw));
-			return TRUE;
 			break;
 
 		case GDK_KEY_KP_Enter:
@@ -1524,7 +1522,7 @@ setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 static GtkWidget *
 setup_common_pane(PidginConversation *gtkconv)
 {
-	GtkWidget *vbox, *input, *hpaned;
+	GtkWidget *vbox, *input, *hpaned, *sw;
 	GtkEventController *key = NULL;
 	PurpleConversation *conv = gtkconv->active_conv;
 
@@ -1537,16 +1535,15 @@ setup_common_pane(PidginConversation *gtkconv)
 	gtk_box_append(GTK_BOX(vbox), gtkconv->infopane);
 
 	/* Setup the history widget */
-	gtkconv->history_sw = gtk_scrolled_window_new();
-	gtk_scrolled_window_set_policy(
-		GTK_SCROLLED_WINDOW(gtkconv->history_sw),
-		GTK_POLICY_NEVER,
-		GTK_POLICY_ALWAYS
-	);
+	sw = gtk_scrolled_window_new();
+	gtkconv->vadjustment = talkatu_auto_scroller_new();
+	gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(sw),
+	                                    gtkconv->vadjustment);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER,
+	                               GTK_POLICY_ALWAYS);
 
 	gtkconv->history = talkatu_history_new();
-	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(gtkconv->history_sw),
-	                              gtkconv->history);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), gtkconv->history);
 
 	/* Add the topic */
 	setup_chat_topic(gtkconv, vbox);
@@ -1556,7 +1553,7 @@ setup_common_pane(PidginConversation *gtkconv)
 	gtk_widget_set_vexpand(hpaned, TRUE);
 	gtk_widget_set_valign(hpaned, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(vbox), hpaned);
-	gtk_paned_set_start_child(GTK_PANED(hpaned), gtkconv->history_sw);
+	gtk_paned_set_start_child(GTK_PANED(hpaned), sw);
 	gtk_paned_set_resize_start_child(GTK_PANED(hpaned), TRUE);
 	gtk_paned_set_shrink_start_child(GTK_PANED(hpaned), TRUE);
 
@@ -1766,6 +1763,8 @@ pidgin_conv_destroy(PurpleConversation *conv)
 	} else if (PURPLE_IS_CHAT_CONVERSATION(conv)) {
 		purple_signals_disconnect_by_handle(gtkconv);
 	}
+
+	g_clear_object(&gtkconv->vadjustment);
 
 	gtkconv->send_history = g_list_first(gtkconv->send_history);
 	g_list_free_full(gtkconv->send_history, g_free);
