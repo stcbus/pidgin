@@ -213,6 +213,7 @@ static void
 regex_clear_color(GtkWidget *w) {
 	GtkStyleContext *context = gtk_widget_get_style_context(w);
 	gtk_style_context_remove_class(context, "error");
+	gtk_style_context_remove_class(context, "success");
 }
 
 static void
@@ -221,7 +222,9 @@ regex_change_color(GtkWidget *w, gboolean success) {
 
 	if (success) {
 		gtk_style_context_remove_class(context, "error");
+		gtk_style_context_add_class(context, "success");
 	} else {
+		gtk_style_context_remove_class(context, "success");
 		gtk_style_context_add_class(context, "error");
 	}
 }
