@@ -104,7 +104,7 @@ create_test_element(PurpleMediaElementType type)
 }
 
 static GstElement *
-create_voice_pipeline(void)
+create_voice_pipeline(PidginVVPrefs *prefs)
 {
 	GstElement *pipeline;
 	GstElement *src, *sink;
@@ -119,6 +119,10 @@ create_voice_pipeline(void)
 	volume = gst_element_factory_make("volume", "volume");
 	level = gst_element_factory_make("level", "level");
 	valve = gst_element_factory_make("valve", "valve");
+
+	g_object_set(volume, "volume",
+	             gtk_scale_button_get_value(GTK_SCALE_BUTTON(prefs->voice.volume)) / 100.0,
+	             NULL);
 
 	gst_bin_add_many(GST_BIN(pipeline), src, volume, level, valve, sink, NULL);
 	gst_element_link_many(src, volume, level, valve, sink, NULL);
@@ -218,7 +222,7 @@ enable_voice_test(PidginVVPrefs *prefs)
 {
 	GstBus *bus;
 
-	prefs->voice.pipeline = create_voice_pipeline();
+	prefs->voice.pipeline = create_voice_pipeline(prefs);
 	bus = gst_pipeline_get_bus(GST_PIPELINE(prefs->voice.pipeline));
 	gst_bus_add_signal_watch(bus);
 	g_signal_connect(bus, "message", G_CALLBACK(gst_bus_cb), prefs);
