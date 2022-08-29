@@ -143,10 +143,9 @@ pidgin_keypad_set_key_capture_widget(PidginKeypad *keypad, GtkWidget *widget) {
 	g_return_if_fail(PIDGIN_IS_KEYPAD(keypad));
 	g_return_if_fail(GTK_IS_WIDGET(widget));
 
-	controller = gtk_event_controller_key_new(widget);
+	controller = gtk_event_controller_key_new();
 	gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_CAPTURE);
 	g_signal_connect(controller, "key-pressed",
 	                 G_CALLBACK(pidgin_keypad_key_pressed_cb), keypad);
-	g_object_set_data_full(G_OBJECT(widget), "pidgin-keypad-key-controller",
-	                       controller, g_object_unref);
+	gtk_widget_add_controller(widget, controller);
 }

@@ -59,7 +59,6 @@ libpidgin_SOURCES = [
 	'pidginstatusmanager.c',
 	'pidginstatusprimitivechooser.c',
 	'pidginstatusprimitivestore.c',
-	'pidginstylecontext.c',
 	'pidgintalkatu.c',
 	'prefs/pidginprefs.c',
 	'prefs/pidginawayprefs.c',
@@ -131,7 +130,6 @@ libpidgin_headers = [
 	'pidginstatusmanager.h',
 	'pidginstatusprimitivechooser.h',
 	'pidginstatusprimitivestore.h',
-	'pidginstylecontext.h',
 	'pidgintalkatu.h',
 ]
 
@@ -225,7 +223,7 @@ if ENABLE_GTK
 		gtk,
 		IOKIT,
 		json,
-		libhandy,
+		libadwaita,
 		math,
 		nice,
 		libsoup,
@@ -258,7 +256,7 @@ if ENABLE_GTK
 	    include_directories : [toplevel_inc, libpidgin_inc],
 	    link_with : libpidgin,
 	    sources : libpidgin_built_headers,
-	    dependencies : [gtk, glib, libhandy, math, talkatu_dep, gplugin_gtk_dep])
+	    dependencies : [gtk, glib, libadwaita, math, talkatu_dep, gplugin_gtk_dep])
 
 	pidgin = executable('pidgin3',
 	    pidgin_SOURCES,
@@ -273,12 +271,12 @@ if ENABLE_GTK
 	pkgconfig.generate(
 	    libpidgin,
 	    name : 'Pidgin',
-	    description : 'Pidgin is a GTK3-based instant messenger application.',
+	    description : 'Pidgin is a GTK based instant messenger application.',
 	    version : meson.project_version(),
 	    filebase : pidgin_filebase,
 	    subdirs : pidgin_filebase,
 	    # NOTE: Don't use dependencies from subprojects.
-	    requires : [gtk, libhandy, libpurple, 'talkatu', 'gplugin-gtk3'],
+	    requires : [gtk, libadwaita, libpurple, 'talkatu', 'gplugin-gtk4'],
 	    variables : ['plugindir=${libdir}/pidgin-@0@'.format(purple_major_version)])
 
 	PIDGIN_DESKTOP_FILE = 'im.pidgin.Pidgin3.desktop'
@@ -308,7 +306,7 @@ if ENABLE_GTK
 		pidgin_gir = gnome.generate_gir(libpidgin,
 			sources : introspection_sources,
 			header : 'pidgin.h',
-			includes : ['GLib-2.0', 'GObject-2.0', 'Gtk-3.0', libpurple_gir[0], 'Talkatu-0.0'],
+			includes : ['GLib-2.0', 'GObject-2.0', 'Gtk-4.0', libpurple_gir[0], 'Talkatu-0.0'],
 			namespace : 'Pidgin',
 			symbol_prefix : 'pidgin',
 			identifier_prefix : 'Pidgin',

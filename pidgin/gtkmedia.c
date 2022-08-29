@@ -116,12 +116,14 @@ enum {
 };
 
 static gboolean
-pidgin_media_delete_event_cb(GtkWidget *widget,
-		GdkEvent *event, PidginMedia *media)
-{
-	if (media->priv->media)
+pidgin_media_close_request_cb(GtkWindow *window, gpointer data) {
+	PidginMedia *media = data;
+
+	if(media->priv->media) {
 		g_action_group_activate_action(G_ACTION_GROUP(media),
 				"Hangup", NULL);
+	}
+
 	return FALSE;
 }
 
@@ -160,7 +162,7 @@ pidgin_media_class_init (PidginMediaClass *klass)
 	                                             statusbar);
 
 	gtk_widget_class_bind_template_callback(widget_class,
-	                                        pidgin_media_delete_event_cb);
+	                                        pidgin_media_close_request_cb);
 
 }
 
@@ -291,7 +293,6 @@ pidgin_media_remove_widget(PidginMedia *gtkmedia,
 		PurpleMediaSessionType type =
 				purple_media_get_session_type(gtkmedia->priv->media, session_id);
 		gchar *key = create_key(session_id, participant);
-		GtkRequisition req;
 
 		if (type & PURPLE_MEDIA_AUDIO) {
 			g_hash_table_remove(gtkmedia->priv->recv_progressbars, key);
@@ -299,10 +300,10 @@ pidgin_media_remove_widget(PidginMedia *gtkmedia,
 			if (g_hash_table_size(gtkmedia->priv->recv_progressbars) == 0 &&
 				gtkmedia->priv->send_progress) {
 
-				gtk_widget_destroy(gtkmedia->priv->send_progress);
+				gtk_widget_unparent(gtkmedia->priv->send_progress);
 				gtkmedia->priv->send_progress = NULL;
 
-				gtk_widget_destroy(gtkmedia->priv->mute);
+				gtk_widget_unparent(gtkmedia->priv->mute);
 				gtkmedia->priv->mute = NULL;
 			}
 		} else if (type & PURPLE_MEDIA_VIDEO) {
@@ -311,20 +312,17 @@ pidgin_media_remove_widget(PidginMedia *gtkmedia,
 			if (g_hash_table_size(gtkmedia->priv->remote_videos) == 0 &&
 				gtkmedia->priv->local_video) {
 
-				gtk_widget_destroy(gtkmedia->priv->local_video);
+				gtk_widget_unparent(gtkmedia->priv->local_video);
 				gtkmedia->priv->local_video = NULL;
 
-				gtk_widget_destroy(gtkmedia->priv->pause);
+				gtk_widget_unparent(gtkmedia->priv->pause);
 				gtkmedia->priv->pause = NULL;
 			}
 		}
 
 		g_free(key);
 
-		gtk_widget_destroy(widget);
-
-		gtk_widget_get_preferred_size(GTK_WIDGET(gtkmedia), NULL, &req);
-		gtk_window_resize(GTK_WINDOW(gtkmedia), req.width, req.height);
+		gtk_widget_unparent(widget);
 	}
 }
 
@@ -529,7 +527,7 @@ destroy_parent_widget_cb(GtkWidget *widget, GtkWidget *parent)
 {
 	g_return_if_fail(GTK_IS_WIDGET(parent));
 
-	gtk_widget_destroy(parent);
+	gtk_widget_unparent(parent);
 }
 
 static GtkWidget *
@@ -559,19 +557,20 @@ pidgin_media_add_audio_widget(PidginMedia *gtkmedia,
 	/* Setup widget structure */
 	volume_widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	progress_parent = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_start(GTK_BOX(volume_widget),
-			progress_parent, TRUE, TRUE, 0);
+	gtk_widget_set_hexpand(progress_parent, TRUE);
+	gtk_widget_set_halign(progress_parent, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(volume_widget), progress_parent);
 
 	/* Volume button */
 	volume = gtk_volume_button_new();
 	gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume), value/100.0);
-	gtk_box_pack_end(GTK_BOX(volume_widget),
-			volume, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(volume_widget), volume);
 
 	/* Volume level indicator */
 	progress = gtk_progress_bar_new();
 	gtk_widget_set_size_request(progress, 250, 10);
-	gtk_box_pack_end(GTK_BOX(progress_parent), progress, TRUE, FALSE, 0);
+	gtk_widget_set_vexpand(progress, TRUE);
+	gtk_box_append(GTK_BOX(progress_parent), progress);
 
 	if (type & PURPLE_MEDIA_SEND_AUDIO) {
 		g_signal_connect (G_OBJECT(volume), "value-changed",
@@ -592,8 +591,6 @@ pidgin_media_add_audio_widget(PidginMedia *gtkmedia,
 	g_signal_connect(G_OBJECT(progress), "destroy",
 			G_CALLBACK(destroy_parent_widget_cb),
 			volume_widget);
-
-	gtk_widget_show_all(volume_widget);
 
 	return volume_widget;
 }
@@ -625,8 +622,6 @@ pidgin_media_add_dtmf_widget(PidginMedia *gtkmedia,
 	g_object_set_data_full(G_OBJECT(win), "session-id",
 		g_strdup(_sid), g_free);
 
-	gtk_widget_show_all(keypad);
-
 	return keypad;
 }
 
@@ -641,9 +636,11 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 			&& type & (PURPLE_MEDIA_RECV_VIDEO |
 			PURPLE_MEDIA_RECV_AUDIO)) {
 		recv_widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-		gtk_box_pack_start(GTK_BOX(gtkmedia->priv->display),
-				recv_widget, TRUE, TRUE, 0);
-		gtk_widget_show(recv_widget);
+		gtk_widget_set_hexpand(recv_widget, TRUE);
+		gtk_widget_set_halign(recv_widget, GTK_ALIGN_FILL);
+		gtk_widget_set_vexpand(recv_widget, TRUE);
+		gtk_widget_set_valign(recv_widget, GTK_ALIGN_FILL);
+		gtk_box_append(GTK_BOX(gtkmedia->priv->display), recv_widget);
 	} else {
 		recv_widget = gtkmedia->priv->recv_widget;
 	}
@@ -651,19 +648,18 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 			&& type & (PURPLE_MEDIA_SEND_VIDEO |
 			PURPLE_MEDIA_SEND_AUDIO)) {
 		send_widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-		gtk_box_pack_start(GTK_BOX(gtkmedia->priv->display),
-				send_widget, FALSE, TRUE, 0);
+		gtk_widget_set_halign(send_widget, GTK_ALIGN_FILL);
+		gtk_widget_set_valign(send_widget, GTK_ALIGN_FILL);
+		gtk_box_prepend(GTK_BOX(gtkmedia->priv->display), send_widget);
+
 		button_widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-		gtk_box_pack_end(GTK_BOX(recv_widget), button_widget,
-				FALSE, TRUE, 0);
-		gtk_widget_show(send_widget);
+		gtk_widget_set_valign(button_widget, GTK_ALIGN_FILL);
+		gtk_box_append(GTK_BOX(send_widget), button_widget);
 
 		/* Hold button */
 		gtkmedia->priv->hold =
 				gtk_toggle_button_new_with_mnemonic(_("_Hold"));
-		gtk_box_pack_end(GTK_BOX(button_widget), gtkmedia->priv->hold,
-				FALSE, FALSE, 0);
-		gtk_widget_show(gtkmedia->priv->hold);
+		gtk_box_prepend(GTK_BOX(button_widget), gtkmedia->priv->hold);
 		gtk_actionable_set_action_name(
 				GTK_ACTIONABLE(gtkmedia->priv->hold),
 				"win.Hold");
@@ -688,7 +684,9 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		}
 		g_object_get(G_OBJECT(sink), "widget", &remote_video, NULL);
 		gtk_widget_show(remote_video);
-		gtk_box_pack_start(GTK_BOX(recv_widget), remote_video, TRUE, TRUE, 0);
+		gtk_widget_set_valign(remote_video, GTK_ALIGN_FILL);
+		gtk_widget_set_vexpand(remote_video, TRUE);
+		gtk_box_append(GTK_BOX(recv_widget), remote_video);
 
 		pidgin_media_insert_widget(gtkmedia, remote_video, sid, priv->screenname);
 	}
@@ -709,13 +707,13 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		}
 		g_object_get(G_OBJECT(sink), "widget", &local_video, NULL);
 		gtk_widget_show(local_video);
-		gtk_box_pack_start(GTK_BOX(send_widget), local_video, TRUE, TRUE, 0);
+		gtk_widget_set_valign(local_video, GTK_ALIGN_FILL);
+		gtk_widget_set_vexpand(local_video, TRUE);
+		gtk_box_append(GTK_BOX(send_widget), local_video);
 
 		gtkmedia->priv->pause =
 				gtk_toggle_button_new_with_mnemonic(_("_Pause"));
-		gtk_box_pack_end(GTK_BOX(button_widget), gtkmedia->priv->pause,
-				FALSE, FALSE, 0);
-		gtk_widget_show(gtkmedia->priv->pause);
+		gtk_box_prepend(GTK_BOX(button_widget), gtkmedia->priv->pause);
 		gtk_actionable_set_action_name(
 				GTK_ACTIONABLE(gtkmedia->priv->pause),
 				"win.Pause");
@@ -723,28 +721,28 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		gtkmedia->priv->local_video = local_video;
 	}
 	if (type & PURPLE_MEDIA_RECV_AUDIO) {
-		gtk_box_pack_end(GTK_BOX(recv_widget),
-				pidgin_media_add_audio_widget(gtkmedia,
-				PURPLE_MEDIA_RECV_AUDIO, sid), FALSE, FALSE, 0);
+		GtkWidget *audio = NULL;
+
+		audio = pidgin_media_add_audio_widget(gtkmedia, PURPLE_MEDIA_RECV_AUDIO,
+		                                      sid);
+		gtk_box_prepend(GTK_BOX(recv_widget), audio);
 	}
 
 	if (type & PURPLE_MEDIA_SEND_AUDIO) {
 		gtkmedia->priv->mute =
 				gtk_toggle_button_new_with_mnemonic(_("_Mute"));
-		gtk_box_pack_end(GTK_BOX(button_widget), gtkmedia->priv->mute,
-				FALSE, FALSE, 0);
-		gtk_widget_show(gtkmedia->priv->mute);
+		gtk_box_prepend(GTK_BOX(button_widget), gtkmedia->priv->mute);
 		gtk_actionable_set_action_name(
 				GTK_ACTIONABLE(gtkmedia->priv->mute),
 				"win.Mute");
 
-		gtk_box_pack_end(GTK_BOX(recv_widget),
+		gtk_box_prepend(GTK_BOX(recv_widget),
 				pidgin_media_add_audio_widget(gtkmedia,
-				PURPLE_MEDIA_SEND_AUDIO, sid), FALSE, FALSE, 0);
+				PURPLE_MEDIA_SEND_AUDIO, sid));
 
-		gtk_box_pack_end(GTK_BOX(recv_widget),
+		gtk_box_prepend(GTK_BOX(recv_widget),
 				pidgin_media_add_dtmf_widget(gtkmedia,
-				PURPLE_MEDIA_SEND_AUDIO, sid), FALSE, FALSE, 0);
+				PURPLE_MEDIA_SEND_AUDIO, sid));
 	}
 
 	if (type & PURPLE_MEDIA_AUDIO &&
@@ -754,13 +752,14 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 				gtkmedia);
 	}
 
-	if (send_widget != NULL)
+	if (send_widget != NULL) {
 		gtkmedia->priv->send_widget = send_widget;
-	if (recv_widget != NULL)
+	}
+	if (recv_widget != NULL) {
 		gtkmedia->priv->recv_widget = recv_widget;
+	}
 	if (button_widget != NULL) {
 		gtkmedia->priv->button_widget = button_widget;
-		gtk_widget_show(GTK_WIDGET(button_widget));
 	}
 
 	if (purple_media_is_initiator(media, sid, NULL) == FALSE) {
@@ -778,8 +777,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 	} else if (type & PURPLE_MEDIA_AUDIO) {
 		gtk_window_set_icon_name(GTK_WINDOW(gtkmedia), "audio-call");
 	}
-
-	gtk_widget_show(gtkmedia->priv->display);
 }
 
 static void
@@ -794,7 +791,7 @@ pidgin_media_state_changed_cb(PurpleMedia *media, PurpleMediaState state,
 		} else if (sid == NULL && name == NULL) {
 			pidgin_media_emit_message(gtkmedia,
 					_("The call has been terminated."));
-			gtk_widget_destroy(GTK_WIDGET(gtkmedia));
+			gtk_window_destroy(GTK_WINDOW(gtkmedia));
 		}
 	} else if (state == PURPLE_MEDIA_STATE_NEW &&
 			sid != NULL && name != NULL) {
@@ -910,8 +907,8 @@ pidgin_media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 			purple_buddy_get_contact_alias(buddy) : screenname;
 	gtk_window_set_title(GTK_WINDOW(gtkmedia), alias);
 
-	if (purple_media_is_initiator(media, NULL, NULL) == TRUE)
-		gtk_widget_show(GTK_WIDGET(gtkmedia));
+	gtk_widget_set_visible(GTK_WIDGET(gtkmedia),
+	                       purple_media_is_initiator(media, NULL, NULL));
 
 	return TRUE;
 }

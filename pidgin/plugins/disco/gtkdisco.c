@@ -281,9 +281,11 @@ activate_add_to_blist(G_GNUC_UNUSED GSimpleAction *action,
 }
 
 static gboolean
-service_click_cb(GtkTreeView *tree, GdkEventButton *event, gpointer user_data)
+service_click_cb(G_GNUC_UNUSED GtkGestureClick *click,
+                 G_GNUC_UNUSED gint n_press,
+                 gdouble x, gdouble y, gpointer data)
 {
-	PidginDiscoDialog *dialog = user_data;
+	PidginDiscoDialog *dialog = data;
 	XmppDiscoService *service;
 
 	GtkTreePath *path;
@@ -292,13 +294,9 @@ service_click_cb(GtkTreeView *tree, GdkEventButton *event, gpointer user_data)
 
 	GdkRectangle rect;
 
-	if (!gdk_event_triggers_context_menu((GdkEvent *)event)) {
-		return FALSE;
-	}
-
 	/* Figure out what was clicked */
-	if (!gtk_tree_view_get_path_at_pos(tree, event->x, event->y, &path,
-		                               NULL, NULL, NULL))
+	if (!gtk_tree_view_get_path_at_pos(dialog->tree, (gint)x, (gint)y, &path,
+	                                   NULL, NULL, NULL))
 	{
 		return FALSE;
 	}
@@ -314,8 +312,7 @@ service_click_cb(GtkTreeView *tree, GdkEventButton *event, gpointer user_data)
 	}
 
 	gtk_tree_view_convert_bin_window_to_widget_coords(dialog->tree,
-	                                                  (gint)event->x,
-	                                                  (gint)event->y,
+	                                                  (gint)x, (gint)y,
 	                                                  &rect.x, &rect.y);
 	rect.width = rect.height = 1;
 
@@ -426,11 +423,6 @@ activate_stop(G_GNUC_UNUSED GSimpleAction *action,
 	PidginDiscoDialog *dialog = data;
 
 	pidgin_disco_list_set_in_progress(dialog->discolist, FALSE);
-}
-
-static void close_button_cb(GtkButton *button, PidginDiscoDialog *dialog)
-{
-	gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
 static gboolean
@@ -565,7 +557,7 @@ void pidgin_disco_dialogs_destroy_all(void)
 	while (dialogs) {
 		GtkWidget *dialog = dialogs->data;
 
-		gtk_widget_destroy(dialog);
+		gtk_window_destroy(GTK_WINDOW(dialog));
 		/* destroy_win_cb removes the dialog from the list */
 	}
 }
@@ -594,11 +586,8 @@ pidgin_disco_dialog_class_init(PidginDiscoDialogClass *klass)
 	                                     model);
 	gtk_widget_class_bind_template_child(widget_class, PidginDiscoDialog,
 	                                     popover);
-	gtk_widget_class_bind_template_child(widget_class, PidginDiscoDialog,
-	                                     popover_menu);
 
 	gtk_widget_class_bind_template_callback(widget_class, destroy_win_cb);
-	gtk_widget_class_bind_template_callback(widget_class, close_button_cb);
 	gtk_widget_class_bind_template_callback(widget_class,
 	                                        dialog_select_account_cb);
 	gtk_widget_class_bind_template_callback(widget_class, row_activated_cb);
@@ -660,9 +649,6 @@ pidgin_disco_dialog_init(PidginDiscoDialog *dialog)
 
 	gtk_widget_insert_action_group(GTK_WIDGET(dialog), "disco",
 	                               G_ACTION_GROUP(action_group));
-
-	gtk_popover_bind_model(GTK_POPOVER(dialog->popover), dialog->popover_menu,
-	                       NULL);
 }
 
 /******************************************************************************
@@ -679,7 +665,7 @@ PidginDiscoDialog *
 pidgin_disco_dialog_new(void)
 {
 	PidginDiscoDialog *dialog = g_object_new(PIDGIN_TYPE_DISCO_DIALOG, NULL);
-	gtk_widget_show_all(GTK_WIDGET(dialog));
+	gtk_widget_show(GTK_WIDGET(dialog));
 	return dialog;
 }
 

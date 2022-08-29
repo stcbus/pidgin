@@ -67,7 +67,7 @@ struct _PidginConversation
 	GtkWidget *tab_cont;
 
 	PurpleMessageFlags last_flags;
-	GtkWidget *history_sw;
+	GtkAdjustment *vadjustment;
 	GtkWidget *history;
 
 	GtkWidget *editor;

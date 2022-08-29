@@ -31,7 +31,7 @@
 
 #include <gtk/gtk.h>
 
-#include <handy.h>
+#include <adwaita.h>
 
 #include <purple.h>
 
@@ -49,7 +49,7 @@ G_BEGIN_DECLS
 
 #define PIDGIN_TYPE_NOTIFICATION_AUTHORIZATION_REQUEST (pidgin_notification_authorization_request_get_type())
 G_DECLARE_FINAL_TYPE(PidginNotificationAuthorizationRequest, pidgin_notification_authorization_request,
-                     PIDGIN, NOTIFICATION_AUTHORIZATION_REQUEST, HdyActionRow)
+                     PIDGIN, NOTIFICATION_AUTHORIZATION_REQUEST, AdwActionRow)
 
 /**
  * pidgin_notification_authorization_request_new:

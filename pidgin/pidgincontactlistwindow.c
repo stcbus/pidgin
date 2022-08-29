@@ -68,7 +68,10 @@ pidgin_contact_list_window_class_init(PidginContactListWindowClass *klass) {
  *****************************************************************************/
 GtkWidget *
 pidgin_contact_list_window_new(void) {
-	return g_object_new(PIDGIN_TYPE_CONTACT_LIST_WINDOW, NULL);
+	return g_object_new(
+		PIDGIN_TYPE_CONTACT_LIST_WINDOW,
+		"show-menubar", TRUE,
+		NULL);
 }
 
 GtkWidget *

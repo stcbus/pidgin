@@ -1919,7 +1919,7 @@ static void case_sensitive_toggled(GtkCellRendererToggle *cellrenderertoggle,
 static void list_add_new(void)
 {
 	GtkTreeIter iter;
-	const char *word = gtk_entry_get_text(GTK_ENTRY(bad_entry));
+	const char *word = gtk_editable_get_text(GTK_EDITABLE(bad_entry));
 	gboolean case_sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(case_toggle));
 
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model), &iter)) {
@@ -1965,7 +1965,7 @@ static void list_add_new(void)
 
 				purple_notify_error(NULL, _("Duplicate Correction"),
 					_("The specified word already exists in the correction list."),
-					gtk_entry_get_text(GTK_ENTRY(bad_entry)), NULL);
+					gtk_editable_get_text(GTK_EDITABLE(bad_entry)), NULL);
 				return;
 			}
 
@@ -1980,7 +1980,7 @@ static void list_add_new(void)
 	gtk_list_store_append(model, &iter);
 	gtk_list_store_set(model, &iter,
 		BAD_COLUMN, word,
-		GOOD_COLUMN, gtk_entry_get_text(GTK_ENTRY(good_entry)),
+		GOOD_COLUMN, gtk_editable_get_text(GTK_EDITABLE(good_entry)),
 		WORD_ONLY_COLUMN, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(complete_toggle)),
 		CASE_SENSITIVE_COLUMN, case_sensitive,
 		-1);
@@ -2092,8 +2092,8 @@ static gboolean non_empty(const char *s)
 static void on_entry_changed(GtkEditable *editable, gpointer data)
 {
 	gtk_widget_set_sensitive((GtkWidget*)data,
-		non_empty(gtk_entry_get_text(GTK_ENTRY(bad_entry))) &&
-		non_empty(gtk_entry_get_text(GTK_ENTRY(good_entry))));
+		non_empty(gtk_editable_get_text(GTK_EDITABLE(bad_entry))) &&
+		non_empty(gtk_editable_get_text(GTK_EDITABLE(good_entry))));
 }
 
 static void whole_words_button_toggled(GtkToggleButton *complete_toggle, GtkToggleButton *case_toggle)
@@ -2108,6 +2108,7 @@ static GtkWidget *
 get_config_frame(PurplePlugin *plugin)
 {
 	GtkWidget *ret, *vbox;
+	GtkWidget *sw;
 	GtkWidget *hbox;
 	GtkWidget *button;
 	GtkSizeGroup *sg;
@@ -2181,10 +2182,14 @@ get_config_frame(PurplePlugin *plugin)
 
 	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree)),
 		 GTK_SELECTION_MULTIPLE);
-	gtk_box_pack_start(GTK_BOX(vbox),
-		pidgin_make_scrollable(tree, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS, GTK_SHADOW_IN, -1, -1),
-		TRUE, TRUE, 0);
-	gtk_widget_show(tree);
+
+	sw = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER,
+	                               GTK_POLICY_ALWAYS);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), tree);
+	gtk_widget_set_vexpand(sw, TRUE);
+	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(vbox), sw);
 
 	hbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);

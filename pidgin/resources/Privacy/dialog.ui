@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
-
+<!--
 Pidgin - Internet Messenger
 Copyright (C) Pidgin Developers <devel@pidgin.im>
 
@@ -15,12 +14,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+along with this library; if not, see <https://www.gnu.org/licenses/>.
 -->
 <interface>
-  <requires lib="gtk+" version="3.22"/>
+  <requires lib="gtk" version="4.0"/>
   <requires lib="pidgin" version="3.0"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Pidgin -->
@@ -32,229 +29,161 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
   </object>
   <object class="GtkListStore" id="allow_store">
     <columns>
-      <!-- column-name column1 -->
       <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkListStore" id="block_store">
     <columns>
-      <!-- column-name column1 -->
       <column type="gchararray"/>
     </columns>
   </object>
   <template class="PidginPrivacyDialog" parent="GtkDialog">
-    <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Privacy</property>
-    <property name="role">privacy</property>
-    <property name="type-hint">dialog</property>
-    <signal name="close" handler="gtk_widget_destroy" swapped="no"/>
-    <child internal-child="vbox">
+    <property name="title" translatable="1">Privacy</property>
+    <signal name="close" handler="gtk_window_destroy" swapped="no"/>
+    <child internal-child="content_area">
       <object class="GtkBox">
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+        <property name="spacing">6</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="valign">center</property>
+            <property name="label" translatable="1">Changes to privacy settings take effect immediately.</property>
+            <property name="xalign">0</property>
+          </object>
+        </child>
         <child>
           <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+            <property name="spacing">5</property>
             <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Changes to privacy settings take effect immediately.</property>
-                <property name="xalign">0</property>
+              <object class="GtkLabel" id="label1">
+                <property name="halign">center</property>
+                <property name="label" translatable="1">Set privacy for:</property>
+                <property name="use-underline">1</property>
+                <property name="mnemonic-widget">account_chooser</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="spacing">5</property>
-                <child>
-                  <object class="GtkLabel" id="label1">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Set privacy for:</property>
-                    <property name="use-underline">True</property>
-                    <property name="mnemonic-widget">account_chooser</property>
-                    <accessibility>
-                      <relation type="label-for" target="account_chooser"/>
-                    </accessibility>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="PidginAccountChooser" id="account_chooser">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="model">connected_account_store</property>
-                    <property name="active">0</property>
-                    <signal name="changed" handler="select_account_cb" object="PidginPrivacyDialog" swapped="no"/>
-                    <accessibility>
-                      <relation type="labelled-by" target="label1"/>
-                    </accessibility>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+              <object class="PidginAccountChooser" id="account_chooser">
+                <property name="hexpand">1</property>
+                <property name="halign">fill</property>
+                <property name="model">connected_account_store</property>
+                <property name="active">0</property>
+                <signal name="changed" handler="select_account_cb" object="PidginPrivacyDialog" swapped="no"/>
+                <accessibility>
+                  <relation name="labelled-by">label1</relation>
+                </accessibility>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkComboBoxText" id="type_menu">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <signal name="changed" handler="type_changed_cb" object="PidginPrivacyDialog" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="allow_widget">
-                <property name="height-request">200</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="shadow-type">in</property>
-                <child>
-                  <object class="GtkTreeView" id="allow_list">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="model">allow_store</property>
-                    <property name="headers-visible">False</property>
-                    <property name="search-column">0</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection">
-                        <signal name="changed" handler="user_selected_cb" object="PidginPrivacyDialog" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="clickable">True</property>
-                        <property name="sort-column-id">0</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="block_widget">
-                <property name="height-request">200</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="shadow-type">in</property>
-                <child>
-                  <object class="GtkTreeView" id="block_list">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="model">block_store</property>
-                    <property name="headers-visible">False</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection">
-                        <signal name="changed" handler="user_selected_cb" object="PidginPrivacyDialog" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="clickable">True</property>
-                        <property name="sort-column-id">0</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
-              </packing>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="type_menu">
+            <property name="valign">fill</property>
+            <signal name="changed" handler="type_changed_cb" object="PidginPrivacyDialog" swapped="no"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="allow_widget">
+            <property name="vexpand">1</property>
+            <property name="valign">fill</property>
+            <property name="height-request">200</property>
+            <property name="focusable">1</property>
+            <property name="child">
+              <object class="GtkTreeView" id="allow_list">
+                <property name="focusable">1</property>
+                <property name="model">allow_store</property>
+                <property name="headers-visible">0</property>
+                <property name="search-column">0</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection">
+                    <signal name="changed" handler="user_selected_cb" object="PidginPrivacyDialog" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="clickable">1</property>
+                    <property name="sort-column-id">0</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="block_widget">
+            <property name="vexpand">1</property>
+            <property name="valign">fill</property>
+            <property name="height-request">200</property>
+            <property name="focusable">1</property>
+            <property name="child">
+              <object class="GtkTreeView" id="block_list">
+                <property name="focusable">1</property>
+                <property name="model">block_store</property>
+                <property name="headers-visible">0</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection">
+                    <signal name="changed" handler="user_selected_cb" object="PidginPrivacyDialog" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="clickable">1</property>
+                    <property name="sort-column-id">0</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
         </child>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="add_button">
         <property name="label">_Add</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
         <signal name="clicked" handler="add_cb" object="PidginPrivacyDialog" swapped="no"/>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="remove_button">
         <property name="label">_Remove</property>
-        <property name="visible">True</property>
-        <property name="sensitive">False</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="sensitive">0</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
         <signal name="clicked" handler="remove_cb" object="PidginPrivacyDialog" swapped="no"/>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="removeall_button">
-        <property name="label" translatable="yes">Remove Al_l</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
+        <property name="label" translatable="1">Remove Al_l</property>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
         <signal name="clicked" handler="removeall_cb" object="PidginPrivacyDialog" swapped="no"/>
       </object>
     </child>
     <child type="action">
       <object class="GtkButton" id="close_button">
         <property name="label">_Close</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
-        <signal name="clicked" handler="gtk_widget_destroy" object="PidginPrivacyDialog" swapped="yes"/>
+        <property name="focusable">1</property>
+        <property name="receives-default">1</property>
+        <property name="use-underline">1</property>
+        <signal name="clicked" handler="gtk_window_destroy" object="PidginPrivacyDialog" swapped="yes"/>
       </object>
     </child>
   </template>

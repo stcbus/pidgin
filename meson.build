@@ -256,8 +256,8 @@ nice = dependency('nice',
 # Check Pidgin dependencies
 #######################################################################
 if get_option('gtkui')
-	gtk = dependency('gtk+-3.0', version : '>= 3.24.0')
-	libhandy = dependency('libhandy-1', version : '>= 1')
+	gtk = dependency('gtk4', version : '>= 4.0.0')
+	libadwaita = dependency('libadwaita-1', version : '>= 1')
 
 	talkatu_dep = dependency('talkatu',
 		version: '>=0.1.0',
@@ -528,9 +528,9 @@ gplugin_dep = dependency('gplugin',
 	fallback : ['gplugin', 'gplugin_dep'])
 
 if get_option('gtkui')
-	gplugin_gtk_dep = dependency('gplugin-gtk3',
+	gplugin_gtk_dep = dependency('gplugin-gtk4',
 		version : gplugin_version,
-		fallback : ['gplugin-gtk', 'gplugin_gtk3_dep'])
+		fallback : ['gplugin-gtk4', 'gplugin_gtk4_dep'])
 endif
 
 #######################################################################

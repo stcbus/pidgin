@@ -71,11 +71,6 @@ enum {
  * Structs
  *****************************************************************************/
 
-typedef struct {
-	GtkTreeModel *model;
-	gint default_item;
-} AopMenu;
-
 typedef struct
 {
 	GtkWidget *entry;
@@ -86,13 +81,6 @@ typedef struct
 
 	GtkListStore *store;
 } PidginCompletionData;
-
-struct _icon_chooser {
-	GtkFileChooserNative *icon_filesel;
-
-	void (*callback)(const char*,gpointer);
-	gpointer data;
-};
 
 /******************************************************************************
  * Code
@@ -106,8 +94,7 @@ pidgin_make_frame(GtkWidget *parent, const char *title)
 	char *labeltitle;
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start(GTK_BOX(parent), vbox, FALSE, FALSE, 0);
-	gtk_widget_show(vbox);
+	gtk_box_append(GTK_BOX(parent), vbox);
 
 	label = GTK_LABEL(gtk_label_new(NULL));
 
@@ -117,77 +104,21 @@ pidgin_make_frame(GtkWidget *parent, const char *title)
 
 	gtk_label_set_xalign(GTK_LABEL(label), 0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(label), FALSE, FALSE, 0);
-	gtk_widget_show(GTK_WIDGET(label));
+	gtk_box_append(GTK_BOX(vbox), GTK_WIDGET(label));
 	pidgin_set_accessible_label(vbox, label);
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-	gtk_widget_show(hbox);
+	gtk_box_append(GTK_BOX (vbox), hbox);
 
 	label = GTK_LABEL(gtk_label_new("    "));
-	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 0);
-	gtk_widget_show(GTK_WIDGET(label));
+	gtk_box_append(GTK_BOX(hbox), GTK_WIDGET(label));
 
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
-	gtk_widget_show(vbox2);
+	gtk_box_append(GTK_BOX(hbox), vbox2);
 
 	g_object_set_data(G_OBJECT(vbox2), "main-vbox", vbox);
 
 	return vbox2;
-}
-
-GdkPixbuf *
-pidgin_create_icon_from_protocol(PurpleProtocol *protocol,
-                                 PidginProtocolIconSize size,
-                                 PurpleAccount *account)
-{
-	GdkPixbuf *pixbuf;
-	const char *protoname = NULL;
-	const gchar *icon_name = NULL;
-	char *tmp;
-	GtkIconTheme *theme = NULL;
-	gint dimensions = 0;
-
-	theme = gtk_icon_theme_get_default();
-	if(size == PIDGIN_PROTOCOL_ICON_SMALL) {
-		dimensions = 16;
-	} else if(size == PIDGIN_PROTOCOL_ICON_MEDIUM) {
-		dimensions = 22;
-	} else {
-		dimensions = 48;
-	}
-
-	/* If the protocol specified an icon-name try to load it from the icon
-	 * theme.
-	 */
-	icon_name = purple_protocol_get_icon_name(protocol);
-	if(icon_name != NULL) {
-		pixbuf = gtk_icon_theme_load_icon(theme, icon_name, dimensions,
-		                                  GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-
-		if(GDK_IS_PIXBUF(pixbuf)) {
-			return pixbuf;
-		}
-
-	}
-
-	protoname = purple_protocol_get_list_icon(protocol, account, NULL);
-	if (protoname == NULL) {
-		return NULL;
-	}
-
-	/*
-	 * Status icons will be themeable too, and then it will look up
-	 * protoname from the theme
-	 */
-	tmp = g_strconcat("im-", protoname, NULL);
-	pixbuf = gtk_icon_theme_load_icon(theme, tmp, dimensions,
-					  GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-	g_free(tmp);
-
-	return pixbuf;
 }
 
 static void
@@ -244,52 +175,23 @@ void pidgin_retrieve_user_info_in_chat(PurpleConnection *conn, const char *name,
 void
 pidgin_set_accessible_label(GtkWidget *w, GtkLabel *l)
 {
-	AtkObject *acc;
-	const gchar *label_text;
-	const gchar *existing_name;
-
-	acc = gtk_widget_get_accessible (w);
-
-	/* If this object has no name, set it's name with the label text */
-	existing_name = atk_object_get_name (acc);
-	if (!existing_name) {
-		label_text = gtk_label_get_text(l);
-		if (label_text)
-			atk_object_set_name (acc, label_text);
-	}
-
 	pidgin_set_accessible_relations(w, l);
 }
 
 void
 pidgin_set_accessible_relations (GtkWidget *w, GtkLabel *l)
 {
-	AtkObject *acc, *label;
-	AtkObject *rel_obj[1];
-	AtkRelationSet *set;
-	AtkRelation *relation;
+	GtkAccessible *acc, *label;
 
-	acc = gtk_widget_get_accessible (w);
-	label = gtk_widget_get_accessible(GTK_WIDGET(l));
+	acc = GTK_ACCESSIBLE(w);
+	label = GTK_ACCESSIBLE(l);
 
 	/* Make sure mnemonics work */
 	gtk_label_set_mnemonic_widget(l, w);
 
 	/* Create the labeled-by relation */
-	set = atk_object_ref_relation_set (acc);
-	rel_obj[0] = label;
-	relation = atk_relation_new (rel_obj, 1, ATK_RELATION_LABELLED_BY);
-	atk_relation_set_add (set, relation);
-	g_object_unref (relation);
-	g_object_unref(set);
-
-	/* Create the label-for relation */
-	set = atk_object_ref_relation_set (label);
-	rel_obj[0] = acc;
-	relation = atk_relation_new (rel_obj, 1, ATK_RELATION_LABEL_FOR);
-	atk_relation_set_add (set, relation);
-	g_object_unref (relation);
-	g_object_unref(set);
+	gtk_accessible_update_relation(acc, GTK_ACCESSIBLE_RELATION_LABELLED_BY,
+	                               label, NULL, -1);
 }
 
 void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec, PurpleBuddyIconScaleFlags rules, int *width, int *height)
@@ -307,19 +209,6 @@ void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec,
 		*width = 100;
 	if(*height > 100)
 		*height = 100;
-}
-
-GdkPixbuf *
-pidgin_create_protocol_icon(PurpleAccount *account, PidginProtocolIconSize size)
-{
-	PurpleProtocol *protocol;
-
-	g_return_val_if_fail(account != NULL, NULL);
-
-	protocol = purple_account_get_protocol(account);
-	if (protocol == NULL)
-		return NULL;
-	return pidgin_create_icon_from_protocol(protocol, size, account);
 }
 
 static gboolean buddyname_completion_match_func(GtkEntryCompletion *completion,
@@ -362,7 +251,7 @@ static gboolean buddyname_completion_match_selected_cb(GtkEntryCompletion *compl
 
 	val.g_type = 0;
 	gtk_tree_model_get_value(model, iter, COMPLETION_BUDDY_COLUMN, &val);
-	gtk_entry_set_text(GTK_ENTRY(data->entry), g_value_get_string(&val));
+	gtk_editable_set_text(GTK_EDITABLE(data->entry), g_value_get_string(&val));
 	g_value_unset(&val);
 
 	gtk_tree_model_get_value(model, iter, COMPLETION_ACCOUNT_COLUMN, &val);
@@ -888,64 +777,6 @@ gboolean pidgin_tree_view_search_equal_func(GtkTreeModel *model, gint column,
 	return result;
 }
 
-static void
-combo_box_changed_cb(GtkComboBoxText *combo_box, GtkEntry *entry)
-{
-	char *text = gtk_combo_box_text_get_active_text(combo_box);
-	gtk_entry_set_text(entry, text ? text : "");
-	g_free(text);
-}
-
-static gboolean
-entry_key_pressed_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
-                     guint keyval, G_GNUC_UNUSED guint keycode,
-                     G_GNUC_UNUSED GdkModifierType state,
-                     gpointer data)
-{
-	GtkComboBoxText *combo = data;
-
-	if (keyval == GDK_KEY_Down || keyval == GDK_KEY_Up) {
-		gtk_combo_box_popup(GTK_COMBO_BOX(combo));
-		return TRUE;
-	}
-	return FALSE;
-}
-
-GtkWidget *
-pidgin_text_combo_box_entry_new(const char *default_item, GList *items)
-{
-	GtkComboBoxText *ret = NULL;
-	GtkWidget *the_entry = NULL;
-	GtkEventController *controller = NULL;
-
-	ret = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new_with_entry());
-	the_entry = gtk_bin_get_child(GTK_BIN(ret));
-
-	if (default_item)
-		gtk_entry_set_text(GTK_ENTRY(the_entry), default_item);
-
-	for (; items != NULL ; items = items->next) {
-		char *text = items->data;
-		if (text && *text)
-			gtk_combo_box_text_append_text(ret, text);
-	}
-
-	g_signal_connect(G_OBJECT(ret), "changed", (GCallback)combo_box_changed_cb, the_entry);
-
-	controller = gtk_event_controller_key_new(the_entry);
-	g_object_set_data_full(G_OBJECT(the_entry), "pidgin-event-controller",
-	                       controller, g_object_unref);
-	g_signal_connect_after(G_OBJECT(controller), "key-pressed",
-	                       G_CALLBACK(entry_key_pressed_cb), ret);
-
-	return GTK_WIDGET(ret);
-}
-
-const char *pidgin_text_combo_box_entry_get_text(GtkWidget *widget)
-{
-	return gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((widget)))));
-}
-
 GtkWidget *
 pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *sg, GtkWidget *widget, gboolean expand, GtkWidget **p_label)
 {
@@ -954,22 +785,26 @@ pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *
 
 	if (widget_label) {
 		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-		gtk_widget_show(hbox);
-		gtk_box_pack_start(vbox, hbox, FALSE, FALSE, 0);
+		gtk_box_append(vbox, hbox);
 
 		label = gtk_label_new_with_mnemonic(widget_label);
-		gtk_widget_show(label);
 		if (sg) {
 			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			gtk_size_group_add_widget(sg, label);
 		}
-		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+		gtk_box_append(GTK_BOX(hbox), label);
+
+		gtk_widget_set_hexpand(widget, expand);
+		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+		gtk_box_append(GTK_BOX(hbox), widget);
 	} else {
+		gtk_widget_set_vexpand(widget, expand);
+		gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
+		gtk_box_append(vbox, widget);
+
 		hbox = GTK_WIDGET(vbox);
 	}
 
-	gtk_widget_show(widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, expand, TRUE, 0);
 	if (label) {
 		gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
 		pidgin_set_accessible_label(widget, GTK_LABEL(label));
@@ -982,67 +817,9 @@ pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *
 
 gboolean pidgin_auto_parent_window(GtkWidget *widget)
 {
-#if 0
-	/* This looks at the most recent window that received focus, and makes
-	 * that the parent window. */
-#ifndef _WIN32
-	static GdkAtom _WindowTime = GDK_NONE;
-	static GdkAtom _Cardinal = GDK_NONE;
-	GList *windows = NULL;
-	GtkWidget *parent = NULL;
-	time_t window_time = 0;
-
-	windows = gtk_window_list_toplevels();
-
-	if (_WindowTime == GDK_NONE) {
-		_WindowTime = gdk_x11_xatom_to_atom(gdk_x11_get_xatom_by_name("_NET_WM_USER_TIME"));
-	}
-	if (_Cardinal == GDK_NONE) {
-		_Cardinal = gdk_atom_intern("CARDINAL", FALSE);
-	}
-
-	while (windows) {
-		GtkWidget *window = windows->data;
-		guchar *data = NULL;
-		int al = 0;
-		time_t value;
-
-		windows = g_list_delete_link(windows, windows);
-
-		if (window == widget ||
-				!gtk_widget_get_visible(window))
-			continue;
-
-		if (!gdk_property_get(window->window, _WindowTime, _Cardinal, 0, sizeof(time_t), FALSE,
-				NULL, NULL, &al, &data))
-			continue;
-		value = *(time_t *)data;
-		if (window_time < value) {
-			window_time = value;
-			parent = window;
-		}
-		g_free(data);
-	}
-	if (windows)
-		g_list_free(windows);
-	if (parent) {
-		if (!gtk_get_current_event() && gtk_window_has_toplevel_focus(GTK_WINDOW(parent))) {
-			/* The window is in focus, and the new window was not triggered by a keypress/click
-			 * event. So do not set it transient, to avoid focus stealing and all that.
-			 */
-			return FALSE;
-		}
-		gtk_window_set_transient_for(GTK_WINDOW(widget), GTK_WINDOW(parent));
-		return TRUE;
-	}
-	return FALSE;
-#endif
-#else
 	/* This finds the currently active window and makes that the parent window. */
 	GList *windows = NULL;
 	GtkWindow *parent = NULL;
-	GdkEvent *event = gtk_get_current_event();
-	GdkWindow *menu = NULL;
 	gpointer parent_from;
 	PurpleNotifyType notify_type;
 
@@ -1062,20 +839,6 @@ gboolean pidgin_auto_parent_window(GtkWidget *widget)
 		return TRUE;
 	}
 
-	if (event == NULL)
-		/* The window was not triggered by a user action. */
-		return FALSE;
-
-	/* We need to special case events from a popup menu. */
-	if (event->type == GDK_BUTTON_RELEASE) {
-		/* XXX: Neither of the following works:
-			menu = event->button.window;
-			menu = gdk_window_get_parent(event->button.window);
-			menu = gdk_window_get_toplevel(event->button.window);
-		*/
-	} else if (event->type == GDK_KEY_PRESS)
-		menu = event->key.window;
-
 	windows = gtk_window_list_toplevels();
 	while (windows) {
 		GtkWindow *window = GTK_WINDOW(windows->data);
@@ -1093,8 +856,7 @@ gboolean pidgin_auto_parent_window(GtkWidget *widget)
 			continue;
 		}
 
-		if (gtk_window_has_toplevel_focus(window) ||
-				(menu && menu == gtk_widget_get_window(GTK_WIDGET(window)))) {
+		if (gtk_window_is_active(window)) {
 			parent = window;
 			break;
 		}
@@ -1106,26 +868,4 @@ gboolean pidgin_auto_parent_window(GtkWidget *widget)
 		return TRUE;
 	}
 	return FALSE;
-#endif
 }
-
-GtkWidget *
-pidgin_make_scrollable(GtkWidget *child, GtkPolicyType hscrollbar_policy, GtkPolicyType vscrollbar_policy, GtkShadowType shadow_type, int width, int height)
-{
-	GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-
-	if (G_LIKELY(sw)) {
-		gtk_widget_show(sw);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), hscrollbar_policy, vscrollbar_policy);
-		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), shadow_type);
-		if (width != -1 || height != -1)
-			gtk_widget_set_size_request(sw, width, height);
-		if (child) {
-			gtk_container_add(GTK_CONTAINER(sw), child);
-		}
-		return sw;
-	}
-
-	return child;
-}
-

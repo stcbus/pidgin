@@ -140,44 +140,6 @@ void pidgin_set_accessible_relations(GtkWidget *w, GtkLabel *l);
 void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec, PurpleBuddyIconScaleFlags rules, int *width, int *height);
 
 /**
- * pidgin_create_protocol_icon:
- * @account:      The account.
- * @size:         The size of the icon to return.
- *
- * Returns the base image to represent the account, based on
- * the currently selected theme.
- *
- * Returns: (transfer full): A newly-created pixbuf with a reference count of 1,
- *         or NULL if any of several error conditions occurred:
- *         the file could not be opened, there was no loader
- *         for the file's format, there was not enough memory
- *         to allocate the image buffer, or the image file
- *         contained invalid data.
- */
-GdkPixbuf *pidgin_create_protocol_icon(PurpleAccount *account, PidginProtocolIconSize size);
-
-/**
- * pidgin_create_icon_from_protocol:
- * @protocol: The #PurpleProtocol instance.
- * @size: The size of the icon to return.
- * @account: (nullable): An optional #PurpleAccount to use.
- *
- * Returns the base image to represent @protocol based on the currently
- * selected theme.  If @account is not %NULL then the returned icon will
- * represent the account.
- *
- * Returns: (transfer full): A newly-created pixbuf with a reference count of 1,
- *         or NULL if any of several error conditions occurred:
- *         the file could not be opened, there was no loader
- *         for the file's format, there was not enough memory
- *         to allocate the image buffer, or the image file
- *         contained invalid data.
- *
- * Since: 3.0.0
- */
-GdkPixbuf *pidgin_create_icon_from_protocol(PurpleProtocol *protocol, PidginProtocolIconSize size, PurpleAccount *account);
-
-/**
  * pidgin_convert_buddy_icon:
  * @protocol:   The protocol to convert the icon
  * @path:       The path of a file to convert
@@ -203,28 +165,6 @@ gboolean pidgin_tree_view_search_equal_func(GtkTreeModel *model, gint column,
 			const gchar *key, GtkTreeIter *iter, gpointer data);
 
 /**
- * pidgin_text_combo_box_entry_new:
- * @default_item: Initial contents of GtkEntry
- * @items: (element-type utf8): GList containing strings to add to GtkComboBox
- *
- * Create a simple text GtkComboBoxEntry equivalent
- *
- * Returns: (transfer full): A newly created text GtkComboBox containing a GtkEntry
- *          child.
- */
-GtkWidget *pidgin_text_combo_box_entry_new(const char *default_item, GList *items);
-
-/**
- * pidgin_text_combo_box_entry_get_text:
- * @widget:         The simple text GtkComboBoxEntry equivalent widget
- *
- * Retrieve the text from the entry of the simple text GtkComboBoxEntry equivalent
- *
- * Returns:               The text in the widget's entry. It must not be freed
- */
-const char *pidgin_text_combo_box_entry_get_text(GtkWidget *widget);
-
-/**
  * pidgin_auto_parent_window:
  * @window:    The window to make transient.
  *
@@ -248,21 +188,6 @@ gboolean pidgin_auto_parent_window(GtkWidget *window);
  * Returns:  (transfer full): A GtkBox already added to the GtkBox containing the GtkLabel and the GtkWidget.
  */
 GtkWidget *pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *sg, GtkWidget *widget, gboolean expand, GtkWidget **p_label);
-
-/**
- * pidgin_make_scrollable:
- * @child:              The child widget
- * @hscrollbar_policy:  Horizontal scrolling policy
- * @vscrollbar_policy:  Vertical scrolling policy
- * @shadow_type:        Shadow type
- * @width:              Desired widget width, or -1 for default
- * @height:             Desired widget height, or -1 for default
- *
- * Add scrollbars to a widget
- *
- * Returns: (transfer full): A scrolled window with @child packed inside of it.
- */
-GtkWidget *pidgin_make_scrollable(GtkWidget *child, GtkPolicyType hscrollbar_policy, GtkPolicyType vscrollbar_policy, GtkShadowType shadow_type, int width, int height);
 
 G_END_DECLS
 

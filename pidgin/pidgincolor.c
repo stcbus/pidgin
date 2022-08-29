@@ -22,8 +22,6 @@
 
 #include "pidgincolor.h"
 
-#include "pidginstylecontext.h"
-
 /******************************************************************************
  * Public API
  *****************************************************************************/
@@ -33,11 +31,12 @@ pidgin_color_calculate_for_text(const gchar *text, GdkRGBA *color) {
     GChecksum *checksum = NULL;
     guchar digest[20];
     gsize digest_len = sizeof(digest);
-    gdouble hue = 0, red = 0, green = 0, blue = 0;
+    gfloat hue = 0, red = 0, green = 0, blue = 0;
 
     g_return_if_fail(color != NULL);
 
-    pidgin_style_context_get_background_color(&background);
+#warning figure out how to get the background color
+    gdk_rgba_parse(&background, "#FFFFFFFF");
 
     /* hash the string and get the first 2 bytes of the digest */
     checksum = g_checksum_new(G_CHECKSUM_SHA1);
@@ -50,16 +49,16 @@ pidgin_color_calculate_for_text(const gchar *text, GdkRGBA *color) {
     /* Calculate the hue based on the digest.  We need a value between 0 and 1
      * so we divide the value by 65535 which is the maximum value for 2 bytes.
      */
-    hue = (digest[0] << 8 | digest[1]) / 65535.0;
+    hue = (digest[0] << 8 | digest[1]) / 65535.0f;
 
     /* Get the rgb values for the hue at full saturation and value. */
-    gtk_hsv_to_rgb(hue, 1.0, 1.0, &red, &green, &blue);
+    gtk_hsv_to_rgb(hue, 1.0f, 1.0f, &red, &green, &blue);
 
     /* Finally calculate the color summing 20% of the inverted background color
      * with 80% of the color.
      */
-    color->red = (0.2 * (1 - background.red)) + (0.8 * red);
-    color->green = (0.2 * (1 - background.green)) + (0.8 * green);
-    color->blue = (0.2 * (1 - background.blue)) + (0.8 * blue);
-    color->alpha = 1.0;
+    color->red = (0.2f * (1 - background.red)) + (0.8f * red);
+    color->green = (0.2f * (1 - background.green)) + (0.8f * green);
+    color->blue = (0.2f * (1 - background.blue)) + (0.8f * blue);
+    color->alpha = 1.0f;
 }

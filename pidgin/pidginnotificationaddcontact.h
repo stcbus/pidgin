@@ -31,7 +31,7 @@
 
 #include <gtk/gtk.h>
 
-#include <handy.h>
+#include <adwaita.h>
 
 #include <purple.h>
 
@@ -49,7 +49,7 @@ G_BEGIN_DECLS
 
 #define PIDGIN_TYPE_NOTIFICATION_ADD_CONTACT (pidgin_notification_add_contact_get_type())
 G_DECLARE_FINAL_TYPE(PidginNotificationAddContact, pidgin_notification_add_contact,
-                     PIDGIN, NOTIFICATION_ADD_CONTACT, HdyActionRow)
+                     PIDGIN, NOTIFICATION_ADD_CONTACT, AdwActionRow)
 
 /**
  * pidgin_notification_add_contact_new:

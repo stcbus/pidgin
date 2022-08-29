@@ -314,9 +314,9 @@ pidgin_about_dialog_load_runtime_info(PidginAboutDialog *about) {
 	/* add the gtk version */
 	pidgin_about_dialog_build_info_add_version(about->build_info_store,
 	                                           &section, _("GTK Version"),
-	                                           gtk_major_version,
-	                                           gtk_minor_version,
-	                                           gtk_micro_version);
+	                                           gtk_get_major_version(),
+	                                           gtk_get_minor_version(),
+	                                           gtk_get_micro_version());
 }
 
 static void
@@ -324,9 +324,9 @@ pidgin_about_dialog_load_gtk_settings(PidginAboutDialog *about) {
 	GtkTreeIter section, iter;
 	gchar *markup = NULL;
 	gchar *cursor_theme_name = NULL, *theme_name = NULL;
-	gchar *icon_theme_name = NULL, *fallback_icon_theme = NULL;
+	gchar *icon_theme_name = NULL;
 	gchar *im_module = NULL;
-	gchar *key_theme_name = NULL, *sound_theme_name = NULL;
+	gchar *sound_theme_name = NULL;
 	gboolean enable_animations = FALSE;
 	gboolean shell_shows_app_menu = FALSE, shell_shows_menubar = FALSE;
 
@@ -343,10 +343,8 @@ pidgin_about_dialog_load_gtk_settings(PidginAboutDialog *about) {
 		gtk_settings_get_default(),
 		"gtk-cursor-theme-name", &cursor_theme_name,
 		"gtk-enable-animations", &enable_animations,
-		"gtk-fallback-icon-theme", &fallback_icon_theme,
 		"gtk-icon-theme-name", &icon_theme_name,
 		"gtk-im-module", &im_module,
-		"gtk-key-theme-name", &key_theme_name,
 		"gtk-shell-shows-app-menu", &shell_shows_app_menu,
 		"gtk-shell-shows-menubar", &shell_shows_menubar,
 		"gtk-sound-theme-name", &sound_theme_name,
@@ -367,12 +365,6 @@ pidgin_about_dialog_load_gtk_settings(PidginAboutDialog *about) {
 
 	gtk_tree_store_append(about->build_info_store, &iter, &section);
 	gtk_tree_store_set(about->build_info_store, &iter,
-	                   0, "gtk-fallback-icon-theme",
-	                   1, (fallback_icon_theme != NULL) ? fallback_icon_theme : _("(not set)"),
-	                   -1);
-
-	gtk_tree_store_append(about->build_info_store, &iter, &section);
-	gtk_tree_store_set(about->build_info_store, &iter,
 	                   0, "gtk-icon-theme-name",
 	                   1, (icon_theme_name != NULL) ? icon_theme_name : _("(not set)"),
 	                   -1);
@@ -381,12 +373,6 @@ pidgin_about_dialog_load_gtk_settings(PidginAboutDialog *about) {
 	gtk_tree_store_set(about->build_info_store, &iter,
 	                   0, "gtk-im-module",
 	                   1, (im_module != NULL) ? im_module : _("(not set)"),
-	                   -1);
-
-	gtk_tree_store_append(about->build_info_store, &iter, &section);
-	gtk_tree_store_set(about->build_info_store, &iter,
-	                   0, "gtk-key-theme-name",
-	                   1, (key_theme_name != NULL) ? key_theme_name : _("(not set)"),
 	                   -1);
 
 	gtk_tree_store_append(about->build_info_store, &iter, &section);
@@ -414,10 +400,8 @@ pidgin_about_dialog_load_gtk_settings(PidginAboutDialog *about) {
 	                   -1);
 
 	g_free(cursor_theme_name);
-	g_free(fallback_icon_theme);
 	g_free(icon_theme_name);
 	g_free(im_module);
-	g_free(key_theme_name);
 	g_free(sound_theme_name);
 	g_free(theme_name);
 }
@@ -444,7 +428,7 @@ pidgin_about_dialog_load_plugin_search_paths(PidginAboutDialog *about) {
 
 		gtk_tree_store_append(about->build_info_store, &iter, &section);
 		gtk_tree_store_set(about->build_info_store, &iter,
-		                   0, (gchar*)(paths->data),
+		                   1, (gchar*)(paths->data),
 		                   -1);
 
 		paths = paths->next;
@@ -512,7 +496,8 @@ pidgin_about_dialog_response_cb(GtkDialog *dialog, gint response_id,
 {
 	switch(response_id) {
 		case GTK_RESPONSE_CLOSE:
-			gtk_widget_destroy(GTK_WIDGET(dialog));
+		case GTK_RESPONSE_DELETE_EVENT:
+			gtk_window_destroy(GTK_WINDOW(dialog));
 			break;
 	}
 }

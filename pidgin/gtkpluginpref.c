@@ -30,7 +30,7 @@ static gboolean
 entry_cb(GtkWidget *entry, gpointer data) {
 	char *pref = data;
 
-	purple_prefs_set_string(pref, gtk_entry_get_text(GTK_ENTRY(entry)));
+	purple_prefs_set_string(pref, gtk_editable_get_text(GTK_EDITABLE(entry)));
 
 	return FALSE;
 }
@@ -75,7 +75,7 @@ make_string_pref(GtkWidget *parent, PurplePluginPref *pref, GtkSizeGroup *sg) {
 			if (format == PURPLE_STRING_FORMAT_TYPE_NONE)
 			{
 				entry = gtk_entry_new();
-				gtk_entry_set_text(GTK_ENTRY(entry), purple_prefs_get_string(pref_name));
+				gtk_editable_set_text(GTK_EDITABLE(entry), purple_prefs_get_string(pref_name));
 				gtk_entry_set_max_length(GTK_ENTRY(entry),
 									 purple_plugin_pref_get_max_length(pref));
 				if (purple_plugin_pref_get_masked(pref))
@@ -98,22 +98,22 @@ make_string_pref(GtkWidget *parent, PurplePluginPref *pref, GtkSizeGroup *sg) {
 				box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 
 				gtk_widget_show(box);
-				gtk_box_pack_start(GTK_BOX(parent), box, FALSE, FALSE, 0);
+				gtk_box_append(GTK_BOX(parent), box);
 
 				gtk_label = gtk_label_new_with_mnemonic(pref_label);
 				gtk_label_set_xalign(GTK_LABEL(gtk_label), 0);
 				gtk_widget_show(gtk_label);
-				gtk_box_pack_start(GTK_BOX(box), gtk_label, FALSE, FALSE, 0);
+				gtk_box_append(GTK_BOX(box), gtk_label);
 
 				if(sg)
 					gtk_size_group_add_widget(sg, gtk_label);
 
 				hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-				gtk_box_pack_start(GTK_BOX(box), hbox, FALSE, FALSE, 0);
+				gtk_box_append(GTK_BOX(box), hbox);
 				gtk_widget_show(hbox);
 
 				spacer = gtk_label_new("    ");
-				gtk_box_pack_start(GTK_BOX(hbox), spacer, FALSE, FALSE, 0);
+				gtk_box_append(GTK_BOX(hbox), spacer);
 				gtk_widget_show(spacer);
 
 				editor = talkatu_editor_new();
@@ -136,7 +136,6 @@ make_string_pref(GtkWidget *parent, PurplePluginPref *pref, GtkSizeGroup *sg) {
 				}
 
 				gtk_label_set_mnemonic_widget(GTK_LABEL(gtk_label), input);
-				gtk_widget_show_all(editor);
 				g_object_set_data(G_OBJECT(buffer), "pref-key", (gpointer)pref_name);
 				g_signal_connect(G_OBJECT(buffer), "changed",
 				                 G_CALLBACK(multiline_cb), NULL);
@@ -145,7 +144,9 @@ make_string_pref(GtkWidget *parent, PurplePluginPref *pref, GtkSizeGroup *sg) {
 				g_signal_connect(G_OBJECT(view), "format-toggled",
 				                 G_CALLBACK(multiline_cb), NULL);
 				*/
-				gtk_box_pack_start(GTK_BOX(hbox), editor, TRUE, TRUE, 0);
+				gtk_box_append(GTK_BOX(hbox), editor);
+				gtk_widget_set_halign(editor, GTK_ALIGN_FILL);
+				gtk_widget_set_hexpand(editor, TRUE);
 			}
 
 			break;
@@ -187,8 +188,8 @@ make_info_pref(GtkWidget *parent, PurplePluginPref *pref) {
 	GtkWidget *gtk_label = gtk_label_new(purple_plugin_pref_get_label(pref));
 	gtk_label_set_xalign(GTK_LABEL(gtk_label), 0);
 	gtk_label_set_yalign(GTK_LABEL(gtk_label), 0);
-	gtk_label_set_line_wrap(GTK_LABEL(gtk_label), TRUE);
-	gtk_box_pack_start(GTK_BOX(parent), gtk_label, FALSE, FALSE, 0);
+	gtk_label_set_wrap(GTK_LABEL(gtk_label), TRUE);
+	gtk_box_append(GTK_BOX(parent), gtk_label);
 	gtk_widget_show(gtk_label);
 }
 

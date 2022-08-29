@@ -19,14 +19,12 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk" version="4.0"/>
   <!-- interface-license-type gplv2 -->
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <template class="PidginStatusPrimitiveChooser" parent="GtkComboBox">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="id-column">0</property>
     <child>
       <object class="GtkCellRendererPixbuf"/>

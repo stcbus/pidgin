@@ -173,7 +173,9 @@ set_dialog_icon(AccountPrefsDialog *dialog, gpointer data, size_t len, gchar *ne
 	{
 		/* Show a placeholder icon */
 		gtk_image_set_from_icon_name(GTK_IMAGE(dialog->icon_entry),
-				"select-avatar", GTK_ICON_SIZE_LARGE_TOOLBAR);
+		                             "select-avatar");
+		gtk_image_set_icon_size(GTK_IMAGE(dialog->icon_entry),
+		                        GTK_ICON_SIZE_LARGE);
 	} else {
 		gtk_image_set_from_pixbuf(GTK_IMAGE(dialog->icon_entry), pixbuf);
 		g_object_unref(G_OBJECT(pixbuf));
@@ -208,14 +210,14 @@ set_account_protocol_cb(GtkWidget *widget, AccountPrefsDialog *dialog) {
 	if (!dialog->protocol ||
 	    !PURPLE_PROTOCOL_IMPLEMENTS(dialog->protocol, SERVER, register_user))
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->register_button), FALSE);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->register_button), FALSE);
 		gtk_widget_hide(dialog->register_button);
 	} else {
 		if (purple_protocol_get_options(dialog->protocol) &
 		    OPT_PROTO_REGISTER_NOSCREENNAME) {
 			gtk_widget_set_sensitive(dialog->register_button, TRUE);
 		} else {
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+			gtk_check_button_set_active(GTK_CHECK_BUTTON(
 				dialog->register_button), FALSE);
 			gtk_widget_set_sensitive(dialog->register_button, FALSE);
 		}
@@ -229,12 +231,12 @@ username_changed_cb(GtkEntry *entry, AccountPrefsDialog *dialog)
 	gboolean opt_noscreenname = (dialog->protocol != NULL &&
 		(purple_protocol_get_options(dialog->protocol) & OPT_PROTO_REGISTER_NOSCREENNAME));
 	gboolean username_valid = purple_validate(dialog->protocol,
-		gtk_entry_get_text(entry));
+		gtk_editable_get_text(GTK_EDITABLE(entry)));
 
 	if (dialog->ok_button) {
 		if (opt_noscreenname && dialog->register_button &&
-			gtk_toggle_button_get_active(
-				GTK_TOGGLE_BUTTON(dialog->register_button)))
+			gtk_check_button_get_active(
+				GTK_CHECK_BUTTON(dialog->register_button)))
 			gtk_widget_set_sensitive(dialog->ok_button, TRUE);
 		else
 			gtk_widget_set_sensitive(dialog->ok_button,
@@ -253,21 +255,21 @@ username_changed_cb(GtkEntry *entry, AccountPrefsDialog *dialog)
 static void
 register_button_cb(GtkWidget *checkbox, AccountPrefsDialog *dialog)
 {
-	int register_checked = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(dialog->register_button));
+	int register_checked = gtk_check_button_get_active(
+		GTK_CHECK_BUTTON(dialog->register_button));
 	int opt_noscreenname = (dialog->protocol != NULL &&
 		(purple_protocol_get_options(dialog->protocol) & OPT_PROTO_REGISTER_NOSCREENNAME));
 	int register_noscreenname = (opt_noscreenname && register_checked);
 
 	if (register_noscreenname) {
-		gtk_entry_set_text(GTK_ENTRY(dialog->username_entry), "");
+		gtk_editable_set_text(GTK_EDITABLE(dialog->username_entry), "");
 	}
 	gtk_widget_set_sensitive(dialog->username_entry, !register_noscreenname);
 
 	if (dialog->ok_button) {
 		gtk_widget_set_sensitive(dialog->ok_button,
 			(opt_noscreenname && register_checked) ||
-			*gtk_entry_get_text(GTK_ENTRY(dialog->username_entry))
+			*gtk_editable_get_text(GTK_EDITABLE(dialog->username_entry))
 				!= '\0');
 	}
 }
@@ -278,13 +280,19 @@ icon_filesel_choose_cb(GtkWidget *widget, gint response, gpointer data)
 	AccountPrefsDialog *dialog = data;
 
 	if (response == GTK_RESPONSE_ACCEPT) {
+		GFile *file = NULL;
 		gchar *filename = NULL;
 		gpointer data = NULL;
 		size_t len = 0;
 
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+		file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(widget));
+		filename = g_file_get_path(file);
+
 		data = pidgin_convert_buddy_icon(dialog->protocol, filename, &len);
 		set_dialog_icon(dialog, data, len, filename);
+
+		g_free(filename);
+		g_object_unref(file);
 	}
 
 	g_clear_object(&dialog->icon_filesel);
@@ -374,11 +382,12 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	{
 		g_object_ref(G_OBJECT(dialog->protocol_menu));
 		hbox = g_object_get_data(G_OBJECT(dialog->protocol_menu), "container");
-		gtk_container_remove(GTK_CONTAINER(hbox), dialog->protocol_menu);
+		gtk_box_remove(GTK_BOX(hbox), dialog->protocol_menu);
 	}
 
-	if (dialog->login_frame != NULL)
-		gtk_widget_destroy(dialog->login_frame);
+	if (dialog->login_frame != NULL) {
+		gtk_widget_unparent(dialog->login_frame);
+	}
 
 	/* Build the login options frame. */
 	frame = pidgin_make_frame(parent, _("Login Options"));
@@ -386,13 +395,11 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	/* cringe */
 	dialog->login_frame = gtk_widget_get_parent(gtk_widget_get_parent(frame));
 
-	gtk_box_reorder_child(GTK_BOX(parent), dialog->login_frame, 0);
-	gtk_widget_show(dialog->login_frame);
+	gtk_box_reorder_child_after(GTK_BOX(parent), dialog->login_frame, NULL);
 
 	/* Main vbox */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_add(GTK_CONTAINER(frame), vbox);
-	gtk_widget_show(vbox);
+	gtk_box_append(GTK_BOX(frame), vbox);
 
 	/* Protocol */
 	if(dialog->protocol_menu == NULL) {
@@ -401,7 +408,6 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 		                                        dialog->protocol_id);
 		g_signal_connect(G_OBJECT(dialog->protocol_menu), "changed",
 		                 G_CALLBACK(set_account_protocol_cb), dialog);
-		gtk_widget_show(dialog->protocol_menu);
 		g_object_ref(G_OBJECT(dialog->protocol_menu));
 	}
 
@@ -498,15 +504,17 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 		if (value == NULL)
 			value = purple_account_user_split_get_default_value(split);
 
-		if (value != NULL && entry != NULL)
-			gtk_entry_set_text(GTK_ENTRY(entry), value);
+		if (value != NULL && entry != NULL) {
+			gtk_editable_set_text(GTK_EDITABLE(entry), value);
+		}
 	}
 
 	g_list_free_full(user_splits,
 	                 (GDestroyNotify)purple_account_user_split_destroy);
 
-	if (username != NULL)
-		gtk_entry_set_text(GTK_ENTRY(dialog->username_entry), username);
+	if (username != NULL) {
+		gtk_editable_set_text(GTK_EDITABLE(dialog->username_entry), username);
+	}
 
 	g_free(username);
 
@@ -523,7 +531,7 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 static void
 icon_check_cb(GtkWidget *checkbox, AccountPrefsDialog *dialog)
 {
-	gtk_widget_set_sensitive(dialog->icon_hbox, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)));
+	gtk_widget_set_sensitive(dialog->icon_hbox, gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)));
 }
 
 static void
@@ -537,20 +545,20 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	GtkWidget *button;
 	GtkWidget *label;
 
-	if (dialog->user_frame != NULL)
-		gtk_widget_destroy(dialog->user_frame);
+	if (dialog->user_frame != NULL) {
+		gtk_widget_unparent(dialog->user_frame);
+	}
 
 	/* Build the user options frame. */
 	frame = pidgin_make_frame(parent, _("User Options"));
 	dialog->user_frame = gtk_widget_get_parent(gtk_widget_get_parent(frame));
 
-	gtk_box_reorder_child(GTK_BOX(parent), dialog->user_frame, 1);
-	gtk_widget_show(dialog->user_frame);
+	gtk_box_reorder_child_after(GTK_BOX(parent), dialog->user_frame,
+	                            gtk_widget_get_first_child(parent));
 
 	/* Main vbox */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_add(GTK_CONTAINER(frame), vbox);
-	gtk_widget_show(vbox);
+	gtk_box_append(GTK_BOX(frame), vbox);
 
 	/* Alias */
 	dialog->alias_entry = gtk_entry_new();
@@ -559,27 +567,22 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	/* Buddy icon */
 	dialog->icon_check = gtk_check_button_new_with_mnemonic(_("Use this buddy _icon for this account:"));
 	g_signal_connect(G_OBJECT(dialog->icon_check), "toggled", G_CALLBACK(icon_check_cb), dialog);
-	gtk_widget_show(dialog->icon_check);
-	gtk_box_pack_start(GTK_BOX(vbox), dialog->icon_check, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(vbox), dialog->icon_check);
 
 	dialog->icon_hbox = hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_widget_set_sensitive(hbox, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)));
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-	gtk_widget_show(hbox);
+	gtk_widget_set_sensitive(hbox, gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)));
+	gtk_box_append(GTK_BOX(vbox), hbox);
 
 	label = gtk_label_new("    ");
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-	gtk_widget_show(label);
+	gtk_box_append(GTK_BOX(hbox), label);
 
 	button = gtk_button_new();
-	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
+	gtk_box_append(GTK_BOX(hbox), button);
 	g_signal_connect(G_OBJECT(button), "clicked",
 	                 G_CALLBACK(icon_select_cb), dialog);
 
 	dialog->icon_entry = gtk_image_new();
-	gtk_container_add(GTK_CONTAINER(button), dialog->icon_entry);
-	gtk_widget_show(dialog->icon_entry);
+	gtk_button_set_child(GTK_BUTTON(button), dialog->icon_entry);
 	/* TODO: Uh, isn't this next line pretty useless? */
 	pidgin_set_accessible_label(dialog->icon_entry, GTK_LABEL(label));
 	if (dialog->icon_img) {
@@ -588,18 +591,19 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	}
 
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
-	gtk_widget_show(vbox2);
+	gtk_widget_set_hexpand(vbox2, TRUE);
+	gtk_widget_set_halign(vbox2, GTK_ALIGN_FILL);
+	gtk_box_append(GTK_BOX(hbox), vbox2);
 
 	hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox2, FALSE, FALSE, 12);
-	gtk_widget_show(hbox2);
+	gtk_widget_set_margin_top(hbox2, 12);
+	gtk_widget_set_margin_bottom(hbox2, 12);
+	gtk_box_append(GTK_BOX(vbox2), hbox2);
 
 	button = gtk_button_new_with_mnemonic(_("_Remove"));
 	g_signal_connect(G_OBJECT(button), "clicked",
 			 G_CALLBACK(icon_reset_cb), dialog);
-	gtk_box_pack_start(GTK_BOX(hbox2), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
+	gtk_box_append(GTK_BOX(hbox2), button);
 
 	if (dialog->protocol != NULL) {
 		PurpleBuddyIconSpec *icon_spec = purple_protocol_get_icon_spec(dialog->protocol);
@@ -617,11 +621,12 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 		gpointer data = NULL;
 		size_t len = 0;
 
-		if (purple_account_get_private_alias(dialog->account))
-			gtk_entry_set_text(GTK_ENTRY(dialog->alias_entry),
-							   purple_account_get_private_alias(dialog->account));
+		if (purple_account_get_private_alias(dialog->account)) {
+			gtk_editable_set_text(GTK_EDITABLE(dialog->alias_entry),
+			                      purple_account_get_private_alias(dialog->account));
+		}
 
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->icon_check),
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->icon_check),
 					     !purple_account_get_bool(dialog->account, "use-global-buddyicon",
 								       TRUE));
 
@@ -698,10 +703,8 @@ add_account_options(AccountPrefsDialog *dialog)
 
 	/* Main vbox */
 	dialog->protocol_frame = vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox), 12);
 	gtk_notebook_insert_page(GTK_NOTEBOOK(dialog->notebook), vbox,
 			gtk_label_new_with_mnemonic(_("Ad_vanced")), 1);
-	gtk_widget_show(vbox);
 
 	for (l = opts; l != NULL; l = l->next)
 	{
@@ -731,11 +734,10 @@ add_account_options(AccountPrefsDialog *dialog)
 				opt_entry->widget = check = gtk_check_button_new_with_mnemonic(tmp);
 				g_free(tmp);
 
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check),
-											 bool_value);
+				gtk_check_button_set_active(GTK_CHECK_BUTTON(check),
+				                            bool_value);
 
-				gtk_box_pack_start(GTK_BOX(vbox), check, FALSE, FALSE, 0);
-				gtk_widget_show(check);
+				gtk_box_append(GTK_BOX(vbox), check);
 				break;
 
 			case PURPLE_PREF_INT:
@@ -755,7 +757,7 @@ add_account_options(AccountPrefsDialog *dialog)
 				g_snprintf(buf, sizeof(buf), "%d", int_value);
 
 				opt_entry->widget = entry = gtk_entry_new();
-				gtk_entry_set_text(GTK_ENTRY(entry), buf);
+				gtk_editable_set_text(GTK_EDITABLE(entry), buf);
 
 				title = g_strdup_printf("_%s:",
 						purple_account_option_get_text(option));
@@ -789,10 +791,18 @@ add_account_options(AccountPrefsDialog *dialog)
 						gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(entry),
 						                               hint);
 					}
-				}
-				else
+					if (str_value != NULL) {
+						GtkWidget *real_entry = NULL;
+						real_entry = gtk_combo_box_get_child(GTK_COMBO_BOX(entry));
+						gtk_editable_set_text(GTK_EDITABLE(real_entry),
+						                      str_value);
+					}
+				} else {
 					entry = gtk_entry_new();
-				
+					gtk_editable_set_text(GTK_EDITABLE(entry),
+					                      str_value ? str_value : "");
+				}
+
 				opt_entry->widget = entry;
 				if (purple_account_option_string_get_masked(option) && str_hints)
 					g_warn_if_reached();
@@ -800,12 +810,6 @@ add_account_options(AccountPrefsDialog *dialog)
 				{
 					gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
 				}
-
-				if (str_value != NULL && str_hints)
-					gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(entry))),
-					                   str_value);
-				else
-					gtk_entry_set_text(GTK_ENTRY(entry), str_value ? str_value : "");
 
 				title = g_strdup_printf("_%s:",
 						purple_account_option_get_text(option));
@@ -888,7 +892,7 @@ add_voice_options(AccountPrefsDialog *dialog)
 {
 	if (!dialog->protocol || !PURPLE_PROTOCOL_IMPLEMENTS(dialog->protocol, MEDIA, initiate_session)) {
 		if (dialog->voice_frame) {
-			gtk_widget_destroy(dialog->voice_frame);
+			gtk_widget_unparent(dialog->voice_frame);
 			dialog->voice_frame = NULL;
 			dialog->suppression_check = NULL;
 		}
@@ -897,31 +901,27 @@ add_voice_options(AccountPrefsDialog *dialog)
 
 	if (!dialog->voice_frame) {
 		dialog->voice_frame = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-		gtk_container_set_border_width(GTK_CONTAINER(dialog->voice_frame), 12);
 
 		dialog->suppression_check =
 				gtk_check_button_new_with_mnemonic(_("Use _silence suppression"));
-		gtk_box_pack_start(GTK_BOX(dialog->voice_frame), dialog->suppression_check,
-				FALSE, FALSE, 0);
+		gtk_box_append(GTK_BOX(dialog->voice_frame), dialog->suppression_check);
 
 		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->notebook),
 				dialog->voice_frame, gtk_label_new_with_mnemonic(_("_Voice and Video")));
-		gtk_widget_show_all(dialog->voice_frame);
 	}
 
 	if (dialog->account) {
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->suppression_check),
-		                             purple_account_get_silence_suppression(dialog->account));
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->suppression_check),
+		                            purple_account_get_silence_suppression(dialog->account));
 	} else {
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->suppression_check), FALSE);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(dialog->suppression_check), FALSE);
 	}
 }
 
-static gboolean
-account_win_destroy_cb(GtkWidget *w, GdkEvent *event,
-					   AccountPrefsDialog *dialog)
+static void
+account_win_destroy_cb(AccountPrefsDialog *dialog)
 {
-	gtk_widget_destroy(dialog->window);
+	gtk_window_destroy(GTK_WINDOW(dialog->window));
 
 	g_list_free(dialog->user_split_entries);
 	g_list_free_full(dialog->protocol_opt_entries, (GDestroyNotify)protocol_opt_entry_free);
@@ -936,7 +936,6 @@ account_win_destroy_cb(GtkWidget *w, GdkEvent *event,
 	purple_signals_disconnect_by_handle(dialog);
 
 	g_free(dialog);
-	return FALSE;
 }
 
 static void
@@ -971,7 +970,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	manager = purple_account_manager_get_default();
 
 	/* Build the username string. */
-	username = g_strdup(gtk_entry_get_text(GTK_ENTRY(dialog->username_entry)));
+	username = g_strdup(gtk_editable_get_text(GTK_EDITABLE(dialog->username_entry)));
 
 	if (dialog->protocol != NULL)
 	{
@@ -984,7 +983,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 			GtkEntry *entry = l2->data;
 			char sep[2] = " ";
 
-			value = entry ? gtk_entry_get_text(entry) : "";
+			value = entry ? gtk_editable_get_text(GTK_EDITABLE(entry)) : "";
 			if (!value)
 				value = "";
 
@@ -1031,7 +1030,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	}
 
 	/* Alias */
-	value = gtk_entry_get_text(GTK_ENTRY(dialog->alias_entry));
+	value = gtk_editable_get_text(GTK_EDITABLE(dialog->alias_entry));
 
 	if (*value != '\0')
 		purple_account_set_private_alias(account, value);
@@ -1047,13 +1046,13 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 		const char *filename;
 
 		if (new_acct || purple_account_get_bool(account, "use-global-buddyicon", TRUE) ==
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)))
+			gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)))
 		{
 			icon_change = TRUE;
 		}
-		purple_account_set_bool(account, "use-global-buddyicon", !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)));
+		purple_account_set_bool(account, "use-global-buddyicon", !gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)));
 
-		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->icon_check)))
+		if (gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->icon_check)))
 		{
 			if (dialog->icon_img)
 			{
@@ -1100,18 +1099,18 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 					if (GTK_IS_COMBO_BOX(opt_entry->widget))
 						value = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(opt_entry->widget));
 					else
-						value = gtk_entry_get_text(GTK_ENTRY(opt_entry->widget));
+						value = gtk_editable_get_text(GTK_EDITABLE(opt_entry->widget));
 					purple_account_set_string(account, opt_entry->setting, value);
 					break;
 
 				case PURPLE_PREF_INT:
-					int_value = atoi(gtk_entry_get_text(GTK_ENTRY(opt_entry->widget)));
+					int_value = atoi(gtk_editable_get_text(GTK_EDITABLE(opt_entry->widget)));
 					purple_account_set_int(account, opt_entry->setting, int_value);
 					break;
 
 				case PURPLE_PREF_BOOLEAN:
 					bool_value =
-						gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(opt_entry->widget));
+						gtk_check_button_get_active(GTK_CHECK_BUTTON(opt_entry->widget));
 					purple_account_set_bool(account, opt_entry->setting, bool_value);
 					break;
 
@@ -1134,7 +1133,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	/* Voice and Video settings */
 	if (dialog->voice_frame) {
 		purple_account_set_silence_suppression(account,
-				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->suppression_check)));
+				gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->suppression_check)));
 	}
 
 	/* If this is a new account, add it to our list */
@@ -1145,7 +1144,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	}
 
 	/* If this is a new account, then sign on! */
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->register_button))) {
+	if (gtk_check_button_get_active(GTK_CHECK_BUTTON(dialog->register_button))) {
 		purple_account_set_register_callback(account, account_register_cb, NULL);
 		purple_account_register(account);
 	} else if (new_acct) {
@@ -1159,7 +1158,7 @@ account_prefs_save(AccountPrefsDialog *dialog) {
 	}
 
 	/* We no longer need the data from the dialog window */
-	account_win_destroy_cb(NULL, NULL, dialog);
+	account_win_destroy_cb(dialog);
 }
 
 static void
@@ -1171,7 +1170,8 @@ account_prefs_response_cb(GtkDialog *dialog, gint response_id, gpointer data) {
 			account_prefs_save(window);
 			break;
 		case RESPONSE_CLOSE:
-			account_win_destroy_cb(NULL, NULL, window);
+		case GTK_RESPONSE_DELETE_EVENT:
+			account_win_destroy_cb(window);
 			break;
 		default:
 			break;
@@ -1209,8 +1209,6 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 	dialog->window = win = pidgin_dialog_new((type == PIDGIN_ADD_ACCOUNT_DIALOG) ? _("Add Account") : _("Modify Account"),
 		6, "account", FALSE);
 
-	g_signal_connect(win, "delete_event", G_CALLBACK(account_win_destroy_cb),
-	                 dialog);
 	g_signal_connect(win, "response", G_CALLBACK(account_prefs_response_cb),
 	                 dialog);
 
@@ -1219,15 +1217,12 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 	gtk_box_set_spacing(GTK_BOX(main_vbox), 6);
 
 	dialog->notebook = notebook = gtk_notebook_new();
-	gtk_box_pack_start(GTK_BOX(main_vbox), notebook, FALSE, FALSE, 0);
-	gtk_widget_show(GTK_WIDGET(notebook));
+	gtk_box_append(GTK_BOX(main_vbox), notebook);
 
 	/* Setup the inner vbox */
 	dialog->top_vbox = vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox), 12);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
 			gtk_label_new_with_mnemonic(_("_Basic")));
-	gtk_widget_show(vbox);
 
 	/* Setup the top frames. */
 	add_login_options(dialog, vbox);
@@ -1235,8 +1230,7 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 
 	button = gtk_check_button_new_with_mnemonic(
 		_("Create _this new account on the server"));
-	gtk_box_pack_start(GTK_BOX(main_vbox), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
+	gtk_box_append(GTK_BOX(main_vbox), button);
 	dialog->register_button = button;
 	g_signal_connect(G_OBJECT(dialog->register_button), "toggled", G_CALLBACK(register_button_cb), dialog);
 	if (dialog->account == NULL)
@@ -1256,7 +1250,6 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 	}
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), dialog->proxy_options,
 	                         gtk_label_new_with_mnemonic(_("Proxy")));
-	gtk_widget_show(dialog->proxy_options);
 
 	add_voice_options(dialog);
 
@@ -1279,7 +1272,6 @@ pidgin_account_dialog_show(PidginAccountDialogType type,
 /**************************************************************************
  * Accounts Dialog
  **************************************************************************/
-
 /* This still exists because gtkprivacy calls it to add the privacy ui ops */
 static PurpleAccountUiOps ui_ops = {};
 

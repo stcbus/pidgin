@@ -30,14 +30,14 @@
 
 #include <purple.h>
 
-#include <handy.h>
+#include <adwaita.h>
 
 #include "pidginvvprefs.h"
 #include "pidgincore.h"
 #include "pidginprefsinternal.h"
 
 struct _PidginVVPrefs {
-	HdyPreferencesPage parent;
+	AdwPreferencesPage parent;
 
 	struct {
 		PidginPrefCombo input;
@@ -54,13 +54,12 @@ struct _PidginVVPrefs {
 		PidginPrefCombo input;
 		PidginPrefCombo output;
 		GtkWidget *frame;
-		GtkWidget *sink_widget;
 		GtkWidget *test;
 		GstElement *pipeline;
 	} video;
 };
 
-G_DEFINE_TYPE(PidginVVPrefs, pidgin_vv_prefs, HDY_TYPE_PREFERENCES_PAGE)
+G_DEFINE_TYPE(PidginVVPrefs, pidgin_vv_prefs, ADW_TYPE_PREFERENCES_PAGE)
 
 /******************************************************************************
  * Helpers
@@ -105,7 +104,7 @@ create_test_element(PurpleMediaElementType type)
 }
 
 static GstElement *
-create_voice_pipeline(void)
+create_voice_pipeline(PidginVVPrefs *prefs)
 {
 	GstElement *pipeline;
 	GstElement *src, *sink;
@@ -120,6 +119,10 @@ create_voice_pipeline(void)
 	volume = gst_element_factory_make("volume", "volume");
 	level = gst_element_factory_make("level", "level");
 	valve = gst_element_factory_make("valve", "valve");
+
+	g_object_set(volume, "volume",
+	             gtk_scale_button_get_value(GTK_SCALE_BUTTON(prefs->voice.volume)) / 100.0,
+	             NULL);
 
 	gst_bin_add_many(GST_BIN(pipeline), src, volume, level, valve, sink, NULL);
 	gst_element_link_many(src, volume, level, valve, sink, NULL);
@@ -219,7 +222,7 @@ enable_voice_test(PidginVVPrefs *prefs)
 {
 	GstBus *bus;
 
-	prefs->voice.pipeline = create_voice_pipeline();
+	prefs->voice.pipeline = create_voice_pipeline(prefs);
 	bus = gst_pipeline_get_bus(GST_PIPELINE(prefs->voice.pipeline));
 	gst_bus_add_signal_watch(bus);
 	g_signal_connect(bus, "message", G_CALLBACK(gst_bus_cb), prefs);
@@ -339,13 +342,13 @@ enable_video_test(PidginVVPrefs *prefs)
 	g_object_get(sink, "widget", &video, NULL);
 	gtk_widget_show(video);
 
-	g_clear_pointer(&prefs->video.sink_widget, gtk_widget_destroy);
 	gtk_widget_set_size_request(prefs->video.frame, 400, 300);
-	gtk_container_add(GTK_CONTAINER(prefs->video.frame), video);
-	prefs->video.sink_widget = video;
+	gtk_aspect_frame_set_child(GTK_ASPECT_FRAME(prefs->video.frame), video);
 
 	gst_element_set_state(GST_ELEMENT(prefs->video.pipeline),
 	                      GST_STATE_PLAYING);
+
+	g_object_unref(video);
 }
 
 static void

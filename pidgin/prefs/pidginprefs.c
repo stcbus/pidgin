@@ -80,7 +80,6 @@ pidgin_prefs_labeled_spin_button(GtkWidget *box, const gchar *title,
 		gtk_widget_set_size_request(spin, 60, -1);
 	g_signal_connect(G_OBJECT(adjust), "value-changed",
 					 G_CALLBACK(update_spin_value), GTK_WIDGET(spin));
-	gtk_widget_show(spin);
 
 	return pidgin_add_widget_to_vbox(GTK_BOX(box), title, sg, spin, FALSE, NULL);
 }
@@ -105,7 +104,7 @@ entry_set(GtkEntry *entry, gpointer data)
 {
 	const char *key = (const char*)data;
 
-	purple_prefs_set_string(key, gtk_entry_get_text(entry));
+	purple_prefs_set_string(key, gtk_editable_get_text(GTK_EDITABLE(entry)));
 }
 
 void
@@ -115,7 +114,7 @@ pidgin_prefs_bind_entry(const char *key, GtkWidget *entry)
 
 	value = purple_prefs_get_string(key);
 
-	gtk_entry_set_text(GTK_ENTRY(entry), value);
+	gtk_editable_set_text(GTK_EDITABLE(entry), value);
 	g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(entry_set),
 			(char*)key);
 }
@@ -371,7 +370,7 @@ static void
 set_bool_pref(GtkWidget *w, const char *key)
 {
 	purple_prefs_set_bool(key,
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)));
+			gtk_check_button_get_active(GTK_CHECK_BUTTON(w)));
 }
 
 GtkWidget *
@@ -380,15 +379,13 @@ pidgin_prefs_checkbox(const char *text, const char *key, GtkWidget *page)
 	GtkWidget *button;
 
 	button = gtk_check_button_new_with_mnemonic(text);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(button),
 			purple_prefs_get_bool(key));
 
-	gtk_box_pack_start(GTK_BOX(page), button, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(page), button);
 
 	g_signal_connect(G_OBJECT(button), "clicked",
 			G_CALLBACK(set_bool_pref), (char *)key);
-
-	gtk_widget_show(button);
 
 	return button;
 }
@@ -396,7 +393,7 @@ pidgin_prefs_checkbox(const char *text, const char *key, GtkWidget *page)
 void
 pidgin_prefs_bind_checkbox(const char *key, GtkWidget *button)
 {
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(button),
 			purple_prefs_get_bool(key));
 	g_signal_connect(G_OBJECT(button), "toggled",
 			G_CALLBACK(set_bool_pref), (char *)key);

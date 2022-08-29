@@ -56,8 +56,6 @@ pidgin_dialog_new(const gchar *title, guint border_width, const gchar *role,
 	return GTK_WIDGET(g_object_new(
 		PIDGIN_TYPE_DIALOG,
 		"title", title,
-		"border-width", border_width,
-		"role", role,
 		"resizable", resizable,
 		NULL));
 }

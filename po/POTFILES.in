@@ -373,7 +373,6 @@ pidgin/pidginstatuseditor.c
 pidgin/pidginstatusmanager.c
 pidgin/pidginstatusprimitivechooser.c
 pidgin/pidginstatusprimitivestore.c
-pidgin/pidginstylecontext.c
 pidgin/pidgintalkatu.c
 pidgin/plugins/disco/gtkdisco.c
 pidgin/plugins/disco/resources/disco.ui
@@ -407,14 +406,11 @@ pidgin/resources/Conversations/infopane.ui
 pidgin/resources/Conversations/invite_dialog.ui
 pidgin/resources/Conversations/window.ui
 pidgin/resources/Debug/debug.ui
-pidgin/resources/Debug/plugininfo.ui
 pidgin/resources/Dialogs/addbuddy.ui
 pidgin/resources/Dialogs/addchat.ui
 pidgin/resources/Keypad/keypad.ui
-pidgin/resources/Log/log-viewer.ui
 pidgin/resources/Media/window.ui
 pidgin/resources/Plugins/dialog.ui
-pidgin/resources/Plugins/menu.ui
 pidgin/resources/Prefs/away.ui
 pidgin/resources/Prefs/credentialprovider.ui
 pidgin/resources/Prefs/credentials.ui

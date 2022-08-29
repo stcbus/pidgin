@@ -25,7 +25,7 @@
 #include "pidgin/pidginavatar.h"
 
 struct _PidginAvatar {
-	GtkEventBox parent;
+	GtkBox parent;
 
 	GtkWidget *icon;
 
@@ -45,7 +45,7 @@ enum {
 };
 static GParamSpec *properties[N_PROPERTIES] = {NULL, };
 
-G_DEFINE_TYPE(PidginAvatar, pidgin_avatar, GTK_TYPE_EVENT_BOX)
+G_DEFINE_TYPE(PidginAvatar, pidgin_avatar, GTK_TYPE_BOX)
 
 /******************************************************************************
  * Actions
@@ -67,13 +67,16 @@ pidgin_avatar_save_response_cb(GtkNativeDialog *native, gint response,
 
 	if(icon != NULL) {
 		GtkFileChooser *chooser = GTK_FILE_CHOOSER(native);
+		GFile *file = NULL;
 		gchar *filename = NULL;
 
-		filename = gtk_file_chooser_get_filename(chooser);
+		file = gtk_file_chooser_get_file(chooser);
+		filename = g_file_get_path(file);
 
 		purple_buddy_icon_save_to_filename(icon, filename, NULL);
 
 		g_free(filename);
+		g_object_unref(file);
 	}
 
 	gtk_native_dialog_destroy(native);
@@ -99,7 +102,7 @@ pidgin_avatar_save_cb(GSimpleAction *action, GVariant *parameter,
 	name = purple_buddy_get_name(avatar->buddy);
 	filename = g_strdup_printf("%s.%s", purple_normalize(account, name), ext);
 
-	window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(avatar)));
+	window = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(avatar)));
 	native = gtk_file_chooser_native_new(_("Save Avatar"),
 	                                     window,
 	                                     GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -110,8 +113,7 @@ pidgin_avatar_save_cb(GSimpleAction *action, GVariant *parameter,
 
 	chooser = GTK_FILE_CHOOSER(native);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
-	gtk_file_chooser_set_filename(chooser, filename);
+	gtk_file_chooser_set_current_name(chooser, filename);
 	g_free(filename);
 
 	gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
@@ -123,6 +125,7 @@ pidgin_avatar_set_custom_response_cb(GtkNativeDialog *native, gint response,
 {
 	PidginAvatar *avatar = PIDGIN_AVATAR(data);
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER(native);
+	GFile *file = NULL;
 	gchar *filename = NULL;
 
 	if(response != GTK_RESPONSE_ACCEPT || !PURPLE_IS_BUDDY(avatar->buddy)) {
@@ -131,13 +134,17 @@ pidgin_avatar_set_custom_response_cb(GtkNativeDialog *native, gint response,
 		return;
 	}
 
-	filename = gtk_file_chooser_get_filename(chooser);
+	file = gtk_file_chooser_get_file(chooser);
+	filename = g_file_get_path(file);
 	if(filename != NULL) {
 		PurpleContact *contact = purple_buddy_get_contact(avatar->buddy);
 		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
 
 		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
 	}
+
+	g_free(filename);
+	g_object_unref(file);
 
 	gtk_native_dialog_destroy(native);
 }
@@ -150,7 +157,7 @@ pidgin_avatar_set_custom_cb(GSimpleAction *action, GVariant *parameter,
 	GtkFileChooserNative *native = NULL;
 	GtkWindow *window = NULL;
 
-	window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(avatar)));
+	window = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(avatar)));
 	native = gtk_file_chooser_native_new(_("Set Custom Avatar"),
 	                                     window,
 	                                     GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -253,6 +260,7 @@ static void
 pidgin_avatar_update(PidginAvatar *avatar) {
 	PurpleAccount *account = NULL;
 	GdkPixbufAnimation *animation = NULL;
+	GdkPixbuf *pixbuf = NULL;
 
 	if(PURPLE_IS_BUDDY(avatar->buddy)) {
 		animation = pidgin_avatar_find_buddy_icon(avatar->buddy, NULL);
@@ -275,18 +283,13 @@ pidgin_avatar_update(PidginAvatar *avatar) {
 
 	if(GDK_IS_PIXBUF_ANIMATION(avatar->animation)) {
 		if(avatar->animate) {
-			gtk_image_set_from_animation(GTK_IMAGE(avatar->icon),
-			                             avatar->animation);
+			pixbuf = GDK_PIXBUF(avatar->animation);
 		} else {
-			GdkPixbuf *frame = NULL;
-
-			frame = gdk_pixbuf_animation_get_static_image(avatar->animation);
-
-			gtk_image_set_from_pixbuf(GTK_IMAGE(avatar->icon), frame);
+			pixbuf = gdk_pixbuf_animation_get_static_image(avatar->animation);
 		}
-	} else {
-		gtk_image_clear(GTK_IMAGE(avatar->icon));
 	}
+
+	gtk_picture_set_pixbuf(GTK_PICTURE(avatar->icon), pixbuf);
 
 	g_clear_object(&animation);
 }
@@ -295,7 +298,10 @@ pidgin_avatar_update(PidginAvatar *avatar) {
  * Callbacks
  *****************************************************************************/
 static gboolean
-pidgin_avatar_button_press_handler(GtkWidget *widget, GdkEventButton *event,
+pidgin_avatar_button_press_handler(G_GNUC_UNUSED GtkGestureClick *event,
+                                   G_GNUC_UNUSED gint n_press,
+                                   gdouble x,
+                                   gdouble y,
                                    gpointer data)
 {
 	PidginAvatar *avatar = PIDGIN_AVATAR(data);
@@ -303,18 +309,13 @@ pidgin_avatar_button_press_handler(GtkWidget *widget, GdkEventButton *event,
 	GtkWidget *menu = NULL;
 	GMenuModel *model = NULL;
 
-	if(!gdk_event_triggers_context_menu((GdkEvent *)event)) {
-		return FALSE;
-	}
-
 	builder = gtk_builder_new_from_resource("/im/pidgin/Pidgin3/Avatar/menu.ui");
 	model = (GMenuModel *)gtk_builder_get_object(builder, "menu");
 
-	menu = gtk_popover_menu_new();
-	gtk_popover_bind_model(GTK_POPOVER(menu), model, NULL);
-	gtk_popover_set_relative_to(GTK_POPOVER(menu), GTK_WIDGET(avatar));
+	menu = gtk_popover_menu_new_from_model(model);
+	gtk_widget_set_parent(menu, GTK_WIDGET(avatar));
 	gtk_popover_set_pointing_to(GTK_POPOVER(menu),
-	                            &(const GdkRectangle){(int)event->x, (int)event->y, 0, 0});
+	                            &(const GdkRectangle){(int)x, (int)y, 0, 0});
 
 	g_clear_object(&builder);
 
@@ -351,10 +352,12 @@ pidgin_avatar_conversation_updated(GObject *obj, GParamSpec *pspec, gpointer d)
 }
 
 static gboolean
-pidgin_avatar_enter_notify_handler(GtkWidget *widget, GdkEvent *event,
+pidgin_avatar_enter_notify_handler(G_GNUC_UNUSED GtkEventControllerMotion *event,
+                                   G_GNUC_UNUSED gdouble x,
+                                   G_GNUC_UNUSED gdouble y,
                                    gpointer data)
 {
-	PidginAvatar *avatar = PIDGIN_AVATAR(widget);
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
 
 	pidgin_avatar_set_animate(avatar, TRUE);
 
@@ -362,10 +365,10 @@ pidgin_avatar_enter_notify_handler(GtkWidget *widget, GdkEvent *event,
 }
 
 static gboolean
-pidgin_avatar_leave_notify_handler(GtkWidget *widget, GdkEvent *event,
-                                   gpointer user_data)
+pidgin_avatar_leave_notify_handler(G_GNUC_UNUSED GtkEventControllerMotion *event,
+                                   gpointer data)
 {
-	PidginAvatar *avatar = PIDGIN_AVATAR(widget);
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
 
 	pidgin_avatar_set_animate(avatar, FALSE);
 
@@ -436,12 +439,6 @@ pidgin_avatar_init(PidginAvatar *avatar) {
 	GSimpleActionGroup *group = NULL;
 
 	gtk_widget_init_template(GTK_WIDGET(avatar));
-
-	/* For development/design purposes, the avatar defaults to the
-	 * "image-missing" icon.  However, we don't want to display that to users,
-	 * so we clear it during run time.
-	 */
-	gtk_image_clear(GTK_IMAGE(avatar->icon));
 
 	/* Now setup our actions. */
 	group = g_simple_action_group_new();
@@ -527,8 +524,8 @@ pidgin_avatar_set_animate(PidginAvatar *avatar, gboolean animate) {
 
 	if(GDK_IS_PIXBUF_ANIMATION(avatar->animation)) {
 		if(avatar->animate) {
-			gtk_image_set_from_animation(GTK_IMAGE(avatar->icon),
-			                             avatar->animation);
+			gtk_image_set_from_pixbuf(GTK_IMAGE(avatar->icon),
+			                          GDK_PIXBUF(avatar->animation));
 		} else {
 			GdkPixbuf *frame = NULL;
 

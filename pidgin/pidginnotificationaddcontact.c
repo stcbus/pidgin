@@ -29,7 +29,7 @@
 #include "pidgin/gtkdialogs.h"
 
 struct _PidginNotificationAddContact {
-	HdyActionRow parent;
+	AdwActionRow parent;
 
 	PurpleNotification *notification;
 
@@ -45,7 +45,7 @@ enum {
 static GParamSpec *properties[N_PROPERTIES] = { NULL, };
 
 G_DEFINE_TYPE(PidginNotificationAddContact, pidgin_notification_add_contact,
-              HDY_TYPE_ACTION_ROW)
+              ADW_TYPE_ACTION_ROW)
 
 /******************************************************************************
  * Helpers
@@ -61,11 +61,11 @@ pidgin_notification_add_contact_update(PidginNotificationAddContact *add_contact
 	g_return_if_fail(PIDGIN_IS_NOTIFICATION_ADD_CONTACT(add_contact));
 
 	if(!PURPLE_IS_NOTIFICATION(add_contact->notification)) {
-		hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(add_contact),
+		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(add_contact),
 		                              _("Notification missing"));
 
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(add_contact), NULL);
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(add_contact), NULL);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(add_contact), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(add_contact), NULL);
 
 		gtk_widget_hide(add_contact->add);
 		gtk_widget_hide(add_contact->message);
@@ -75,11 +75,11 @@ pidgin_notification_add_contact_update(PidginNotificationAddContact *add_contact
 
 	account = purple_notification_get_account(add_contact->notification);
 	if(!PURPLE_IS_ACCOUNT(account)) {
-		hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(add_contact),
+		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(add_contact),
 		                              _("Notification is missing an account"));
 
-		hdy_action_row_set_icon_name(HDY_ACTION_ROW(add_contact), NULL);
-		hdy_action_row_set_subtitle(HDY_ACTION_ROW(add_contact), NULL);
+		adw_action_row_set_icon_name(ADW_ACTION_ROW(add_contact), NULL);
+		adw_action_row_set_subtitle(ADW_ACTION_ROW(add_contact), NULL);
 
 		gtk_widget_hide(add_contact->add);
 		gtk_widget_hide(add_contact->message);
@@ -101,13 +101,13 @@ pidgin_notification_add_contact_update(PidginNotificationAddContact *add_contact
 			icon_name = "dialog-question";
 		}
 	}
-	hdy_action_row_set_icon_name(HDY_ACTION_ROW(add_contact), icon_name);
+	adw_action_row_set_icon_name(ADW_ACTION_ROW(add_contact), icon_name);
 
 	title = purple_notification_get_title(add_contact->notification);
-	hdy_preferences_row_set_title(HDY_PREFERENCES_ROW(add_contact), title);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(add_contact), title);
 
 	message = purple_add_contact_request_get_message(request);
-	hdy_action_row_set_subtitle(HDY_ACTION_ROW(add_contact), message);
+	adw_action_row_set_subtitle(ADW_ACTION_ROW(add_contact), message);
 
 	gtk_widget_show(add_contact->add);
 	gtk_widget_show(add_contact->message);

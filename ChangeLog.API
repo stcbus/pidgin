@@ -829,6 +829,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_append_menu_action
 		* pidgin_blist_add_alert
 		* pidgin_blist_draw_tooltip
+		* pidgin_blist_get_status_icon
 		* pidgin_blist_get_theme
 		* pidgin_blist_layout_get_type
 		* pidgin_blist_make_buddy_menu
@@ -927,6 +928,8 @@ version 3.0.0 (??/??/????):
 		* pidgin_conversations_fill_menu
 		* pidgin_conversations_get_unseen_all
 		* pidgin_create_dialog, use pidgin_dialog_new instead.
+		* pidgin_create_icon_from_protocol
+		* pidgin_create_protocol_icon
 		* pidgin_create_small_button, use pidgin_close_button_new instead.
 		* pidgin_create_status_icon
 		* pidgin_create_window, use pidgin_window_new instead.
@@ -936,6 +939,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_dialog_get_vbox
 		* pidgin_dialog_get_vbox_with_properties
 		* pidgin_dialogs_alias_contact
+		* pidgin_dialogs_destroy_all
 		* pidgin_dialogs_log
 		* pidgin_get_dim_grey_string
 		* pidgin_gdk_pixbuf_make_round, use purple_gdk_pixbuf_make_round instead.
@@ -973,6 +977,9 @@ version 3.0.0 (??/??/????):
 		* pidgin_idle_get_ui_ops
 		* pidgin_load_accels
 		* pidgin_make_mini_dialog_with_custom_icon
+		* pidgin_make_scrollable
+		* pidgin_mini_dialog_new_with_custom_icon
+		* pidgin_mini_dialog_set_custom_icon
 		* pidgin_make_pretty_arrows
 		* PidginMiniDialog
 		* PidginMiniDialogCallback
@@ -1071,6 +1078,8 @@ version 3.0.0 (??/??/????):
 		* PIDGIN_TYPE_STOCK_ICON_THEME
 		* PidginStockIconTheme
 		* PidginStockIconThemeClass
+		* pidgin_text_combo_box_entry_new
+		* pidgin_text_combo_box_entry_get_text
 		* pidgin_text_combo_box_entry_set_text
 		* pidgin_theme_font_free
 		* pidgin_theme_font_get_color
