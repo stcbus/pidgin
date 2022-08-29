@@ -211,21 +211,18 @@ pause_cb(GtkWidget *w, PidginDebugWindow *win)
  *****************************************************************************/
 static void
 regex_clear_color(GtkWidget *w) {
-	GtkStyleContext *context = gtk_widget_get_style_context(w);
-	gtk_style_context_remove_class(context, "error");
-	gtk_style_context_remove_class(context, "success");
+	gtk_widget_remove_css_class(w, "error");
+	gtk_widget_remove_css_class(w, "success");
 }
 
 static void
 regex_change_color(GtkWidget *w, gboolean success) {
-	GtkStyleContext *context = gtk_widget_get_style_context(w);
-
 	if (success) {
-		gtk_style_context_remove_class(context, "error");
-		gtk_style_context_add_class(context, "success");
+		gtk_widget_remove_css_class(w, "error");
+		gtk_widget_add_css_class(w, "success");
 	} else {
-		gtk_style_context_remove_class(context, "success");
-		gtk_style_context_add_class(context, "error");
+		gtk_widget_remove_css_class(w, "success");
+		gtk_widget_add_css_class(w, "error");
 	}
 }
 

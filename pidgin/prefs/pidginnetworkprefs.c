@@ -58,23 +58,23 @@ G_DEFINE_TYPE(PidginNetworkPrefs, pidgin_network_prefs,
 static void
 network_ip_changed(GtkEditable *editable, gpointer data)
 {
-	const gchar *text = gtk_editable_get_text(GTK_EDITABLE(editable));
-	GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(editable));
+	const gchar *text = gtk_editable_get_text(editable);
+	GtkWidget *widget = GTK_WIDGET(editable);
 
 	if (text && *text) {
 		if (g_hostname_is_ip_address(text)) {
 			purple_network_set_public_ip(text);
-			gtk_style_context_add_class(context, "good-ip");
-			gtk_style_context_remove_class(context, "bad-ip");
+			gtk_widget_remove_css_class(widget, "error");
+			gtk_widget_add_css_class(widget, "success");
 		} else {
-			gtk_style_context_add_class(context, "bad-ip");
-			gtk_style_context_remove_class(context, "good-ip");
+			gtk_widget_remove_css_class(widget, "success");
+			gtk_widget_add_css_class(widget, "error");
 		}
 
 	} else {
 		purple_network_set_public_ip("");
-		gtk_style_context_remove_class(context, "bad-ip");
-		gtk_style_context_remove_class(context, "good-ip");
+		gtk_widget_remove_css_class(widget, "success");
+		gtk_widget_remove_css_class(widget, "error");
 	}
 }
 
@@ -194,9 +194,6 @@ pidgin_network_prefs_class_init(PidginNetworkPrefsClass *klass)
 static void
 pidgin_network_prefs_init(PidginNetworkPrefs *prefs)
 {
-	GtkStyleContext *context;
-	GtkCssProvider *ip_css;
-
 	gtk_widget_init_template(GTK_WIDGET(prefs));
 
 	gtk_editable_set_text(GTK_EDITABLE(prefs->stun_server),
@@ -207,15 +204,6 @@ pidgin_network_prefs_init(PidginNetworkPrefs *prefs)
 
 	gtk_editable_set_text(GTK_EDITABLE(prefs->public_ip),
 	                      purple_network_get_public_ip());
-
-	ip_css = gtk_css_provider_new();
-	gtk_css_provider_load_from_resource(ip_css,
-	                                    "/im/pidgin/Pidgin3/Prefs/ip.css");
-
-	context = gtk_widget_get_style_context(prefs->public_ip);
-	gtk_style_context_add_provider(context,
-	                               GTK_STYLE_PROVIDER(ip_css),
-	                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 	g_object_bind_property(prefs->auto_ip, "active",
 			prefs->public_ip_hbox, "sensitive",
