@@ -48,161 +48,31 @@ static GParamSpec *properties[N_PROPERTIES] = {NULL, };
 G_DEFINE_TYPE(PidginAvatar, pidgin_avatar, GTK_TYPE_BOX)
 
 /******************************************************************************
- * Actions
- *****************************************************************************/
-static void
-pidgin_avatar_save_response_cb(GtkNativeDialog *native, gint response,
-                               gpointer data)
-{
-	PidginAvatar *avatar = PIDGIN_AVATAR(data);
-	PurpleBuddyIcon *icon = NULL;
-
-	if(response != GTK_RESPONSE_ACCEPT || !PURPLE_IS_BUDDY(avatar->buddy)) {
-		gtk_native_dialog_destroy(native);
-
-		return;
-	}
-
-	icon = purple_buddy_get_icon(avatar->buddy);
-
-	if(icon != NULL) {
-		GtkFileChooser *chooser = GTK_FILE_CHOOSER(native);
-		GFile *file = NULL;
-		gchar *filename = NULL;
-
-		file = gtk_file_chooser_get_file(chooser);
-		filename = g_file_get_path(file);
-
-		purple_buddy_icon_save_to_filename(icon, filename, NULL);
-
-		g_free(filename);
-		g_object_unref(file);
-	}
-
-	gtk_native_dialog_destroy(native);
-}
-
-static void
-pidgin_avatar_save_cb(GSimpleAction *action, GVariant *parameter,
-                      gpointer data)
-{
-	PidginAvatar *avatar = PIDGIN_AVATAR(data);
-	PurpleAccount *account = NULL;
-	GtkFileChooserNative *native = NULL;
-	GtkFileChooser *chooser = NULL;
-	GtkWindow *window = NULL;
-	const gchar *ext = NULL, *name = NULL;
-	gchar *filename = NULL;
-
-	g_return_if_fail(PURPLE_IS_BUDDY(avatar->buddy));
-
-	ext = purple_buddy_icon_get_extension(purple_buddy_get_icon(avatar->buddy));
-
-	account = purple_buddy_get_account(avatar->buddy);
-	name = purple_buddy_get_name(avatar->buddy);
-	filename = g_strdup_printf("%s.%s", purple_normalize(account, name), ext);
-
-	window = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(avatar)));
-	native = gtk_file_chooser_native_new(_("Save Avatar"),
-	                                     window,
-	                                     GTK_FILE_CHOOSER_ACTION_SAVE,
-	                                     _("_Save"),
-	                                     _("_Cancel"));
-	g_signal_connect(G_OBJECT(native), "response",
-	                 G_CALLBACK(pidgin_avatar_save_response_cb), avatar);
-
-	chooser = GTK_FILE_CHOOSER(native);
-
-	gtk_file_chooser_set_current_name(chooser, filename);
-	g_free(filename);
-
-	gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
-}
-
-static void
-pidgin_avatar_set_custom_response_cb(GtkNativeDialog *native, gint response,
-                                     gpointer data)
-{
-	PidginAvatar *avatar = PIDGIN_AVATAR(data);
-	GtkFileChooser *chooser = GTK_FILE_CHOOSER(native);
-	GFile *file = NULL;
-	gchar *filename = NULL;
-
-	if(response != GTK_RESPONSE_ACCEPT || !PURPLE_IS_BUDDY(avatar->buddy)) {
-		gtk_native_dialog_destroy(native);
-
-		return;
-	}
-
-	file = gtk_file_chooser_get_file(chooser);
-	filename = g_file_get_path(file);
-	if(filename != NULL) {
-		PurpleContact *contact = purple_buddy_get_contact(avatar->buddy);
-		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
-
-		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
-	}
-
-	g_free(filename);
-	g_object_unref(file);
-
-	gtk_native_dialog_destroy(native);
-}
-
-static void
-pidgin_avatar_set_custom_cb(GSimpleAction *action, GVariant *parameter,
-                            gpointer data)
-{
-	PidginAvatar *avatar = PIDGIN_AVATAR(data);
-	GtkFileChooserNative *native = NULL;
-	GtkWindow *window = NULL;
-
-	window = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(avatar)));
-	native = gtk_file_chooser_native_new(_("Set Custom Avatar"),
-	                                     window,
-	                                     GTK_FILE_CHOOSER_ACTION_OPEN,
-	                                     _("_Set Custom"),
-	                                     _("_Cancel"));
-
-	g_signal_connect(G_OBJECT(native), "response",
-	                 G_CALLBACK(pidgin_avatar_set_custom_response_cb), avatar);
-
-	gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
-}
-
-static void
-pidgin_avatar_clear_custom_cb(GSimpleAction *action, GVariant *parameter,
-                              gpointer data)
-{
-	PidginAvatar *avatar = PIDGIN_AVATAR(data);
-
-	if(PURPLE_IS_BUDDY(avatar->buddy)) {
-		PurpleContact *contact = purple_buddy_get_contact(avatar->buddy);
-		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
-
-		purple_buddy_icons_node_set_custom_icon_from_file(node, NULL);
-	}
-}
-
-static GActionEntry actions[] = {
-	{
-		.name = "save-avatar",
-		.activate = pidgin_avatar_save_cb,
-	}, {
-		.name = "set-custom-avatar",
-		.activate = pidgin_avatar_set_custom_cb,
-	}, {
-		.name = "clear-custom-avatar",
-		.activate = pidgin_avatar_clear_custom_cb,
-	},
-};
-
-/******************************************************************************
  * Helpers
  *****************************************************************************/
+static PurpleBuddy *
+pidgin_avatar_get_effective_buddy(PidginAvatar *avatar) {
+	PurpleBuddy *buddy = NULL;
+
+	if(PURPLE_IS_BUDDY(avatar->buddy)) {
+		buddy = PURPLE_BUDDY(avatar->buddy);
+
+	} else if(PURPLE_IS_IM_CONVERSATION(avatar->conversation)) {
+		PurpleAccount *account = NULL;
+		const gchar *name = NULL;
+
+		account = purple_conversation_get_account(avatar->conversation);
+
+		name = purple_conversation_get_name(avatar->conversation);
+		buddy = purple_blist_find_buddy(account, name);
+	}
+
+	return buddy;
+}
+
 static GdkPixbufAnimation *
 pidgin_avatar_find_buddy_icon(PurpleBuddy *buddy,
-                              PurpleIMConversation *conversation)
+                              PurpleConversation *conversation)
 {
 	GdkPixbufAnimation *ret = NULL;
 	GInputStream *stream = NULL;
@@ -258,31 +128,21 @@ pidgin_avatar_find_buddy_icon(PurpleBuddy *buddy,
 
 static void
 pidgin_avatar_update(PidginAvatar *avatar) {
-	PurpleAccount *account = NULL;
+	PurpleBuddy *buddy = NULL;
 	GdkPixbufAnimation *animation = NULL;
 	GdkPixbuf *pixbuf = NULL;
 
-	if(PURPLE_IS_BUDDY(avatar->buddy)) {
-		animation = pidgin_avatar_find_buddy_icon(avatar->buddy, NULL);
-	} else if(PURPLE_IS_IM_CONVERSATION(avatar->conversation)) {
-		PurpleBuddy *buddy = NULL;
-		const gchar *name = NULL;
-
-		account = purple_conversation_get_account(avatar->conversation);
-
-		name = purple_conversation_get_name(avatar->conversation);
-		buddy = purple_blist_find_buddy(account, name);
-
-		if(PURPLE_IS_BUDDY(buddy)) {
-			animation = pidgin_avatar_find_buddy_icon(buddy,
-		                                              PURPLE_IM_CONVERSATION(avatar->conversation));
-		}
+	buddy = pidgin_avatar_get_effective_buddy(avatar);
+	if(PURPLE_IS_BUDDY(buddy)) {
+		animation = pidgin_avatar_find_buddy_icon(buddy,
+		                                          avatar->conversation);
 	}
 
 	g_set_object(&avatar->animation, animation);
 
 	if(GDK_IS_PIXBUF_ANIMATION(avatar->animation)) {
-		if(avatar->animate) {
+		if(avatar->animate &&
+		   !gdk_pixbuf_animation_is_static_image(avatar->animation)) {
 			pixbuf = GDK_PIXBUF(avatar->animation);
 		} else {
 			pixbuf = gdk_pixbuf_animation_get_static_image(avatar->animation);
@@ -293,6 +153,182 @@ pidgin_avatar_update(PidginAvatar *avatar) {
 
 	g_clear_object(&animation);
 }
+
+/******************************************************************************
+ * Actions
+ *****************************************************************************/
+static void
+pidgin_avatar_save_response_cb(GtkNativeDialog *native, gint response,
+                               gpointer data)
+{
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
+	PurpleBuddy *buddy = NULL;
+	PurpleBuddyIcon *icon = NULL;
+
+	if(response != GTK_RESPONSE_ACCEPT) {
+		gtk_native_dialog_destroy(native);
+
+		return;
+	}
+
+	buddy = pidgin_avatar_get_effective_buddy(avatar);
+	if(!PURPLE_IS_BUDDY(buddy)) {
+		gtk_native_dialog_destroy(native);
+
+		return;
+	}
+
+	icon = purple_buddy_get_icon(buddy);
+
+	if(icon != NULL) {
+		GtkFileChooser *chooser = GTK_FILE_CHOOSER(native);
+		GFile *file = NULL;
+		gchar *filename = NULL;
+
+		file = gtk_file_chooser_get_file(chooser);
+		filename = g_file_get_path(file);
+
+		purple_buddy_icon_save_to_filename(icon, filename, NULL);
+
+		g_free(filename);
+		g_object_unref(file);
+	}
+
+	gtk_native_dialog_destroy(native);
+}
+
+static void
+pidgin_avatar_save_cb(GSimpleAction *action, GVariant *parameter,
+                      gpointer data)
+{
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
+	PurpleBuddy *buddy = NULL;
+	PurpleAccount *account = NULL;
+	GtkFileChooserNative *native = NULL;
+	GtkFileChooser *chooser = NULL;
+	GtkWindow *window = NULL;
+	const gchar *ext = NULL, *name = NULL;
+	gchar *filename = NULL;
+
+	buddy = pidgin_avatar_get_effective_buddy(avatar);
+	if(buddy == NULL) {
+		g_return_if_reached();
+	}
+
+	ext = purple_buddy_icon_get_extension(purple_buddy_get_icon(buddy));
+
+	account = purple_buddy_get_account(buddy);
+	name = purple_buddy_get_name(buddy);
+	filename = g_strdup_printf("%s.%s", purple_normalize(account, name), ext);
+
+	window = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(avatar)));
+	native = gtk_file_chooser_native_new(_("Save Avatar"),
+	                                     window,
+	                                     GTK_FILE_CHOOSER_ACTION_SAVE,
+	                                     _("_Save"),
+	                                     _("_Cancel"));
+	g_signal_connect(G_OBJECT(native), "response",
+	                 G_CALLBACK(pidgin_avatar_save_response_cb), avatar);
+
+	chooser = GTK_FILE_CHOOSER(native);
+
+	gtk_file_chooser_set_current_name(chooser, filename);
+	g_free(filename);
+
+	gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
+}
+
+static void
+pidgin_avatar_set_custom_response_cb(GtkNativeDialog *native, gint response,
+                                     gpointer data)
+{
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
+	PurpleBuddy *buddy = NULL;
+	GtkFileChooser *chooser = GTK_FILE_CHOOSER(native);
+	GFile *file = NULL;
+	gchar *filename = NULL;
+
+	if(response != GTK_RESPONSE_ACCEPT) {
+		gtk_native_dialog_destroy(native);
+
+		return;
+	}
+
+	buddy = pidgin_avatar_get_effective_buddy(avatar);
+	if(!PURPLE_IS_BUDDY(buddy)) {
+		gtk_native_dialog_destroy(native);
+
+		return;
+	}
+
+	file = gtk_file_chooser_get_file(chooser);
+	filename = g_file_get_path(file);
+	if(filename != NULL) {
+		PurpleContact *contact = purple_buddy_get_contact(buddy);
+		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
+
+		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
+
+		pidgin_avatar_update(avatar);
+	}
+
+	g_free(filename);
+	g_object_unref(file);
+
+	gtk_native_dialog_destroy(native);
+}
+
+static void
+pidgin_avatar_set_custom_cb(GSimpleAction *action, GVariant *parameter,
+                            gpointer data)
+{
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
+	GtkFileChooserNative *native = NULL;
+	GtkWindow *window = NULL;
+
+	window = GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(avatar)));
+	native = gtk_file_chooser_native_new(_("Set Custom Avatar"),
+	                                     window,
+	                                     GTK_FILE_CHOOSER_ACTION_OPEN,
+	                                     _("_Set Custom"),
+	                                     _("_Cancel"));
+
+	g_signal_connect(G_OBJECT(native), "response",
+	                 G_CALLBACK(pidgin_avatar_set_custom_response_cb), avatar);
+
+	gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
+}
+
+static void
+pidgin_avatar_clear_custom_cb(GSimpleAction *action, GVariant *parameter,
+                              gpointer data)
+{
+	PidginAvatar *avatar = PIDGIN_AVATAR(data);
+	PurpleBuddy *buddy = NULL;
+
+	buddy = pidgin_avatar_get_effective_buddy(avatar);
+	if(PURPLE_IS_BUDDY(buddy)) {
+		PurpleContact *contact = purple_buddy_get_contact(buddy);
+		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
+
+		purple_buddy_icons_node_set_custom_icon_from_file(node, NULL);
+
+		pidgin_avatar_update(avatar);
+	}
+}
+
+static GActionEntry actions[] = {
+	{
+		.name = "save-avatar",
+		.activate = pidgin_avatar_save_cb,
+	}, {
+		.name = "set-custom-avatar",
+		.activate = pidgin_avatar_set_custom_cb,
+	}, {
+		.name = "clear-custom-avatar",
+		.activate = pidgin_avatar_clear_custom_cb,
+	},
+};
 
 /******************************************************************************
  * Callbacks
@@ -440,6 +476,10 @@ pidgin_avatar_init(PidginAvatar *avatar) {
 
 	gtk_widget_init_template(GTK_WIDGET(avatar));
 
+#if GTK_CHECK_VERSION(4,8,0)
+	gtk_picture_set_content_fit(GTK_PICTURE(avatar->icon),
+	                            GTK_CONTENT_FIT_SCALE_DOWN);
+#endif
 	/* Now setup our actions. */
 	group = g_simple_action_group_new();
 	g_action_map_add_action_entries(G_ACTION_MAP(group), actions,
@@ -523,15 +563,16 @@ pidgin_avatar_set_animate(PidginAvatar *avatar, gboolean animate) {
 	avatar->animate = animate;
 
 	if(GDK_IS_PIXBUF_ANIMATION(avatar->animation)) {
-		if(avatar->animate) {
-			gtk_image_set_from_pixbuf(GTK_IMAGE(avatar->icon),
-			                          GDK_PIXBUF(avatar->animation));
+		if(avatar->animate &&
+		   !gdk_pixbuf_animation_is_static_image(avatar->animation)) {
+			gtk_picture_set_pixbuf(GTK_PICTURE(avatar->icon),
+			                       GDK_PIXBUF(avatar->animation));
 		} else {
 			GdkPixbuf *frame = NULL;
 
 			frame = gdk_pixbuf_animation_get_static_image(avatar->animation);
 
-			gtk_image_set_from_pixbuf(GTK_IMAGE(avatar->icon), frame);
+			gtk_picture_set_pixbuf(GTK_PICTURE(avatar->icon), frame);
 		}
 	}
 }
