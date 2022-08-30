@@ -395,14 +395,19 @@ static void
 pidgin_application_plugins(GSimpleAction *simple, GVariant *parameter,
                            gpointer data)
 {
-	GtkWidget *dialog = pidgin_plugins_dialog_new();
+	static GtkWidget *dialog = NULL;
+
+	if(!GTK_IS_WIDGET(dialog)) {
+		dialog = pidgin_plugins_dialog_new();
+		g_object_add_weak_pointer(G_OBJECT(dialog), (gpointer)&dialog);
 
 	/* fixme? */
 #if 0
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
 #endif
+	}
 
-	gtk_widget_show(dialog);
+	gtk_window_present_with_time(GTK_WINDOW(dialog), GDK_CURRENT_TIME);
 }
 
 static void
