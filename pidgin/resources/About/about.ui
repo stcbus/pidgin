@@ -61,7 +61,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         <child>
           <object class="GtkBox">
             <property name="vexpand">1</property>
-            <property name="valign">fill</property>
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
@@ -84,7 +83,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             <child>
               <object class="GtkStack" id="stack">
                 <property name="vexpand">1</property>
-                <property name="valign">fill</property>
                 <property name="width-request">400</property>
                 <property name="height-request">150</property>
                 <property name="margin-bottom">2</property>
@@ -239,7 +237,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
           <object class="GtkStackSwitcher" id="switcher">
             <property name="stack">stack</property>
             <property name="hexpand">1</property>
-            <property name="halign">fill</property>
           </object>
         </child>
         <child>
@@ -248,7 +245,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             <property name="focusable">1</property>
             <property name="receives-default">1</property>
             <property name="hexpand">1</property>
-            <property name="halign">fill</property>
           </object>
         </child>
       </object>

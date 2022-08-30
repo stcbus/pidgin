@@ -150,12 +150,10 @@ pidgin_add_chat_dialog_update_components(PidginAddChatDialog *dialog) {
 		label = gtk_label_new_with_mnemonic(pce->label);
 		gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
 		gtk_label_set_yalign(GTK_LABEL(label), 0.0f);
-		gtk_widget_set_halign(label, GTK_ALIGN_FILL);
 		gtk_box_append(GTK_BOX(box), label);
 		gtk_size_group_add_widget(dialog->sg, label);
 
 		gtk_widget_set_hexpand(input, TRUE);
-		gtk_widget_set_halign(input, GTK_ALIGN_FILL);
 		gtk_box_append(GTK_BOX(box), input);
 		if(!focus_set) {
 			gtk_widget_grab_focus(input);

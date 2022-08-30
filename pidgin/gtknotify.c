@@ -284,7 +284,6 @@ pidgin_notify_formatted(const char *title, const char *primary,
 	/* Add the view */
 	sw = gtk_scrolled_window_new();
 	gtk_box_append(GTK_BOX(vbox), sw);
-	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand(sw, TRUE);
 
 	buffer = talkatu_html_buffer_new();
@@ -438,7 +437,6 @@ pidgin_notify_searchresults(PurpleConnection *gc, const char *title,
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
 	                               GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), treeview);
-	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand(sw, TRUE);
 	gtk_box_append(GTK_BOX(vbox), sw);
 

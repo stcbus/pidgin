@@ -795,11 +795,9 @@ pidgin_add_widget_to_vbox(GtkBox *vbox, const char *widget_label, GtkSizeGroup *
 		gtk_box_append(GTK_BOX(hbox), label);
 
 		gtk_widget_set_hexpand(widget, expand);
-		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
 		gtk_box_append(GTK_BOX(hbox), widget);
 	} else {
 		gtk_widget_set_vexpand(widget, expand);
-		gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
 		gtk_box_append(vbox, widget);
 
 		hbox = GTK_WIDGET(vbox);

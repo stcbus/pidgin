@@ -65,7 +65,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="PidginAccountChooser" id="account_chooser">
                 <property name="hexpand">1</property>
-                <property name="halign">fill</property>
                 <property name="model">connected_account_store</property>
                 <property name="active">0</property>
                 <signal name="changed" handler="select_account_cb" object="PidginPrivacyDialog" swapped="no"/>
@@ -78,14 +77,12 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
         </child>
         <child>
           <object class="GtkComboBoxText" id="type_menu">
-            <property name="valign">fill</property>
             <signal name="changed" handler="type_changed_cb" object="PidginPrivacyDialog" swapped="no"/>
           </object>
         </child>
         <child>
           <object class="GtkScrolledWindow" id="allow_widget">
             <property name="vexpand">1</property>
-            <property name="valign">fill</property>
             <property name="height-request">200</property>
             <property name="focusable">1</property>
             <property name="child">
@@ -118,7 +115,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
         <child>
           <object class="GtkScrolledWindow" id="block_widget">
             <property name="vexpand">1</property>
-            <property name="valign">fill</property>
             <property name="height-request">200</property>
             <property name="focusable">1</property>
             <property name="child">

@@ -558,7 +558,6 @@ pidgin_media_add_audio_widget(PidginMedia *gtkmedia,
 	volume_widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	progress_parent = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_set_hexpand(progress_parent, TRUE);
-	gtk_widget_set_halign(progress_parent, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(volume_widget), progress_parent);
 
 	/* Volume button */
@@ -637,9 +636,7 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 			PURPLE_MEDIA_RECV_AUDIO)) {
 		recv_widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 		gtk_widget_set_hexpand(recv_widget, TRUE);
-		gtk_widget_set_halign(recv_widget, GTK_ALIGN_FILL);
 		gtk_widget_set_vexpand(recv_widget, TRUE);
-		gtk_widget_set_valign(recv_widget, GTK_ALIGN_FILL);
 		gtk_box_append(GTK_BOX(gtkmedia->priv->display), recv_widget);
 	} else {
 		recv_widget = gtkmedia->priv->recv_widget;
@@ -648,12 +645,9 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 			&& type & (PURPLE_MEDIA_SEND_VIDEO |
 			PURPLE_MEDIA_SEND_AUDIO)) {
 		send_widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-		gtk_widget_set_halign(send_widget, GTK_ALIGN_FILL);
-		gtk_widget_set_valign(send_widget, GTK_ALIGN_FILL);
 		gtk_box_prepend(GTK_BOX(gtkmedia->priv->display), send_widget);
 
 		button_widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-		gtk_widget_set_valign(button_widget, GTK_ALIGN_FILL);
 		gtk_box_append(GTK_BOX(send_widget), button_widget);
 
 		/* Hold button */
@@ -684,7 +678,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		}
 		g_object_get(G_OBJECT(sink), "widget", &remote_video, NULL);
 		gtk_widget_show(remote_video);
-		gtk_widget_set_valign(remote_video, GTK_ALIGN_FILL);
 		gtk_widget_set_vexpand(remote_video, TRUE);
 		gtk_box_append(GTK_BOX(recv_widget), remote_video);
 
@@ -707,7 +700,6 @@ pidgin_media_ready_cb(PurpleMedia *media, PidginMedia *gtkmedia, const gchar *si
 		}
 		g_object_get(G_OBJECT(sink), "widget", &local_video, NULL);
 		gtk_widget_show(local_video);
-		gtk_widget_set_valign(local_video, GTK_ALIGN_FILL);
 		gtk_widget_set_vexpand(local_video, TRUE);
 		gtk_box_append(GTK_BOX(send_widget), local_video);
 

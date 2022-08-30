@@ -48,7 +48,6 @@ License along with this library; if not, see <https://www.gnu.org/licenses/>.
     <child internal-child="content_area">
       <object class="GtkScrolledWindow">
         <property name="vexpand">1</property>
-        <property name="valign">fill</property>
         <property name="focusable">1</property>
         <child>
           <object class="GtkTreeView">

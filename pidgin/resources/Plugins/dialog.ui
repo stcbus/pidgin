@@ -32,7 +32,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
         <child>
           <object class="GPluginGtkView" id="view">
             <property name="vexpand">1</property>
-            <property name="valign">fill</property>
           </object>
         </child>
       </object>

@@ -46,7 +46,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
         <child>
           <object class="GtkBox" id="display">
             <property name="vexpand">1</property>
-            <property name="valign">fill</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>

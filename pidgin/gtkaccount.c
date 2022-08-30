@@ -592,7 +592,6 @@ add_user_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_set_hexpand(vbox2, TRUE);
-	gtk_widget_set_halign(vbox2, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(hbox), vbox2);
 
 	hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);

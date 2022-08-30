@@ -3114,7 +3114,6 @@ static void pidgin_blist_show(PurpleBuddyList *list)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), gtkblist->treeview);
 
 	gtk_widget_set_vexpand(sw, TRUE);
-	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(gtkblist->vbox), sw);
 
 	sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);

@@ -111,7 +111,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
               <object class="PidginAccountChooser">
                 <property name="model">connected_xmpp_accounts</property>
                 <property name="active">0</property>
-                <property name="halign">fill</property>
                 <property name="hexpand">1</property>
                 <signal name="changed" handler="dropdown_changed_cb" object="PidginXmppConsole" swapped="no"/>
               </object>
@@ -120,7 +119,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         </child>
         <child>
           <object class="GtkScrolledWindow">
-            <property name="valign">fill</property>
             <property name="vexpand">1</property>
             <property name="focusable">1</property>
             <property name="child">

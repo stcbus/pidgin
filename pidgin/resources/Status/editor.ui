@@ -39,7 +39,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkBox">
                 <property name="vexpand">1</property>
-                <property name="valign">GTK_ALIGN_FILL</property>
                 <child>
                   <object class="GtkLabel" id="label1">
                     <property name="label" translatable="1">_Title:</property>
@@ -52,7 +51,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
                 <child>
                   <object class="GtkEntry" id="title">
                     <property name="hexpand">1</property>
-                    <property name="halign">GTK_ALIGN_FILL</property>
                     <property name="focusable">1</property>
                     <signal name="changed" handler="pidgin_status_editor_title_changed_cb" object="PidginStatusEditor" swapped="no"/>
                   </object>
@@ -62,7 +60,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkBox">
                 <property name="vexpand">1</property>
-                <property name="valign">GTK_ALIGN_FILL</property>
                 <child>
                   <object class="GtkLabel" id="label2">
                     <property name="label" translatable="1">St_atus:</property>
@@ -75,7 +72,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
                 <child>
                   <object class="PidginStatusPrimitiveChooser" id="primitive">
                     <property name="hexpand">1</property>
-                    <property name="halign">GTK_ALIGN_FILL</property>
                     <property name="id-column">0</property>
                     <property name="model">primitive_store</property>
                   </object>
@@ -85,7 +81,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkBox">
                 <property name="vexpand">1</property>
-                <property name="valign">GTK_ALIGN_FILL</property>
                 <child>
                   <object class="GtkLabel" id="label3">
                     <property name="label" translatable="1">_Message:</property>
@@ -97,10 +92,8 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
                 </child>
                 <child>
                   <object class="TalkatuEditor">
-                    <property name="halign">GTK_ALIGN_FILL</property>
                     <property name="hexpand">1</property>
                     <property name="orientation">vertical</property>
-                    <property name="valign">GTK_ALIGN_FILL</property>
                     <property name="vexpand">1</property>
                     <child internal-child="send_button">
                       <object class="GtkButton">
@@ -113,9 +106,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
                     <child internal-child="input">
                       <object class="TalkatuInput" id="message">
                         <property name="buffer">buffer</property>
-                        <property name="halign">GTK_ALIGN_FILL</property>
                         <property name="hexpand">1</property>
-                        <property name="valign">GTK_ALIGN_FILL</property>
                         <property name="vexpand">1</property>
                         <property name="width-request">450</property>
                         <property name="wrap-mode">word</property>

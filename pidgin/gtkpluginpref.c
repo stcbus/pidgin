@@ -145,7 +145,6 @@ make_string_pref(GtkWidget *parent, PurplePluginPref *pref, GtkSizeGroup *sg) {
 				                 G_CALLBACK(multiline_cb), NULL);
 				*/
 				gtk_box_append(GTK_BOX(hbox), editor);
-				gtk_widget_set_halign(editor, GTK_ALIGN_FILL);
 				gtk_widget_set_hexpand(editor, TRUE);
 			}
 

@@ -27,7 +27,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
     <child>
       <object class="GtkImage" id="icon">
         <property name="vexpand">1</property>
-        <property name="valign">fill</property>
         <property name="icon-name">image-missing</property>
         <property name="use-fallback">1</property>
         <property name="icon_size">large</property>

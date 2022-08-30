@@ -1350,7 +1350,6 @@ setup_chat_topic(PidginConversation *gtkconv, GtkWidget *vbox)
 		}
 
 		gtk_widget_set_hexpand(gtkconv->topic_text, TRUE);
-		gtk_widget_set_halign(gtkconv->topic_text, GTK_ALIGN_FILL);
 		gtk_box_append(GTK_BOX(hbox), gtkconv->topic_text);
 
 		key = gtk_event_controller_key_new();
@@ -1515,7 +1514,6 @@ setup_chat_userlist(PidginConversation *gtkconv, GtkWidget *hpaned)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), list);
 
 	gtk_widget_set_vexpand(sw, TRUE);
-	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(lbox), sw);
 }
 
@@ -1551,7 +1549,6 @@ setup_common_pane(PidginConversation *gtkconv)
 	/* Add the talkatu history */
 	hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_set_vexpand(hpaned, TRUE);
-	gtk_widget_set_valign(hpaned, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(vbox), hpaned);
 	gtk_paned_set_start_child(GTK_PANED(hpaned), sw);
 	gtk_paned_set_resize_start_child(GTK_PANED(hpaned), TRUE);
@@ -1677,7 +1674,6 @@ private_gtkconv_new(PurpleConversation *conv, gboolean hidden)
 	gtkconv->tab_cont = tab_cont = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	g_object_set_data(G_OBJECT(tab_cont), "PidginConversation", gtkconv);
 	gtk_widget_set_vexpand(pane, TRUE);
-	gtk_widget_set_valign(pane, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(tab_cont), pane);
 
 	talkatu_editor_set_toolbar_visible(

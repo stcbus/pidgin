@@ -54,7 +54,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             <property name="use-underline">1</property>
             <child>
               <object class="GtkEntry" id="stun_server">
-                <property name="halign">fill</property>
                 <property name="hexpand">1</property>
                 <property name="valign">center</property>
                 <property name="focusable">1</property>

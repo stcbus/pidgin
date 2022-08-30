@@ -2188,7 +2188,6 @@ get_config_frame(PurplePlugin *plugin)
 	                               GTK_POLICY_ALWAYS);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sw), tree);
 	gtk_widget_set_vexpand(sw, TRUE);
-	gtk_widget_set_valign(sw, GTK_ALIGN_FILL);
 	gtk_box_append(GTK_BOX(vbox), sw);
 
 	hbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);

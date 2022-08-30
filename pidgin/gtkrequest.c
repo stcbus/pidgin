@@ -551,7 +551,6 @@ pidgin_request_input(const char *title, const char *primary,
 
 	/* Vertical box */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-	gtk_widget_set_halign(vbox, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(vbox, TRUE);
 	gtk_box_append(GTK_BOX(hbox), vbox);
 
@@ -589,7 +588,6 @@ pidgin_request_input(const char *title, const char *primary,
 
 		gtk_widget_set_size_request(input, 320, 130);
 		gtk_widget_set_name(input, "pidgin_request_input");
-		gtk_widget_set_valign(editor, GTK_ALIGN_FILL);
 		gtk_widget_set_vexpand(editor, TRUE);
 		gtk_box_append(GTK_BOX(vbox), editor);
 
@@ -732,7 +730,6 @@ pidgin_request_choice(const char *title, const char *primary,
 	gtk_label_set_wrap(GTK_LABEL(label), TRUE);
 	gtk_label_set_xalign(GTK_LABEL(label), 0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0);
-	gtk_widget_set_valign(label, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand(label, TRUE);
 	gtk_box_append(GTK_BOX(vbox), label);
 
@@ -877,7 +874,6 @@ pidgin_request_action(const char *title, const char *primary,
 	gtk_label_set_xalign(GTK_LABEL(label), 0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0);
 	gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-	gtk_widget_set_valign(label, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand(label, TRUE);
 	gtk_box_append(GTK_BOX(vbox), label);
 
@@ -994,7 +990,6 @@ pidgin_request_wait(const char *title, const char *primary,
 	gtk_label_set_xalign(GTK_LABEL(label), 0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0);
 	gtk_label_set_selectable(GTK_LABEL(label), FALSE);
-	gtk_widget_set_valign(label, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand(label, TRUE);
 	gtk_box_append(GTK_BOX(vbox), label);
 
@@ -1345,10 +1340,8 @@ create_choice_field(PurpleRequestField *field,
 			values[i++] = choice->value;
 
 			if(orientation == GTK_ORIENTATION_VERTICAL) {
-				gtk_widget_set_valign(radio, GTK_ALIGN_FILL);
 				gtk_widget_set_vexpand(radio, TRUE);
 			} else if(orientation == GTK_ORIENTATION_HORIZONTAL) {
-				gtk_widget_set_halign(radio, GTK_ALIGN_FILL);
 				gtk_widget_set_hexpand(radio, TRUE);
 			}
 
@@ -1862,7 +1855,6 @@ create_datasheet_field(PurpleRequestField *field, GtkSizeGroup *buttons_sg)
 	                               GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrollable),
 	                              GTK_WIDGET(view));
-	gtk_widget_set_halign(scrollable, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrollable, TRUE);
 	gtk_box_append(GTK_BOX(main_box), scrollable);
 
@@ -1994,7 +1986,6 @@ pidgin_request_fields(const char *title, const char *primary,
 
 	/* Setup the vbox */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-	gtk_widget_set_halign(vbox, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(vbox, TRUE);
 	gtk_box_append(GTK_BOX(hbox), vbox);
 
@@ -2089,12 +2080,6 @@ pidgin_request_fields(const char *title, const char *primary,
 		             "vexpand", contains_resizable,
 		             NULL);
 
-		if(contains_resizable) {
-			g_object_set(G_OBJECT(grid),
-			             "halign", GTK_ALIGN_FILL,
-			             "valign", GTK_ALIGN_FILL,
-			             NULL);
-		}
 		gtk_box_append(GTK_BOX(frame), grid);
 
 		for (row_num = 0, fl = field_list;
