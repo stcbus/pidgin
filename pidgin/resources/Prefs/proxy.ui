@@ -68,34 +68,21 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
         <property name="title" translatable="1">Proxy Server</property>
         <property name="description" translatable="1">Proxy preferences are configured in GNOME preferences</property>
         <child>
-          <object class="GtkBox">
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow" id="gnome_not_found">
+            <property name="title" translatable="1">Proxy configuration program was not found.</property>
+            <property name="css-classes">error</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="gnome_program">
+            <property name="activatable">1</property>
+            <property name="title" translatable="1">Configure _Proxy</property>
+            <property name="use-underline">1</property>
+            <signal name="activated" handler="proxy_row_activated_cb" object="PidginProxyPrefs" swapped="no"/>
             <child>
-              <object class="GtkLabel">
-                <property name="xalign">0</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel" id="gnome_not_found">
-                    <property name="label" translatable="1">Proxy configuration program was not found.</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"></attribute>
-                    </attributes>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="gnome_program">
-                    <property name="label" translatable="1">Configure _Proxy</property>
-                    <property name="focusable">1</property>
-                    <property name="receives-default">1</property>
-                    <property name="use-underline">1</property>
-                    <signal name="clicked" handler="proxy_button_clicked_cb" object="PidginProxyPrefs" swapped="no"/>
-                  </object>
-                </child>
+              <object class="GtkImage">
+                <property name="icon-name">go-next-symbolic</property>
+                <property name="valign">center</property>
               </object>
             </child>
           </object>
@@ -106,142 +93,103 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup" id="nongnome">
         <property name="title" translatable="1">Proxy Server</property>
         <child>
-          <object class="GtkBox">
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">socks4_remotedns</property>
+            <property name="title" translatable="1">Use remote _DNS with SOCKS4 proxies</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="socks4_remotedns">
-                <property name="label" translatable="1">Use remote _DNS with SOCKS4 proxies</property>
+              <object class="GtkSwitch" id="socks4_remotedns">
                 <property name="focusable">1</property>
-                <property name="use-underline">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">type.combo</property>
+            <property name="title" translatable="1">Proxy t_ype</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
+              <object class="GtkComboBox" id="type.combo">
+                <property name="model">type.store</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">Proxy t_ype:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">type.combo</property>
-                  </object>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
                 </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesRow" id="options">
+            <child>
+              <object class="GtkListBox">
                 <child>
-                  <object class="GtkComboBox" id="type.combo">
-                    <property name="model">type.store</property>
+                  <object class="AdwActionRow">
+                    <property name="activatable-widget">host</property>
+                    <property name="title" translatable="1">_Host</property>
+                    <property name="use-underline">1</property>
                     <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="text">0</attribute>
-                      </attributes>
+                      <object class="GtkEntry" id="host">
+                        <property name="focusable">1</property>
+                        <property name="hexpand">1</property>
+                        <property name="valign">center</property>
+                        <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                      </object>
                     </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <!-- n-columns=4 n-rows=3 -->
-              <object class="GtkGrid" id="options">
-                <property name="row-spacing">10</property>
-                <property name="column-spacing">5</property>
                 <child>
-                  <object class="GtkLabel" id="host-label">
-                    <property name="label" translatable="1">_Host:</property>
+                  <object class="AdwActionRow">
+                    <property name="activatable-widget">port</property>
+                    <property name="title" translatable="1">P_ort</property>
                     <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">host</property>
-                    <property name="xalign">1</property>
-                    <layout>
-                      <property name="column">0</property>
-                      <property name="row">0</property>
-                    </layout>
+                    <child>
+                      <object class="GtkSpinButton" id="port">
+                        <property name="focusable">1</property>
+                        <property name="text" translatable="1">0</property>
+                        <property name="adjustment">port.adjustment</property>
+                        <property name="numeric">1</property>
+                        <property name="hexpand">1</property>
+                        <property name="valign">center</property>
+                        <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="host">
-                    <property name="focusable">1</property>
-                    <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
-                    <accessibility>
-                      <relation name="labelled-by">host-label</relation>
-                    </accessibility>
-                    <layout>
-                      <property name="column">1</property>
-                      <property name="row">0</property>
-                    </layout>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="port-label">
-                    <property name="label" translatable="1">P_ort:</property>
+                  <object class="AdwActionRow">
+                    <property name="activatable-widget">username</property>
+                    <property name="title" translatable="1">User_name</property>
                     <property name="use-underline">1</property>
-                    <property name="xalign">1</property>
-                    <layout>
-                      <property name="column">2</property>
-                      <property name="row">0</property>
-                    </layout>
+                    <child>
+                      <object class="GtkEntry" id="username">
+                        <property name="focusable">1</property>
+                        <property name="hexpand">1</property>
+                        <property name="valign">center</property>
+                        <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkSpinButton" id="port">
-                    <property name="focusable">1</property>
-                    <property name="text" translatable="1">0</property>
-                    <property name="adjustment">port.adjustment</property>
-                    <property name="numeric">1</property>
-                    <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
-                    <accessibility>
-                      <relation name="labelled-by">port-label</relation>
-                    </accessibility>
-                    <layout>
-                      <property name="column">3</property>
-                      <property name="row">0</property>
-                    </layout>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">User_name:</property>
+                  <object class="AdwActionRow">
+                    <property name="activatable-widget">password</property>
+                    <property name="title" translatable="1">Pa_ssword</property>
                     <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">username</property>
-                    <property name="xalign">1</property>
-                    <layout>
-                      <property name="column">0</property>
-                      <property name="row">1</property>
-                    </layout>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="username">
-                    <property name="focusable">1</property>
-                    <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
-                    <layout>
-                      <property name="column">1</property>
-                      <property name="row">1</property>
-                    </layout>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="password-label">
-                    <property name="label" translatable="1">Pa_ssword:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">password</property>
-                    <property name="xalign">1</property>
-                    <layout>
-                      <property name="column">2</property>
-                      <property name="row">1</property>
-                    </layout>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkPasswordEntry" id="password">
-                    <property name="focusable">1</property>
-                    <property name="show-peek-icon">1</property>
-                    <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
-                    <accessibility>
-                      <relation name="labelled-by">password-label</relation>
-                    </accessibility>
-                    <layout>
-                      <property name="column">3</property>
-                      <property name="row">1</property>
-                    </layout>
+                    <child>
+                      <object class="GtkPasswordEntry" id="password">
+                        <property name="focusable">1</property>
+                        <property name="hexpand">1</property>
+                        <property name="show-peek-icon">1</property>
+                        <property name="valign">center</property>
+                        <signal name="changed" handler="proxy_print_option" object="PidginProxyPrefs" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

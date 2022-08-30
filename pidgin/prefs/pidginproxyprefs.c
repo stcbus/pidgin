@@ -88,7 +88,7 @@ proxy_print_option(GtkWidget *entry, gpointer data)
 }
 
 static void
-proxy_button_clicked_cb(GtkWidget *button, gpointer data)
+proxy_row_activated_cb(G_GNUC_UNUSED AdwActionRow *row, gpointer data)
 {
 	PidginProxyPrefs *prefs = data;
 	GError *err = NULL;
@@ -153,7 +153,7 @@ pidgin_proxy_prefs_class_init(PidginProxyPrefsClass *klass)
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, password);
 	gtk_widget_class_bind_template_callback(widget_class,
-			proxy_button_clicked_cb);
+	                                        proxy_row_activated_cb);
 	gtk_widget_class_bind_template_callback(widget_class,
 			proxy_print_option);
 }
@@ -194,8 +194,8 @@ pidgin_proxy_prefs_init(PidginProxyPrefs *prefs)
 
 		/* This is a global option that affects SOCKS4 usage even with
 		 * account-specific proxy settings */
-		pidgin_prefs_bind_checkbox("/purple/proxy/socks4_remotedns",
-				prefs->socks4_remotedns);
+		pidgin_prefs_bind_switch("/purple/proxy/socks4_remotedns",
+		                         prefs->socks4_remotedns);
 
 		prefs->type.type = PURPLE_PREF_STRING;
 		prefs->type.key = "/purple/proxy/type";
