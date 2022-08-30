@@ -93,6 +93,35 @@ G_DEFINE_TYPE(PidginApplication, pidgin_application, GTK_TYPE_APPLICATION)
 /******************************************************************************
  * Helpers
  *****************************************************************************/
+
+/*
+ * pidgin_application_get_active_window:
+ *
+ * Calls gtk_application_get_active_window to get the active window. If that
+ * returns NULL, fallback to the first window of gtk_application_get_windows,
+ * and if that fails, returns NULL.
+ */
+static GtkWindow *
+pidgin_application_get_active_window(void) {
+	GApplication *application = NULL;
+	GtkApplication *gtk_application = NULL;
+	GtkWindow *window = NULL;
+
+	application = g_application_get_default();
+	gtk_application = GTK_APPLICATION(application);
+
+	window = gtk_application_get_active_window(gtk_application);
+	if(!GTK_IS_WINDOW(window)) {
+		GList *windows = NULL;
+
+		windows = gtk_application_get_windows(gtk_application);
+		if(windows != NULL) {
+			window = windows->data;
+		}
+	}
+
+	return window;
+}
 static void
 pidgin_application_init_plugins(void) {
 	GPluginManager *manager = gplugin_manager_get_default();
@@ -219,8 +248,15 @@ pidgin_application_about(GSimpleAction *simple, GVariant *parameter,
 	static GtkWidget *about = NULL;
 
 	if(!GTK_IS_WIDGET(about)) {
+		GtkWindow *window = NULL;
+
 		about = pidgin_about_dialog_new();
 		g_object_add_weak_pointer(G_OBJECT(about), (gpointer)&about);
+
+		window = pidgin_application_get_active_window();
+		if(GTK_IS_WINDOW(window)) {
+			gtk_window_set_transient_for(GTK_WINDOW(about), window);
+		}
 	}
 
 	gtk_widget_show(about);
@@ -233,8 +269,15 @@ pidgin_application_accounts(GSimpleAction *simple, GVariant *parameter,
 	static GtkWidget *manager = NULL;
 
 	if(!GTK_IS_WIDGET(manager)) {
+		GtkWindow *window = NULL;
+
 		manager = pidgin_account_manager_new();
 		g_object_add_weak_pointer(G_OBJECT(manager), (gpointer)&manager);
+
+		window = pidgin_application_get_active_window();
+		if(GTK_IS_WINDOW(window)) {
+			gtk_window_set_transient_for(GTK_WINDOW(manager), window);
+		}
 	}
 
 
@@ -398,13 +441,15 @@ pidgin_application_plugins(GSimpleAction *simple, GVariant *parameter,
 	static GtkWidget *dialog = NULL;
 
 	if(!GTK_IS_WIDGET(dialog)) {
+		GtkWindow *window = NULL;
+
 		dialog = pidgin_plugins_dialog_new();
 		g_object_add_weak_pointer(G_OBJECT(dialog), (gpointer)&dialog);
 
-	/* fixme? */
-#if 0
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
-#endif
+		window = pidgin_application_get_active_window();
+		if(GTK_IS_WINDOW(window)) {
+			gtk_window_set_transient_for(GTK_WINDOW(dialog), window);
+		}
 	}
 
 	gtk_window_present_with_time(GTK_WINDOW(dialog), GDK_CURRENT_TIME);
@@ -452,8 +497,15 @@ pidgin_application_show_status_manager(GSimpleAction *simple,
 	static GtkWidget *manager = NULL;
 
 	if(!GTK_IS_WIDGET(manager)) {
+		GtkWindow *window = NULL;
+
 		manager = pidgin_status_manager_new();
 		g_object_add_weak_pointer(G_OBJECT(manager), (gpointer)&manager);
+
+		window = pidgin_application_get_active_window();
+		if(GTK_IS_WINDOW(window)) {
+			gtk_window_set_transient_for(GTK_WINDOW(manager), window);
+		}
 	}
 
 	gtk_widget_show(manager);
