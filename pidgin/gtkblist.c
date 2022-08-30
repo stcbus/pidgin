@@ -977,7 +977,7 @@ pidgin_blist_joinchat_is_showable()
 	return FALSE;
 }
 
-static GtkWidget *
+static void
 make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 	const char *title, const char *window_role, const char *label_text,
 	GCallback callback_func, PurpleFilterAccountFunc filter_func,
@@ -985,6 +985,7 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 {
 	GtkWidget *label;
 	GtkWidget *img;
+	GtkWidget *content_area;
 	GtkWidget *hbox;
 	GtkWidget *vbox;
 	GtkWindow *blist_window;
@@ -992,9 +993,6 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 	PidginBuddyList *gtkblist;
 
 	data->account = account;
-
-	img = gtk_image_new_from_icon_name("dialog-question");
-	gtk_image_set_icon_size(GTK_IMAGE(img), GTK_ICON_SIZE_LARGE);
 
 	gtkblist = PIDGIN_BUDDY_LIST(purple_blist_get_default());
 	blist_window = gtkblist ? GTK_WINDOW(gtkblist->window) : NULL;
@@ -1004,10 +1002,14 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 	gtk_window_set_transient_for(GTK_WINDOW(data->window), blist_window);
 	gtk_dialog_set_default_response(GTK_DIALOG(data->window), GTK_RESPONSE_OK);
 	gtk_window_set_resizable(GTK_WINDOW(data->window), FALSE);
-	gtk_box_set_spacing(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(data->window))),
-	                    12);
+	content_area = gtk_dialog_get_content_area(GTK_DIALOG(data->window));
+	gtk_box_set_spacing(GTK_BOX(content_area), 12);
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+	gtk_box_append(GTK_BOX(content_area), hbox);
+
+	img = gtk_image_new_from_icon_name("dialog-question");
+	gtk_image_set_icon_size(GTK_IMAGE(img), GTK_ICON_SIZE_LARGE);
 	gtk_box_append(GTK_BOX(hbox), img);
 	gtk_widget_set_halign(img, GTK_ALIGN_START);
 	gtk_widget_set_valign(img, GTK_ALIGN_START);
@@ -1050,8 +1052,6 @@ make_blist_request_dialog(PidginBlistRequestData *data, PurpleAccount *account,
 	g_signal_connect(G_OBJECT(data->window), "response", response_cb, data);
 
 	g_object_unref(data->sg);
-
-	return vbox;
 }
 
 static void
@@ -1078,6 +1078,10 @@ rebuild_chat_entries(PidginChatData *data, const char *default_chat_name)
 
 	g_list_free(data->entries);
 	data->entries = NULL;
+
+	if(!PURPLE_IS_PROTOCOL_CHAT(protocol)) {
+		return;
+	}
 
 	list = purple_protocol_chat_info(PURPLE_PROTOCOL_CHAT(protocol), gc);
 	defaults = purple_protocol_chat_info_defaults(PURPLE_PROTOCOL_CHAT(protocol),
