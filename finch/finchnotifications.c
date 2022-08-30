@@ -206,6 +206,7 @@ finch_notification_show(PurpleNotification *notification) {
 		gnt_box_set_title(GNT_BOX(dialog),
 		                  purple_notification_get_title(notification));
 		label = gnt_label_new(purple_notification_get_data(notification));
+		gnt_box_add_widget(GNT_BOX(dialog), label);
 	} else if(type == PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR) {
 		PurpleConnectionErrorInfo *info = data;
 
