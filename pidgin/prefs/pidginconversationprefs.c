@@ -40,11 +40,11 @@ struct _PidginConversationPrefs {
 	} im;
 	GtkWidget *use_smooth_scrolling;
 	struct {
+		GtkWidget *blink_im_row;
 		GtkWidget *blink_im;
 	} win32;
 	GtkWidget *minimum_entry_lines;
 	GtkTextBuffer *format_buffer;
-	GtkWidget *format_view;
 };
 
 G_DEFINE_TYPE(PidginConversationPrefs, pidgin_conversation_prefs,
@@ -96,6 +96,9 @@ pidgin_conversation_prefs_class_init(PidginConversationPrefsClass *klass)
 			use_smooth_scrolling);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginConversationPrefs,
+			win32.blink_im_row);
+	gtk_widget_class_bind_template_child(
+			widget_class, PidginConversationPrefs,
 			win32.blink_im);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginConversationPrefs,
@@ -103,9 +106,6 @@ pidgin_conversation_prefs_class_init(PidginConversationPrefsClass *klass)
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginConversationPrefs,
 			format_buffer);
-	gtk_widget_class_bind_template_child(
-			widget_class, PidginConversationPrefs,
-			format_view);
 }
 
 static void
@@ -115,20 +115,20 @@ pidgin_conversation_prefs_init(PidginConversationPrefs *prefs)
 
 	gtk_widget_init_template(GTK_WIDGET(prefs));
 
-	pidgin_prefs_bind_checkbox(PIDGIN_PREFS_ROOT "/conversations/show_incoming_formatting",
-			prefs->show_incoming_formatting);
+	pidgin_prefs_bind_switch(PIDGIN_PREFS_ROOT "/conversations/show_incoming_formatting",
+	                         prefs->show_incoming_formatting);
 
-	pidgin_prefs_bind_checkbox("/purple/conversations/im/send_typing",
-			prefs->im.send_typing);
+	pidgin_prefs_bind_switch("/purple/conversations/im/send_typing",
+	                         prefs->im.send_typing);
 
-	pidgin_prefs_bind_checkbox(PIDGIN_PREFS_ROOT "/conversations/use_smooth_scrolling",
-			prefs->use_smooth_scrolling);
+	pidgin_prefs_bind_switch(PIDGIN_PREFS_ROOT "/conversations/use_smooth_scrolling",
+	                         prefs->use_smooth_scrolling);
 
 #ifdef _WIN32
-	pidgin_prefs_bind_checkbox(PIDGIN_PREFS_ROOT "/win32/blink_im",
-			prefs->win32.blink_im);
+	pidgin_prefs_bind_switch(PIDGIN_PREFS_ROOT "/win32/blink_im",
+	                         prefs->win32.blink_im);
 #else
-	gtk_widget_hide(prefs->win32.blink_im);
+	gtk_widget_hide(prefs->win32.blink_im_row);
 #endif
 
 	pidgin_prefs_bind_spin_button(

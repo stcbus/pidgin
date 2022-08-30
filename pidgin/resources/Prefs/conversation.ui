@@ -41,52 +41,68 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Conversations</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">show_incoming_formatting</property>
+            <property name="title" translatable="1">Show _formatting on incoming messages</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="show_incoming_formatting">
-                <property name="label" translatable="1">Show _formatting on incoming messages</property>
+              <object class="GtkSwitch" id="show_incoming_formatting">
                 <property name="focusable">1</property>
-                <property name="use-underline">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">im.send_typing</property>
+            <property name="title" translatable="1">_Notify buddies that you are typing to them</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="im.send_typing">
-                <property name="label" translatable="1">_Notify buddies that you are typing to them</property>
+              <object class="GtkSwitch" id="im.send_typing">
                 <property name="focusable">1</property>
-                <property name="use-underline">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">use_smooth_scrolling</property>
+            <property name="title" translatable="1">Use smooth-scrolling</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="use_smooth_scrolling">
-                <property name="label" translatable="1">Use smooth-scrolling</property>
+              <object class="GtkSwitch" id="use_smooth_scrolling">
                 <property name="focusable">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="win32.blink_im_row">
+            <property name="activatable-widget">win32.blink_im</property>
+            <property name="title" translatable="1">F_lash window when IMs are received</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="win32.blink_im">
-                <property name="label" translatable="1">F_lash window when IMs are received</property>
+              <object class="GtkSwitch" id="win32.blink_im">
                 <property name="focusable">1</property>
-                <property name="use-underline">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">minimum_entry_lines</property>
+            <property name="title" translatable="1">Minimum input area height in lines</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">Minimum input area height in lines:</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="minimum_entry_lines">
-                    <property name="focusable">1</property>
-                    <property name="adjustment">minimum_entry_lines.adjustment</property>
-                    <property name="numeric">1</property>
-                  </object>
-                </child>
+              <object class="GtkSpinButton" id="minimum_entry_lines">
+                <property name="focusable">1</property>
+                <property name="adjustment">minimum_entry_lines.adjustment</property>
+                <property name="numeric">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
           </object>
@@ -97,28 +113,14 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Default Formatting</property>
         <child>
-          <object class="GtkBox" id="sample_box">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
+          <object class="AdwPreferencesRow">
             <child>
               <object class="TalkatuEditor">
-                <property name="orientation">vertical</property>
-                <child internal-child="send_button">
-                  <object class="GtkButton">
-                    <property name="visible">0</property>
-                  </object>
-                </child>
-                <child internal-child="toolbar">
-                  <object class="TalkatuToolbar"/>
-                </child>
-                <child internal-child="input">
-                  <object class="TalkatuInput" id="format_view">
-                    <property name="buffer">format_buffer</property>
-                    <property name="focusable">1</property>
-                    <property name="width-request">450</property>
-                    <property name="wrap-mode">word</property>
-                  </object>
-                </child>
+                <property name="buffer">format_buffer</property>
+                <property name="focusable">1</property>
+                <property name="show-send-button">0</property>
+                <property name="show-toolbar">1</property>
+                <property name="width-request">450</property>
               </object>
             </child>
           </object>
