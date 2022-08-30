@@ -34,12 +34,12 @@ struct _PidginNetworkPrefs {
 	AdwPreferencesPage parent;
 
 	GtkWidget *stun_server;
+	GtkWidget *auto_ip_row;
 	GtkWidget *auto_ip;
 	GtkWidget *public_ip;
-	GtkWidget *public_ip_hbox;
+	GtkWidget *public_ip_row;
 	GtkWidget *map_ports;
 	GtkWidget *ports_range_use;
-	GtkWidget *ports_range_hbox;
 	GtkWidget *ports_range_start;
 	GtkWidget *ports_range_end;
 	GtkWidget *turn_server;
@@ -101,8 +101,10 @@ network_turn_server_changed_cb(G_GNUC_UNUSED GtkEventControllerFocus *focus,
 }
 
 static void
-auto_ip_button_clicked_cb(GtkWidget *button, gpointer null)
+auto_ip_button_clicked_cb(G_GNUC_UNUSED GObject *obj,
+                          G_GNUC_UNUSED GParamSpec *pspec, gpointer data)
 {
+	PidginNetworkPrefs *prefs = PIDGIN_NETWORK_PREFS(data);
 	const char *ip;
 	PurpleStunNatDiscovery *stun;
 	char *auto_ip_text;
@@ -136,7 +138,8 @@ auto_ip_button_clicked_cb(GtkWidget *button, gpointer null)
 	}
 
 	auto_ip_text = g_strdup_printf(_("Use _automatically detected IP address: %s"), ip);
-	gtk_check_button_set_label(GTK_CHECK_BUTTON(button), auto_ip_text);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(prefs->auto_ip_row),
+	                              auto_ip_text);
 	g_free(auto_ip_text);
 	g_list_free_full(list, g_free);
 }
@@ -157,17 +160,17 @@ pidgin_network_prefs_class_init(PidginNetworkPrefsClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
 	                                     stun_server);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
+	                                     auto_ip_row);
+	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
 	                                     auto_ip);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
 	                                     public_ip);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
-	                                     public_ip_hbox);
+	                                     public_ip_row);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
 	                                     map_ports);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
 	                                     ports_range_use);
-	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
-	                                     ports_range_hbox);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
 	                                     ports_range_start);
 	gtk_widget_class_bind_template_child(widget_class, PidginNetworkPrefs,
@@ -199,24 +202,20 @@ pidgin_network_prefs_init(PidginNetworkPrefs *prefs)
 	gtk_editable_set_text(GTK_EDITABLE(prefs->stun_server),
 	                      purple_prefs_get_string("/purple/network/stun_server"));
 
-	pidgin_prefs_bind_checkbox("/purple/network/auto_ip", prefs->auto_ip);
-	auto_ip_button_clicked_cb(prefs->auto_ip, NULL); /* Update label */
+	pidgin_prefs_bind_switch("/purple/network/auto_ip", prefs->auto_ip);
+	auto_ip_button_clicked_cb(NULL, NULL, prefs); /* Update label */
 
 	gtk_editable_set_text(GTK_EDITABLE(prefs->public_ip),
 	                      purple_network_get_public_ip());
 
 	g_object_bind_property(prefs->auto_ip, "active",
-			prefs->public_ip_hbox, "sensitive",
-			G_BINDING_SYNC_CREATE|G_BINDING_INVERT_BOOLEAN);
+	                       prefs->public_ip_row, "sensitive",
+	                       G_BINDING_SYNC_CREATE|G_BINDING_INVERT_BOOLEAN);
 
-	pidgin_prefs_bind_checkbox("/purple/network/map_ports",
-			prefs->map_ports);
+	pidgin_prefs_bind_switch("/purple/network/map_ports", prefs->map_ports);
 
-	pidgin_prefs_bind_checkbox("/purple/network/ports_range_use",
-			prefs->ports_range_use);
-	g_object_bind_property(prefs->ports_range_use, "active",
-			prefs->ports_range_hbox, "sensitive",
-			G_BINDING_SYNC_CREATE);
+	pidgin_prefs_bind_expander_row("/purple/network/ports_range_use",
+	                               prefs->ports_range_use);
 
 	pidgin_prefs_bind_spin_button("/purple/network/ports_range_start",
 			prefs->ports_range_start);

@@ -48,61 +48,52 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">IP Address</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">stun_server</property>
+            <property name="title" translatable="1">ST_UN server</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel" id="label8">
-                    <property name="label" translatable="1">ST_UN server:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">stun_server</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="stun_server">
-                    <property name="halign">fill</property>
-                    <property name="hexpand">1</property>
-                    <property name="focusable">1</property>
-                    <property name="placeholder-text" translatable="1">Example: stunserver.org</property>
-                    <property name="input-purpose">url</property>
-                    <child>
-                      <object class="GtkEventControllerFocus">
-                        <signal name="leave" handler="network_stun_server_changed_cb" object="stun_server" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="auto_ip">
-                <property name="label" translatable="1">Use _automatically detected IP address</property>
+              <object class="GtkEntry" id="stun_server">
+                <property name="halign">fill</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
                 <property name="focusable">1</property>
-                <property name="use-underline">1</property>
-                <signal name="toggled" handler="auto_ip_button_clicked_cb" after="yes" swapped="no"/>
+                <property name="placeholder-text" translatable="1">Example: stunserver.org</property>
+                <property name="input-purpose">url</property>
+                <child>
+                  <object class="GtkEventControllerFocus">
+                    <signal name="leave" handler="network_stun_server_changed_cb" object="stun_server" swapped="no"/>
+                  </object>
+                </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="auto_ip_row">
+            <property name="activatable-widget">auto_ip</property>
+            <property name="title" translatable="1">Use _automatically detected IP address</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox" id="public_ip_hbox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel" id="label9">
-                    <property name="label" translatable="1">Public _IP:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">public_ip</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="public_ip">
-                    <property name="focusable">1</property>
-                    <signal name="changed" handler="network_ip_changed" swapped="no"/>
-                  </object>
-                </child>
+              <object class="GtkSwitch" id="auto_ip">
+                <property name="focusable">1</property>
+                <property name="valign">center</property>
+                <signal name="notify::active" handler="auto_ip_button_clicked_cb" after="yes" swapped="no"/>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="public_ip_row">
+            <property name="activatable-widget">public_ip</property>
+            <property name="title" translatable="1">Public _IP</property>
+            <property name="use-underline">1</property>
+            <child>
+              <object class="GtkEntry" id="public_ip">
+                <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
+                <signal name="changed" handler="network_ip_changed" swapped="no"/>
               </object>
             </child>
           </object>
@@ -113,59 +104,51 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Ports</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">map_ports</property>
+            <property name="title" translatable="1">_Enable automatic router port forwarding</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="map_ports">
-                <property name="label" translatable="1">_Enable automatic router port forwarding</property>
+              <object class="GtkSwitch" id="map_ports">
                 <property name="focusable">1</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwExpanderRow" id="ports_range_use">
+            <property name="title" translatable="1">_Manually specify range of ports to listen on</property>
+            <property name="show-enable-switch">1</property>
+            <property name="use-underline">1</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="activatable-widget">ports_range_start</property>
+                <property name="title" translatable="1">_Start</property>
                 <property name="use-underline">1</property>
+                <child>
+                  <object class="GtkSpinButton" id="ports_range_start">
+                    <property name="focusable">1</property>
+                    <property name="valign">center</property>
+                    <property name="text" translatable="1">0</property>
+                    <property name="adjustment">ports_range_start.adjustment</property>
+                    <property name="numeric">1</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
+              <object class="AdwActionRow">
+                <property name="activatable-widget">ports_range_end</property>
+                <property name="title" translatable="1">_End</property>
+                <property name="use-underline">1</property>
                 <child>
-                  <object class="GtkCheckButton" id="ports_range_use">
-                    <property name="label" translatable="1">_Manually specify range of ports to listen on:</property>
+                  <object class="GtkSpinButton" id="ports_range_end">
                     <property name="focusable">1</property>
-                    <property name="use-underline">1</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox" id="ports_range_hbox">
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="1">_Start:</property>
-                        <property name="use-underline">1</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="ports_range_start">
-                        <property name="focusable">1</property>
-                        <property name="text" translatable="1">0</property>
-                        <property name="adjustment">ports_range_start.adjustment</property>
-                        <property name="numeric">1</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="1">_End:</property>
-                        <property name="use-underline">1</property>
-                        <property name="mnemonic-widget">ports_range_end</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="ports_range_end">
-                        <property name="focusable">1</property>
-                        <property name="text" translatable="1">0</property>
-                        <property name="adjustment">ports_range_end.adjustment</property>
-                        <property name="numeric">1</property>
-                      </object>
-                    </child>
+                    <property name="valign">center</property>
+                    <property name="text" translatable="1">0</property>
+                    <property name="adjustment">ports_range_end.adjustment</property>
+                    <property name="numeric">1</property>
                   </object>
                 </child>
               </object>
@@ -178,90 +161,81 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Relay Server (TURN)</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">turn_server</property>
+            <property name="title" translatable="1">_TURN server</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
+              <object class="GtkEntry" id="turn_server">
+                <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkLabel" id="label10">
-                    <property name="label" translatable="1">_TURN server:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">turn_server</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="turn_server">
-                    <property name="focusable">1</property>
-                    <child>
-                      <object class="GtkEventControllerFocus">
-                        <signal name="leave" handler="network_turn_server_changed_cb" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">_UDP Port:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">turn_port_udp</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="turn_port_udp">
-                    <property name="focusable">1</property>
-                    <property name="adjustment">turn_port_udp.adjustment</property>
-                    <property name="numeric">1</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">T_CP Port:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">turn_port_tcp</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="turn_port_tcp">
-                    <property name="focusable">1</property>
-                    <property name="adjustment">turn_port_tcp.adjustment</property>
-                    <property name="numeric">1</property>
+                  <object class="GtkEventControllerFocus">
+                    <signal name="leave" handler="network_turn_server_changed_cb" object="turn_server" swapped="no"/>
                   </object>
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">turn_port_udp</property>
+            <property name="title" translatable="1">_UDP Port</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel" id="label11">
-                    <property name="label" translatable="1">Use_rname:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">turn_username</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="turn_username">
-                    <property name="focusable">1</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">Pass_word:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">turn_password</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkPasswordEntry" id="turn_password">
-                    <property name="focusable">1</property>
-                    <property name="show-peek-icon">1</property>
-                  </object>
-                </child>
+              <object class="GtkSpinButton" id="turn_port_udp">
+                <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
+                <property name="adjustment">turn_port_udp.adjustment</property>
+                <property name="numeric">1</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">turn_port_tcp</property>
+            <property name="title" translatable="1">T_CP Port</property>
+            <property name="use-underline">1</property>
+            <child>
+              <object class="GtkSpinButton" id="turn_port_tcp">
+                <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
+                <property name="adjustment">turn_port_tcp.adjustment</property>
+                <property name="numeric">1</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">turn_username</property>
+            <property name="title" translatable="1">Use_rname</property>
+            <property name="use-underline">1</property>
+            <child>
+              <object class="GtkEntry" id="turn_username">
+                <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">turn_password</property>
+            <property name="title" translatable="1">Pass_word</property>
+            <property name="use-underline">1</property>
+            <child>
+              <object class="GtkPasswordEntry" id="turn_password">
+                <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="show-peek-icon">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
           </object>
@@ -269,12 +243,4 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       </object>
     </child>
   </template>
-  <object class="GtkSizeGroup" id="sg">
-    <widgets>
-      <widget name="label8"/>
-      <widget name="label9"/>
-      <widget name="label10"/>
-      <widget name="label11"/>
-    </widgets>
-  </object>
 </interface>
