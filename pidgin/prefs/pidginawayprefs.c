@@ -34,12 +34,11 @@ struct _PidginAwayPrefs {
 
 	PidginPrefCombo idle_reporting;
 	GtkWidget *mins_before_away;
-	GtkWidget *idle_hbox;
+	GtkWidget *idle_row;
 	GtkWidget *away_when_idle;
 	PidginPrefCombo auto_reply;
 	GtkWidget *startup_current_status;
-	GtkWidget *startup_hbox;
-	GtkWidget *startup_label;
+	GtkWidget *startup_row;
 };
 
 G_DEFINE_TYPE(PidginAwayPrefs, pidgin_away_prefs, ADW_TYPE_PREFERENCES_PAGE)
@@ -81,15 +80,13 @@ pidgin_away_prefs_class_init(PidginAwayPrefsClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
 	                                     away_when_idle);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
-	                                     idle_hbox);
+	                                     idle_row);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
 	                                     auto_reply.combo);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
 	                                     startup_current_status);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
-	                                     startup_hbox);
-	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
-	                                     startup_label);
+	                                     startup_row);
 }
 
 static void
@@ -106,13 +103,16 @@ pidgin_away_prefs_init(PidginAwayPrefs *prefs)
 	pidgin_prefs_bind_spin_button("/purple/away/mins_before_away",
 			prefs->mins_before_away);
 
-	pidgin_prefs_bind_checkbox("/purple/away/away_when_idle",
-			prefs->away_when_idle);
+	pidgin_prefs_bind_switch("/purple/away/away_when_idle",
+	                         prefs->away_when_idle);
 
 	/* TODO: Show something useful if we don't have any saved statuses. */
 	menu = pidgin_status_menu(purple_savedstatus_get_idleaway(),
 	                          G_CALLBACK(set_idle_away));
-	gtk_box_append(GTK_BOX(prefs->idle_hbox), menu);
+	gtk_widget_set_valign(menu, GTK_ALIGN_CENTER);
+	adw_action_row_add_suffix(ADW_ACTION_ROW(prefs->idle_row), menu);
+	adw_action_row_set_activatable_widget(ADW_ACTION_ROW(prefs->idle_row),
+	                                      menu);
 
 	g_object_bind_property(prefs->away_when_idle, "active",
 			menu, "sensitive",
@@ -124,18 +124,19 @@ pidgin_away_prefs_init(PidginAwayPrefs *prefs)
 	pidgin_prefs_bind_dropdown(&prefs->auto_reply);
 
 	/* Signon status stuff */
-	pidgin_prefs_bind_checkbox("/purple/savedstatus/startup_current_status",
-			prefs->startup_current_status);
+	pidgin_prefs_bind_switch("/purple/savedstatus/startup_current_status",
+	                         prefs->startup_current_status);
 
 	/* TODO: Show something useful if we don't have any saved statuses. */
 	menu = pidgin_status_menu(purple_savedstatus_get_startup(),
 	                          G_CALLBACK(set_startupstatus));
-	gtk_box_append(GTK_BOX(prefs->startup_hbox), menu);
-	gtk_label_set_mnemonic_widget(GTK_LABEL(prefs->startup_label), menu);
-	pidgin_set_accessible_label(menu, GTK_LABEL(prefs->startup_label));
+	gtk_widget_set_valign(menu, GTK_ALIGN_CENTER);
+	adw_action_row_add_suffix(ADW_ACTION_ROW(prefs->startup_row), menu);
+	adw_action_row_set_activatable_widget(ADW_ACTION_ROW(prefs->startup_row),
+	                                      menu);
 	g_object_bind_property(prefs->startup_current_status, "active",
-			prefs->startup_hbox, "sensitive",
-			G_BINDING_SYNC_CREATE|G_BINDING_INVERT_BOOLEAN);
+	                       prefs->startup_row, "sensitive",
+	                       G_BINDING_SYNC_CREATE|G_BINDING_INVERT_BOOLEAN);
 }
 
 /******************************************************************************

@@ -79,67 +79,48 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Idle</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">idle_reporting.combo</property>
+            <property name="title" translatable="1">_Report idle time</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
+              <object class="GtkComboBox" id="idle_reporting.combo">
+                <property name="model">idle_reporting.store</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkLabel" id="label12">
-                    <property name="label" translatable="1">_Report idle time:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">idle_reporting.combo</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkComboBox" id="idle_reporting.combo">
-                    <property name="model">idle_reporting.store</property>
-                    <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="text">0</attribute>
-                      </attributes>
-                    </child>
-                  </object>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">mins_before_away</property>
+            <property name="title" translatable="1">_Minutes before becoming idle</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel" id="label13">
-                    <property name="label" translatable="1">_Minutes before becoming idle:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">mins_before_away</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="mins_before_away">
-                    <property name="focusable">1</property>
-                    <property name="adjustment">mins_before_adjustment</property>
-                    <property name="numeric">1</property>
-                  </object>
-                </child>
+              <object class="GtkSpinButton" id="mins_before_away">
+                <property name="focusable">1</property>
+                <property name="adjustment">mins_before_adjustment</property>
+                <property name="numeric">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
-            <child>
-              <object class="GtkBox" id="idle_hbox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkCheckButton" id="away_when_idle">
-                    <property name="label" translatable="1">Change to this status when _idle:</property>
-                    <property name="focusable">1</property>
-                    <property name="use-underline">1</property>
-                  </object>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="idle_row">
+            <property name="activatable-widget">away_when_idle</property>
+            <property name="title" translatable="1">Change to this status when _idle</property>
+            <property name="use-underline">1</property>
+            <child type="prefix">
+              <object class="GtkSwitch" id="away_when_idle">
+                <property name="focusable">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
           </object>
@@ -150,30 +131,19 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Away</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">auto_reply.combo</property>
+            <property name="title" translatable="1">_Auto-reply</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
+              <object class="GtkComboBox" id="auto_reply.combo">
+                <property name="model">auto_reply.store</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkLabel" id="label14">
-                    <property name="label" translatable="1">_Auto-reply:</property>
-                    <property name="use-underline">1</property>
-                    <property name="mnemonic-widget">auto_reply.combo</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkComboBox" id="auto_reply.combo">
-                    <property name="model">auto_reply.store</property>
-                    <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="text">0</attribute>
-                      </attributes>
-                    </child>
-                  </object>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
                 </child>
               </object>
             </child>
@@ -185,45 +155,25 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Status at Startup</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">startup_current_status</property>
+            <property name="title" translatable="1">Use status from last _exit at startup</property>
+            <property name="use-underline">1</property>
             <child>
-              <object class="GtkCheckButton" id="startup_current_status">
-                <property name="label" translatable="1">Use status from last _exit at startup</property>
+              <object class="GtkSwitch" id="startup_current_status">
                 <property name="focusable">1</property>
-                <property name="use-underline">1</property>
+                <property name="valign">center</property>
               </object>
             </child>
-            <child>
-              <object class="GtkBox" id="startup_hbox">
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkLabel" id="startup_label">
-                    <property name="label" translatable="1">Status to a_pply at startup:</property>
-                    <property name="use-underline">1</property>
-                    <property name="xalign">0</property>
-                  </object>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="startup_row">
+            <property name="title" translatable="1">Status to a_pply at startup</property>
+            <property name="use-underline">1</property>
           </object>
         </child>
       </object>
     </child>
   </template>
-  <object class="GtkSizeGroup" id="sg">
-    <widgets>
-      <widget name="label12"/>
-      <widget name="label13"/>
-      <widget name="away_when_idle"/>
-      <widget name="label14"/>
-      <widget name="startup_current_status"/>
-      <widget name="startup_label"/>
-    </widgets>
-  </object>
 </interface>
