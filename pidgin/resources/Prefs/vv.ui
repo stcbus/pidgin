@@ -70,128 +70,114 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Audio</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">voice.input.combo</property>
+            <property name="title" translatable="1" context="Input for Audio">Input Device</property>
             <child>
-              <object class="GtkFrame">
-                <property name="child">
-                  <object class="GtkBox">
-                    <property name="margin-start">12</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkLabel" id="label1">
-                        <property name="label" translatable="1" context="Device for Audio Input">Device</property>
-                        <property name="xalign">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkComboBox" id="voice.input.combo">
-                        <property name="id-column">1</property>
-                        <property name="model">voice.input.store</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1" context="Input for Audio">Input</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"></attribute>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkFrame">
-                <property name="child">
-                  <object class="GtkBox">
-                    <property name="margin-start">12</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkLabel" id="label2">
-                        <property name="label" translatable="1" context="Device for Audio Output">Device</property>
-                        <property name="xalign">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkComboBox" id="voice.output.combo">
-                        <property name="id-column">1</property>
-                        <property name="model">voice.output.store</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1" context="Output for Audio">Output</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"></attribute>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="spacing">6</property>
+              <object class="GtkComboBox" id="voice.input.combo">
+                <property name="id-column">1</property>
+                <property name="model">voice.input.store</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">Volume:</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkVolumeButton" id="voice.volume">
-                    <property name="focusable">1</property>
-                    <property name="focus-on-click">0</property>
-                    <property name="receives-default">1</property>
-                    <property name="orientation">vertical</property>
-                    <property name="adjustment">adjustment2</property>
-                    <signal name="value-changed" handler="volume_changed_cb" swapped="no"/>
-                  </object>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">voice.output.combo</property>
+            <property name="title" translatable="1" context="Device for Audio Output">Output Device</property>
             <child>
-              <object class="GtkLabel" id="voice.threshold_label">
-                <property name="label" translatable="1">Silence threshold:</property>
-                <property name="xalign">0</property>
+              <object class="GtkComboBox" id="voice.output.combo">
+                <property name="id-column">1</property>
+                <property name="model">voice.output.store</property>
+                <property name="valign">center</property>
+                <child>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">voice.volume</property>
+            <property name="title" translatable="1">Volume</property>
+            <child>
+              <object class="GtkVolumeButton" id="voice.volume">
+                <property name="focusable">1</property>
+                <property name="focus-on-click">0</property>
+                <property name="receives-default">1</property>
+                <property name="orientation">vertical</property>
+                <property name="valign">center</property>
+                <property name="adjustment">adjustment2</property>
+                <signal name="value-changed" handler="volume_changed_cb" swapped="no"/>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="voice.threshold_row">
+            <property name="activatable-widget">voice.threshold</property>
+            <property name="title" translatable="1">Silence threshold</property>
             <child>
               <object class="GtkScale" id="voice.threshold">
                 <property name="focusable">1</property>
+                <property name="hexpand">1</property>
+                <property name="valign">center</property>
                 <property name="adjustment">adjustment1</property>
                 <property name="round-digits">0</property>
                 <property name="digits">0</property>
                 <signal name="value-changed" handler="threshold_value_changed_cb" object="PidginVVPrefs" swapped="no"/>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesRow">
+            <property name="margin-bottom">12</property>
+            <property name="margin-end">12</property>
+            <property name="margin-start">12</property>
+            <property name="margin-top">12</property>
             <child>
-              <object class="GtkToggleButton" id="voice.test">
-                <property name="label" translatable="1">Test Audio</property>
-                <property name="focusable">1</property>
-                <property name="receives-default">1</property>
-                <signal name="toggled" handler="toggle_voice_test_cb" object="PidginVVPrefs" swapped="no"/>
-              </object>
-            </child>
-            <child>
-              <object class="GtkProgressBar" id="voice.level">
-                <property name="sensitive">0</property>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkToggleButton" id="voice.test">
+                    <property name="label" translatable="1">Test Audio</property>
+                    <property name="focusable">1</property>
+                    <property name="receives-default">1</property>
+                    <signal name="toggled" handler="toggle_voice_test_cb" object="PidginVVPrefs" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkLevelBar" id="voice.level">
+                        <property name="hexpand">1</property>
+                        <!-- Keep this maximum in sync with MAX_AUDIO_LEVEL in
+                             pidgin/prefs/pidginvvprefs.c -->
+                        <property name="max-value">19</property>
+                        <property name="mode">discrete</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="voice.drop">
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -202,98 +188,68 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Video</property>
         <child>
-          <object class="GtkBox">
-            <property name="margin-start">12</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">video.input.combo</property>
+            <property name="title" translatable="1" context="Device for Video Input">Input Device</property>
             <child>
-              <object class="GtkFrame">
-                <property name="child">
-                  <object class="GtkBox">
-                    <property name="margin-start">12</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkLabel" id="label3">
-                        <property name="label" translatable="1" context="Device for Video Input">Device</property>
-                        <property name="xalign">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkComboBox" id="video.input.combo">
-                        <property name="id-column">1</property>
-                        <property name="model">video.input.store</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1" context="Input for Video">Input</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"></attribute>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkFrame">
-                <property name="child">
-                  <object class="GtkBox">
-                    <property name="margin-start">12</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkLabel" id="label4">
-                        <property name="label" translatable="1" context="Device for Video Output">Device</property>
-                        <property name="xalign">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkComboBox" id="video.output.combo">
-                        <property name="id-column">1</property>
-                        <property name="model">video.output.store</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <child type="label">
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1" context="Output for Video">Output</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"></attribute>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkAspectFrame" id="video.frame">
-                <property name="valign">fill</property>
-                <property name="vexpand">1</property>
-                <property name="ratio">1.33</property>
+              <object class="GtkComboBox" id="video.input.combo">
+                <property name="id-column">1</property>
+                <property name="hexpand">1</property>
+                <property name="model">video.input.store</property>
+                <property name="valign">center</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="activatable-widget">video.output.combo</property>
+            <property name="title" translatable="1" context="Device for Video Output">Output Device</property>
             <child>
-              <object class="GtkToggleButton" id="video.test">
-                <property name="label" translatable="1">Test Video</property>
-                <property name="focusable">1</property>
-                <property name="receives-default">1</property>
-                <signal name="toggled" handler="toggle_video_test_cb" object="PidginVVPrefs" swapped="no"/>
+              <object class="GtkComboBox" id="video.output.combo">
+                <property name="hexpand">1</property>
+                <property name="id-column">1</property>
+                <property name="valign">center</property>
+                <property name="model">video.output.store</property>
+                <child>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesRow">
+            <property name="margin-bottom">12</property>
+            <property name="margin-end">12</property>
+            <property name="margin-start">12</property>
+            <property name="margin-top">12</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkToggleButton" id="video.test">
+                    <property name="label" translatable="1">Test Video</property>
+                    <property name="focusable">1</property>
+                    <property name="receives-default">1</property>
+                    <signal name="toggled" handler="toggle_video_test_cb" object="PidginVVPrefs" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkPicture" id="video.frame">
+                    <property name="keep-aspect-ratio">1</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -301,12 +257,4 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       </object>
     </child>
   </template>
-  <object class="GtkSizeGroup" id="sg">
-    <widgets>
-      <widget name="label1"/>
-      <widget name="label2"/>
-      <widget name="label3"/>
-      <widget name="label4"/>
-    </widgets>
-  </object>
 </interface>

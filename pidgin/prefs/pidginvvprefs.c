@@ -42,11 +42,12 @@ struct _PidginVVPrefs {
 	struct {
 		PidginPrefCombo input;
 		PidginPrefCombo output;
-		GtkWidget *level;
-		GtkWidget *threshold_label;
+		GtkWidget *threshold_row;
 		GtkWidget *threshold;
 		GtkWidget *volume;
 		GtkWidget *test;
+		GtkWidget *level;
+		GtkWidget *drop;
 		GstElement *pipeline;
 	} voice;
 
@@ -60,6 +61,10 @@ struct _PidginVVPrefs {
 };
 
 G_DEFINE_TYPE(PidginVVPrefs, pidgin_vv_prefs, ADW_TYPE_PREFERENCES_PAGE)
+
+/* Keep in sync with voice.level's GtkLevelBar::max-value in the
+ * pidgin/resources/Prefs.vv.ui builder file. */
+#define MAX_AUDIO_LEVEL (19.0)
 
 /******************************************************************************
  * Helpers
@@ -181,21 +186,23 @@ gst_bus_cb(GstBus *bus, GstMessage *msg, gpointer data)
 		if (purple_strequal(name, "level")) {
 			gdouble percent;
 			gdouble threshold;
+			gboolean drop;
 			GstElement *valve;
 
 			percent = gst_msg_db_to_percent(msg, "rms");
-			gtk_progress_bar_set_fraction(
-			        GTK_PROGRESS_BAR(prefs->voice.level), percent);
+			gtk_level_bar_set_value(GTK_LEVEL_BAR(prefs->voice.level),
+			                        percent * MAX_AUDIO_LEVEL);
 
 			percent = gst_msg_db_to_percent(msg, "decay");
 			threshold = gtk_range_get_value(GTK_RANGE(
 			                    prefs->voice.threshold)) /
 			            100.0;
+			drop = percent < threshold;
+
 			valve = gst_bin_get_by_name(GST_BIN(GST_ELEMENT_PARENT(src)), "valve");
-			g_object_set(valve, "drop", (percent < threshold), NULL);
-			g_object_set(prefs->voice.level, "text",
-			             (percent < threshold) ? _("DROP") : " ",
-			             NULL);
+			g_object_set(valve, "drop", drop, NULL);
+			gtk_label_set_text(GTK_LABEL(prefs->voice.drop),
+			                   drop ? _("DROP") : "");
 		}
 
 		g_free(name);
@@ -235,7 +242,6 @@ toggle_voice_test_cb(GtkToggleButton *test, gpointer data)
 	PidginVVPrefs *prefs = PIDGIN_VV_PREFS(data);
 
 	if (gtk_toggle_button_get_active(test)) {
-		gtk_widget_set_sensitive(prefs->voice.level, TRUE);
 		enable_voice_test(prefs);
 
 		g_signal_connect(prefs->voice.volume, "value-changed",
@@ -243,9 +249,8 @@ toggle_voice_test_cb(GtkToggleButton *test, gpointer data)
 		g_signal_connect(test, "destroy",
 		                 G_CALLBACK(voice_test_destroy_cb), prefs);
 	} else {
-		gtk_progress_bar_set_fraction(
-		        GTK_PROGRESS_BAR(prefs->voice.level), 0.0);
-		gtk_widget_set_sensitive(prefs->voice.level, FALSE);
+		gtk_level_bar_set_value(GTK_LEVEL_BAR(prefs->voice.level), 0.0);
+		gtk_label_set_text(GTK_LABEL(prefs->voice.drop), "");
 		g_object_disconnect(prefs->voice.volume,
 		                    "any-signal::value-changed",
 		                    G_CALLBACK(on_volume_change_cb), prefs, NULL);
@@ -271,8 +276,13 @@ threshold_value_changed_cb(GtkScale *scale, gpointer data)
 
 	value = (int)gtk_range_get_value(GTK_RANGE(scale));
 	tmp = g_strdup_printf(_("Silence threshold: %d%%"), value);
-	gtk_label_set_label(GTK_LABEL(prefs->voice.threshold_label), tmp);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(prefs->voice.threshold_row),
+	                              tmp);
 	g_free(tmp);
+
+	gtk_level_bar_add_offset_value(GTK_LEVEL_BAR(prefs->voice.level),
+	                               GTK_LEVEL_BAR_OFFSET_LOW,
+	                               value / 100.0 * MAX_AUDIO_LEVEL);
 
 	purple_prefs_set_int("/purple/media/audio/silence_threshold", value);
 }
@@ -287,8 +297,18 @@ bind_voice_test(PidginVVPrefs *prefs)
 
 	tmp = g_strdup_printf(_("Silence threshold: %d%%"),
 	                      purple_prefs_get_int("/purple/media/audio/silence_threshold"));
-	gtk_label_set_text(GTK_LABEL(prefs->voice.threshold_label), tmp);
+	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(prefs->voice.threshold_row),
+	                              tmp);
 	g_free(tmp);
+
+	/* Move the default high levels to the end (low is set by
+	 * threshold_value_changed_cb when set below.) */
+	gtk_level_bar_add_offset_value(GTK_LEVEL_BAR(prefs->voice.level),
+	                               GTK_LEVEL_BAR_OFFSET_HIGH,
+	                               MAX_AUDIO_LEVEL);
+	gtk_level_bar_add_offset_value(GTK_LEVEL_BAR(prefs->voice.level),
+	                               GTK_LEVEL_BAR_OFFSET_FULL,
+	                               MAX_AUDIO_LEVEL);
 
 	gtk_range_set_value(GTK_RANGE(prefs->voice.threshold),
 			purple_prefs_get_int("/purple/media/audio/silence_threshold"));
@@ -493,11 +513,13 @@ pidgin_vv_prefs_class_init(PidginVVPrefsClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, PidginVVPrefs,
 	                                     voice.volume);
 	gtk_widget_class_bind_template_child(widget_class, PidginVVPrefs,
-	                                     voice.threshold_label);
+	                                     voice.threshold_row);
 	gtk_widget_class_bind_template_child(widget_class, PidginVVPrefs,
 	                                     voice.threshold);
 	gtk_widget_class_bind_template_child(widget_class, PidginVVPrefs,
 	                                     voice.level);
+	gtk_widget_class_bind_template_child(widget_class, PidginVVPrefs,
+	                                     voice.drop);
 	gtk_widget_class_bind_template_child(widget_class, PidginVVPrefs,
 	                                     voice.test);
 	gtk_widget_class_bind_template_callback(widget_class, volume_changed_cb);
