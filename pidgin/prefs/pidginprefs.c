@@ -400,6 +400,43 @@ pidgin_prefs_bind_checkbox(const char *key, GtkWidget *button)
 }
 
 static void
+set_bool_switch_pref(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec,
+                     gpointer data)
+{
+	const gchar *key = data;
+
+	purple_prefs_set_bool(key, gtk_switch_get_active(GTK_SWITCH(obj)));
+}
+
+void
+pidgin_prefs_bind_switch(const gchar *key, GtkWidget *widget)
+{
+	gtk_switch_set_active(GTK_SWITCH(widget), purple_prefs_get_bool(key));
+	g_signal_connect(widget, "notify::active",
+	                 G_CALLBACK(set_bool_switch_pref), (gchar *)key);
+}
+
+static void
+set_expander_row_pref(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec,
+                     gpointer data)
+{
+	const gchar *key = data;
+	gboolean enabled;
+
+	enabled = adw_expander_row_get_enable_expansion(ADW_EXPANDER_ROW(obj));
+	purple_prefs_set_bool(key, enabled);
+}
+
+void
+pidgin_prefs_bind_expander_row(const gchar *key, GtkWidget *widget)
+{
+	adw_expander_row_set_enable_expansion(ADW_EXPANDER_ROW(widget),
+	                                      purple_prefs_get_bool(key));
+	g_signal_connect(widget, "notify::enable-expansion",
+	                 G_CALLBACK(set_expander_row_pref), (gchar *)key);
+}
+
+static void
 delete_prefs(GtkWidget *asdf, void *gdsa)
 {
 	/* Close any request dialogs */

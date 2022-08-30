@@ -55,7 +55,13 @@ G_GNUC_INTERNAL
 void pidgin_prefs_bind_entry(const char *key, GtkWidget *entry);
 
 G_GNUC_INTERNAL
+void pidgin_prefs_bind_expander_row(const gchar *key, GtkWidget *widget);
+
+G_GNUC_INTERNAL
 void pidgin_prefs_bind_spin_button(const char *key, GtkWidget *spin);
+
+G_GNUC_INTERNAL
+void pidgin_prefs_bind_switch(const gchar *key, GtkWidget *widget);
 
 G_END_DECLS
 
