@@ -117,11 +117,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
               <object class="GtkComboBoxText" id="group">
                 <property name="hexpand">1</property>
                 <property name="has-entry">1</property>
-                <property name="child">
-                  <object class="GtkEntry">
-                    <property name="focusable">1</property>
-                  </object>
-                </property>
               </object>
             </child>
           </object>
