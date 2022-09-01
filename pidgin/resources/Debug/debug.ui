@@ -131,6 +131,8 @@ funky is going on. The raw text is below for pasting.
   </object>
   <template class="PidginDebugWindow" parent="GtkWindow">
     <property name="title" translatable="1">Debug Window</property>
+    <property name="default-height">600</property>
+    <property name="default-width">250</property>
     <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>

@@ -25,6 +25,8 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <template class="PidginPluginsDialog" parent="GtkDialog">
     <property name="title" translatable="1">Plugins</property>
+    <property name="default-height">700</property>
+    <property name="default-width">560</property>
     <signal name="response" handler="pidgin_plugins_dialog_response_cb" swapped="no"/>
     <child internal-child="content_area">
       <object class="GtkBox">
