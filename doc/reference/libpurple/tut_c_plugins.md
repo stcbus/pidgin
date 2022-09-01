@@ -59,7 +59,7 @@ hello_world_load(GPluginPlugin *plugin, GError **error)
 }
 
 static gboolean
-hello_world_unload(GPluginPlugin *plugin, GError **error)
+hello_world_unload(GPluginPlugin *plugin, gboolean shutdown, GError **error)
 {
 	return TRUE;
 }
@@ -93,8 +93,9 @@ can call `g_set_error()` on the `error` argument and return `FALSE`.
 
 `hello_world_unload` is called when the plugin is unloaded. That is, when the
 user has manually unloaded the plugin or the program is shutting down. We can
-use it to wrap up everything, and free our variables. Again, if there are any
-errors, you can call `g_set_error()` on the `error` argument and return `FALSE`.
+use it to wrap up everything, and free our variables. If the program is shutting
+down, the `shutdown` argument will be `TRUE`. Again, if there are any errors, you
+can call `g_set_error()` on the `error` argument and return `FALSE`.
 
 Finally we have `GPLUGIN_NATIVE_PLUGIN_DECLARE()`. It is a helper macro that
 makes creating plugins easier. It has a single argument which is the prefix
