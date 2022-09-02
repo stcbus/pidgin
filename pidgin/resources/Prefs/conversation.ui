@@ -67,19 +67,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
-            <property name="activatable-widget">use_smooth_scrolling</property>
-            <property name="title" translatable="1">Use smooth-scrolling</property>
-            <property name="use-underline">1</property>
-            <child>
-              <object class="GtkSwitch" id="use_smooth_scrolling">
-                <property name="focusable">1</property>
-                <property name="valign">center</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
           <object class="AdwActionRow" id="win32.blink_im_row">
             <property name="activatable-widget">win32.blink_im</property>
             <property name="title" translatable="1">F_lash window when IMs are received</property>

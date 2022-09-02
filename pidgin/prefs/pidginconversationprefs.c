@@ -38,7 +38,6 @@ struct _PidginConversationPrefs {
 	struct {
 		GtkWidget *send_typing;
 	} im;
-	GtkWidget *use_smooth_scrolling;
 	struct {
 		GtkWidget *blink_im_row;
 		GtkWidget *blink_im;
@@ -93,9 +92,6 @@ pidgin_conversation_prefs_class_init(PidginConversationPrefsClass *klass)
 			im.send_typing);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginConversationPrefs,
-			use_smooth_scrolling);
-	gtk_widget_class_bind_template_child(
-			widget_class, PidginConversationPrefs,
 			win32.blink_im_row);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginConversationPrefs,
@@ -120,9 +116,6 @@ pidgin_conversation_prefs_init(PidginConversationPrefs *prefs)
 
 	pidgin_prefs_bind_switch("/purple/conversations/im/send_typing",
 	                         prefs->im.send_typing);
-
-	pidgin_prefs_bind_switch(PIDGIN_PREFS_ROOT "/conversations/use_smooth_scrolling",
-	                         prefs->use_smooth_scrolling);
 
 #ifdef _WIN32
 	pidgin_prefs_bind_switch(PIDGIN_PREFS_ROOT "/win32/blink_im",
