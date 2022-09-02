@@ -131,12 +131,6 @@ static void
 pidgin_credential_provider_row_init(PidginCredentialProviderRow *row)
 {
 	gtk_widget_init_template(GTK_WIDGET(row));
-
-	/* If this row is active, then enable the provider properties button (which
-	 * may or may not be visible). */
-	g_object_bind_property(G_OBJECT(row), "active",
-	                       G_OBJECT(row->configure), "sensitive",
-	                       G_BINDING_DEFAULT);
 }
 
 static void

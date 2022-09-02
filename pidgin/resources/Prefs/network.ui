@@ -87,6 +87,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             <property name="activatable-widget">public_ip</property>
             <property name="title" translatable="1">Public _IP</property>
             <property name="use-underline">1</property>
+            <property name="sensitive" bind-source="auto_ip" bind-property="active" bind-flags="sync-create|invert-boolean">0</property>
             <child>
               <object class="GtkEntry" id="public_ip">
                 <property name="focusable">1</property>

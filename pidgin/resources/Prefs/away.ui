@@ -171,6 +171,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
           <object class="AdwActionRow" id="startup_row">
             <property name="title" translatable="1">Status to a_pply at startup</property>
             <property name="use-underline">1</property>
+            <property name="sensitive" bind-source="startup_current_status" bind-property="active" bind-flags="sync-create|invert-boolean">0</property>
           </object>
         </child>
       </object>

@@ -134,9 +134,6 @@ pidgin_away_prefs_init(PidginAwayPrefs *prefs)
 	adw_action_row_add_suffix(ADW_ACTION_ROW(prefs->startup_row), menu);
 	adw_action_row_set_activatable_widget(ADW_ACTION_ROW(prefs->startup_row),
 	                                      menu);
-	g_object_bind_property(prefs->startup_current_status, "active",
-	                       prefs->startup_row, "sensitive",
-	                       G_BINDING_SYNC_CREATE|G_BINDING_INVERT_BOOLEAN);
 }
 
 /******************************************************************************

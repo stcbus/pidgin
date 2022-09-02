@@ -208,10 +208,6 @@ pidgin_network_prefs_init(PidginNetworkPrefs *prefs)
 	gtk_editable_set_text(GTK_EDITABLE(prefs->public_ip),
 	                      purple_network_get_public_ip());
 
-	g_object_bind_property(prefs->auto_ip, "active",
-	                       prefs->public_ip_row, "sensitive",
-	                       G_BINDING_SYNC_CREATE|G_BINDING_INVERT_BOOLEAN);
-
 	pidgin_prefs_bind_switch("/purple/network/map_ports", prefs->map_ports);
 
 	pidgin_prefs_bind_expander_row("/purple/network/ports_range_use",
