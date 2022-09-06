@@ -160,7 +160,7 @@ pidgin_application_init_plugins(void) {
 	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
 	g_signal_connect(manager, "unloaded-plugin",
 	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
-	g_signal_connect(manager, "unloaded-plugin-failed",
+	g_signal_connect(manager, "unload-plugin-failed",
 	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
 
 	purple_plugins_refresh();
