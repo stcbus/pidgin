@@ -37,8 +37,7 @@ base_url = "https://keep.imfreedom.org/pidgin/pidgin/file/default/"
 [extra]
 # The same order will be used when generating the index
 content_files = [
-	"code_contributions.md",
-	"mercurial.md",
+	"contributing.md",
 	"plugin_i18n.md",
 	"plugin_ids.md",
 	"signals_account.md",

@@ -1,6 +1,5 @@
 libpurple_doc_content_files = [
-	'code_contributions.md',
-	'mercurial.md',
+	'contributing.md',
 	'plugin_i18n.md',
 	'plugin_ids.md',
 	'signals_account.md',
