@@ -41,7 +41,7 @@ struct _PidginProxyPrefs {
 	/* Non-GNOME version */
 	GtkWidget *nongnome;
 	GtkWidget *socks4_remotedns;
-	PidginPrefCombo type;
+	GtkWidget *type;
 	GtkWidget *options;
 	GtkWidget *host;
 	GtkWidget *port;
@@ -54,6 +54,30 @@ G_DEFINE_TYPE(PidginProxyPrefs, pidgin_proxy_prefs, ADW_TYPE_PREFERENCES_PAGE)
 /******************************************************************************
  * Helpers
  *****************************************************************************/
+static gchar *
+proxy_type_expression_cb(GObject *self, G_GNUC_UNUSED gpointer data)
+{
+	const gchar *text = "";
+	const gchar *value = NULL;
+
+	value = gtk_string_object_get_string(GTK_STRING_OBJECT(self));
+	if(purple_strequal(value, "none")) {
+		text = _("No proxy");
+	} else if(purple_strequal(value, "socks4")) {
+		text = _("SOCKS 4");
+	} else if(purple_strequal(value, "socks5")) {
+		text = _("SOCKS 5");
+	} else if(purple_strequal(value, "tor")) {
+		text = _("Tor/Privacy (SOCKS 5)");
+	} else if(purple_strequal(value, "http")) {
+		text = _("HTTP");
+	} else if(purple_strequal(value, "envvar")) {
+		text = _("Use Environmental Settings");
+	}
+
+	return g_strdup(text);
+}
+
 static void
 proxy_changed_cb(const gchar *name, PurplePrefType type, gconstpointer value,
                  gpointer data)
@@ -141,7 +165,7 @@ pidgin_proxy_prefs_class_init(PidginProxyPrefsClass *klass)
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, socks4_remotedns);
 	gtk_widget_class_bind_template_child(
-			widget_class, PidginProxyPrefs, type.combo);
+			widget_class, PidginProxyPrefs, type);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, options);
 	gtk_widget_class_bind_template_child(
@@ -152,6 +176,8 @@ pidgin_proxy_prefs_class_init(PidginProxyPrefsClass *klass)
 			widget_class, PidginProxyPrefs, username);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, password);
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        proxy_type_expression_cb);
 	gtk_widget_class_bind_template_callback(widget_class,
 	                                        proxy_row_activated_cb);
 	gtk_widget_class_bind_template_callback(widget_class,
@@ -197,9 +223,8 @@ pidgin_proxy_prefs_init(PidginProxyPrefs *prefs)
 		pidgin_prefs_bind_switch("/purple/proxy/socks4_remotedns",
 		                         prefs->socks4_remotedns);
 
-		prefs->type.type = PURPLE_PREF_STRING;
-		prefs->type.key = "/purple/proxy/type";
-		pidgin_prefs_bind_dropdown(&prefs->type);
+		pidgin_prefs_bind_combo_row("/purple/proxy/type", prefs->type);
+
 		proxy_info = purple_global_proxy_get_info();
 
 		purple_prefs_connect_callback(prefs, "/purple/proxy/type",

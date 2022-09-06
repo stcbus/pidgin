@@ -49,6 +49,9 @@ G_GNUC_INTERNAL
 void pidgin_prefs_bind_checkbox(const char *key, GtkWidget *button);
 
 G_GNUC_INTERNAL
+void pidgin_prefs_bind_combo_row(const gchar *key, GtkWidget *widget);
+
+G_GNUC_INTERNAL
 void pidgin_prefs_bind_dropdown(PidginPrefCombo *combo);
 
 G_GNUC_INTERNAL

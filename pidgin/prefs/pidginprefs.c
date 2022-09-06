@@ -367,6 +367,44 @@ pidgin_prefs_bind_dropdown(PidginPrefCombo *combo)
 }
 
 static void
+bind_combo_row_set(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec,
+                   gpointer data)
+{
+	const gchar *key = data;
+	GtkStringObject *item = NULL;
+	const gchar *value = NULL;
+
+	item = adw_combo_row_get_selected_item(ADW_COMBO_ROW(obj));
+	value = gtk_string_object_get_string(item);
+	purple_prefs_set_string(key, value);
+}
+
+void
+pidgin_prefs_bind_combo_row(const gchar *key, GtkWidget *widget) {
+	GListModel *model = NULL;
+	const char *pref_value = NULL;
+	guint selected = GTK_INVALID_LIST_POSITION;
+
+	pref_value = purple_prefs_get_string(key);
+	model = adw_combo_row_get_model(ADW_COMBO_ROW(widget));
+
+	for(guint i = 0; i < g_list_model_get_n_items(model); i++) {
+		GtkStringObject *obj = g_list_model_get_item(model, i);
+		const gchar *value = gtk_string_object_get_string(obj);
+
+		if (purple_strequal(pref_value, value)) {
+			selected = i;
+			break;
+		}
+	}
+
+	adw_combo_row_set_selected(ADW_COMBO_ROW(widget), selected);
+
+	g_signal_connect(widget, "notify::selected",
+	                 G_CALLBACK(bind_combo_row_set), (gpointer)key);
+}
+
+static void
 set_bool_pref(GtkWidget *w, const char *key)
 {
 	purple_prefs_set_bool(key,

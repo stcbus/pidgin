@@ -23,45 +23,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
-  <object class="GtkAdjustment" id="port.adjustment">
-    <property name="upper">65535</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
-  <object class="GtkListStore" id="type.store">
-    <columns>
-      <!-- column-name text -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">No proxy</col>
-        <col id="1">none</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">SOCKS 4</col>
-        <col id="1">socks4</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">SOCKS 5</col>
-        <col id="1">socks5</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">Tor/Privacy (SOCKS 5)</col>
-        <col id="1">tor</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">HTTP</col>
-        <col id="1">http</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">Use Environmental Settings</col>
-        <col id="1">envvar</col>
-      </row>
-    </data>
-  </object>
   <template class="PidginProxyPrefs" parent="AdwPreferencesPage">
     <child>
       <object class="AdwPreferencesGroup" id="gnome">
@@ -106,22 +67,24 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
-            <property name="activatable-widget">type.combo</property>
+          <object class="AdwComboRow" id="type">
             <property name="title" translatable="1">Proxy t_ype</property>
             <property name="use-underline">1</property>
-            <child>
-              <object class="GtkComboBox" id="type.combo">
-                <property name="model">type.store</property>
-                <property name="valign">center</property>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
-                </child>
+            <property name="model">
+              <object class="GtkStringList">
+                <items>
+                  <item>none</item>
+                  <item>socks4</item>
+                  <item>socks5</item>
+                  <item>tor</item>
+                  <item>http</item>
+                  <item>envvar</item>
+                </items>
               </object>
-            </child>
+            </property>
+            <property name="expression">
+              <closure type="gchararray" function="proxy_type_expression_cb"/>
+            </property>
           </object>
         </child>
         <child>
@@ -152,7 +115,13 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                       <object class="GtkSpinButton" id="port">
                         <property name="focusable">1</property>
                         <property name="text" translatable="1">0</property>
-                        <property name="adjustment">port.adjustment</property>
+                        <property name="adjustment">
+                          <object class="GtkAdjustment">
+                            <property name="upper">65535</property>
+                            <property name="step-increment">1</property>
+                            <property name="page-increment">10</property>
+                          </object>
+                        </property>
                         <property name="numeric">1</property>
                         <property name="hexpand">1</property>
                         <property name="valign">center</property>
