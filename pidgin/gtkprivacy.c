@@ -144,7 +144,7 @@ select_account_cb(GtkWidget *w, PidginPrivacyDialog *dialog) {
 
 	for (i = 0; i < menu_entry_count; i++) {
 		if (menu_entries[i].type == purple_account_get_privacy_type(account)) {
-			gtk_combo_box_set_active(GTK_COMBO_BOX(dialog->type_menu), i);
+			gtk_drop_down_set_selected(GTK_DROP_DOWN(dialog->type_menu), i);
 			break;
 		}
 	}
@@ -158,10 +158,10 @@ select_account_cb(GtkWidget *w, PidginPrivacyDialog *dialog) {
  *       Even better: the privacy API needs to not suck.
  */
 static void
-type_changed_cb(GtkComboBox *combo, PidginPrivacyDialog *dialog)
-{
+type_changed_cb(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer data) {
+	PidginPrivacyDialog *dialog = data;
 	PurpleAccountPrivacyType new_type =
-		menu_entries[gtk_combo_box_get_active(combo)].type;
+		menu_entries[gtk_drop_down_get_selected(GTK_DROP_DOWN(obj))].type;
 	gboolean buttons_sensitive;
 
 	purple_account_set_privacy_type(dialog->account, new_type);
@@ -301,8 +301,8 @@ pidgin_privacy_dialog_class_init(PidginPrivacyDialogClass *klass)
 static void
 pidgin_privacy_dialog_init(PidginPrivacyDialog *dialog) {
 	PidginAccountChooser *chooser = NULL;
-	gssize selected = -1;
-	gsize i;
+	GtkStringList *model = NULL;
+	guint selected = GTK_INVALID_LIST_POSITION;
 
 	gtk_widget_init_template(GTK_WIDGET(dialog));
 
@@ -310,20 +310,21 @@ pidgin_privacy_dialog_init(PidginPrivacyDialog *dialog) {
 	dialog->account = pidgin_account_chooser_get_selected(chooser);
 
 	/* Add the drop-down list with the allow/block types. */
-	for (i = 0; i < menu_entry_count; i++) {
-		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(dialog->type_menu),
-		                          _(menu_entries[i].text));
+	model = GTK_STRING_LIST(gtk_drop_down_get_model(GTK_DROP_DOWN(dialog->type_menu)));
+	for (guint i = 0; i < menu_entry_count; i++) {
+		gtk_string_list_append(model, _(menu_entries[i].text));
 
-		if (menu_entries[i].type == purple_account_get_privacy_type(dialog->account))
-			selected = (gssize)i;
+		if (menu_entries[i].type == purple_account_get_privacy_type(dialog->account)) {
+			selected = i;
+		}
 	}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(dialog->type_menu), selected);
+	gtk_drop_down_set_selected(GTK_DROP_DOWN(dialog->type_menu), selected);
 
 	/* Rebuild the allow and block lists views. */
 	rebuild_allow_list(dialog);
 	rebuild_block_list(dialog);
 
-	type_changed_cb(GTK_COMBO_BOX(dialog->type_menu), dialog);
+	type_changed_cb(G_OBJECT(dialog->type_menu), NULL, dialog);
 }
 
 void

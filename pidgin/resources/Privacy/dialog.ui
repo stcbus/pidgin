@@ -44,6 +44,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
       <object class="GtkBox">
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
+        <property name="vexpand">1</property>
         <child>
           <object class="GtkLabel">
             <property name="valign">center</property>
@@ -76,8 +77,12 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
           </object>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="type_menu">
-            <signal name="changed" handler="type_changed_cb" object="PidginPrivacyDialog" swapped="no"/>
+          <object class="GtkDropDown" id="type_menu">
+            <property name="model">
+              <object class="GtkStringList">
+              </object>
+            </property>
+            <signal name="notify::selected" handler="type_changed_cb" object="PidginPrivacyDialog" swapped="no"/>
           </object>
         </child>
         <child>
