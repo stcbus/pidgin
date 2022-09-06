@@ -301,7 +301,7 @@ gboolean purple_protocol_client_offline_message(PurpleProtocolClient *client, Pu
 /**
  * purple_protocol_client_get_account_text_table:
  * @client: The #PurpleProtocolClient instance.
- * @account: A #PurpleAccount instance.
+ * @account: (nullable): A #PurpleAccount instance.
  *
  * Gets the account text table which allows protocols to specify additional
  * strings to be used for various purposes. The idea is to stuff a bunch of
