@@ -42,7 +42,6 @@
 struct _PidginDebugWindow {
 	GtkWindow parent;
 
-	GtkWidget *toolbar;
 	GtkWidget *textview;
 	GtkTextBuffer *buffer;
 	GtkTextMark *start_mark;
@@ -236,8 +235,9 @@ do_regex(PidginDebugWindow *win, GtkTextIter *start, GtkTextIter *end)
 	GtkTextIter match_start, match_end;
 	gchar *text;
 
-	if (!win->regex)
+	if (!win->regex) {
 		return;
+	}
 
 	initial_position = gtk_text_iter_get_offset(start);
 
@@ -320,8 +320,9 @@ regex_pref_filter_cb(const gchar *name, PurplePrefType type,
 	PidginDebugWindow *win = (PidginDebugWindow *)data;
 	gboolean active = GPOINTER_TO_INT(val), current;
 
-	if (!win)
+	if (!win) {
 		return;
+	}
 
 	current = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(win->filter));
 	if (active != current) {
@@ -374,8 +375,7 @@ regex_changed_cb(GtkWidget *w, PidginDebugWindow *win) {
 		return;
 	}
 
-	if (win->regex)
-		g_regex_unref(win->regex);
+	g_clear_pointer(&win->regex, g_regex_unref);
 
 	win->regex = g_regex_new(text, G_REGEX_CASELESS|G_REGEX_JAVASCRIPT_COMPAT, 0, NULL);
 
@@ -453,8 +453,9 @@ debug_window_set_filter_level(PidginDebugWindow *win, int level)
 	gboolean scroll;
 	int i;
 
-	if (level != gtk_combo_box_get_active(GTK_COMBO_BOX(win->filterlevel)))
-		gtk_combo_box_set_active(GTK_COMBO_BOX(win->filterlevel), level);
+	if (level != gtk_drop_down_get_selected(GTK_DROP_DOWN(win->filterlevel))) {
+		gtk_drop_down_set_selected(GTK_DROP_DOWN(win->filterlevel), level);
+	}
 
 	scroll = view_near_bottom(win);
 	for (i = 0; i <= PURPLE_DEBUG_FATAL; i++) {
@@ -478,10 +479,12 @@ filter_level_pref_changed(const char *name, PurplePrefType type, gconstpointer v
 }
 
 static void
-filter_level_changed_cb(GtkWidget *combo, gpointer null)
+filter_level_changed_cb(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec)
 {
+	GtkDropDown *dropdown = GTK_DROP_DOWN(obj);
+
 	purple_prefs_set_int(PIDGIN_PREFS_ROOT "/debug/filterlevel",
-				gtk_combo_box_get_active(GTK_COMBO_BOX(combo)));
+	                     gtk_drop_down_get_selected(dropdown));
 }
 
 static void
@@ -522,8 +525,6 @@ pidgin_debug_window_class_init(PidginDebugWindowClass *klass) {
 		"/im/pidgin/Pidgin3/Debug/debug.ui"
 	);
 
-	gtk_widget_class_bind_template_child(
-			widget_class, PidginDebugWindow, toolbar);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginDebugWindow, textview);
 	gtk_widget_class_bind_template_child(
@@ -603,43 +604,40 @@ pidgin_debug_window_init(PidginDebugWindow *win)
 
 	handle = pidgin_debug_get_handle();
 
-	/* Setup our top button bar thingie. */
-	if (purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/toolbar")) {
-		/* we purposely disable the toggle button here in case
-		 * /purple/gtk/debug/expression has an empty string.  If it does not have
-		 * an empty string, the change signal will get called and make the
-		 * toggle button sensitive.
-		 */
-		gtk_widget_set_sensitive(win->filter, FALSE);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(win->filter),
-		                             purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/filter"));
-		purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/filter",
-									regex_pref_filter_cb, win);
+	/* we purposely disable the toggle button here in case
+	 * /purple/gtk/debug/expression has an empty string.  If it does not have
+	 * an empty string, the change signal will get called and make the
+	 * toggle button sensitive.
+	 */
+	gtk_widget_set_sensitive(win->filter, FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(win->filter),
+	                             purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/filter"));
+	purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/filter",
+	                              regex_pref_filter_cb, win);
 
-		/* regex entry */
-		gtk_editable_set_text(GTK_EDITABLE(win->expression),
-		                      purple_prefs_get_string(PIDGIN_PREFS_ROOT "/debug/regex"));
+	/* regex entry */
+	gtk_editable_set_text(GTK_EDITABLE(win->expression),
+	                      purple_prefs_get_string(PIDGIN_PREFS_ROOT "/debug/regex"));
 
-		/* connect the rest of our pref callbacks */
-		win->invert = purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/invert");
-		purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/invert",
-									regex_pref_invert_cb, win);
+	/* connect the rest of our pref callbacks */
+	win->invert = purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/invert");
+	purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/invert",
+	                              regex_pref_invert_cb, win);
 
-		win->highlight = purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/highlight");
-		purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/highlight",
-									regex_pref_highlight_cb, win);
+	win->highlight = purple_prefs_get_bool(PIDGIN_PREFS_ROOT "/debug/highlight");
+	purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/highlight",
+	                              regex_pref_highlight_cb, win);
 
-		gtk_combo_box_set_active(GTK_COMBO_BOX(win->filterlevel),
-					purple_prefs_get_int(PIDGIN_PREFS_ROOT "/debug/filterlevel"));
+	gtk_drop_down_set_selected(GTK_DROP_DOWN(win->filterlevel),
+	                           purple_prefs_get_int(PIDGIN_PREFS_ROOT "/debug/filterlevel"));
 
-		purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/filterlevel",
-						filter_level_pref_changed, win);
+	purple_prefs_connect_callback(handle, PIDGIN_PREFS_ROOT "/debug/filterlevel",
+	                              filter_level_pref_changed, win);
 
-		gtk_check_button_set_active(GTK_CHECK_BUTTON(win->popover_invert),
-		                            win->invert);
-		gtk_check_button_set_active(GTK_CHECK_BUTTON(win->popover_highlight),
-		                            win->highlight);
-	}
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(win->popover_invert),
+	                            win->invert);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(win->popover_highlight),
+	                            win->highlight);
 
 	/* The *start* and *end* marks bound the beginning and end of an
 	   insertion, used for filtering. The *end* mark is also used for
@@ -887,7 +885,6 @@ pidgin_debug_init(void)
 	purple_prefs_add_int(PIDGIN_PREFS_ROOT "/debug/filterlevel",
 	                     PURPLE_DEBUG_ALL);
 
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/debug/toolbar", TRUE);
 	purple_prefs_add_int(PIDGIN_PREFS_ROOT "/debug/width",  450);
 	purple_prefs_add_int(PIDGIN_PREFS_ROOT "/debug/height", 250);
 

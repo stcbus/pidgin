@@ -66,68 +66,69 @@ funky is going on. The raw text is below for pasting.
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
-  <object class="GtkTextTagTable" id="message-format">
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.level[0]">
-        <property name="foreground">rgb(0,0,0)</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.level[1]">
-        <property name="foreground">rgb(102,102,102)</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.level[2]">
-        <property name="foreground">rgb(0,0,0)</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.level[3]">
-        <property name="foreground">rgb(102,0,0)</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.level[4]">
-        <property name="foreground">rgb(255,0,0)</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.level[5]">
-        <property name="foreground">rgb(255,0,0)</property>
-        <property name="weight">700</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.category">
-        <property name="weight">700</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.filtered_invisible">
-        <property name="invisible">1</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.filtered_visible">
-        <property name="invisible">0</property>
-        <property name="invisible-set">1</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.match">
-        <property name="background">rgb(255,175,175)</property>
-        <property name="weight">700</property>
-      </object>
-    </child>
-    <child type="tag">
-      <object class="GtkTextTag" id="tags.paused">
-        <property name="invisible">1</property>
-      </object>
-    </child>
-  </object>
   <object class="GtkTextBuffer" id="buffer">
-    <property name="tag-table">message-format</property>
+    <property name="tag-table">
+      <object class="GtkTextTagTable">
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.level[0]">
+            <property name="foreground">rgb(0,0,0)</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.level[1]">
+            <property name="foreground">rgb(102,102,102)</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.level[2]">
+            <property name="foreground">rgb(0,0,0)</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.level[3]">
+            <property name="foreground">rgb(102,0,0)</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.level[4]">
+            <property name="foreground">rgb(255,0,0)</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.level[5]">
+            <property name="foreground">rgb(255,0,0)</property>
+            <property name="weight">700</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.category">
+            <property name="weight">700</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.filtered_invisible">
+            <property name="invisible">1</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.filtered_visible">
+            <property name="invisible">0</property>
+            <property name="invisible-set">1</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.match">
+            <property name="background">rgb(255,175,175)</property>
+            <property name="weight">700</property>
+          </object>
+        </child>
+        <child type="tag">
+          <object class="GtkTextTag" id="tags.paused">
+            <property name="invisible">1</property>
+          </object>
+        </child>
+      </object>
+    </property>
   </object>
   <template class="PidginDebugWindow" parent="GtkWindow">
     <property name="title" translatable="1">Debug Window</property>
@@ -137,12 +138,10 @@ funky is going on. The raw text is below for pasting.
       <object class="GtkBox">
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkBox" id="toolbar">
-            <style>
-              <class name="toolbar"/>
-            </style>
+          <object class="GtkBox">
+            <property name="css-classes">toolbar</property>
             <child>
-              <object class="GtkButton" id="save">
+              <object class="GtkButton">
                 <property name="tooltip-text" translatable="1">Save</property>
                 <property name="label" translatable="1">_Save...</property>
                 <property name="use-underline">1</property>
@@ -151,7 +150,7 @@ funky is going on. The raw text is below for pasting.
               </object>
             </child>
             <child>
-              <object class="GtkButton" id="clear">
+              <object class="GtkButton">
                 <property name="tooltip-text" translatable="1">Clear</property>
                 <property name="label" translatable="1">_Clear</property>
                 <property name="use-underline">1</property>
@@ -165,7 +164,7 @@ funky is going on. The raw text is below for pasting.
               </object>
             </child>
             <child>
-              <object class="GtkToggleButton" id="pause">
+              <object class="GtkToggleButton">
                 <property name="tooltip-text" translatable="1">Pause</property>
                 <property name="label" translatable="1">_Pause</property>
                 <property name="use-underline">1</property>
@@ -215,18 +214,22 @@ funky is going on. The raw text is below for pasting.
               </object>
             </child>
             <child>
-              <object class="GtkComboBoxText" id="filterlevel">
+              <object class="GtkDropDown" id="filterlevel">
                 <property name="tooltip-text" translatable="1">Select the debug filter level.</property>
-                <property name="active">0</property>
-                <items>
-                  <item translatable="yes">All</item>
-                  <item translatable="yes">Misc</item>
-                  <item translatable="yes">Info</item>
-                  <item translatable="yes">Warning</item>
-                  <item translatable="yes">Error</item>
-                  <item translatable="yes">Fatal Error</item>
-                </items>
-                <signal name="changed" handler="filter_level_changed_cb" object="PidginDebugWindow" swapped="no"/>
+                <property name="selected">0</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">All</item>
+                      <item translatable="yes">Misc</item>
+                      <item translatable="yes">Info</item>
+                      <item translatable="yes">Warning</item>
+                      <item translatable="yes">Error</item>
+                      <item translatable="yes">Fatal Error</item>
+                    </items>
+                  </object>
+                </property>
+                <signal name="notify::selected" handler="filter_level_changed_cb" object="PidginDebugWindow" swapped="no"/>
                 <accessibility>
                   <relation name="labelled-by">filterlevel-label</relation>
                 </accessibility>
