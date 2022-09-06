@@ -32,15 +32,50 @@ struct _PurpleProtocolManager {
 	GObject parent;
 
 	GHashTable *protocols;
+	GArray *list;
 };
-
-G_DEFINE_TYPE(PurpleProtocolManager, purple_protocol_manager, G_TYPE_OBJECT);
 
 static PurpleProtocolManager *default_manager = NULL;
 
 /******************************************************************************
+ * GListModel Implementation
+ *****************************************************************************/
+static GType
+purple_protocol_manager_get_item_type(GListModel *list) {
+	return PURPLE_TYPE_PROTOCOL;
+}
+
+static guint
+purple_protocol_manager_get_n_items(GListModel *list) {
+	PurpleProtocolManager *manager = PURPLE_PROTOCOL_MANAGER(list);
+
+	return manager->list->len;
+}
+
+static gpointer
+purple_protocol_manager_get_item(GListModel *list, guint position) {
+	PurpleProtocolManager *manager = PURPLE_PROTOCOL_MANAGER(list);
+	PurpleProtocol *protocol = NULL;
+
+	protocol = g_array_index(manager->list, PurpleProtocol *, position);
+	return g_object_ref(protocol);
+}
+
+static void
+purple_protocol_manager_list_model_iface_init(GListModelInterface *iface) {
+	iface->get_item_type = purple_protocol_manager_get_item_type;
+	iface->get_n_items = purple_protocol_manager_get_n_items;
+	iface->get_item = purple_protocol_manager_get_item;
+}
+
+/******************************************************************************
  * GObject Implementation
  *****************************************************************************/
+G_DEFINE_TYPE_WITH_CODE(PurpleProtocolManager, purple_protocol_manager,
+                        G_TYPE_OBJECT,
+                        G_IMPLEMENT_INTERFACE(G_TYPE_LIST_MODEL,
+                                              purple_protocol_manager_list_model_iface_init));
+
 static void
 purple_protocol_manager_finalize(GObject *obj) {
 	PurpleProtocolManager *manager = NULL;
@@ -48,6 +83,7 @@ purple_protocol_manager_finalize(GObject *obj) {
 	manager = PURPLE_PROTOCOL_MANAGER(obj);
 
 	g_clear_pointer(&manager->protocols, g_hash_table_destroy);
+	g_clear_pointer(&manager->list, g_array_unref);
 
 	G_OBJECT_CLASS(purple_protocol_manager_parent_class)->finalize(obj);
 }
@@ -56,6 +92,7 @@ static void
 purple_protocol_manager_init(PurpleProtocolManager *manager) {
 	manager->protocols = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
 	                                           g_object_unref);
+	manager->list = g_array_new(FALSE, FALSE, sizeof(PurpleProtocol *));
 }
 
 static void
@@ -149,6 +186,8 @@ purple_protocol_manager_register(PurpleProtocolManager *manager,
 
 	g_hash_table_insert(manager->protocols, g_strdup(id),
 	                    g_object_ref(protocol));
+	g_array_append_val(manager->list, protocol);
+	g_list_model_items_changed(G_LIST_MODEL(manager), manager->list->len - 1, 0, 1);
 
 	g_signal_emit(G_OBJECT(manager), signals[SIG_REGISTERED], 0, protocol);
 
@@ -175,6 +214,14 @@ purple_protocol_manager_unregister(PurpleProtocolManager *manager,
 	id = purple_protocol_get_id(protocol);
 
 	if(g_hash_table_remove(manager->protocols, id)) {
+		for(guint i = 0; i < manager->list->len; i++) {
+			if(g_array_index(manager->list, PurpleProtocol *, i) == protocol) {
+				g_array_remove_index(manager->list, i);
+				g_list_model_items_changed(G_LIST_MODEL(manager), i, 1, 0);
+				break;
+			}
+		}
+
 		g_signal_emit(G_OBJECT(manager), signals[SIG_UNREGISTERED], 0,
 		              protocol);
 
