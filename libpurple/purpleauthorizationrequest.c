@@ -227,7 +227,7 @@ purple_authorization_request_class_init(PurpleAuthorizationRequestClass *klass)
 		G_TYPE_STRING);
 
 	/**
-	 * PurpleAuthorizationRequest:account: (attributes org.gtk.Property.get=purple_authorization_request_get_account)
+	 * PurpleAuthorizationRequest:account:
 	 *
 	 * The account that this authorization request is for.
 	 *
@@ -240,33 +240,33 @@ purple_authorization_request_class_init(PurpleAuthorizationRequestClass *klass)
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleAuthorizationRequest:username: (attributes org.gtk.Property.get=purple_authorization_request_get_username):
+	 * PurpleAuthorizationRequest:username:
 	 *
-	 * The username of the remote user requesting authorization.
+	 * The username of the remote user that is requesting authorization.
 	 *
 	 * Since: 3.0.0
 	 */
 	properties[PROP_USERNAME] = g_param_spec_string(
 		"username", "username",
-		"The username of the remote user requesting authorization",
+		"The username of the remote user that is requesting authorization",
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleAuthorizationRequest:alias: (attributes org.gtk.Property.get=purple_authorization_request_get_alias org.gtk.Property.set=purple_authorization_request_set_alias)
+	 * PurpleAuthorizationRequest:alias:
 	 *
-	 * The alias of the remote user request authorization.
+	 * The alias of the remote user that is requesting authorization.
 	 *
 	 * Since: 3.0.0
 	 */
 	properties[PROP_ALIAS] = g_param_spec_string(
 		"alias", "alias",
-		"The alias of the remote user request authorization",
+		"The alias of the remote user that is requesting authorization",
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleAuthorizationRequest:message: (attributes org.gtk.Property.get=purple_authorization_request_get_message org.gtk.Property.set=purple_authorization_request_set_message)
+	 * PurpleAuthorizationRequest:message:
 	 *
 	 * The optional message sent from the remote user.
 	 *

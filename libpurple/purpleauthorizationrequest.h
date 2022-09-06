@@ -73,7 +73,7 @@ PurpleAuthorizationRequest *purple_authorization_request_new(PurpleAccount *acco
 PurpleAccount *purple_authorization_request_get_account(PurpleAuthorizationRequest *request);
 
 /**
- * purple_authorization_request_get_remote_username:
+ * purple_authorization_request_get_username:
  * @request: The instance.
  *
  * Gets the username for the user requesting authorization.

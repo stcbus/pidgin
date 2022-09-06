@@ -195,9 +195,9 @@ purple_add_contact_request_class_init(PurpleAddContactRequestClass *klass)
 		0);
 
 	/**
-	 * PurpleAddContactRequest:account: (attributes org.gtk.Property.get=purple_add_contact_request_get_account)
+	 * PurpleAddContactRequest:account:
 	 *
-	 * The account that this authorization request is for.
+	 * The account that this add contact request is for.
 	 *
 	 * Since: 3.0.0
 	 */
@@ -208,33 +208,33 @@ purple_add_contact_request_class_init(PurpleAddContactRequestClass *klass)
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleAddContactRequest:username: (attributes org.gtk.Property.get=purple_add_contact_request_get_username):
+	 * PurpleAddContactRequest:username:
 	 *
-	 * The username of the remote user requesting authorization.
+	 * The username of the remote user to be added.
 	 *
 	 * Since: 3.0.0
 	 */
 	properties[PROP_USERNAME] = g_param_spec_string(
 		"username", "username",
-		"The username of the remote user requesting authorization",
+		"The username of the remote user to be added.",
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleAddContactRequest:alias: (attributes org.gtk.Property.get=purple_add_contact_request_get_alias org.gtk.Property.set=purple_add_contact_request_set_alias)
+	 * PurpleAddContactRequest:alias:
 	 *
-	 * The alias of the remote user request authorization.
+	 * The alias of the remote user to be added.
 	 *
 	 * Since: 3.0.0
 	 */
 	properties[PROP_ALIAS] = g_param_spec_string(
 		"alias", "alias",
-		"The alias of the remote user request authorization",
+		"The alias of the remote user to be added.",
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PurpleAddContactRequest:message: (attributes org.gtk.Property.get=purple_add_contact_request_get_message org.gtk.Property.set=purple_add_contact_request_set_message)
+	 * PurpleAddContactRequest:message:
 	 *
 	 * The optional message sent from the remote user.
 	 *

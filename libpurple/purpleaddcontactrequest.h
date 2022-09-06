@@ -72,10 +72,10 @@ PurpleAddContactRequest *purple_add_contact_request_new(PurpleAccount *account, 
 PurpleAccount *purple_add_contact_request_get_account(PurpleAddContactRequest *request);
 
 /**
- * purple_add_contact_request_get_remote_username:
+ * purple_add_contact_request_get_username:
  * @request: The instance.
  *
- * Gets the username for the user requesting authorization.
+ * Gets the username for the user to be added.
  *
  * Returns: The username of the remote user.
  *
