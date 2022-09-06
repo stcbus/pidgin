@@ -41,5 +41,6 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
         <attribute name="text">2</attribute>
       </attributes>
     </child>
+    <signal name="changed" handler="dropdown_changed_cb" object="PidginProtocolChooser" swapped="no"/>
   </template>
 </interface>

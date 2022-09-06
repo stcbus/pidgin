@@ -183,9 +183,12 @@ set_dialog_icon(AccountPrefsDialog *dialog, gpointer data, size_t len, gchar *ne
 }
 
 static void
-set_account_protocol_cb(GtkWidget *widget, AccountPrefsDialog *dialog) {
-	PidginProtocolChooser *chooser = PIDGIN_PROTOCOL_CHOOSER(widget);
-	PurpleProtocol *protocol = pidgin_protocol_chooser_get_selected(chooser);
+set_account_protocol_cb(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec,
+                        gpointer data)
+{
+	AccountPrefsDialog *dialog = data;
+	PidginProtocolChooser *chooser = PIDGIN_PROTOCOL_CHOOSER(obj);
+	PurpleProtocol *protocol = pidgin_protocol_chooser_get_protocol(chooser);
 
 	if(g_set_object(&dialog->protocol, protocol)) {
 		g_clear_pointer(&dialog->protocol_id, g_free);
@@ -404,9 +407,9 @@ add_login_options(AccountPrefsDialog *dialog, GtkWidget *parent)
 	/* Protocol */
 	if(dialog->protocol_menu == NULL) {
 		dialog->protocol_menu = pidgin_protocol_chooser_new();
-		pidgin_protocol_chooser_set_selected_id(PIDGIN_PROTOCOL_CHOOSER(dialog->protocol_menu),
-		                                        dialog->protocol_id);
-		g_signal_connect(G_OBJECT(dialog->protocol_menu), "changed",
+		pidgin_protocol_chooser_set_protocol(PIDGIN_PROTOCOL_CHOOSER(dialog->protocol_menu),
+		                                     dialog->protocol);
+		g_signal_connect(G_OBJECT(dialog->protocol_menu), "notify::protocol",
 		                 G_CALLBACK(set_account_protocol_cb), dialog);
 		g_object_ref(G_OBJECT(dialog->protocol_menu));
 	}
