@@ -35,6 +35,7 @@
 struct _PidginXmppConsole {
 	GtkWindow parent;
 
+	GtkComboBox *account_chooser;
 	PurpleConnection *gc;
 	GtkTextBuffer *buffer;
 	struct {
@@ -52,24 +53,24 @@ struct _PidginXmppConsole {
 	GtkWidget *sw;
 
 	struct {
-		GtkPopover *popover;
+		GtkMenuButton *button;
 		GtkEntry *to;
-		GtkComboBoxText *type;
+		GtkDropDown *type;
 	} iq;
 
 	struct {
-		GtkPopover *popover;
+		GtkMenuButton *button;
 		GtkEntry *to;
-		GtkComboBoxText *type;
-		GtkComboBoxText *show;
+		GtkDropDown *type;
+		GtkDropDown *show;
 		GtkEntry *status;
 		GtkEntry *priority;
 	} presence;
 
 	struct {
-		GtkPopover *popover;
+		GtkMenuButton *button;
 		GtkEntry *to;
-		GtkComboBoxText *type;
+		GtkDropDown *type;
 		GtkEntry *body;
 		GtkEntry *subject;
 		GtkEntry *thread;
@@ -265,7 +266,6 @@ entry_changed_cb(GtkTextBuffer *buffer, gpointer data) {
 	int height;
 	int pad_top, pad_inside, pad_bottom;
 	PurpleXmlNode *node;
-	GtkStyleContext *style;
 
 	wrapped_lines = 1;
 	gtk_text_buffer_get_start_iter(buffer, &iter);
@@ -298,11 +298,12 @@ entry_changed_cb(GtkTextBuffer *buffer, gpointer data) {
 
 	xmlstr = g_strdup_printf("<xml>%s</xml>", str);
 	node = purple_xmlnode_from_str(xmlstr, -1);
-	style = gtk_widget_get_style_context(console->entry);
 	if (node) {
-		gtk_style_context_remove_class(style, "error");
+		gtk_text_buffer_remove_tag_by_name(console->entry_buffer, "invalid",
+		                                   &start, &end);
 	} else {
-		gtk_style_context_add_class(style, "error");
+		gtk_text_buffer_apply_tag_by_name(console->entry_buffer, "invalid",
+		                                  &start, &end);
 	}
 	g_free(str);
 	g_free(xmlstr);
@@ -314,12 +315,17 @@ static void
 load_text_and_set_caret(PidginXmppConsole *console, const gchar *pre_text,
                         const gchar *post_text)
 {
+	GtkTextIter start, end;
 	GtkTextIter where;
 	GtkTextMark *mark;
 
+	g_signal_handlers_block_by_func(console->entry_buffer, entry_changed_cb,
+	                                console);
 	gtk_text_buffer_begin_user_action(console->entry_buffer);
 
-	gtk_text_buffer_set_text(console->entry_buffer, pre_text, -1);
+	gtk_text_buffer_get_bounds(console->entry_buffer, &start, &end);
+	gtk_text_buffer_delete(console->entry_buffer, &start, &end);
+	gtk_text_buffer_insert(console->entry_buffer, &end, pre_text, -1);
 
 	gtk_text_buffer_get_end_iter(console->entry_buffer, &where);
 	mark = gtk_text_buffer_create_mark(console->entry_buffer, NULL, &where, TRUE);
@@ -331,132 +337,148 @@ load_text_and_set_caret(PidginXmppConsole *console, const gchar *pre_text,
 	gtk_text_buffer_delete_mark(console->entry_buffer, mark);
 
 	gtk_text_buffer_end_user_action(console->entry_buffer);
+	g_signal_handlers_unblock_by_func(console->entry_buffer, entry_changed_cb,
+	                                  console);
+
+	entry_changed_cb(console->entry_buffer, console);
 }
 
 static void
 iq_clicked_cb(GtkWidget *w, gpointer data)
 {
 	PidginXmppConsole *console = data;
-	const gchar *to;
-	char *stanza;
+	GtkStringObject *obj = NULL;
+	const gchar *to, *type;
+	gchar *stanza;
 
 	to = gtk_editable_get_text(GTK_EDITABLE(console->iq.to));
-	stanza = g_strdup_printf(
-	        "<iq %s%s%s id='console%x' type='%s'>", to && *to ? "to='" : "",
-	        to && *to ? to : "", to && *to ? "'" : "", g_random_int(),
-	        gtk_combo_box_text_get_active_text(console->iq.type));
+	obj = gtk_drop_down_get_selected_item(console->iq.type);
+	type = gtk_string_object_get_string(obj);
+
+	if(to != NULL && *to != '\0') {
+		stanza = g_strdup_printf("<iq to='%s' id='console%x' type='%s'>",
+		                         to, g_random_int(), type);
+	} else {
+		stanza = g_strdup_printf("<iq id='console%x' type='%s'>",
+		                         g_random_int(), type);
+	}
+
 	load_text_and_set_caret(console, stanza, "</iq>");
 	gtk_widget_grab_focus(console->entry);
 	g_free(stanza);
 
 	/* Reset everything. */
 	gtk_editable_set_text(GTK_EDITABLE(console->iq.to), "");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(console->iq.type), 0);
-	gtk_popover_popdown(console->iq.popover);
+	gtk_drop_down_set_selected(console->iq.type, 0);
+	gtk_menu_button_popdown(console->iq.button);
 }
 
 static void
 presence_clicked_cb(GtkWidget *w, gpointer data)
 {
 	PidginXmppConsole *console = data;
+	GtkStringObject *obj = NULL;
 	const gchar *to, *status, *priority;
-	gchar *type, *show;
-	char *stanza;
+	const gchar *type, *show;
+	GString *stanza = NULL;
 
 	to = gtk_editable_get_text(GTK_EDITABLE(console->presence.to));
-	type = gtk_combo_box_text_get_active_text(console->presence.type);
+	obj = gtk_drop_down_get_selected_item(console->presence.type);
+	type = gtk_string_object_get_string(obj);
 	if (purple_strequal(type, "default")) {
-		g_free(type);
-		type = g_strdup("");
+		type = "";
 	}
-	show = gtk_combo_box_text_get_active_text(console->presence.show);
+	obj = gtk_drop_down_get_selected_item(console->presence.show);
+	show = gtk_string_object_get_string(obj);
 	if (purple_strequal(show, "default")) {
-		g_free(show);
-		show = g_strdup("");
+		show = "";
 	}
 	status = gtk_editable_get_text(GTK_EDITABLE(console->presence.status));
 	priority = gtk_editable_get_text(GTK_EDITABLE(console->presence.priority));
-	if (purple_strequal(priority, "0"))
+	if (purple_strequal(priority, "0")) {
 		priority = "";
+	}
 
-	stanza = g_strdup_printf("<presence %s%s%s id='console%x' %s%s%s>"
-	                         "%s%s%s%s%s%s%s%s%s",
-	                         *to ? "to='" : "",
-	                         *to ? to : "",
-	                         *to ? "'" : "",
-	                         g_random_int(),
+	stanza = g_string_new("<presence");
+	if(*to != '\0') {
+		g_string_append_printf(stanza, " to='%s'", to);
+	}
+	g_string_append_printf(stanza, " id='console%x'", g_random_int());
+	if(*type != '\0') {
+		g_string_append_printf(stanza, " type='%s'", type);
+	}
+	g_string_append_c(stanza, '>');
 
-	                         *type ? "type='" : "",
-	                         *type ? type : "",
-	                         *type ? "'" : "",
+	if(*show != '\0') {
+		g_string_append_printf(stanza, "<show>%s</show>", show);
+	}
 
-	                         *show ? "<show>" : "",
-	                         *show ? show : "",
-	                         *show ? "</show>" : "",
+	if(*status != '\0') {
+		g_string_append_printf(stanza, "<status>%s</status>", status);
+	}
 
-	                         *status ? "<status>" : "",
-	                         *status ? status : "",
-	                         *status ? "</status>" : "",
+	if(*priority != '\0') {
+		g_string_append_printf(stanza, "<priority>%s</priority>", priority);
+	}
 
-	                         *priority ? "<priority>" : "",
-	                         *priority ? priority : "",
-	                         *priority ? "</priority>" : "");
-
-	load_text_and_set_caret(console, stanza, "</presence>");
+	load_text_and_set_caret(console, stanza->str, "</presence>");
 	gtk_widget_grab_focus(console->entry);
-	g_free(stanza);
-	g_free(type);
-	g_free(show);
+	g_string_free(stanza, TRUE);
 
 	/* Reset everything. */
 	gtk_editable_set_text(GTK_EDITABLE(console->presence.to), "");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(console->presence.type), 0);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(console->presence.show), 0);
+	gtk_drop_down_set_selected(console->presence.type, 0);
+	gtk_drop_down_set_selected(console->presence.show, 0);
 	gtk_editable_set_text(GTK_EDITABLE(console->presence.status), "");
 	gtk_editable_set_text(GTK_EDITABLE(console->presence.priority), "0");
-	gtk_popover_popdown(console->presence.popover);
+	gtk_menu_button_popdown(console->presence.button);
 }
 
 static void
 message_clicked_cb(GtkWidget *w, gpointer data)
 {
 	PidginXmppConsole *console = data;
-	const gchar *to, *body, *thread, *subject;
-	char *stanza;
+	GtkStringObject *obj = NULL;
+	const gchar *to, *body, *thread, *subject, *type;
+	GString *stanza = NULL;
 
 	to = gtk_editable_get_text(GTK_EDITABLE(console->message.to));
 	body = gtk_editable_get_text(GTK_EDITABLE(console->message.body));
 	thread = gtk_editable_get_text(GTK_EDITABLE(console->message.thread));
 	subject = gtk_editable_get_text(GTK_EDITABLE(console->message.subject));
+	obj = gtk_drop_down_get_selected_item(console->message.type);
+	type = gtk_string_object_get_string(obj);
 
-	stanza = g_strdup_printf(
-	        "<message %s%s%s id='console%x' type='%s'>"
-	        "%s%s%s%s%s%s%s%s%s",
+	stanza = g_string_new("<message");
+	if(*to != '\0') {
+		g_string_append_printf(stanza, " to='%s'", to);
+	}
+	g_string_append_printf(stanza, " id='console%x' type='%s'>",
+	                       g_random_int(), type);
 
-	        *to ? "to='" : "", *to ? to : "", *to ? "'" : "",
-	        g_random_int(),
-	        gtk_combo_box_text_get_active_text(console->message.type),
+	if(*body != '\0') {
+		g_string_append_printf(stanza, "<body>%s</body>", body);
+	}
 
-	        *body ? "<body>" : "", *body ? body : "",
-	        *body ? "</body>" : "",
+	if(*subject != '\0') {
+		g_string_append_printf(stanza, "<subject>%s</subject>", subject);
+	}
 
-	        *subject ? "<subject>" : "", *subject ? subject : "",
-	        *subject ? "</subject>" : "",
+	if(*thread != '\0') {
+		g_string_append_printf(stanza, "<thread>%s</thread>", thread);
+	}
 
-	        *thread ? "<thread>" : "", *thread ? thread : "",
-	        *thread ? "</thread>" : "");
-
-	load_text_and_set_caret(console, stanza, "</message>");
+	load_text_and_set_caret(console, stanza->str, "</message>");
 	gtk_widget_grab_focus(console->entry);
-	g_free(stanza);
+	g_string_free(stanza, TRUE);
 
 	/* Reset everything. */
 	gtk_editable_set_text(GTK_EDITABLE(console->message.to), "");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(console->message.type), 0);
+	gtk_drop_down_set_selected(console->message.type, 0);
 	gtk_editable_set_text(GTK_EDITABLE(console->message.body), "");
 	gtk_editable_set_text(GTK_EDITABLE(console->message.subject), "0");
 	gtk_editable_set_text(GTK_EDITABLE(console->message.thread), "0");
-	gtk_popover_popdown(console->message.popover);
+	gtk_menu_button_popdown(console->message.button);
 }
 
 static void
@@ -494,6 +516,8 @@ pidgin_xmpp_console_class_init(PidginXmppConsoleClass *klass) {
 	        "/im/pidgin/Pidgin3/Plugin/XMPPConsole/console.ui"
 	);
 
+	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
+	                                     account_chooser);
 	gtk_widget_class_bind_template_callback(widget_class, dropdown_changed_cb);
 
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
@@ -517,7 +541,7 @@ pidgin_xmpp_console_class_init(PidginXmppConsoleClass *klass) {
 
 	/* Popover for <iq/> button. */
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
-	                                     iq.popover);
+	                                     iq.button);
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
 	                                     iq.to);
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
@@ -526,7 +550,7 @@ pidgin_xmpp_console_class_init(PidginXmppConsoleClass *klass) {
 
 	/* Popover for <presence/> button. */
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
-	                                     presence.popover);
+	                                     presence.button);
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
 	                                     presence.to);
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
@@ -541,7 +565,7 @@ pidgin_xmpp_console_class_init(PidginXmppConsoleClass *klass) {
 
 	/* Popover for <message/> button. */
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
-	                                     message.popover);
+	                                     message.button);
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
 	                                     message.to);
 	gtk_widget_class_bind_template_child(widget_class, PidginXmppConsole,
@@ -566,19 +590,9 @@ pidgin_xmpp_console_class_init(PidginXmppConsoleClass *klass) {
 
 static void
 pidgin_xmpp_console_init(PidginXmppConsole *console) {
-	GtkCssProvider *entry_css;
-	GtkStyleContext *context;
-
 	gtk_widget_init_template(GTK_WIDGET(console));
 
-	entry_css = gtk_css_provider_new();
-	gtk_css_provider_load_from_data(entry_css,
-	                                "textview.error text {background-color:#ffcece;}",
-	                                -1);
-	context = gtk_widget_get_style_context(console->entry);
-	gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(entry_css),
-	                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
+	dropdown_changed_cb(console->account_chooser, console);
 	entry_changed_cb(console->entry_buffer, console);
 
 	gtk_widget_show(GTK_WIDGET(console));
