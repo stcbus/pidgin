@@ -93,8 +93,6 @@ irc_uri_handler(const gchar *scheme, const gchar *uri, GHashTable *params)
 	PurpleAccountManager *manager = NULL;
 	gchar *target;
 	gchar *server;
-	GList *accounts;
-	GList *account_node;
 	gchar **target_tokens;
 	PurpleAccount *account;
 	gchar **modifier;
@@ -126,19 +124,17 @@ irc_uri_handler(const gchar *scheme, const gchar *uri, GHashTable *params)
 
 	/* Find account with correct server */
 	manager = purple_account_manager_get_default();
-	accounts = purple_account_manager_get_all(manager);
-	account_node = g_list_find_custom(accounts, server,
-	                                  (GCompareFunc)irc_uri_handler_match_server);
+	account = purple_account_manager_find_custom(manager,
+	                                             (GEqualFunc)irc_uri_handler_match_server,
+	                                             server);
 
-	if (account_node == NULL) {
+	if (account == NULL) {
 		purple_debug_warning("irc",
 				"No account online on '%s' for handling URI",
 				server);
 		g_free(server);
 		return FALSE;
 	}
-
-	account = account_node->data;
 
 	/* Tokenize modifiers, +1 to skip the initial '/' */
 	target_tokens = g_strsplit(target + 1, ",", 0);

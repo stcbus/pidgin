@@ -3532,6 +3532,15 @@ static void jabber_unregister_commands(PurpleProtocol *protocol)
 	g_hash_table_remove(jabber_cmds, protocol);
 }
 
+static gboolean
+find_acct_cb(PurpleAccount *account, const gchar *protocol) {
+	const gchar *account_protocol_id = NULL;
+
+	account_protocol_id = purple_account_get_protocol_id(account);
+	return (purple_strequal(protocol, account_protocol_id) &&
+	        purple_account_is_connected(account));
+}
+
 static PurpleAccount *find_acct(const char *protocol, const char *acct_id)
 {
 	PurpleAccountManager *manager = NULL;
@@ -3546,15 +3555,9 @@ static PurpleAccount *find_acct(const char *protocol, const char *acct_id)
 			acct = NULL;
 		}
 	} else { /* Otherwise find an active account for the protocol */
-		GList *l = purple_account_manager_get_all(manager);
-		while (l) {
-			if (purple_strequal(protocol, purple_account_get_protocol_id(l->data))
-					&& purple_account_is_connected(l->data)) {
-				acct = l->data;
-				break;
-			}
-			l = l->next;
-		}
+		acct = purple_account_manager_find_custom(manager,
+		                                          (GEqualFunc)find_acct_cb,
+		                                          protocol);
 	}
 
 	return acct;

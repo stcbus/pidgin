@@ -167,6 +167,21 @@ PurpleAccount *purple_account_manager_find_by_id(PurpleAccountManager *manager, 
 PurpleAccount *purple_account_manager_find(PurpleAccountManager *manager, const gchar *username, const gchar *protocol_id);
 
 /**
+ * purple_account_manager_find_custom:
+ * @manager: The account manager instance.
+ * @func: (scope call): The function to call for each account. It should return
+ *        TRUE when the desired element is found
+ * @data: The user data to pass to the function, as its second argument.
+ *
+ * Attempts to find an account in @manager with a custom matching function.
+ *
+ * Returns: (transfer none): The account if found, otherwise %NULL.
+ *
+ * Since: 3.0.0
+ */
+PurpleAccount * purple_account_manager_find_custom(PurpleAccountManager *manager, GEqualFunc func, gconstpointer data);
+
+/**
  * purple_account_manager_foreach:
  * @manager: The account manager instance.
  * @callback: (scope call): The function to call.

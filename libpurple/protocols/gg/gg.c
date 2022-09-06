@@ -622,7 +622,7 @@ void ggp_async_login_handler(gpointer _gc, gint fd, PurpleInputCondition cond)
 	gg_free_event(ev);
 }
 
-static gint
+static gboolean
 gg_uri_handler_find_account(PurpleAccount *account,
                             G_GNUC_UNUSED gconstpointer data)
 {
@@ -630,12 +630,8 @@ gg_uri_handler_find_account(PurpleAccount *account,
 
 	protocol_id = purple_account_get_protocol_id(account);
 
-	if (purple_strequal(protocol_id, "prpl-gg") &&
-			purple_account_is_connected(account)) {
-		return 0;
-	} else {
-		return -1;
-	}
+	return (purple_strequal(protocol_id, "prpl-gg") &&
+	        purple_account_is_connected(account));
 }
 
 static gboolean
@@ -643,8 +639,7 @@ gg_uri_handler(const gchar *scheme, const gchar *screenname,
 		GHashTable *params)
 {
 	PurpleAccountManager *manager = NULL;
-	GList *accounts;
-	GList *account_node;
+	PurpleAccount *account;
 	PurpleConversation *im;
 
 	g_return_val_if_fail(screenname != NULL, FALSE);
@@ -660,15 +655,15 @@ gg_uri_handler(const gchar *scheme, const gchar *screenname,
 
 	/* Find online Gadu-Gadu account */
 	manager = purple_account_manager_get_default();
-	accounts = purple_account_manager_get_all(manager);
-	account_node = g_list_find_custom(accounts, NULL,
-	                                  (GCompareFunc)gg_uri_handler_find_account);
+	account = purple_account_manager_find_custom(manager,
+	                                             (GEqualFunc)gg_uri_handler_find_account,
+	                                             NULL);
 
-	if (account_node == NULL) {
+	if (account == NULL) {
 		return FALSE;
 	}
 
-	im = purple_im_conversation_new(account_node->data, screenname);
+	im = purple_im_conversation_new(account, screenname);
 	purple_conversation_present(im);
 
 	return TRUE;

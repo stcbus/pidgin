@@ -101,6 +101,28 @@ test_purple_account_manager_add_remove(void) {
 /******************************************************************************
  * Find Tests
  *****************************************************************************/
+static gboolean
+test_purple_account_manager_find_func(gconstpointer a, gconstpointer b) {
+	PurpleAccount *account = PURPLE_ACCOUNT((gpointer)a);
+	const gchar *desired_username = b;
+	const gchar *protocol_id = NULL;
+	const gchar *username = NULL;
+
+	/* Check if the protocol id matches expected. */
+	protocol_id = purple_account_get_protocol_id(account);
+	if(!purple_strequal(protocol_id, "test")) {
+		return FALSE;
+	}
+
+	/* Finally verify the username. */
+	username = purple_account_get_username(account);
+	if(!purple_strequal(username, desired_username)) {
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 static void
 test_purple_account_manager_find(void) {
 	PurpleAccount *account = NULL, *found = NULL;
@@ -118,6 +140,12 @@ test_purple_account_manager_find(void) {
 	/* Now add an account and verify that we can find it. */
 	purple_account_manager_add(manager, account);
 	found = purple_account_manager_find(manager, "test", "test");
+	g_assert_nonnull(found);
+
+	/* Verify account can be found using a custom function. */
+	found = purple_account_manager_find_custom(manager,
+	                                           test_purple_account_manager_find_func,
+	                                           "test");
 	g_assert_nonnull(found);
 
 	/* Finally remove the account and verify it can't be found. */

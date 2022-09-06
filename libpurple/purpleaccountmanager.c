@@ -326,6 +326,26 @@ purple_account_manager_find(PurpleAccountManager *manager,
 	return NULL;
 }
 
+PurpleAccount *
+purple_account_manager_find_custom(PurpleAccountManager *manager,
+                                   GEqualFunc func, gconstpointer data)
+{
+	GList *l;
+
+	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
+	g_return_val_if_fail(func != NULL, NULL);
+
+	for(l = manager->accounts; l != NULL; l = l->next) {
+		PurpleAccount *account = PURPLE_ACCOUNT(l->data);
+
+		if(func(account, data)) {
+			return account;
+		}
+	}
+
+	return NULL;
+}
+
 void
 purple_account_manager_foreach(PurpleAccountManager *manager,
                                PurpleAccountManagerForeachFunc callback,
