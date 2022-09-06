@@ -23,78 +23,27 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
-  <object class="GtkListStore" id="auto_reply.store">
-    <columns>
-      <!-- column-name text -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Never</col>
-        <col id="1">never</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">When away</col>
-        <col id="1">away</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">When both away and idle</col>
-        <col id="1">awayidle</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="idle_reporting.store">
-    <columns>
-      <!-- column-name text -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Never</col>
-        <col id="1">none</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">From last sent message</col>
-        <col id="1">purple</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">Based on keyboard or mouse use</col>
-        <col id="1">system</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkAdjustment" id="mins_before_adjustment">
-    <property name="lower">1</property>
-    <property name="upper">1440</property>
-    <property name="value">1</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
   <template class="PidginAwayPrefs" parent="AdwPreferencesPage">
     <child>
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Idle</property>
         <child>
-          <object class="AdwActionRow">
-            <property name="activatable-widget">idle_reporting.combo</property>
+          <object class="AdwComboRow" id="idle_reporting">
             <property name="title" translatable="1">_Report idle time</property>
+            <property name="use-subtitle">1</property>
             <property name="use-underline">1</property>
-            <child>
-              <object class="GtkComboBox" id="idle_reporting.combo">
-                <property name="model">idle_reporting.store</property>
-                <property name="valign">center</property>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
-                </child>
+            <property name="model">
+              <object class="GtkStringList">
+                <items>
+                  <item>none</item>
+                  <item>purple</item>
+                  <item>system</item>
+                </items>
               </object>
-            </child>
+            </property>
+            <property name="expression">
+              <closure type="gchararray" function="idle_reporting_expression_cb"/>
+            </property>
           </object>
         </child>
         <child>
@@ -105,7 +54,15 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
             <child>
               <object class="GtkSpinButton" id="mins_before_away">
                 <property name="focusable">1</property>
-                <property name="adjustment">mins_before_adjustment</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">1</property>
+                    <property name="upper">1440</property>
+                    <property name="value">1</property>
+                    <property name="step-increment">1</property>
+                    <property name="page-increment">10</property>
+                  </object>
+                </property>
                 <property name="numeric">1</property>
                 <property name="valign">center</property>
               </object>
@@ -131,22 +88,22 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Away</property>
         <child>
-          <object class="AdwActionRow">
-            <property name="activatable-widget">auto_reply.combo</property>
+          <object class="AdwComboRow" id="auto_reply">
             <property name="title" translatable="1">_Auto-reply</property>
+            <property name="use-subtitle">1</property>
             <property name="use-underline">1</property>
-            <child>
-              <object class="GtkComboBox" id="auto_reply.combo">
-                <property name="model">auto_reply.store</property>
-                <property name="valign">center</property>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
-                </child>
+            <property name="model">
+              <object class="GtkStringList">
+                <items>
+                  <item>never</item>
+                  <item>away</item>
+                  <item>awayidle</item>
+                </items>
               </object>
-            </child>
+            </property>
+            <property name="expression">
+              <closure type="gchararray" function="auto_reply_expression_cb"/>
+            </property>
           </object>
         </child>
       </object>

@@ -20,6 +20,8 @@
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <glib/gi18n-lib.h>
+
 #include <purple.h>
 
 #include <adwaita.h>
@@ -32,11 +34,11 @@
 struct _PidginAwayPrefs {
 	AdwPreferencesPage parent;
 
-	PidginPrefCombo idle_reporting;
+	GtkWidget *idle_reporting;
 	GtkWidget *mins_before_away;
 	GtkWidget *idle_row;
 	GtkWidget *away_when_idle;
-	PidginPrefCombo auto_reply;
+	GtkWidget *auto_reply;
 	GtkWidget *startup_current_status;
 	GtkWidget *startup_row;
 };
@@ -46,11 +48,47 @@ G_DEFINE_TYPE(PidginAwayPrefs, pidgin_away_prefs, ADW_TYPE_PREFERENCES_PAGE)
 /******************************************************************************
  * Helpers
  *****************************************************************************/
+static gchar *
+idle_reporting_expression_cb(GObject *self, G_GNUC_UNUSED gpointer data)
+{
+	const gchar *text = "";
+	const gchar *value = NULL;
+
+	value = gtk_string_object_get_string(GTK_STRING_OBJECT(self));
+	if(purple_strequal(value, "none")) {
+		text = _("Never");
+	} else if(purple_strequal(value, "purple")) {
+		text = _("From last sent message");
+	} else if(purple_strequal(value, "system")) {
+		text = _("Based on keyboard or mouse use");
+	}
+
+	return g_strdup(text);
+}
+
 static void
 set_idle_away(PurpleSavedStatus *status)
 {
 	purple_prefs_set_int("/purple/savedstatus/idleaway",
 	                     purple_savedstatus_get_creation_time(status));
+}
+
+static gchar *
+auto_reply_expression_cb(GObject *self, G_GNUC_UNUSED gpointer data)
+{
+	const gchar *text = "";
+	const gchar *value = NULL;
+
+	value = gtk_string_object_get_string(GTK_STRING_OBJECT(self));
+	if(purple_strequal(value, "never")) {
+		text = _("Never");
+	} else if(purple_strequal(value, "away")) {
+		text = _("When away");
+	} else if(purple_strequal(value, "awayidle")) {
+		text = _("When both away and idle");
+	}
+
+	return g_strdup(text);
 }
 
 static void
@@ -74,7 +112,9 @@ pidgin_away_prefs_class_init(PidginAwayPrefsClass *klass)
 	);
 
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
-	                                     idle_reporting.combo);
+	                                     idle_reporting);
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        idle_reporting_expression_cb);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
 	                                     mins_before_away);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
@@ -82,7 +122,9 @@ pidgin_away_prefs_class_init(PidginAwayPrefsClass *klass)
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
 	                                     idle_row);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
-	                                     auto_reply.combo);
+	                                     auto_reply);
+	gtk_widget_class_bind_template_callback(widget_class,
+	                                        auto_reply_expression_cb);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
 	                                     startup_current_status);
 	gtk_widget_class_bind_template_child(widget_class, PidginAwayPrefs,
@@ -96,9 +138,8 @@ pidgin_away_prefs_init(PidginAwayPrefs *prefs)
 
 	gtk_widget_init_template(GTK_WIDGET(prefs));
 
-	prefs->idle_reporting.type = PURPLE_PREF_STRING;
-	prefs->idle_reporting.key = "/purple/away/idle_reporting";
-	pidgin_prefs_bind_dropdown(&prefs->idle_reporting);
+	pidgin_prefs_bind_combo_row("/purple/away/idle_reporting",
+	                            prefs->idle_reporting);
 
 	pidgin_prefs_bind_spin_button("/purple/away/mins_before_away",
 			prefs->mins_before_away);
@@ -119,9 +160,7 @@ pidgin_away_prefs_init(PidginAwayPrefs *prefs)
 			G_BINDING_SYNC_CREATE);
 
 	/* Away stuff */
-	prefs->auto_reply.type = PURPLE_PREF_STRING;
-	prefs->auto_reply.key = "/purple/away/auto_reply";
-	pidgin_prefs_bind_dropdown(&prefs->auto_reply);
+	pidgin_prefs_bind_combo_row("/purple/away/auto_reply", prefs->auto_reply);
 
 	/* Signon status stuff */
 	pidgin_prefs_bind_switch("/purple/savedstatus/startup_current_status",

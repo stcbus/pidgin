@@ -69,6 +69,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
         <child>
           <object class="AdwComboRow" id="type">
             <property name="title" translatable="1">Proxy t_ype</property>
+            <property name="use-subtitle">1</property>
             <property name="use-underline">1</property>
             <property name="model">
               <object class="GtkStringList">
