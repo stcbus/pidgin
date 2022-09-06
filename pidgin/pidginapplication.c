@@ -122,6 +122,15 @@ pidgin_application_get_active_window(void) {
 
 	return window;
 }
+
+static void
+pidgin_application_plugin_state_changed(G_GNUC_UNUSED GPluginManager *manager,
+                                        G_GNUC_UNUSED GPluginPlugin *plugin,
+                                        G_GNUC_UNUSED gpointer data)
+{
+	purple_plugins_save_loaded(PIDGIN_PREFS_ROOT "/plugins/loaded");
+}
+
 static void
 pidgin_application_init_plugins(void) {
 	GPluginManager *manager = gplugin_manager_get_default();
@@ -144,6 +153,15 @@ pidgin_application_init_plugins(void) {
 
 		gplugin_manager_append_path(manager, PIDGIN_LIBDIR);
 	}
+
+	g_signal_connect(manager, "loaded-plugin",
+	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
+	g_signal_connect(manager, "load-plugin-failed",
+	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
+	g_signal_connect(manager, "unloaded-plugin",
+	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
+	g_signal_connect(manager, "unloaded-plugin-failed",
+	                 G_CALLBACK(pidgin_application_plugin_state_changed), NULL);
 
 	purple_plugins_refresh();
 }
