@@ -29,6 +29,7 @@
 #define PIDGIN_PROTOCOL_CHOOSER_H
 
 #include <gtk/gtk.h>
+#include <adwaita.h>
 
 #include <purple.h>
 
@@ -37,14 +38,14 @@ G_BEGIN_DECLS
 #define PIDGIN_TYPE_PROTOCOL_CHOOSER (pidgin_protocol_chooser_get_type())
 
 G_DECLARE_FINAL_TYPE(PidginProtocolChooser, pidgin_protocol_chooser, PIDGIN,
-                     PROTOCOL_CHOOSER, GtkComboBox)
+                     PROTOCOL_CHOOSER, AdwBin)
 
 /**
  * pidgin_protocol_chooser_new:
  *
- * Creates a combo box for a user to select a protocol from.
+ * Creates a drop down for a user to select a protocol from.
  *
- * Returns: (transfer full): The protocol chooser combo box.
+ * Returns: (transfer full): The protocol chooser drop down.
  *
  * Since: 3.0.0
  */
@@ -56,7 +57,7 @@ GtkWidget *pidgin_protocol_chooser_new(void);
  *
  * Gets the currently selected protocol from @chooser.
  *
- * Returns: (transfer full): The selected [class@Purple.Protocol] or %NULL if
+ * Returns: (transfer none): The selected [class@Purple.Protocol] or %NULL if
  *          nothing is selected.
  *
  * Since: 3.0.0

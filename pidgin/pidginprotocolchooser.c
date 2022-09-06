@@ -23,8 +23,6 @@
 
 #include "pidginprotocolchooser.h"
 
-#include "pidginprotocolstore.h"
-
 enum {
 	PROP_ZERO,
 	PROP_PROTOCOL,
@@ -36,30 +34,20 @@ static GParamSpec *properties[N_PROPERTIES] = {NULL, };
  * Structs
  *****************************************************************************/
 struct _PidginProtocolChooser {
-	GtkComboBox parent;
+	AdwBin parent;
 
-	GtkTreeModel *model;
+	GtkDropDown *dropdown;
+	GtkWidget *sort;
 };
 
 /******************************************************************************
  * Callbacks
  *****************************************************************************/
 static void
-pidgin_protocol_chooser_model_changed_cb(GObject *obj, GParamSpec *pspec,
-                                         gpointer data)
+dropdown_changed_cb(G_GNUC_UNUSED GObject *obj,
+                    G_GNUC_UNUSED GParamSpec *pspec,
+                    gpointer data)
 {
-	GtkComboBox *combo = GTK_COMBO_BOX(obj);
-	GtkTreeModel *model = gtk_combo_box_get_model(combo);
-	GtkTreeIter iter;
-
-	/* When the model for the combobox changes, select the first item. */
-	if(gtk_tree_model_get_iter_first(model, &iter)) {
-		gtk_combo_box_set_active_iter(combo, &iter);
-	}
-}
-
-static void
-dropdown_changed_cb(G_GNUC_UNUSED GtkComboBox *self, gpointer data) {
 	PidginProtocolChooser *chooser = PIDGIN_PROTOCOL_CHOOSER(data);
 
 	g_object_notify_by_pspec(G_OBJECT(chooser), properties[PROP_PROTOCOL]);
@@ -68,8 +56,7 @@ dropdown_changed_cb(G_GNUC_UNUSED GtkComboBox *self, gpointer data) {
 /******************************************************************************
  * GObject Implementation
  *****************************************************************************/
-G_DEFINE_TYPE(PidginProtocolChooser, pidgin_protocol_chooser,
-              GTK_TYPE_COMBO_BOX)
+G_DEFINE_TYPE(PidginProtocolChooser, pidgin_protocol_chooser, ADW_TYPE_BIN)
 
 static void
 pidgin_protocol_chooser_get_property(GObject *obj, guint prop_id,
@@ -134,24 +121,22 @@ pidgin_protocol_chooser_class_init(PidginProtocolChooserClass *klass)
 	                                            "/im/pidgin/Pidgin3/Protocols/chooser.ui");
 
 	gtk_widget_class_bind_template_child(widget_class, PidginProtocolChooser,
-	                                     model);
+	                                     dropdown);
+	gtk_widget_class_bind_template_child(widget_class, PidginProtocolChooser,
+	                                     sort);
+
 	gtk_widget_class_bind_template_callback(widget_class, dropdown_changed_cb);
 }
 
 static void
 pidgin_protocol_chooser_init(PidginProtocolChooser *chooser) {
-	g_signal_connect_object(G_OBJECT(chooser), "notify::model",
-	                        G_CALLBACK(pidgin_protocol_chooser_model_changed_cb),
-	                        chooser, G_CONNECT_AFTER);
+	PurpleProtocolManager *manager = NULL;
 
 	gtk_widget_init_template(GTK_WIDGET(chooser));
 
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(chooser->model),
-	                                     PIDGIN_PROTOCOL_STORE_COLUMN_NAME,
-	                                     GTK_SORT_ASCENDING);
-
-	gtk_combo_box_set_id_column(GTK_COMBO_BOX(chooser),
-	                            PIDGIN_PROTOCOL_STORE_COLUMN_ID);
+	manager = purple_protocol_manager_get_default();
+	gtk_sort_list_model_set_model(GTK_SORT_LIST_MODEL(chooser->sort),
+	                              G_LIST_MODEL(manager));
 }
 
 /******************************************************************************
@@ -164,16 +149,11 @@ pidgin_protocol_chooser_new(void) {
 
 PurpleProtocol *
 pidgin_protocol_chooser_get_protocol(PidginProtocolChooser *chooser) {
-	GtkTreeIter iter;
 	PurpleProtocol *protocol = NULL;
 
 	g_return_val_if_fail(PIDGIN_IS_PROTOCOL_CHOOSER(chooser), NULL);
 
-	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(chooser), &iter)) {
-		gtk_tree_model_get(GTK_TREE_MODEL(chooser->model), &iter,
-		                   PIDGIN_PROTOCOL_STORE_COLUMN_PROTOCOL, &protocol,
-		                   -1);
-	}
+	protocol = gtk_drop_down_get_selected_item(chooser->dropdown);
 
 	return protocol;
 }
@@ -182,15 +162,25 @@ void
 pidgin_protocol_chooser_set_protocol(PidginProtocolChooser *chooser,
                                      PurpleProtocol *protocol)
 {
+	guint position = 0;
+
 	g_return_if_fail(PIDGIN_IS_PROTOCOL_CHOOSER(chooser));
 
 	if(protocol != NULL) {
-		const gchar *id = purple_protocol_get_id(protocol);
-		gtk_combo_box_set_active_id(GTK_COMBO_BOX(chooser), id);
-	} else {
-		GtkTreeIter first;
+		GListModel *model = gtk_drop_down_get_model(chooser->dropdown);
+		guint count = g_list_model_get_n_items(model);
 
-		gtk_tree_model_get_iter_first(chooser->model, &first);
-		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(chooser), &first);
+		for(guint i = 0; i < count; i++) {
+			PurpleProtocol *this_protocol = NULL;
+
+			this_protocol = g_list_model_get_item(model, i);
+
+			if(this_protocol == protocol) {
+				position = i;
+				break;
+			}
+		}
 	}
+
+	gtk_drop_down_set_selected(chooser->dropdown, position);
 }

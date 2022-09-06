@@ -193,7 +193,6 @@ set_account_protocol_cb(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec,
 	if(g_set_object(&dialog->protocol, protocol)) {
 		g_clear_pointer(&dialog->protocol_id, g_free);
 	}
-	g_object_unref(G_OBJECT(protocol));
 
 	if(PURPLE_IS_PROTOCOL(dialog->protocol)) {
 		dialog->protocol_id = g_strdup(purple_protocol_get_id(dialog->protocol));
