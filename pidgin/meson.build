@@ -52,7 +52,6 @@ libpidgin_SOURCES = [
 	'pidginpluginsmenu.c',
 	'pidginpresenceicon.c',
 	'pidginprotocolchooser.c',
-	'pidginprotocolstore.c',
 	'pidginproxyoptions.c',
 	'pidginstatusbox.c',
 	'pidginstatuseditor.c',
@@ -123,7 +122,6 @@ libpidgin_headers = [
 	'pidginpluginsmenu.h',
 	'pidginpresenceicon.h',
 	'pidginprotocolchooser.h',
-	'pidginprotocolstore.h',
 	'pidginproxyoptions.h',
 	'pidginstatusbox.h',
 	'pidginstatuseditor.h',
@@ -150,7 +148,6 @@ libpidgin_enum_headers = [
 	'gtkconv.h',
 	'gtkutils.h',
 	'pidginaccountstore.h',
-	'pidginprotocolstore.h',
 ]
 
 pidgin_SOURCES = [

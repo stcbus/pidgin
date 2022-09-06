@@ -366,7 +366,6 @@ pidgin/pidginpluginsdialog.c
 pidgin/pidginpluginsmenu.c
 pidgin/pidginpresenceicon.c
 pidgin/pidginprotocolchooser.c
-pidgin/pidginprotocolstore.c
 pidgin/pidginproxyoptions.c
 pidgin/pidginstatusbox.c
 pidgin/pidginstatuseditor.c
