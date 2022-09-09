@@ -28,14 +28,11 @@ spellchk = library('spellchk', 'spellchk.c',
     build_by_default: false,
     install : false, install_dir : PIDGIN_PLUGINDIR)
 
-if IS_WIN32
-	transparency = library('transparency', 'transparency.c',
-		c_args : ['-DG_LOG_USE_STRUCTURED', '-DG_LOG_DOMAIN="PidginPlugin-Transparency"'],
-		dependencies : [libpurple_dep, libpidgin_dep, glib],
-		name_prefix : '',
-		build_by_default: false,
-		install : true, install_dir : PIDGIN_PLUGINDIR)
-endif
+transparency = library('transparency', 'transparency.c',
+    c_args : ['-DG_LOG_USE_STRUCTURED', '-DG_LOG_DOMAIN="PidginPlugin-Transparency"'],
+    dependencies : [libpurple_dep, libpidgin_dep, glib],
+    name_prefix : '',
+    install : true, install_dir : PIDGIN_PLUGINDIR)
 
 if enable_unity
 	unity = library('unity', 'unity.c',
