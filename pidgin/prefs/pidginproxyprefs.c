@@ -40,7 +40,6 @@ struct _PidginProxyPrefs {
 
 	/* Non-GNOME version */
 	GtkWidget *nongnome;
-	GtkWidget *socks4_remotedns;
 	GtkWidget *type;
 	GtkWidget *options;
 	GtkWidget *host;
@@ -163,8 +162,6 @@ pidgin_proxy_prefs_class_init(PidginProxyPrefsClass *klass)
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, nongnome);
 	gtk_widget_class_bind_template_child(
-			widget_class, PidginProxyPrefs, socks4_remotedns);
-	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, type);
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginProxyPrefs, options);
@@ -217,11 +214,6 @@ pidgin_proxy_prefs_init(PidginProxyPrefs *prefs)
 	} else {
 		gtk_widget_set_visible(prefs->gnome, FALSE);
 		gtk_widget_set_visible(prefs->nongnome, TRUE);
-
-		/* This is a global option that affects SOCKS4 usage even with
-		 * account-specific proxy settings */
-		pidgin_prefs_bind_switch("/purple/proxy/socks4_remotedns",
-		                         prefs->socks4_remotedns);
 
 		pidgin_prefs_bind_combo_row("/purple/proxy/type", prefs->type);
 

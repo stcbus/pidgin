@@ -284,7 +284,6 @@ purple_proxy_init(void)
 	purple_prefs_add_int("/purple/proxy/port", 0);
 	purple_prefs_add_string("/purple/proxy/username", "");
 	purple_prefs_add_string("/purple/proxy/password", "");
-	purple_prefs_add_bool("/purple/proxy/socks4_remotedns", FALSE);
 
 	/* Setup callbacks for the preferences. */
 	handle = purple_proxy_get_handle();
