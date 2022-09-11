@@ -1742,7 +1742,6 @@ purple_prefs_uninit()
 	purple_prefs_destroy();
 	g_hash_table_destroy(prefs_hash);
 	prefs_hash = NULL;
-
 }
 
 void

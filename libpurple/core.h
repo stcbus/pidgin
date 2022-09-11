@@ -96,6 +96,22 @@ const char *purple_core_get_version(void);
 PurpleCore *purple_get_core(void);
 
 /**
+ * purple_core_get_settings_backend:
+ *
+ * Gets the settings backend to use when saving/loading settings.
+ *
+ * Note, because we do not want to leak `G_SETTINGS_ENABLE_BACKEND` into
+ * libpurple users, this function returns a `gpointer`, and you should cast to
+ * `GSettingsBackend *` after setting `G_SETTINGS_ENABLE_BACKEND` for the files
+ * where you need it.
+ *
+ * Returns: (transfer none): The [class@Gio.SettingsBackend] to use.
+ *
+ * Since: 3.0.0
+ */
+gpointer purple_core_get_settings_backend(void);
+
+/**
  * purple_core_set_ui_ops:
  * @ops: A UI ops structure for the core.
  *
