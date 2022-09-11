@@ -34,9 +34,9 @@
 #define PURPLE_NOTIFICATION_SOUND_DOMAIN \
 	g_quark_from_static_string("purple-notification-sound")
 
-#define PREF_ROOT "/plugins/core/notification-sound"
-#define PREF_MUTED PREF_ROOT "/muted"
-#define PREF_MUTE_UNTIL PREF_ROOT "/mute_until"
+#define SETTINGS_SCHEMA_ID "im.pidgin.Purple.plugin.NotificationSound"
+#define PREF_MUTED "muted"
+#define PREF_MUTE_UNTIL "mute-until"
 
 /******************************************************************************
  * Globals
@@ -50,11 +50,14 @@ static ca_context *context = NULL;
  *****************************************************************************/
 static void
 purple_notification_sound_load_prefs(void) {
-	const gchar *str_mute_until = NULL;
+	GSettings *settings = NULL;
+	gchar *str_mute_until = NULL;
 
-	muted = purple_prefs_get_bool(PREF_MUTED);
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
+	muted = g_settings_get_boolean(settings, PREF_MUTED);
 
-	str_mute_until = purple_prefs_get_string(PREF_MUTE_UNTIL);
+	str_mute_until = g_settings_get_string(settings, PREF_MUTE_UNTIL);
 	if(str_mute_until != NULL && *str_mute_until != '\0') {
 		GTimeZone *tz = g_time_zone_new_utc();
 
@@ -62,19 +65,28 @@ purple_notification_sound_load_prefs(void) {
 
 		g_time_zone_unref(tz);
 	}
+
+	g_free(str_mute_until);
+	g_object_unref(settings);
 }
 
 static void
 purple_notification_sound_save_prefs(void) {
-	gchar *str_mute_until = NULL;
+	GSettings *settings = NULL;
 
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
+
+	g_settings_set_boolean(settings, PREF_MUTED, muted);
 	if(mute_until != NULL) {
-		str_mute_until = g_date_time_format_iso8601(mute_until);
+		gchar *str_mute_until = g_date_time_format_iso8601(mute_until);
+		g_settings_set_string(settings, PREF_MUTE_UNTIL, str_mute_until);
+		g_free(str_mute_until);
+	} else {
+		g_settings_set_string(settings, PREF_MUTE_UNTIL, "");
 	}
 
-	purple_prefs_set_bool(PREF_MUTED, muted);
-	purple_prefs_set_string(PREF_MUTE_UNTIL, str_mute_until);
-	g_free(str_mute_until);
+	g_object_unref(settings);
 }
 
 static void
@@ -251,10 +263,6 @@ notification_sound_load(GPluginPlugin *plugin, GError **error) {
 
 		return FALSE;
 	}
-
-	purple_prefs_add_none(PREF_ROOT);
-	purple_prefs_add_string(PREF_MUTE_UNTIL, NULL);
-	purple_prefs_add_bool(PREF_MUTED, FALSE);
 
 	purple_notification_sound_load_prefs();
 
