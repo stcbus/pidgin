@@ -112,7 +112,7 @@ pidgin_credential_prefs_list_row_activated_cb(GtkListBox *box,
 
 static void
 pidgin_credential_prefs_set_active_provider(PidginCredentialPrefs *prefs,
-                                            const gchar *new_id)
+                                            PurpleCredentialProvider *active)
 {
 	GtkWidget *child = NULL;
 
@@ -122,42 +122,32 @@ pidgin_credential_prefs_set_active_provider(PidginCredentialPrefs *prefs,
 	{
 		PidginCredentialProviderRow *row = NULL;
 		PurpleCredentialProvider *provider = NULL;
-		const gchar *id = NULL;
 
 		row = PIDGIN_CREDENTIAL_PROVIDER_ROW(child);
 		provider = pidgin_credential_provider_row_get_provider(row);
-		id = purple_credential_provider_get_id(provider);
 
-		pidgin_credential_provider_row_set_active(row,
-		                                          purple_strequal(new_id, id));
+		pidgin_credential_provider_row_set_active(row, provider == active);
 	}
 }
 
 static void
-pidgin_credential_prefs_active_provider_changed_cb(const gchar *name,
-                                                   PurplePrefType type,
-                                                   gconstpointer value,
+pidgin_credential_prefs_active_provider_changed_cb(PurpleCredentialManager *manager,
+                                                   PurpleCredentialProvider *previous,
+                                                   PurpleCredentialProvider *current,
                                                    gpointer data)
 {
 	PidginCredentialPrefs *prefs = PIDGIN_CREDENTIAL_PREFS(data);
 
-	pidgin_credential_prefs_set_active_provider(prefs, (const gchar *)value);
+	pidgin_credential_prefs_set_active_provider(prefs, current);
 }
 
 /******************************************************************************
  * GObject Implementation
  *****************************************************************************/
 static void
-pidgin_credential_prefs_finalize(GObject *obj) {
-	purple_prefs_disconnect_by_handle(obj);
-
-	G_OBJECT_CLASS(pidgin_credential_prefs_parent_class)->finalize(obj);
-}
-
-static void
 pidgin_credential_prefs_init(PidginCredentialPrefs *prefs) {
 	PurpleCredentialManager *manager = NULL;
-	const gchar *active = NULL;
+	PurpleCredentialProvider *active = NULL;
 
 	gtk_widget_init_template(GTK_WIDGET(prefs));
 
@@ -169,11 +159,11 @@ pidgin_credential_prefs_init(PidginCredentialPrefs *prefs) {
 	gtk_list_box_set_sort_func(GTK_LIST_BOX(prefs->credential_list),
 	                           pidgin_credential_prefs_sort_rows, NULL, NULL);
 
-	purple_prefs_connect_callback(prefs, "/purple/credentials/active-provider",
-	                              pidgin_credential_prefs_active_provider_changed_cb,
-	                              prefs);
+	g_signal_connect_object(manager, "active-changed",
+	                        G_CALLBACK(pidgin_credential_prefs_active_provider_changed_cb),
+	                        prefs, 0);
 
-	active = purple_prefs_get_string("/purple/credentials/active-provider");
+	active = purple_credential_manager_get_active(manager);
 	if(active != NULL) {
 		pidgin_credential_prefs_set_active_provider(prefs, active);
 	}
@@ -181,10 +171,7 @@ pidgin_credential_prefs_init(PidginCredentialPrefs *prefs) {
 
 static void
 pidgin_credential_prefs_class_init(PidginCredentialPrefsClass *klass) {
-	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-
-	obj_class->finalize = pidgin_credential_prefs_finalize;
 
 	gtk_widget_class_set_template_from_resource(
 	    widget_class,
