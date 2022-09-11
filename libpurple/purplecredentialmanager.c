@@ -128,10 +128,14 @@ purple_credential_manager_core_init_cb(gpointer data) {
 	PurpleCredentialManager *manager = PURPLE_CREDENTIAL_MANAGER(data);
 
 	if(!PURPLE_IS_CREDENTIAL_PROVIDER(manager->active)) {
+		GSettings *settings = NULL;
 		GError *error = NULL;
-		const gchar *id = NULL;
+		gchar *id = NULL;
 
-		id = purple_prefs_get_string("/purple/credentials/active-provider");
+		settings = g_settings_new_with_backend("im.pidgin.Purple.Credentials",
+		                                       purple_core_get_settings_backend());
+		id = g_settings_get_string(settings, "active-provider");
+		g_object_unref(settings);
 
 		if(!purple_credential_manager_set_active(manager, id, &error)) {
 			g_warning("Failed to make %s the active credential provider : %s",
@@ -145,6 +149,7 @@ purple_credential_manager_core_init_cb(gpointer data) {
 			                    NULL);
 		}
 
+		g_free(id);
 		g_clear_error(&error);
 	}
 }
@@ -247,11 +252,6 @@ purple_credential_manager_class_init(PurpleCredentialManagerClass *klass) {
 		2,
 		PURPLE_TYPE_CREDENTIAL_PROVIDER,
 		PURPLE_TYPE_CREDENTIAL_PROVIDER);
-
-	/* Add our purple preferences. */
-	purple_prefs_add_none("/purple/credentials");
-	purple_prefs_add_string("/purple/credentials/active-provider",
-	                        "noop-provider");
 }
 
 /******************************************************************************
@@ -354,13 +354,19 @@ purple_credential_manager_register(PurpleCredentialManager *manager,
 	 * If it is, go ahead and make it the active provider.
 	 */
 	if(!PURPLE_IS_CREDENTIAL_PROVIDER(manager->active)) {
-		const gchar *wanted = NULL;
+		GSettings *settings = NULL;
+		gchar *wanted = NULL;
 
-		wanted = purple_prefs_get_string("/purple/credentials/active-provider");
+		settings = g_settings_new_with_backend("im.pidgin.Purple.Credentials",
+		                                       purple_core_get_settings_backend());
+		wanted = g_settings_get_string(settings, "active-provider");
 
 		if(purple_strequal(wanted, id)) {
 			purple_credential_manager_set_active(manager, id, error);
 		}
+
+		g_free(wanted);
+		g_object_unref(settings);
 	}
 
 	return TRUE;
@@ -438,7 +444,12 @@ purple_credential_manager_set_active(PurpleCredentialManager *manager,
 
 	/* Finally update the preference. */
 	if(id != NULL) {
-		purple_prefs_set_string("/purple/credentials/active-provider", id);
+		GSettings *settings = NULL;
+
+		settings = g_settings_new_with_backend("im.pidgin.Purple.Credentials",
+		                                       purple_core_get_settings_backend());
+		g_settings_set_string(settings, "active-provider", id);
+		g_object_unref(settings);
 	}
 
 	purple_debug_info("credential-manager", "set active provider to '%s'", id);

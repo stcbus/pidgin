@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schemalist>
   <schema path="/" id="im.pidgin.Purple">
+    <child name="credentials" schema="im.pidgin.Purple.Credentials"/>
+  </schema>
+
+  <schema path="/purple/credentials/" id="im.pidgin.Purple.Credentials">
+    <key name="active-provider" type="s">
+      <default>"noop-provider"</default>
+      <summary>Active credential provider</summary>
+      <description>
+        The credential provider that will be used to save credentials, i.e.,
+        passwords, tokens, etc.
+      </description>
+    </key>
   </schema>
 </schemalist>
