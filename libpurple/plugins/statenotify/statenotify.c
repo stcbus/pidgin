@@ -62,48 +62,72 @@ static void
 buddy_status_changed_cb(PurpleBuddy *buddy, PurpleStatus *old_status,
                         PurpleStatus *status, void *data)
 {
+	GSettings *settings = NULL;
 	gboolean available, old_available;
 
 	if (!purple_status_is_exclusive(status) ||
 			!purple_status_is_exclusive(old_status))
+	{
 		return;
+	}
 
 	available = purple_status_is_available(status);
 	old_available = purple_status_is_available(old_status);
 
-	if (purple_prefs_get_bool("/plugins/core/statenotify/notify_away")) {
-		if (available && !old_available)
+	settings = g_settings_new_with_backend("im.pidgin.Purple.plugin.StateNotify",
+	                                       purple_core_get_settings_backend());
+	if(g_settings_get_boolean(settings, "notify-away")) {
+		if (available && !old_available) {
 			write_status(buddy, _("%s is no longer away."));
-		else if (!available && old_available)
+		} else if (!available && old_available) {
 			write_status(buddy, _("%s has gone away."));
+		}
 	}
+	g_object_unref(settings);
 }
 
 static void
 buddy_idle_changed_cb(PurpleBuddy *buddy, gboolean old_idle, gboolean idle,
                       void *data)
 {
-	if (purple_prefs_get_bool("/plugins/core/statenotify/notify_idle")) {
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend("im.pidgin.Purple.plugin.StateNotify",
+	                                       purple_core_get_settings_backend());
+	if(g_settings_get_boolean(settings, "notify-idle")) {
 		if (idle && !old_idle) {
 			write_status(buddy, _("%s has become idle."));
 		} else if (!idle && old_idle) {
 			write_status(buddy, _("%s is no longer idle."));
 		}
 	}
+	g_object_unref(settings);
 }
 
 static void
 buddy_signon_cb(PurpleBuddy *buddy, void *data)
 {
-	if (purple_prefs_get_bool("/plugins/core/statenotify/notify_signon"))
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend("im.pidgin.Purple.plugin.StateNotify",
+	                                       purple_core_get_settings_backend());
+	if(g_settings_get_boolean(settings, "notify-signon")) {
 		write_status(buddy, _("%s has signed on."));
+	}
+	g_object_unref(settings);
 }
 
 static void
 buddy_signoff_cb(PurpleBuddy *buddy, void *data)
 {
-	if (purple_prefs_get_bool("/plugins/core/statenotify/notify_signon"))
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend("im.pidgin.Purple.plugin.StateNotify",
+	                                       purple_core_get_settings_backend());
+	if(g_settings_get_boolean(settings, "notify-signon")) {
 		write_status(buddy, _("%s has signed off."));
+	}
+	g_object_unref(settings);
 }
 
 static PurplePluginPrefFrame *
@@ -158,11 +182,6 @@ static gboolean
 state_notify_load(GPluginPlugin *plugin, GError **error)
 {
 	void *blist_handle = purple_blist_get_handle();
-
-	purple_prefs_add_none("/plugins/core/statenotify");
-	purple_prefs_add_bool("/plugins/core/statenotify/notify_away", TRUE);
-	purple_prefs_add_bool("/plugins/core/statenotify/notify_idle", TRUE);
-	purple_prefs_add_bool("/plugins/core/statenotify/notify_signon", TRUE);
 
 	purple_signal_connect(blist_handle, "buddy-status-changed", plugin,
 	                    G_CALLBACK(buddy_status_changed_cb), NULL);
