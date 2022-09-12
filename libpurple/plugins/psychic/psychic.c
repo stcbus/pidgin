@@ -32,60 +32,69 @@
 #define PLUGIN_AUTHORS  { "Christopher O'Brien <siege@preoccupied.net>", NULL }
 
 
-#define PREFS_BASE    "/plugins/core/psychic"
-#define PREF_BUDDIES  PREFS_BASE "/buddies_only"
-#define PREF_NOTICE   PREFS_BASE "/show_notice"
-#define PREF_STATUS   PREFS_BASE "/activate_online"
-#define PREF_RAISE    PREFS_BASE "/raise_conv"
+#define SETTINGS_SCHEMA_ID "im.pidgin.Purple.plugin.Psychic"
+#define PREF_BUDDIES "buddies-only"
+#define PREF_NOTICE "show-notice"
+#define PREF_STATUS "activate-online"
+#define PREF_RAISE "raise-conv"
 
 
 static void
 buddy_typing_cb(PurpleAccount *acct, const char *name, void *data) {
-  PurpleConversation *im;
-  PurpleConversationManager *manager;
+	GSettings *settings = NULL;
+	PurpleConversation *im;
+	PurpleConversationManager *manager;
 
-  if(purple_prefs_get_bool(PREF_STATUS) &&
-     ! purple_status_is_available(purple_account_get_active_status(acct))) {
-    purple_debug_info("psychic", "not available, doing nothing\n");
-    return;
-  }
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
 
-  if(purple_prefs_get_bool(PREF_BUDDIES) &&
-     ! purple_blist_find_buddy(acct, name)) {
-    purple_debug_info("psychic", "not in blist, doing nothing\n");
-    return;
-  }
+	if(g_settings_get_boolean(settings, PREF_STATUS) &&
+	   !purple_status_is_available(purple_account_get_active_status(acct))) {
+		purple_debug_info("psychic", "not available, doing nothing");
+		g_object_unref(settings);
+		return;
+	}
 
-  if(FALSE == purple_account_privacy_check(acct, name)) {
-    purple_debug_info("psychic", "user %s is blocked\n", name);
-    return;
-  }
+	if(g_settings_get_boolean(settings, PREF_BUDDIES) &&
+	   !purple_blist_find_buddy(acct, name)) {
+		purple_debug_info("psychic", "not in blist, doing nothing");
+		g_object_unref(settings);
+		return;
+	}
 
-  manager = purple_conversation_manager_get_default();
-  im = purple_conversation_manager_find_im(manager, acct, name);
-  if(! im) {
-    purple_debug_info("psychic", "no previous conversation exists\n");
-    im = purple_im_conversation_new(acct, name);
+	if(!purple_account_privacy_check(acct, name)) {
+		purple_debug_info("psychic", "user %s is blocked", name);
+		g_object_unref(settings);
+		return;
+	}
 
-    if(purple_prefs_get_bool(PREF_RAISE)) {
-      purple_conversation_present(im);
-    }
+	manager = purple_conversation_manager_get_default();
+	im = purple_conversation_manager_find_im(manager, acct, name);
+	if(im == NULL) {
+		purple_debug_info("psychic", "no previous conversation exists");
+		im = purple_im_conversation_new(acct, name);
 
-    if(purple_prefs_get_bool(PREF_NOTICE)) {
+		if(g_settings_get_boolean(settings, PREF_RAISE)) {
+			purple_conversation_present(im);
+		}
 
-      /* This is a quote from Star Wars.  You should probably not
-	 translate it literally.  If you can't find a fitting cultural
-	 reference in your language, consider translating something
-	 like this instead: "You feel a new message coming." */
-      purple_conversation_write_system_message(im,
-		_("You feel a disturbance in the force..."),
-		PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_ACTIVE_ONLY);
-    }
+		if(g_settings_get_boolean(settings, PREF_NOTICE)) {
+			/* This is a quote from Star Wars.  You should probably not
+			   translate it literally.  If you can't find a fitting cultural
+			   reference in your language, consider translating something
+			   like this instead: "You feel a new message coming." */
+			purple_conversation_write_system_message(
+			    im,
+			    _("You feel a disturbance in the force..."),
+			    PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_ACTIVE_ONLY);
+		}
 
-    /* Necessary because we may be creating a new conversation window. */
-    purple_im_conversation_set_typing_state(PURPLE_IM_CONVERSATION(im),
-                                            PURPLE_IM_TYPING);
-  }
+		/* Necessary because we may be creating a new conversation window. */
+		purple_im_conversation_set_typing_state(PURPLE_IM_CONVERSATION(im),
+		                                        PURPLE_IM_TYPING);
+	}
+
+	g_object_unref(settings);
 }
 
 
@@ -143,11 +152,6 @@ static gboolean
 psychic_load(GPluginPlugin *plugin, GError **error) {
 
   void *convs_handle;
-
-  purple_prefs_add_none(PREFS_BASE);
-  purple_prefs_add_bool(PREF_BUDDIES, FALSE);
-  purple_prefs_add_bool(PREF_NOTICE, TRUE);
-  purple_prefs_add_bool(PREF_STATUS, TRUE);
 
   convs_handle = purple_conversations_get_handle();
 
