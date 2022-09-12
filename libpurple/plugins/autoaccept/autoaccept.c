@@ -37,14 +37,12 @@
 
 #include <purple.h>
 
-#define PREF_PREFIX		"/plugins/core/" PLUGIN_ID
-#define PREF_PATH		PREF_PREFIX "/path"
-#define PREF_STRANGER	PREF_PREFIX "/stranger"
-#define PREF_NOTIFY		PREF_PREFIX "/notify"
-#define PREF_NEWDIR     PREF_PREFIX "/newdir"
-#define PREF_ESCAPE     PREF_PREFIX "/escape"
-
-#define PREF_STRANGER_OLD PREF_PREFIX "/reject_stranger"
+#define SETTINGS_SCHEMA_ID "im.pidgin.Purple.plugin.AutoAccept"
+#define PREF_PATH "path"
+#define PREF_STRANGER "stranger"
+#define PREF_NOTIFY "notify"
+#define PREF_NEWDIR "newdir"
+#define PREF_ESCAPE "escape"
 
 typedef enum
 {
@@ -70,15 +68,18 @@ static void
 auto_accept_complete_cb(PurpleXfer *xfer, G_GNUC_UNUSED GParamSpec *pspec,
                         G_GNUC_UNUSED gpointer data)
 {
+	GSettings *settings = NULL;
 	PurpleConversationManager *manager = NULL;
 
 	if (purple_xfer_get_status(xfer) != PURPLE_XFER_STATUS_DONE) {
 		return;
 	}
 
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
 	manager = purple_conversation_manager_get_default();
 
-	if(purple_prefs_get_bool(PREF_NOTIFY) &&
+	if(g_settings_get_boolean(settings, PREF_NOTIFY) &&
 	   !purple_conversation_manager_find_im(manager,
 	                                        purple_xfer_get_account(xfer),
 	                                        purple_xfer_get_remote_user(xfer)))
@@ -90,14 +91,17 @@ auto_accept_complete_cb(PurpleXfer *xfer, G_GNUC_UNUSED GParamSpec *pspec,
 				purple_xfer_get_account(xfer)));
 		g_free(message);
 	}
+
+	g_object_unref(settings);
 }
 
 static void
 file_recv_request_cb(PurpleXfer *xfer, gpointer handle)
 {
+	GSettings *settings = NULL;
 	PurpleAccount *account;
 	PurpleBlistNode *node;
-	const char *pref;
+	gchar *pref;
 	char *filename;
 	char *dirname;
 
@@ -106,6 +110,9 @@ file_recv_request_cb(PurpleXfer *xfer, gpointer handle)
 	account = purple_xfer_get_account(xfer);
 	node = PURPLE_BLIST_NODE(purple_blist_find_buddy(account, purple_xfer_get_remote_user(xfer)));
 
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
+
 	/* If person is on buddy list, use the buddy setting; otherwise, use the
 	   stranger setting. */
 	if (node) {
@@ -113,36 +120,37 @@ file_recv_request_cb(PurpleXfer *xfer, gpointer handle)
 		g_return_if_fail(PURPLE_IS_CONTACT(node));
 		accept_setting = purple_blist_node_get_int(node, "autoaccept");
 	} else {
-		accept_setting = purple_prefs_get_int(PREF_STRANGER);
+		accept_setting = g_settings_get_enum(settings, PREF_STRANGER);
 	}
 
-	switch (accept_setting)
-	{
+	switch (accept_setting) {
 		case FT_ASK:
 			break;
 		case FT_ACCEPT:
-            pref = purple_prefs_get_string(PREF_PATH);
-			if (ensure_path_exists(pref))
-			{
+			pref = g_settings_get_string(settings, PREF_PATH);
+			if (ensure_path_exists(pref)) {
 				int count = 1;
 				const char *escape;
 				gchar **name_and_ext;
 				const gchar *name;
 				gchar *ext;
 
-				if (purple_prefs_get_bool(PREF_NEWDIR))
-					dirname = g_build_filename(pref, purple_normalize(account, purple_xfer_get_remote_user(xfer)), NULL);
-				else
+				if (g_settings_get_boolean(settings, PREF_NEWDIR)) {
+					const gchar *normalized = purple_normalize(account,
+					                                           purple_xfer_get_remote_user(xfer));
+					dirname = g_build_filename(pref, normalized, NULL);
+				} else {
 					dirname = g_build_filename(pref, NULL);
+				}
 
-				if (!ensure_path_exists(dirname))
-				{
+				if (!ensure_path_exists(dirname)) {
 					g_free(dirname);
+					g_free(pref);
 					break;
 				}
 
 				/* Escape filename (if escaping is turned on) */
-				if (purple_prefs_get_bool(PREF_ESCAPE)) {
+				if (g_settings_get_boolean(settings, PREF_ESCAPE)) {
 					escape = purple_escape_filename(purple_xfer_get_filename(xfer));
 				} else {
 					escape = purple_xfer_get_filename(xfer);
@@ -154,6 +162,8 @@ file_recv_request_cb(PurpleXfer *xfer, gpointer handle)
 				name = name_and_ext[0];
 				if (name == NULL) {
 					g_strfreev(name_and_ext);
+					g_free(pref);
+					g_object_unref(settings);
 					g_return_if_reached();
 				}
 				if (name_and_ext[1] != NULL) {
@@ -182,6 +192,7 @@ file_recv_request_cb(PurpleXfer *xfer, gpointer handle)
 				g_free(dirname);
 				g_free(filename);
 			}
+			g_free(pref);
 
 			g_signal_connect(xfer, "notify::status",
 			                 G_CALLBACK(auto_accept_complete_cb), NULL);
@@ -190,6 +201,8 @@ file_recv_request_cb(PurpleXfer *xfer, gpointer handle)
 			purple_xfer_set_status(xfer, PURPLE_XFER_STATUS_CANCEL_LOCAL);
 			break;
 	}
+
+	g_object_unref(settings);
 }
 
 static void
@@ -299,30 +312,29 @@ auto_accept_query(GError **error)
 static gboolean
 auto_accept_load(GPluginPlugin *plugin, GError **error)
 {
-	char *dirname;
+	GSettings *settings = NULL;
+	gchar *dirname;
 
-	dirname = g_build_filename(g_get_user_special_dir(G_USER_DIRECTORY_DOWNLOAD), "autoaccept", NULL);
-	purple_prefs_add_none(PREF_PREFIX);
-	purple_prefs_add_string(PREF_PATH, dirname);
-	purple_prefs_add_bool(PREF_NOTIFY, TRUE);
-	purple_prefs_add_bool(PREF_NEWDIR, TRUE);
-	purple_prefs_add_bool(PREF_ESCAPE, TRUE);
-	g_free(dirname);
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
 
-	/* migrate the old pref (we should only care if the plugin is actually *used*) */
-	/*
-	 * TODO: We should eventually call purple_prefs_remove(PREFS_STRANGER_OLD)
-	 *       to clean up after ourselves, but we don't want to do it yet
-	 *       so that we don't break users who share a .purple directory
-	 *       between old libpurple clients and new libpurple clients.
-	 *                                             --Mark Doliner, 2011-01-03
-	 */
-	if (!purple_prefs_exists(PREF_STRANGER)) {
-		if (purple_prefs_exists(PREF_STRANGER_OLD) && purple_prefs_get_bool(PREF_STRANGER_OLD))
-			purple_prefs_add_int(PREF_STRANGER, FT_REJECT);
-		else
-			purple_prefs_set_int(PREF_STRANGER, FT_ASK);
+	/* Set a default download directory path. */
+	dirname = g_settings_get_string(settings, PREF_PATH);
+	if(*dirname == '\0') {
+		const gchar *download_dir = NULL;
+
+		download_dir = g_get_user_special_dir(G_USER_DIRECTORY_DOWNLOAD);
+		if(download_dir == NULL) {
+			download_dir = g_get_home_dir();
+		}
+
+		g_free(dirname);
+		dirname = g_build_filename(download_dir, "autoaccept", NULL);
+		g_settings_set_string(settings, PREF_PATH, dirname);
 	}
+
+	g_free(dirname);
+	g_object_unref(settings);
 
 	purple_signal_connect(purple_xfers_get_handle(), "file-recv-request", plugin,
 						G_CALLBACK(file_recv_request_cb), plugin);
