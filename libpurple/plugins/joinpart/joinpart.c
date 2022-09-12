@@ -31,20 +31,18 @@
 
 
 /* Preferences */
+#define SETTINGS_SCHEMA_ID "im.pidgin.Purple.plugin.JoinPart"
 
-/* The number of minutes before a person is considered
- * to have stopped being part of active conversation. */
-#define DELAY_PREF "/plugins/core/joinpart/delay"
-#define DELAY_DEFAULT 10
+/* The number of minutes before a person is considered to have stopped being
+ * part of active conversation. */
+#define DELAY_PREF "delay"
 
-/* The number of people that must be in a room for this
- * plugin to have any effect */
-#define THRESHOLD_PREF "/plugins/core/joinpart/threshold"
-#define THRESHOLD_DEFAULT 20
+/* The number of people that must be in a room for this plugin to have any
+ * effect */
+#define THRESHOLD_PREF "threshold"
 
 /* Hide buddies */
-#define HIDE_BUDDIES_PREF "/plugins/core/joinpart/hide_buddies"
-#define HIDE_BUDDIES_DEFAULT FALSE
+#define HIDE_BUDDIES_PREF "hide-buddies"
 
 struct joinpart_key
 {
@@ -61,10 +59,11 @@ static guint joinpart_key_hash(const struct joinpart_key *key)
 
 static gboolean joinpart_key_equal(const struct joinpart_key *a, const struct joinpart_key *b)
 {
-	if (a == NULL)
+	if (a == NULL) {
 		return (b == NULL);
-	else if (b == NULL)
+	} else if (b == NULL) {
 		return FALSE;
+	}
 
 	return (a->conv == b->conv) && purple_strequal(a->user, b->user);
 }
@@ -80,6 +79,7 @@ static void joinpart_key_destroy(struct joinpart_key *key)
 static gboolean should_hide_notice(PurpleConversation *conv, const char *name,
                                    GHashTable *users)
 {
+	GSettings *settings = NULL;
 	PurpleChatConversation *chat;
 	guint threshold;
 	struct joinpart_key key;
@@ -88,26 +88,36 @@ static gboolean should_hide_notice(PurpleConversation *conv, const char *name,
 	g_return_val_if_fail(conv != NULL, FALSE);
 	g_return_val_if_fail(PURPLE_IS_CHAT_CONVERSATION(conv), FALSE);
 
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
+
 	/* If the room is small, don't bother. */
 	chat = PURPLE_CHAT_CONVERSATION(conv);
-	threshold = purple_prefs_get_int(THRESHOLD_PREF);
-	if (purple_chat_conversation_get_users_count(chat) < threshold)
+	threshold = g_settings_get_int(settings, THRESHOLD_PREF);
+	if (purple_chat_conversation_get_users_count(chat) < threshold) {
+		g_object_unref(settings);
 		return FALSE;
+	}
 
-	if (!purple_prefs_get_bool(HIDE_BUDDIES_PREF) &&
-	    purple_blist_find_buddy(purple_conversation_get_account(conv), name))
+	if (!g_settings_get_boolean(settings, HIDE_BUDDIES_PREF) &&
+	    purple_blist_find_buddy(purple_conversation_get_account(conv), name)) {
+		g_object_unref(settings);
 		return FALSE;
+	}
 
 	/* Only show the notice if the user has spoken recently. */
 	key.conv = conv;
 	key.user = (gchar *)name;
 	last_said = g_hash_table_lookup(users, &key);
-	if (last_said != NULL)
-	{
-		int delay = purple_prefs_get_int(DELAY_PREF);
-		if (delay > 0 && (*last_said + (delay * 60)) >= time(NULL))
+	if (last_said != NULL) {
+		int delay = g_settings_get_int(settings, DELAY_PREF);
+		if (delay > 0 && (*last_said + (delay * 60)) >= time(NULL)) {
+			g_object_unref(settings);
 			return FALSE;
+		}
 	}
+
+	g_object_unref(settings);
 
 	return TRUE;
 }
@@ -137,13 +147,10 @@ static void received_chat_msg_cb(PurpleAccount *account, char *sender,
 	key.conv = conv;
 	key.user = sender;
 	last_said = g_hash_table_lookup(users, &key);
-	if (last_said != NULL)
-	{
+	if (last_said != NULL) {
 		/* They just said something, so update the time. */
 		time(last_said);
-	}
-	else
-	{
+	} else {
 		struct joinpart_key *key2;
 
 		key2 = g_new(struct joinpart_key, 1);
@@ -166,8 +173,16 @@ static gboolean check_expire_time(struct joinpart_key *key,
 
 static gboolean clean_users_hash(GHashTable *users)
 {
-	int delay = purple_prefs_get_int(DELAY_PREF);
-	time_t limit = time(NULL) - (60 * delay);
+	GSettings *settings = NULL;
+	gint delay = 0;
+	time_t limit = 0;
+
+	settings = g_settings_new_with_backend(SETTINGS_SCHEMA_ID,
+	                                       purple_core_get_settings_backend());
+	delay = g_settings_get_int(settings, DELAY_PREF);
+	g_object_unref(settings);
+
+	limit = time(NULL) - (60 * delay);
 
 	g_hash_table_foreach_remove(users, (GHRFunc)check_expire_time, &limit);
 
@@ -236,12 +251,6 @@ join_part_load(GPluginPlugin *plugin, GError **error)
 	void *conv_handle;
 	GHashTable *users;
 	guint id;
-
-	purple_prefs_add_none("/plugins/core/joinpart");
-
-	purple_prefs_add_int(DELAY_PREF, DELAY_DEFAULT);
-	purple_prefs_add_int(THRESHOLD_PREF, THRESHOLD_DEFAULT);
-	purple_prefs_add_bool(HIDE_BUDDIES_PREF, HIDE_BUDDIES_DEFAULT);
 
 	users = g_hash_table_new_full((GHashFunc)joinpart_key_hash,
 	                              (GEqualFunc)joinpart_key_equal,
