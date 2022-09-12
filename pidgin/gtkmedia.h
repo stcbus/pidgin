@@ -23,8 +23,8 @@
 # error "only <pidgin.h> may be included directly"
 #endif
 
-#ifndef __GTKMEDIA_H_
-#define __GTKMEDIA_H_
+#ifndef PIDGIN_MEDIA_H
+#define PIDGIN_MEDIA_H
 
 G_BEGIN_DECLS
 
@@ -32,4 +32,4 @@ void pidgin_medias_init(void);
 
 G_END_DECLS
 
-#endif  /* __GTKMEDIA_H_ */
+#endif  /* PIDGIN_MEDIA_H */
