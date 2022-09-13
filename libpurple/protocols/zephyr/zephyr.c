@@ -1269,10 +1269,6 @@ zephyr_find_blist_chat(PurpleProtocolClient *client, PurpleAccount *account,
 	}
 	return NULL;
 }
-static const char *zephyr_list_icon(PurpleAccount * a, PurpleBuddy * b)
-{
-	return "zephyr";
-}
 
 static GList *
 zephyr_protocol_get_account_options(PurpleProtocol *protocol) {
@@ -1728,7 +1724,6 @@ zephyr_protocol_class_init(ZephyrProtocolClass *klass)
 	protocol_class->login = zephyr_login;
 	protocol_class->close = zephyr_close;
 	protocol_class->status_types = zephyr_status_types;
-	protocol_class->list_icon = zephyr_list_icon;
 
 	protocol_class->get_account_options = zephyr_protocol_get_account_options;
 }

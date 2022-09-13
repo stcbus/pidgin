@@ -164,8 +164,6 @@ struct _PurpleProtocolClass {
 
 	GList *(*status_types)(PurpleAccount *account);
 
-	const gchar *(*list_icon)(PurpleAccount *account, PurpleBuddy *buddy);
-
 	/*< private >*/
 	gpointer reserved[4];
 };
@@ -320,23 +318,6 @@ void purple_protocol_close(PurpleProtocol *protocol, PurpleConnection *connectio
  * Since: 3.0.0
  */
 GList *purple_protocol_get_status_types(PurpleProtocol *protocol, PurpleAccount *account);
-
-/**
- * purple_protocol_get_list_icon:
- * @protocol: The #PurpleProtocol instance.
- * @account: The #PurpleAccount instance.
- * @buddy: The #PurpleBuddy instance.
- *
- * Gets the icon to show in the contact list for @buddy on @account which uses
- * @protocol.
- *
- * Both @account and @buddy may be %NULL to get the default icon for @protocol.
- *
- * Returns: The name of the icon file to use in the contact list for @buddy.
- *
- * Since: 3.0.0
- */
-const gchar *purple_protocol_get_list_icon(PurpleProtocol *protocol, PurpleAccount *account, PurpleBuddy *buddy);
 
 /**
  * purple_protocol_get_icon_name:

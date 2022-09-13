@@ -3106,22 +3106,6 @@ static void mwPurpleProtocolData_free(struct mwPurpleProtocolData *pd) {
   g_free(pd);
 }
 
-
-static const char *mw_protocol_list_icon(PurpleAccount *a, PurpleBuddy *b) {
-  /* my little green dude is a chopped up version of the aim running
-     guy.  First, cut off the head and store someplace safe. Then,
-     take the left-half side of the body and throw it away. Make a
-     copy of the remaining body, and flip it horizontally. Now attach
-     the two pieces into an X shape, and drop the head back on the
-     top, being careful to center it. Then, just change the color
-     saturation to bring the red down a bit, and voila! */
-
-  /* then, throw all of that away and use sodipodi to make a new
-     icon. You know, LIKE A REAL MAN. */
-
-  return "meanwhile";
-}
-
 static GList *
 mw_protocol_get_account_options(PurpleProtocol *protocol) {
   PurpleAccountOption *opt;
@@ -5392,7 +5376,6 @@ mw_protocol_class_init(mwProtocolClass *klass)
 	protocol_class->login = mw_protocol_login;
 	protocol_class->close = mw_protocol_close;
 	protocol_class->status_types = mw_protocol_status_types;
-	protocol_class->list_icon = mw_protocol_list_icon;
 
   protocol_class->get_account_options = mw_protocol_get_account_options;
   protocol_class->get_user_splits = mw_protocol_get_user_splits;

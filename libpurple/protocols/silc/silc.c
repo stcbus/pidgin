@@ -64,12 +64,6 @@ silcpurple_free(SilcPurple sg)
 	silc_free(sg);
 }
 
-static const char *
-silcpurple_list_icon(PurpleAccount *a, PurpleBuddy *b)
-{
-	return (const char *)"silc";
-}
-
 static GList *
 silcpurple_away_states(PurpleAccount *account)
 {
@@ -2411,7 +2405,6 @@ silcpurple_protocol_class_init(SilcProtocolClass *klass)
 	protocol_class->login = silcpurple_login;
 	protocol_class->close = silcpurple_close;
 	protocol_class->status_types = silcpurple_away_states;
-	protocol_class->list_icon = silcpurple_list_icon;
 
 	protocol_class->get_user_splits = silcpurple_protocol_get_user_splits;
 	protocol_class->get_account_options = silcpurple_protocol_get_account_options;

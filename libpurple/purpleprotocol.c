@@ -564,19 +564,3 @@ purple_protocol_get_status_types(PurpleProtocol *protocol,
 
 	return NULL;
 }
-
-const gchar *
-purple_protocol_get_list_icon(PurpleProtocol *protocol, PurpleAccount *account,
-                              PurpleBuddy *buddy)
-{
-	PurpleProtocolClass *klass = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_PROTOCOL(protocol), NULL);
-
-	klass = PURPLE_PROTOCOL_GET_CLASS(protocol);
-	if(klass != NULL && klass->list_icon != NULL) {
-		return klass->list_icon(account, buddy);
-	}
-
-	return NULL;
-}

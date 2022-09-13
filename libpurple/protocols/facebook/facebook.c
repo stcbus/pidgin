@@ -1163,12 +1163,6 @@ fb_status_types(PurpleAccount *acct)
 	return g_list_reverse(types);
 }
 
-static const char *
-fb_list_icon(PurpleAccount *account, PurpleBuddy *buddy)
-{
-	return "facebook";
-}
-
 static void
 fb_client_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *buddy,
                        PurpleNotifyUserInfo *info, gboolean full)
@@ -1598,7 +1592,6 @@ facebook_protocol_class_init(FacebookProtocolClass *klass)
 	protocol_class->login = fb_login;
 	protocol_class->close = fb_close;
 	protocol_class->status_types = fb_status_types;
-	protocol_class->list_icon = fb_list_icon;
 }
 
 static void

@@ -40,7 +40,6 @@ struct _IRCProtocol {
 
 static void irc_ison_buddy_init(char *name, struct irc_buddy *ib, GList **list);
 
-static const char *irc_blist_icon(PurpleAccount *a, PurpleBuddy *b);
 static GList *irc_status_types(PurpleAccount *account);
 /* static GList *irc_chat_info(PurpleConnection *gc); */
 static void irc_login(PurpleAccount *account);
@@ -368,12 +367,6 @@ static void irc_ison_one(struct irc_conn *irc, struct irc_buddy *ib)
 	buf = irc_format(irc, "vn", "ISON", ib->name);
 	irc_send(irc, buf);
 	g_free(buf);
-}
-
-
-static const char *irc_blist_icon(PurpleAccount *a, PurpleBuddy *b)
-{
-	return "irc";
 }
 
 static GList *
@@ -1098,7 +1091,6 @@ irc_protocol_class_init(IRCProtocolClass *klass)
 	protocol_class->login = irc_login;
 	protocol_class->close = irc_close;
 	protocol_class->status_types = irc_status_types;
-	protocol_class->list_icon = irc_blist_icon;
 
 	protocol_class->get_account_options = irc_protocol_get_account_options;
 	protocol_class->get_user_splits = irc_protocol_get_user_splits;

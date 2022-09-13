@@ -203,12 +203,6 @@ bonjour_close(PurpleConnection *connection)
 	purple_connection_set_protocol_data(connection, NULL);
 }
 
-static const char *
-bonjour_list_icon(PurpleAccount *account, PurpleBuddy *buddy)
-{
-	return BONJOUR_ICON_NAME;
-}
-
 static GList *
 bonjour_protocol_get_account_options(PurpleProtocol *protocol) {
 	PurpleAccountOption *option;
@@ -687,7 +681,6 @@ bonjour_protocol_class_init(BonjourProtocolClass *klass)
 	protocol_class->login = bonjour_login;
 	protocol_class->close = bonjour_close;
 	protocol_class->status_types = bonjour_status_types;
-	protocol_class->list_icon = bonjour_list_icon;
 
 	protocol_class->get_account_options = bonjour_protocol_get_account_options;
 	protocol_class->get_buddy_icon_spec = bonjour_protocol_get_buddy_icon_spec;

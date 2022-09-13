@@ -2020,11 +2020,6 @@ void jabber_stream_restart_inactivity_timer(JabberStream *js)
 		                           inactivity_cb, js);
 }
 
-const char *jabber_list_icon(PurpleAccount *a, PurpleBuddy *b)
-{
-	return "jabber";
-}
-
 const char *
 jabber_list_emblem(PurpleProtocolClient *client, PurpleBuddy *b) {
 	JabberStream *js;
@@ -3873,7 +3868,6 @@ jabber_protocol_class_init(JabberProtocolClass *klass)
 	protocol_class->login = jabber_login;
 	protocol_class->close = jabber_close;
 	protocol_class->status_types = jabber_status_types;
-	protocol_class->list_icon = jabber_list_icon;
 }
 
 static void

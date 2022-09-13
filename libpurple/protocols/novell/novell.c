@@ -2849,12 +2849,6 @@ novell_rename_group(PurpleProtocolServer *protocol_server,
 	}
 }
 
-static const char *
-novell_list_icon(PurpleAccount * account, PurpleBuddy * buddy)
-{
-	return "novell";
-}
-
 static GList *
 novell_protocol_get_account_options(PurpleProtocol *protocol) {
 	PurpleAccountOption *option;
@@ -3557,7 +3551,6 @@ novell_protocol_class_init(NovellProtocolClass *klass)
 	protocol_class->login = novell_login;
 	protocol_class->close = novell_close;
 	protocol_class->status_types = novell_status_types;
-	protocol_class->list_icon = novell_list_icon;
 
 	protocol_class->get_account_options = novell_protocol_get_account_options;
 }

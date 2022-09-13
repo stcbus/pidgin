@@ -366,7 +366,6 @@ gboolean jabber_stream_is_ssl(JabberStream *js);
 void jabber_stream_restart_inactivity_timer(JabberStream *js);
 
 /** Protocol functions */
-const char *jabber_list_icon(PurpleAccount *a, PurpleBuddy *b);
 const char* jabber_list_emblem(PurpleProtocolClient *client, PurpleBuddy *b);
 char *jabber_status_text(PurpleProtocolClient *client, PurpleBuddy *b);
 void jabber_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b, PurpleNotifyUserInfo *user_info, gboolean full);

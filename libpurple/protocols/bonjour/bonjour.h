@@ -35,7 +35,6 @@
 
 #define BONJOUR_GROUP_NAME (bonjour_get_group_name())
 #define BONJOUR_PROTOCOL_NAME "bonjour"
-#define BONJOUR_ICON_NAME "bonjour"
 
 #define BONJOUR_STATUS_ID_OFFLINE   "offline"
 #define BONJOUR_STATUS_ID_AVAILABLE "available"

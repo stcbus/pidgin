@@ -673,11 +673,6 @@ gg_uri_handler(const gchar *scheme, const gchar *screenname,
 /* ----- PurpleProtocol ----------------------------------------- */
 /* ---------------------------------------------------------------------- */
 
-static const char *ggp_list_icon(PurpleAccount *account, PurpleBuddy *buddy)
-{
-	return "gadu-gadu";
-}
-
 static PurpleBuddyIconSpec *
 ggp_protocol_get_buddy_icon_spec(PurpleProtocol *protocol) {
 	return purple_buddy_icon_spec_new("png",
@@ -1264,7 +1259,6 @@ ggp_protocol_class_init(GGPProtocolClass *klass)
 	protocol_class->login = ggp_login;
 	protocol_class->close = ggp_close;
 	protocol_class->status_types = ggp_status_types;
-	protocol_class->list_icon = ggp_list_icon;
 
 	protocol_class->get_account_options = ggp_protocol_get_account_options;
 	protocol_class->get_buddy_icon_spec = ggp_protocol_get_buddy_icon_spec;
