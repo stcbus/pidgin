@@ -111,29 +111,6 @@ const char *purple_date_format_full(const struct tm *tm);
 /**************************************************************************/
 /* Path/Filename Functions                                                */
 /**************************************************************************/
-/**
- * purple_util_write_data_to_file:
- * @filename: The basename of the file to write in the purple_user_dir.
- * @data:     A string of data to write.
- * @size:     The size of the data to save.  If data is
- *                 null-terminated you can pass in -1.
- *
- * Write a string of data to a file of the given name in the Purple
- * user directory ($HOME/.purple by default).  The data is typically
- * a serialized version of one of Purple's config files, such as
- * prefs.xml, accounts.xml, etc.  And the string is typically
- * obtained using purple_xmlnode_to_formatted_str.  However, this function
- * should work fine for saving binary files as well.
- *
- * Returns: TRUE if the file was written successfully.  FALSE otherwise.
- * 
- * Deprecated: Use purple_util_write_data_to_cache_file(),
- *             purple_util_write_data_to_config_file() or
- *             purple_util_write_data_to_data_file() instead.
- */
-G_DEPRECATED_FOR(purple_util_write_data_to_cache_file or purple_util_write_data_to_config_file or purple_util_write_data_to_data_file)
-gboolean purple_util_write_data_to_file(const char *filename, const char *data,
-									  gssize size);
 
 /**
  * purple_util_write_data_to_cache_file:
@@ -185,50 +162,6 @@ purple_util_write_data_to_config_file(const char *filename, const char *data, gs
  */
 gboolean
 purple_util_write_data_to_data_file(const char *filename, const char *data, gssize size);
-
-/**
- * purple_util_write_data_to_file_absolute:
- * @filename_full: Filename to write to
- * @data:          A string of data to write.
- * @size:          The size of the data to save.  If data is
- *                      null-terminated you can pass in -1.
- *
- * Write data to a file using the absolute path.
- *
- * This exists for Glib backwards compatibility reasons.
- *
- * See purple_util_write_data_to_file()
- *
- * Returns: TRUE if the file was written successfully.  FALSE otherwise.
- *
- * Deprecated: 3.0.0: Use g_file_set_contents() instead.
- */
-G_DEPRECATED_FOR(g_file_set_contents)
-gboolean
-purple_util_write_data_to_file_absolute(const char *filename_full, const char *data, gssize size);
-
-/**
- * purple_util_read_xml_from_file:
- * @filename:    The basename of the file to open in the purple_user_dir.
- * @description: A very short description of the contents of this
- *                    file.  This is used in error messages shown to the
- *                    user when the file can not be opened.  For example,
- *                    "preferences," or "buddy pounces."
- *
- * Read the contents of a given file and parse the results into an
- * PurpleXmlNode tree structure.  This is intended to be used to read
- * Purple's configuration xml files (prefs.xml, pounces.xml, etc.)
- *
- * Returns: An PurpleXmlNode tree of the contents of the given file.  Or NULL, if
- *         the file does not exist or there was an error reading the file.
- * 
- * Deprecated: Use purple_util_read_xml_from_cache_file(),
- *             purple_util_read_xml_from_config_file() or
- *             purple_util_read_xml_from_data_file() instead.
- */
-G_DEPRECATED_FOR(purple_util_read_xml_from_cache_file or purple_util_read_xml_from_config_file or purple_util_read_xml_from_data_file)
-PurpleXmlNode *purple_util_read_xml_from_file(const char *filename,
-									  const char *description);
 
 /**
  * purple_util_read_xml_from_cache_file:

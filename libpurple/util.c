@@ -111,17 +111,6 @@ purple_util_write_data_to_file_common(const char *dir, const char *filename, con
 }
 
 gboolean
-purple_util_write_data_to_file(const char *filename, const char *data, gssize size)
-{
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-	const char *user_dir = purple_user_dir();
-G_GNUC_END_IGNORE_DEPRECATIONS
-	gboolean ret = purple_util_write_data_to_file_common(user_dir, filename, data, size);
-
-	return ret;
-}
-
-gboolean
 purple_util_write_data_to_cache_file(const char *filename, const char *data, gssize size)
 {
 	const char *cache_dir = purple_cache_dir();
@@ -146,41 +135,6 @@ purple_util_write_data_to_data_file(const char *filename, const char *data, gssi
 	gboolean ret = purple_util_write_data_to_file_common(data_dir, filename, data, size);
 
 	return ret;
-}
-
-gboolean
-purple_util_write_data_to_file_absolute(const char *filename_full, const char *data, gssize size)
-{
-	GFile *file;
-	GError *err = NULL;
-
-	g_return_val_if_fail(size >= -1, FALSE);
-
-	if (size == -1) {
-		size = strlen(data);
-	}
-
-	file = g_file_new_for_path(filename_full);
-
-	if (!g_file_replace_contents(file, data, size, NULL, FALSE,
-			G_FILE_CREATE_PRIVATE, NULL, NULL, &err)) {
-		purple_debug_error("util", "Error writing file: %s: %s\n",
-				   filename_full, err->message);
-		g_clear_error(&err);
-		g_object_unref(file);
-		return FALSE;
-	}
-
-	g_object_unref(file);
-	return TRUE;
-}
-
-PurpleXmlNode *
-purple_util_read_xml_from_file(const char *filename, const char *description)
-{
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-	return purple_xmlnode_from_file(purple_user_dir(), filename, description, "util");
-G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 PurpleXmlNode *
