@@ -98,7 +98,6 @@ enum {
 static GParamSpec *properties[PROP_LAST] = {NULL, };
 
 static GList *connections = NULL;
-static GList *connections_connecting = NULL;
 static GList *connections_connected = NULL;
 static PurpleConnectionUiOps *connection_ui_ops = NULL;
 
@@ -165,12 +164,6 @@ purple_connection_set_state(PurpleConnection *gc, PurpleConnectionState state)
 	gc->state = state;
 
 	ops = purple_connections_get_ui_ops();
-
-	if(gc->state == PURPLE_CONNECTION_CONNECTING) {
-		connections_connecting = g_list_append(connections_connecting, gc);
-	} else {
-		connections_connecting = g_list_remove(connections_connecting, gc);
-	}
 
 	if(gc->state == PURPLE_CONNECTION_CONNECTED) {
 		PurpleAccount *account;
@@ -1059,11 +1052,6 @@ purple_connections_disconnect_all(void) {
 GList *
 purple_connections_get_all(void) {
 	return connections;
-}
-
-GList *
-purple_connections_get_connecting(void) {
-	return connections_connecting;
 }
 
 gboolean

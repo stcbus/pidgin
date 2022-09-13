@@ -638,16 +638,6 @@ void purple_connections_disconnect_all(void);
 GList *purple_connections_get_all(void);
 
 /**
- * purple_connections_get_connecting:
- *
- * Returns a list of all connections in the process of connecting.
- *
- * Returns: (element-type PurpleConnection) (transfer none): A list of
- *          connecting connections.
- */
-GList *purple_connections_get_connecting(void);
-
-/**
  * purple_connections_is_online:
  *
  * Checks if at least one account is online.
