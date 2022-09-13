@@ -31,9 +31,6 @@ typedef struct {
 
 	PurplePluginInfoFlags flags; /* Flags for the plugin */
 
-	/* Callback that returns a list of actions the plugin can perform */
-	PurplePluginActionsCb actions_cb;
-
 	/* Callback that returns a preferences frame for a plugin */
 	PurplePluginPrefFrameCb pref_frame_cb;
 
@@ -50,7 +47,6 @@ typedef struct {
 
 enum {
 	PROP_0,
-	PROP_ACTIONS_CB,
 	PROP_PREF_FRAME_CB,
 	PROP_PREF_REQUEST_CB,
 	PROP_FLAGS,
@@ -113,9 +109,6 @@ purple_plugin_info_set_property(GObject *obj, guint param_id,
 	priv = purple_plugin_info_get_instance_private(info);
 
 	switch (param_id) {
-		case PROP_ACTIONS_CB:
-			priv->actions_cb = g_value_get_pointer(value);
-			break;
 		case PROP_PREF_FRAME_CB:
 			priv->pref_frame_cb = g_value_get_pointer(value);
 			break;
@@ -146,10 +139,6 @@ purple_plugin_info_get_property(GObject *obj, guint param_id, GValue *value,
 	PurplePluginInfo *info = PURPLE_PLUGIN_INFO(obj);
 
 	switch (param_id) {
-		case PROP_ACTIONS_CB:
-			g_value_set_pointer(value,
-					purple_plugin_info_get_actions_cb(info));
-			break;
 		case PROP_PREF_FRAME_CB:
 			g_value_set_pointer(value,
 					purple_plugin_info_get_pref_frame_cb(info));
@@ -231,11 +220,6 @@ purple_plugin_info_class_init(PurplePluginInfoClass *klass) {
 	obj_class->get_property = purple_plugin_info_get_property;
 	obj_class->set_property = purple_plugin_info_set_property;
 
-	properties[PROP_ACTIONS_CB] = g_param_spec_pointer(
-		"actions-cb", "Plugin actions",
-		"Callback that returns list of plugin's actions",
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
 	properties[PROP_PREF_FRAME_CB] = g_param_spec_pointer(
 		"pref-frame-cb", "Preferences frame callback",
 		"The callback that returns the preferences frame",
@@ -301,17 +285,6 @@ purple_plugin_info_new(const char *first_property, ...) {
 	va_end(var_args);
 
 	return GPLUGIN_PLUGIN_INFO(info);
-}
-
-PurplePluginActionsCb
-purple_plugin_info_get_actions_cb(PurplePluginInfo *info) {
-	PurplePluginInfoPrivate *priv = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_PLUGIN_INFO(info), NULL);
-
-	priv = purple_plugin_info_get_instance_private(info);
-
-	return priv->actions_cb;
 }
 
 PurplePluginPrefFrameCb

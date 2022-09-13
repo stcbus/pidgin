@@ -79,16 +79,6 @@ struct _PurplePluginInfoClass {
 };
 
 /**
- * PurplePluginActionsCb:
- * @plugin: the plugin associated with this callback.
- *
- * Returns a list of actions the plugin can perform.
- *
- * Returns: (transfer none): A list of actions the plugin can perform.
- */
-typedef GList *(*PurplePluginActionsCb)(PurplePlugin *plugin);
-
-/**
  * PurplePluginPrefFrameCb:
  * @plugin: the plugin associated with this callback.
  *
@@ -240,10 +230,6 @@ G_BEGIN_DECLS
  *     <entry>(<type>const gchar * const *</type>) A %NULL-terminated list of
  *       plugin IDs required by the plugin.</entry>
  *   </row>
- *   <row><entry><literal>"actions-cb"</literal></entry>
- *     <entry>(#PurplePluginActionsCb) Callback that returns a list of
- *       actions the plugin can perform.</entry>
- *   </row>
  *   <row><entry><literal>"pref-frame-cb"</literal></entry>
  *     <entry>(#PurplePluginPrefFrameCb) Callback that returns a
  *       preferences frame for the plugin.</entry>
@@ -266,20 +252,6 @@ G_BEGIN_DECLS
  * Since: 3.0.0
  */
 GPluginPluginInfo *purple_plugin_info_new(const char *first_property, ...) G_GNUC_NULL_TERMINATED;
-
-/**
- * purple_plugin_info_get_actions_cb:
- * @info: The plugin info to get the callback from.
- *
- * Returns the callback that retrieves the list of actions a plugin can perform
- * at that moment.
- *
- * Returns: The callback that returns a list of #PurplePluginAction
- *          instances corresponding to the actions a plugin can perform.
- *
- * Since: 3.0.0
- */
-PurplePluginActionsCb purple_plugin_info_get_actions_cb(PurplePluginInfo *info);
 
 /**
  * purple_plugin_info_get_pref_frame_cb:

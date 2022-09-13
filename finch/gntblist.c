@@ -2227,14 +2227,19 @@ blist_node_compare_status(PurpleBlistNode *n1, PurpleBlistNode *n2)
 static void
 plugin_action(GntMenuItem *item, gpointer data)
 {
+	/* TODO: Convert to GAction/GMenu. */
+#if 0
 	PurplePluginAction *action = data;
 	if (action && action->callback)
 		action->callback(action);
+#endif
 }
 
 static void
 build_plugin_actions(GntMenuItem *item, PurplePlugin *plugin)
 {
+	/* TODO: port to GAction/GMenu. */
+#if 0
 	GntWidget *sub = gnt_menu_new(GNT_MENU_POPUP);
 	PurplePluginActionsCb actions_cb;
 	GList *actions;
@@ -2257,6 +2262,7 @@ build_plugin_actions(GntMenuItem *item, PurplePlugin *plugin)
 								   action, (GDestroyNotify)purple_plugin_action_free);
 		}
 	}
+#endif
 }
 
 static void
@@ -2359,6 +2365,8 @@ reconstruct_plugins_menu(void)
 	sub = gnt_menu_new(GNT_MENU_POPUP);
 	gnt_menuitem_set_submenu(plg, GNT_MENU(sub));
 
+	/* TODO: port to GAction/GMenu. */
+#if 0
 	for (iter = purple_plugins_get_loaded(); iter; iter = iter->next) {
 		PurplePlugin *plugin = iter->data;
 		PurplePluginInfo *info = purple_plugin_get_info(plugin);
@@ -2372,6 +2380,7 @@ reconstruct_plugins_menu(void)
 		gnt_menu_add_item(GNT_MENU(sub), item);
 		build_plugin_actions(item, plugin);
 	}
+#endif
 }
 
 static void

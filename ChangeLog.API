@@ -26,7 +26,6 @@ version 3.0.0 (??/??/????):
 		* purple_plugin_is_internal
 		* purple_plugin_info_new
 		* purple_plugin_get_info
-		* purple_plugin_info_get_actions_cb
 		* purple_plugin_info_get_error
 		* purple_plugin_info_get_extra_cb
 		* purple_plugin_info_get_pref_frame_cb
@@ -206,8 +205,6 @@ version 3.0.0 (??/??/????):
 		  the documentation for details.
 		* PurplePluginInfo is now a GObject, inherits GPluginPluginInfo. Please
 		  see the documentation for details.
-		* PurplePluginAction no longer has a context field. Use
-		  PurpleProtocolAction for protocol actions.
 		* PURPLE_INIT_PLUGIN(pluginname, initfunc, plugininfo) is now
 		  PURPLE_PLUGIN_INIT(pluginname, query_func, load_func, unload_func).
 		  See "C Plugins tutorial" (tut_c_plugins.xml) for an example.
@@ -506,11 +503,15 @@ version 3.0.0 (??/??/????):
 		* purple_notify_searchresults_row_get
 		* purple_ntlm_*
 		* PURPLE_PLUGIN_INIT, use GPLUGIN_NATIVE_PLUGIN_DECLARE
-		* PurplePluginType
-		* PurplePluginPriority
+		* PurplePluginAction
+		* PurplePluginActionCb
 		* PurplePluginLoaderInfo
+		* PurplePluginPriority
 		* PurplePluginProtocolInfo
+		* PurplePluginType
 		* PurplePluginUiInfo
+		* purple_plugin_action_new
+		* purple_plugin_action_free
 		* purple_plugin_ipc_*
 		* purple_plugin_is_unloadable
 		* purple_plugin_new

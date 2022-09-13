@@ -50,39 +50,6 @@ typedef GPluginPluginInterface PurplePluginInterface;
 
 #include "purpleplugininfo.h"
 
-/**
- * PURPLE_TYPE_PLUGIN_ACTION:
- *
- * The standard _get_type macro for #PurplePluginAction.
- */
-#define PURPLE_TYPE_PLUGIN_ACTION (purple_plugin_action_get_type())
-typedef struct _PurplePluginAction PurplePluginAction;
-
-/**
- * PurplePluginActionCb:
- * @action: the action information.
- *
- * A function called when the related Action Menu is activated.
- */
-typedef void (*PurplePluginActionCb)(PurplePluginAction *action);
-
-/**
- * PurplePluginAction:
- * @label: The label to display in the user interface.
- * @callback: The function to call when the user wants to perform this action.
- * @plugin: The plugin that this action belongs to.
- * @user_data: User data to pass to @callback.
- *
- * Represents an action that the plugin can perform. This shows up in the Tools
- * menu, under a submenu with the name of the plugin.
- */
-struct _PurplePluginAction {
-	char *label;
-	PurplePluginActionCb callback;
-	PurplePlugin *plugin;
-	gpointer user_data;
-};
-
 G_BEGIN_DECLS
 
 /**************************************************************************/
@@ -176,37 +143,6 @@ gboolean purple_plugin_is_internal(PurplePlugin *plugin);
  *                           plugin.
  */
 GSList *purple_plugin_get_dependent_plugins(PurplePlugin *plugin);
-
-/**************************************************************************/
-/* PluginAction API                                                       */
-/**************************************************************************/
-
-/**
- * purple_plugin_action_get_type:
- *
- * Returns: The #GType for the #PurplePluginAction boxed structure.
- */
-GType purple_plugin_action_get_type(void);
-
-/**
- * purple_plugin_action_new:
- * @label:    The description of the action to show to the user.
- * @callback: (scope call): The callback to call when the user selects this
- *            action.
- *
- * Allocates and returns a new PurplePluginAction. Use this to add actions in a
- * list in the "actions-cb" callback for your plugin.
- */
-PurplePluginAction *purple_plugin_action_new(const char* label,
-		PurplePluginActionCb callback);
-
-/**
- * purple_plugin_action_free:
- * @action: The PurplePluginAction to free.
- *
- * Frees a PurplePluginAction
- */
-void purple_plugin_action_free(PurplePluginAction *action);
 
 /**************************************************************************/
 /* Plugins API                                                            */

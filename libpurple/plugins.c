@@ -256,44 +256,6 @@ purple_plugin_get_dependent_plugins(PurplePlugin *plugin)
 }
 
 /**************************************************************************
- * PluginAction API
- **************************************************************************/
-PurplePluginAction *
-purple_plugin_action_new(const char* label, PurplePluginActionCb callback)
-{
-	PurplePluginAction *action;
-
-	g_return_val_if_fail(label != NULL && callback != NULL, NULL);
-
-	action = g_new0(PurplePluginAction, 1);
-
-	action->label    = g_strdup(label);
-	action->callback = callback;
-
-	return action;
-}
-
-void
-purple_plugin_action_free(PurplePluginAction *action)
-{
-	g_return_if_fail(action != NULL);
-
-	g_free(action->label);
-	g_free(action);
-}
-
-static PurplePluginAction *
-purple_plugin_action_copy(PurplePluginAction *action)
-{
-	g_return_val_if_fail(action != NULL, NULL);
-
-	return purple_plugin_action_new(action->label, action->callback);
-}
-
-G_DEFINE_BOXED_TYPE(PurplePluginAction, purple_plugin_action,
-                    purple_plugin_action_copy, purple_plugin_action_free)
-
-/**************************************************************************
  * Plugins API
  **************************************************************************/
 GList *
