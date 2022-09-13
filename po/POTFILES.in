@@ -48,7 +48,6 @@ libpurple/media/candidate.c
 libpurple/media/codec.c
 libpurple/media/enum-types.c
 libpurple/mediamanager.c
-libpurple/memorypool.c
 libpurple/nat-pmp.c
 libpurple/network.c
 libpurple/notify.c
