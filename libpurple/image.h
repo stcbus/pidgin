@@ -28,11 +28,6 @@
 
 #include <glib-object.h>
 
-/**
- * PURPLE_TYPE_IMAGE:
- *
- * The standard _get_type macro for #PurpleImage.
- */
 #define PURPLE_TYPE_IMAGE  purple_image_get_type()
 
 struct _PurpleImageClass {
@@ -59,11 +54,6 @@ G_BEGIN_DECLS
  * (which data is not yet loaded) or guessing file format from its header.
  */
 
-/**
- * purple_image_get_type:
- *
- * Returns: the #GType for an image.
- */
 G_DECLARE_DERIVABLE_TYPE(PurpleImage, purple_image, PURPLE, IMAGE, GObject)
 
 /**

@@ -27,19 +27,9 @@
 #ifndef PURPLE_STATUS_H
 #define PURPLE_STATUS_H
 
-/**
- * PURPLE_TYPE_STATUS:
- *
- * The standard _get_type macro for #PurpleStatus.
- */
 #define PURPLE_TYPE_STATUS (purple_status_get_type())
 typedef struct _PurpleStatus PurpleStatus;
 
-/*
- * PURPLE_TYPE_STATUS_TYPE:
- *
- * The standard _get_type macro for #PurpleStatusType.
- */
 #define PURPLE_TYPE_STATUS_TYPE (purple_status_type_get_type())
 
 /**
@@ -56,11 +46,6 @@ typedef struct _PurpleStatus PurpleStatus;
  */
 typedef struct _PurpleStatusType PurpleStatusType;
 
-/**
- * PURPLE_TYPE_STATUS_ATTRIBUTE:
- *
- * The standard _get_type macro for #PurpleStatusAttribute.
- */
 #define PURPLE_TYPE_STATUS_ATTRIBUTE (purple_status_attribute_get_type())
 
 /**
@@ -96,11 +81,6 @@ typedef struct _PurpleStatusType PurpleStatusType;
  */
 typedef struct _PurpleStatusAttribute PurpleStatusAttribute;
 
-/**
- * PURPLE_TYPE_MOOD:
- *
- * The standard _get_type macro for #PurpleMood.
- */
 #define PURPLE_TYPE_MOOD (purple_mood_get_type())
 
 /**

@@ -30,14 +30,6 @@
 
 G_BEGIN_DECLS
 
-/**
- * PURPLE_TYPE_ATTACHMENT:
- *
- * The standard _TYPE_ macro for #PurpleAttachment.
- *
- * Since: 3.0.0
- */
-
 #define PURPLE_TYPE_ATTACHMENT purple_attachment_get_type()
 
 /**
@@ -46,13 +38,6 @@ G_BEGIN_DECLS
  * #PurpleAttachment represents a file attached to a #PurpleMessage.
  */
 
-/**
- * purple_attachment_get_type:
- *
- * Returns: the #GType for an attachment.
- *
- * Since: 3.0.0
- */
 G_DECLARE_FINAL_TYPE(PurpleAttachment, purple_attachment, PURPLE, ATTACHMENT, GObject)
 
 /**

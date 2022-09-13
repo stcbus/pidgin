@@ -27,11 +27,6 @@
 #ifndef PURPLE_XFER_H
 #define PURPLE_XFER_H
 
-/**
- * PURPLE_TYPE_XFER_UI_OPS:
- *
- * The standard _get_type macro for #PurpleXferUiOps.
- */
 #define PURPLE_TYPE_XFER_UI_OPS      (purple_xfer_ui_ops_get_type())
 
 /**************************************************************************/
@@ -88,20 +83,8 @@ typedef enum
 
 G_BEGIN_DECLS
 
-/**
- * PURPLE_TYPE_XFER:
- *
- * The standard _get_type macro for #PurpleXfer.
- */
 #define PURPLE_TYPE_XFER             (purple_xfer_get_type())
 
-/**
- * purple_xfer_get_type:
- *
- * The standard _get_type function for #PurpleXfer.
- *
- * Returns: The #GType for #PurpleXfer.
- */
 G_DECLARE_DERIVABLE_TYPE(PurpleXfer, purple_xfer, PURPLE, XFER, GObject)
 
 /**
@@ -811,20 +794,7 @@ PurpleXferUiOps *purple_xfers_get_ui_ops(void);
  * Protocol Interface
  *****************************************************************************/
 
-/**
- * PURPLE_TYPE_PROTOCOL_XFER:
- *
- * The standard _get_type macro for #PurpleProtocolXfer.
- */
 #define PURPLE_TYPE_PROTOCOL_XFER (purple_protocol_xfer_get_type())
-
-/**
- * purple_protocol_xfer_get_type:
- *
- * The standard _get_type function for #GType's.
- *
- * Returns: The #GType for the protocol xfer interface.
- */
 G_DECLARE_INTERFACE(PurpleProtocolXfer, purple_protocol_xfer, PURPLE,
                     PROTOCOL_XFER, PurpleProtocol)
 

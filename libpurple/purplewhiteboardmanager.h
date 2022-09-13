@@ -39,22 +39,7 @@ G_BEGIN_DECLS
  */
 #define PURPLE_WHITEBOARD_MANAGER_DOMAIN (g_quark_from_static_string("purple-whiteboard-manager"))
 
-/**
- * PURPLE_TYPE_WHITEBOARD_MANAGER:
- *
- * The standard _TYPE_ macro for #PurpleWhiteboardManager.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_WHITEBOARD_MANAGER (purple_whiteboard_manager_get_type())
-
-/**
- * purple_whiteboard_manager_get_type:
- *
- * The standard _get_type macro for #PurpleWhiteboardManager.
- *
- * Since: 3.0.0
- */
 
 /**
  * PurpleWhiteboardManager:

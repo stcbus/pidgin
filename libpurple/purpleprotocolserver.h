@@ -44,14 +44,6 @@ G_DECLARE_INTERFACE(PurpleProtocolServer, purple_protocol_server, PURPLE,
 G_BEGIN_DECLS
 
 /**
- * PURPLE_TYPE_PROTOCOL_SERVER:
- *
- * The standard _get_type method for #PurpleProtocolServer.
- *
- * Since: 3.0.0
- */
-
-/**
  * PurpleProtocolServer:
  *
  * #PurpleProtocolServer describes the API for protocols that have a central

@@ -59,19 +59,7 @@ typedef enum /*< flags >*/
 	PURPLE_CHAT_USER_AWAY     = 0x0020
 } PurpleChatUserFlags;
 
-/**
- * PURPLE_TYPE_CHAT_USER:
- *
- * The standard _get_type macro for #PurpleChatUser.
- */
 #define PURPLE_TYPE_CHAT_USER purple_chat_user_get_type()
-
-/**
- * purple_chat_user_get_type:
- *
- * Returns: The #GType for the ChatConversationBuddy object.
- */
-
 G_DECLARE_FINAL_TYPE(PurpleChatUser, purple_chat_user, PURPLE, CHAT_USER,
                      GObject)
 

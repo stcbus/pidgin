@@ -27,11 +27,6 @@
 #ifndef PURPLE_WHITEBOARD_H
 #define PURPLE_WHITEBOARD_H
 
-/**
- * PURPLE_TYPE_WHITEBOARD:
- *
- * The standard _get_type macro for #PurpleWhiteboard.
- */
 #define PURPLE_TYPE_WHITEBOARD (purple_whiteboard_get_type())
 typedef struct _PurpleWhiteboard PurpleWhiteboard;
 

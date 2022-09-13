@@ -40,24 +40,7 @@ G_BEGIN_DECLS
  * Since: 3.0.0
  */
 
-/**
- * PURPLE_TYPE_NOOP_CREDENTIAL_PROVIDER:
- *
- * The standard _TYPE_ macro for #PurpleNoopCredentialProvider.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_NOOP_CREDENTIAL_PROVIDER (purple_noop_credential_provider_get_type())
-
-/**
- * purple_noop_credential_provider_get_type:
- *
- * Gets the #GType of #PurpleNoopCredentialProvider.
- *
- * Returns: The #GType of #PurpleNoopCredentialProvider.
- *
- * Since: 3.0.0
- */
 G_DECLARE_FINAL_TYPE(PurpleNoopCredentialProvider,
                      purple_noop_credential_provider,
                      PURPLE, NOOP_CREDENTIAL_PROVIDER, PurpleCredentialProvider)

@@ -30,11 +30,6 @@
 #include <glib.h>
 #include <glib-object.h>
 
-/**
- * PURPLE_TYPE_WHITEBOARD_UI_OPS:
- *
- * The standard _get_type macro for #PurpleWhiteboardUiOps.
- */
 #define PURPLE_TYPE_WHITEBOARD_UI_OPS (purple_whiteboard_ui_ops_get_type())
 typedef struct _PurpleWhiteboardUiOps PurpleWhiteboardUiOps;
 

@@ -51,25 +51,7 @@ G_BEGIN_DECLS
  * Since: 3.0.0
  */
 
-/**
- * PURPLE_TYPE_CREDENTIAL_PROVIDER:
- *
- * The standard _TYPE_ macro for PurpleCredentialProvider.
- *
- * Since: 3.0.0
- */
-
 #define PURPLE_TYPE_CREDENTIAL_PROVIDER (purple_credential_provider_get_type())
-
-/**
- * purple_credential_provider_get_type:
- *
- * Gets the #GType of #PurpleCredentialProvider.
- *
- * Returns: The #GType of #PurpleCredentialProvider.
- *
- * Since: 3.0.0
- */
 G_DECLARE_DERIVABLE_TYPE(PurpleCredentialProvider, purple_credential_provider,
                          PURPLE, CREDENTIAL_PROVIDER, GObject)
 

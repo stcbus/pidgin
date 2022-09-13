@@ -38,18 +38,7 @@ G_BEGIN_DECLS
  * #PurpleBuddy.
  */
 
-/**
- * PURPLE_TYPE_BUDDY_PRESENCE:
- *
- * The standard _get_type macro for #PurpleBuddyPresence.
- */
 #define PURPLE_TYPE_BUDDY_PRESENCE (purple_buddy_presence_get_type())
-
-/**
- * purple_buddy_presence_get_type:
- *
- * Returns: The #GType for the #PurpleBuddyPresence object.
- */
 G_DECLARE_FINAL_TYPE(PurpleBuddyPresence, purple_buddy_presence, PURPLE,
                      BUDDY_PRESENCE, PurplePresence)
 

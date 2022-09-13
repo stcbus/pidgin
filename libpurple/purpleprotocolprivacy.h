@@ -33,11 +33,6 @@
 #include <libpurple/connection.h>
 #include <libpurple/purpleprotocol.h>
 
-/**
- * PURPLE_TYPE_PROTOCOL_PRIVACY:
- *
- * The standard _get_type method for #PurpleProtocolPrivacy.
- */
 #define PURPLE_TYPE_PROTOCOL_PRIVACY (purple_protocol_privacy_get_type())
 
 /**

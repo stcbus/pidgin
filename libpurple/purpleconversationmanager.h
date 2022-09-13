@@ -29,24 +29,7 @@
 
 G_BEGIN_DECLS
 
-/**
- * PURPLE_TYPE_CONVERSATION_MANAGER:
- *
- * The standard _TYPE_ macro for PurpleConversationManager.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_CONVERSATION_MANAGER (purple_conversation_manager_get_type())
-
-/**
- * purple_conversation_manager_get_type:
- *
- * Gets the #GType of #PurpleConversationManager.
- *
- * Returns: The #GType of #PurpleConversationManager.
- *
- * Since: 3.0.0
- */
 
 /**
  * PurpleConversationManager:

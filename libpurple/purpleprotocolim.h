@@ -33,24 +33,7 @@
 #include <libpurple/connection.h>
 #include <libpurple/purpleprotocol.h>
 
-/**
- * PURPLE_TYPE_PROTOCOL_IM:
- *
- * The standard _TYPE_ macro for #PurpleProtocolIM.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_PROTOCOL_IM (purple_protocol_im_get_type())
-
-/**
- * purple_protocol_im_get_type:
- *
- * Gets the #GType for #PurpleProtocolIM.
- *
- * Returns: The #GType for #PurpleProtocolIM.
- *
- * Since: 3.0.0
- */
 
 /**
  * PurpleProtocolIM:

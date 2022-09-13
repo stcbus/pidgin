@@ -41,14 +41,6 @@ G_DECLARE_INTERFACE(PurpleProtocolMedia, purple_protocol_media, PURPLE,
 G_BEGIN_DECLS
 
 /**
- * PURPLE_TYPE_PROTOCOL_MEDIA:
- *
- * The standard _get_type method for #PurpleProtocolMedia.
- *
- * Since: 3.0.0
- */
-
-/**
  * PurpleProtocolMedia:
  *
  * #PurpleProtocolMedia describes the multimedia api that is available for

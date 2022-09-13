@@ -34,11 +34,6 @@ typedef struct _PurpleMediaManager PurpleMediaManager;
 #include "account.h"
 #include "media.h"
 
-/**
- * PURPLE_TYPE_MEDIA_MANAGER:
- *
- * The standard _get_type macro for #PurpleMediaManager.
- */
 #define PURPLE_TYPE_MEDIA_MANAGER purple_media_manager_get_type()
 
 /**
@@ -87,13 +82,6 @@ G_BEGIN_DECLS
 /* Media Manager API                                                      */
 /**************************************************************************/
 
-/**
- * purple_media_manager_get_type:
- *
- * Gets the media manager's GType.
- *
- * Returns: The media manager's GType.
- */
 G_DECLARE_FINAL_TYPE(PurpleMediaManager, purple_media_manager, PURPLE,
 		MEDIA_MANAGER, GObject)
 

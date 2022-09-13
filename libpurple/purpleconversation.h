@@ -31,13 +31,6 @@
 
 #include <purplemessage.h>
 
-/**
- * PURPLE_TYPE_CONVERSATION:
- *
- * The standard _TYPE_ macro for PurpleConversation.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_CONVERSATION (purple_conversation_get_type())
 G_DECLARE_DERIVABLE_TYPE(PurpleConversation, purple_conversation, PURPLE,
                          CONVERSATION, GObject)
@@ -129,12 +122,6 @@ struct _PurpleConversationClass {
 #include "buddyicon.h"
 
 G_BEGIN_DECLS
-
-/**
- * purple_conversation_get_type:
- *
- * Returns: The #GType for the Conversation object.
- */
 
 /**
  * purple_conversation_present:

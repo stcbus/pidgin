@@ -29,11 +29,6 @@
 #include <glib.h>
 #include <glib-object.h>
 
-/**
- * PURPLE_TYPE_CONVERSATION_UI_OPS:
- *
- * The standard _get_type macro for #PurpleConversationUiOps.
- */
 #define PURPLE_TYPE_CONVERSATION_UI_OPS (purple_conversation_ui_ops_get_type())
 typedef struct _PurpleConversationUiOps PurpleConversationUiOps;
 

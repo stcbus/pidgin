@@ -30,11 +30,6 @@
 
 #include "buddy.h"
 
-/**
- * PURPLE_TYPE_BUDDY_LIST:
- *
- * The standard _get_type macro for #PurpleBuddyList.
- */
 #define PURPLE_TYPE_BUDDY_LIST (purple_buddy_list_get_type())
 typedef struct _PurpleBuddyList PurpleBuddyList;
 

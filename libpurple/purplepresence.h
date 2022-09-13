@@ -68,19 +68,7 @@ struct _PurplePresenceClass {
 	gpointer reserved[4];
 };
 
-/**
- * PURPLE_TYPE_PRESENCE:
- *
- * The standard _get_type macro for #PurplePresence.
- */
 #define PURPLE_TYPE_PRESENCE purple_presence_get_type()
-
-/**
- * purple_presence_get_type:
- *
- * Returns: The #GType for the #PurplePresence object.
- */
-
 G_DECLARE_DERIVABLE_TYPE(PurplePresence, purple_presence, PURPLE, PRESENCE,
                          GObject)
 

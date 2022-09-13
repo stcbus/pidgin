@@ -39,11 +39,6 @@ G_BEGIN_DECLS
  */
 #define PURPLE_HISTORY_MANAGER_DOMAIN (g_quark_from_static_string("purple-history-manager"))
 
-/**
- * PURPLE_TYPE_HISTORY_MANAGER:
- *
- * The standard _get_type macro for #PurpleHistoryManager.
- */
 #define PURPLE_TYPE_HISTORY_MANAGER (purple_history_manager_get_type())
 G_DECLARE_FINAL_TYPE(PurpleHistoryManager, purple_history_manager, PURPLE,
                      HISTORY_MANAGER, GObject)

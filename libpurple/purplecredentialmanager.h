@@ -40,13 +40,6 @@ G_BEGIN_DECLS
  */
 #define PURPLE_CREDENTIAL_MANAGER_DOMAIN (g_quark_from_static_string("purple-credential-manager"))
 
-/**
- * PURPLE_TYPE_CREDENTIAL_MANAGER:
- *
- * The standard _get_type macro for #PurpleCredentialManager.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_CREDENTIAL_MANAGER (purple_credential_manager_get_type())
 G_DECLARE_FINAL_TYPE(PurpleCredentialManager, purple_credential_manager,
                      PURPLE, CREDENTIAL_MANAGER, GObject)

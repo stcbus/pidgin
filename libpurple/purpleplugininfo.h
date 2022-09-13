@@ -32,13 +32,6 @@
 
 #include "pluginpref.h"
 
-/**
- * PURPLE_TYPE_PLUGIN_INFO:
- *
- * The standard _get_type macro for #PurplePluginInfo.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_PLUGIN_INFO (purple_plugin_info_get_type())
 
 /**
@@ -50,15 +43,6 @@
  * Since: 3.0.0
  */
 
-/**
- * purple_plugin_info_get_type:
- *
- * The standard _get_type function for #PurplePluginInfo.
- *
- * Returns: The #GType for the #PurplePluginInfo object.
- *
- * Since: 3.0.0
- */
 G_DECLARE_DERIVABLE_TYPE(PurplePluginInfo, purple_plugin_info, PURPLE,
                          PLUGIN_INFO, GPluginPluginInfo)
 
@@ -96,12 +80,6 @@ typedef PurplePluginPrefFrame *(*PurplePluginPrefFrameCb)(PurplePlugin *plugin);
  * Returns: Preferences request handle.
  */
 typedef gpointer (*PurplePluginPrefRequestCb)(PurplePlugin *plugin);
-
-/**
- * PURPLE_TYPE_PLUGIN_INFO_FLAGS:
- *
- * The standard type macro for #PurplePluginInfoFlags.
- */
 
 /**
  * PurplePluginInfoFlags:

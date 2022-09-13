@@ -33,13 +33,6 @@
 
 G_BEGIN_DECLS
 
-/**
- * PURPLE_TYPE_MESSAGE:
- *
- * The standard _get_type macro for #PurpleMessage.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_MESSAGE purple_message_get_type()
 
 /**
@@ -113,13 +106,6 @@ typedef enum /*< prefix=PURPLE_MESSAGE_CONTENT_TYPE,underscore_name=PURPLE_MESSA
  * #PurpleMessage represents any message passed between users in libpurple.
  */
 
-/**
- * purple_message_get_type:
- *
- * Returns: the #GType for a message.
- *
- * Since: 3.0.0
- */
 G_DECLARE_FINAL_TYPE(PurpleMessage, purple_message, PURPLE, MESSAGE, GObject)
 
 /**

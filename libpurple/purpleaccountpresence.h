@@ -38,18 +38,7 @@ G_BEGIN_DECLS
  * #PurpleAccount.
  */
 
-/**
- * PURPLE_TYPE_ACCOUNT_PRESENCE:
- *
- * The standard _get_type macro for #PurpleAccountPresence.
- */
 #define PURPLE_TYPE_ACCOUNT_PRESENCE (purple_account_presence_get_type())
-
-/**
- * purple_account_presence_get_type:
- *
- * Returns: The #GType for the #PurpleAccountPresence object.
- */
 G_DECLARE_FINAL_TYPE(PurpleAccountPresence, purple_account_presence, PURPLE,
                      ACCOUNT_PRESENCE, PurplePresence)
 

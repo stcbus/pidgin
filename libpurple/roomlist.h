@@ -27,27 +27,12 @@
 #ifndef PURPLE_ROOMLIST_H
 #define PURPLE_ROOMLIST_H
 
-/**
- * PURPLE_TYPE_ROOMLIST:
- *
- * The standard _get_type macro for #PurpleRoomlist.
- */
 #define PURPLE_TYPE_ROOMLIST (purple_roomlist_get_type())
 typedef struct _PurpleRoomlist PurpleRoomlist;
 
-/**
- * PURPLE_TYPE_ROOMLIST_FIELD:
- *
- * The standard _get_type macro for #PurpleRoomlistField.
- */
 #define PURPLE_TYPE_ROOMLIST_FIELD (purple_roomlist_field_get_type())
 typedef struct _PurpleRoomlistField PurpleRoomlistField;
 
-/**
- * PURPLE_TYPE_ROOMLIST_UI_OPS:
- *
- * The standard _get_type macro for #PurpleRoomlistUiOps.
- */
 #define PURPLE_TYPE_ROOMLIST_UI_OPS (purple_roomlist_ui_ops_get_type())
 typedef struct _PurpleRoomlistUiOps PurpleRoomlistUiOps;
 

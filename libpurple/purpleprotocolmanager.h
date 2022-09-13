@@ -39,11 +39,6 @@ G_BEGIN_DECLS
  */
 #define PURPLE_PROTOCOL_MANAGER_DOMAIN (g_quark_from_static_string("purple-protocol-manager"))
 
-/**
- * PURPLE_TYPE_PROTOCOL_MANAGER:
- *
- * The standard _get_type macro for #PurpleProtocolManager.
- */
 #define PURPLE_TYPE_PROTOCOL_MANAGER (purple_protocol_manager_get_type())
 G_DECLARE_FINAL_TYPE(PurpleProtocolManager, purple_protocol_manager, PURPLE,
                      PROTOCOL_MANAGER, GObject)

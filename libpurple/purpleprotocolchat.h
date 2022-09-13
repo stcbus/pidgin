@@ -34,24 +34,7 @@
 #include <libpurple/purplemessage.h>
 #include <libpurple/purpleprotocol.h>
 
-/**
- * PURPLE_TYPE_PROTOCOL_CHAT:
- *
- * The standard _TYPE_ macro for #PurpleProtocolChat.
- *
- * Since: 3.0.0
- */
 #define PURPLE_TYPE_PROTOCOL_CHAT (purple_protocol_chat_get_type())
-
-/**
- * purple_protocol_chat_get_type:
- *
- * Gets the #GType for #PurpleProtocolChat.
- *
- * Returns: The #GType for #PurpleProtocolChat.
- *
- * Since: 3.0.0
- */
 
 /**
  * PurpleProtocolChat:

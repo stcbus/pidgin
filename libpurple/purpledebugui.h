@@ -32,11 +32,6 @@
 
 G_BEGIN_DECLS
 
-/**
- * PURPLE_TYPE_DEBUG_UI:
- *
- * The standard _get_type macro for #PurpleDebugUi.
- */
 #define PURPLE_TYPE_DEBUG_UI (purple_debug_ui_get_type())
 
 /**

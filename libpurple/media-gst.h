@@ -31,18 +31,8 @@
 
 #include <gst/gst.h>
 
-/**
- * PURPLE_TYPE_MEDIA_ELEMENT_TYPE:
- *
- * The standard _get_type macro for #PurpleMediaElementType.
- */
 #define PURPLE_TYPE_MEDIA_ELEMENT_TYPE  purple_media_element_type_get_type()
 
-/**
- * PURPLE_TYPE_MEDIA_ELEMENT_INFO:
- *
- * The standard _get_type macro for #PurpleMediaElementInfo.
- */
 #define PURPLE_TYPE_MEDIA_ELEMENT_INFO  purple_media_element_info_get_type()
 
 /**
@@ -99,22 +89,8 @@ typedef enum {
 
 G_BEGIN_DECLS
 
-/**
- * purple_media_element_type_get_type:
- *
- * Gets the element type's GType.
- *
- * Returns: The element type's GType.
- */
 GType purple_media_element_type_get_type(void);
 
-/**
- * purple_media_element_info_get_type:
- *
- * Gets the element info's GType.
- *
- * Returns: The element info's GType.
- */
 G_DECLARE_FINAL_TYPE(PurpleMediaElementInfo, purple_media_element_info, PURPLE,
 		MEDIA_ELEMENT_INFO, GObject)
 
