@@ -38,7 +38,6 @@ libpurple/core.c
 libpurple/countingnode.c
 libpurple/debug.c
 libpurple/eventloop.c
-libpurple/example/nullclient.c
 libpurple/group.c
 libpurple/idle.c
 libpurple/image.c

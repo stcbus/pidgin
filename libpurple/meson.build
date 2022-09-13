@@ -368,6 +368,5 @@ meson.override_dependency(purple_filebase, libpurple_dep)
 
 subdir('data')
 subdir('tests')
-subdir('example')
 subdir('plugins')
 subdir('protocols')
