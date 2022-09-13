@@ -157,7 +157,6 @@ purple_image_store_get(guint id)
 	return g_hash_table_lookup(id_to_image, GINT_TO_POINTER(id));
 }
 
-/* TODO: handle PURPLE_IMAGE_STORE_STOCK_PROTOCOL */
 PurpleImage *
 purple_image_store_get_from_uri(const gchar *uri)
 {

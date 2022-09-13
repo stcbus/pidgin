@@ -47,14 +47,6 @@
  */
 #define PURPLE_IMAGE_STORE_PROTOCOL "purple-image:"
 
-/**
- * PURPLE_IMAGE_STORE_STOCK_PROTOCOL:
- *
- * A global URI prefix for stock images, with names defined by libpurple and
- * contents defined by the UI.
- */
-#define PURPLE_IMAGE_STORE_STOCK_PROTOCOL "purple-stock-image:"
-
 G_BEGIN_DECLS
 
 /**
