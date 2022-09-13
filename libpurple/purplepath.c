@@ -61,18 +61,6 @@ purple_home_dir(void) {
 #endif
 }
 
-/* Returns the argument passed to -c IFF it was present, or ~/.purple. */
-const gchar *
-purple_user_dir(void) {
-	if(custom_user_dir != NULL) {
-		return custom_user_dir;
-	} else if(!user_dir) {
-		user_dir = g_build_filename(purple_home_dir(), ".purple", NULL);
-	}
-
-	return user_dir;
-}
-
 const gchar *
 purple_cache_dir(void) {
 	return purple_xdg_dir(&cache_dir, g_get_user_cache_dir(), "cache");

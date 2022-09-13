@@ -707,6 +707,7 @@ version 3.0.0 (??/??/????):
 		* PurpleType, use GType instead.
 		* purple_unescape_filename
 		* purple_url_decode
+		* purple_user_dir
 		* purple_utf8_salvage.  Use g_utf8_make_valid instead.
 		* purple_utf8_strftime
 		* purple_util_write_data_to_file_absolute.  Use g_file_set_contents
@@ -771,9 +772,6 @@ version 3.0.0 (??/??/????):
 		* wpurple_g_access
 		* xmlnode_set_attrib_with_namespace
 		* xmlnode_set_attrib_with_prefix
-
-		Deprecated:
-		* purple_user_dir
 
 	Pidgin:
 		Added:

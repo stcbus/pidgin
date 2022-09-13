@@ -82,7 +82,7 @@ void finch_ui_init()
 
 #ifdef STANDALONE
 #ifdef _WIN32 /* TODO: don't change it when using FHS under win32 */
-	gnt_set_config_dir(purple_user_dir());
+	gnt_set_config_dir(purple_config_dir());
 #endif /* _WIN32 */
 
 	gnt_init();

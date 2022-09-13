@@ -30,29 +30,11 @@ G_BEGIN_DECLS
 /**
  * purple_home_dir:
  *
- * Returns the user's home directory.
- *
- *  See purple_user_dir()
+ * Gets the user's home directory.
  *
  * Returns: The user's home directory.
  */
 const gchar *purple_home_dir(void);
-
-/**
- * purple_user_dir:
- *
- * Returns the purple settings directory in the user's home directory.
- * This is usually $HOME/.purple
- *
- *  See purple_home_dir()
- *
- * Returns: The purple settings directory.
- *
- * Deprecated: Use purple_cache_dir(), purple_config_dir() or
- *             purple_data_dir() instead.
- */
-G_DEPRECATED_FOR(purple_cache_dir or purple_config_dir or purple_data_dir)
-const gchar *purple_user_dir(void);
 
 /**
  * purple_cache_dir:
