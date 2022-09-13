@@ -22,3 +22,4 @@ gnome.post_install(glib_compile_schemas: true)
 
 # Compile the schemas in the current directory; this is only useful for testing
 gnome.compile_schemas(depend_files: files(settings_schemas))
+testenv.prepend('GSETTINGS_SCHEMA_DIR', meson.current_build_dir())

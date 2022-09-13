@@ -35,7 +35,6 @@ test_ui = static_library(
     dependencies: [libpurple_dep, glib]
 )
 
-testenv = environment()
 testenv.set('XDG_CONFIG_HOME', meson.current_build_dir() / 'config')
 
 foreach prog : PROGS

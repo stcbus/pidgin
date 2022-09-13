@@ -210,6 +210,9 @@ purple_coreheaders = [
 
 purple_generated_sources = []
 
+# An environment for unit tests.
+testenv = environment()
+
 purple_resource = gnome.compile_resources('purpleresources',
 	'resources/libpurple.gresource.xml',
 	source_dir : 'resources',
