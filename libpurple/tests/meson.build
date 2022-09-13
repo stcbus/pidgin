@@ -17,7 +17,6 @@ PROGS = [
     'protocol_xfer',
     'purplepath',
     'queued_output_stream',
-    'trie',
     'util',
     'whiteboard_manager',
     'xmlnode',

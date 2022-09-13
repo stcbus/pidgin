@@ -301,12 +301,10 @@ libpurple/tests/test_protocol_action.c
 libpurple/tests/test_protocol_xfer.c
 libpurple/tests/test_purplepath.c
 libpurple/tests/test_queued_output_stream.c
-libpurple/tests/test_trie.c
 libpurple/tests/test_ui.c
 libpurple/tests/test_util.c
 libpurple/tests/test_whiteboard_manager.c
 libpurple/tests/test_xmlnode.c
-libpurple/trie.c
 libpurple/upnp.c
 libpurple/util.c
 libpurple/version.c
