@@ -206,8 +206,6 @@ conf.set('HAVE_STRUCT_SOCKADDR_SA_LEN',
 # of the C library
 math = compiler.find_library('m', required: false)
 
-# before gettexting, in case iconv matters
-
 IOKIT = []
 if host_machine.system() == 'darwin'
 	IOKIT = dependency('appleframeworks',

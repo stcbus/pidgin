@@ -21,6 +21,8 @@
 
 #include <glib/gi18n-lib.h>
 
+#include <ctype.h>
+
 #include "purpleprivate.h"
 
 #include "core.h"

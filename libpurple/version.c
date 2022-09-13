@@ -17,8 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA
  */
 
-#include "internal.h"
-
 #include "version.h"
 
 const guint purple_major_version = PURPLE_MAJOR_VERSION;

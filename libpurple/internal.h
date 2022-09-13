@@ -33,43 +33,13 @@
 # include <config.h>
 #endif
 
-#ifdef HAVE_ENDIAN_H
-# include <endian.h>
-#endif
-
-#define MSG_LEN 2048
-/* The above should normally be the same as BUF_LEN,
- * but just so we're explicitly asking for the max message
- * length. */
-#define BUF_LEN MSG_LEN
+#define BUF_LEN 2048
 #define BUF_LONG BUF_LEN * 2
-
-#include <sys/types.h>
 
 #ifndef _WIN32
 # include <sys/time.h>
 # include <sys/wait.h>
 # include <sys/time.h>
-#endif
-
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#ifdef HAVE_ICONV
-# include <iconv.h>
-#endif
-
-#ifdef HAVE_LANGINFO_CODESET
-# include <langinfo.h>
-#endif
-
-#ifndef _WIN32
 # include <netinet/in.h>
 # include <sys/socket.h>
 # include <arpa/inet.h>
@@ -97,23 +67,5 @@
 #error Unknown size of time_t
 #endif
 #endif
-
-#ifdef __clang__
-
-#define PURPLE_BEGIN_IGNORE_CAST_ALIGN \
-	_Pragma ("clang diagnostic push") \
-	_Pragma ("clang diagnostic ignored \"-Wcast-align\"")
-
-#define PURPLE_END_IGNORE_CAST_ALIGN \
-	_Pragma ("clang diagnostic pop")
-
-#else
-
-#define PURPLE_BEGIN_IGNORE_CAST_ALIGN
-#define PURPLE_END_IGNORE_CAST_ALIGN
-
-#endif /* __clang__ */
-
-#include <glib-object.h>
 
 #endif /* PURPLE_INTERNAL_H */

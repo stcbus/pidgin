@@ -27,6 +27,8 @@
 #ifndef PURPLE_VERSION_H
 #define PURPLE_VERSION_H
 
+#include <glib.h>
+
 /**
  * PURPLE_MAJOR_VERSION:
  *

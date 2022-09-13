@@ -24,6 +24,8 @@
 
 #include <gio/gio.h>
 
+#include <fcntl.h>
+
 #ifndef _WIN32
 #include <arpa/nameser.h>
 #include <resolv.h>
