@@ -173,7 +173,6 @@ libpurple/protocols/novell/nmrtf.c
 libpurple/protocols/novell/nmuser.c
 libpurple/protocols/novell/nmuserrecord.c
 libpurple/protocols/novell/novell.c
-libpurple/protocols/null/nullprpl.c
 libpurple/protocols/sametime/im_mime.c
 libpurple/protocols/sametime/sametime.c
 libpurple/protocols/sametime/tests/test_sametime_im_mime.c
