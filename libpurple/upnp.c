@@ -32,7 +32,7 @@
 #include "eventloop.h"
 #include "network.h"
 #include "proxy.h"
-#include "purple-gio.h"
+#include "purplegio.h"
 #include "signals.h"
 #include "util.h"
 #include "xmlnode.h"

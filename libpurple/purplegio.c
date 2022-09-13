@@ -21,7 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA
  */
 
-#include "purple-gio.h"
+#include "purplegio.h"
 
 #include "debug.h"
 #include "internal.h"

@@ -249,7 +249,7 @@ libpurple/purplecredentialmanager.c
 libpurple/purplecredentialprovider.c
 libpurple/purpledebugui.c
 libpurple/purplegdkpixbuf.c
-libpurple/purple-gio.c
+libpurple/purplegio.c
 libpurple/purplehistoryadapter.c
 libpurple/purplehistorymanager.c
 libpurple/purpleidleui.c

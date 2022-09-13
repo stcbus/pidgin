@@ -27,7 +27,7 @@
 #include "notify.h"
 #include "prefs.h"
 #include "proxy.h"
-#include "purple-gio.h"
+#include "purplegio.h"
 #include "util.h"
 
 #include <gio/gio.h>
