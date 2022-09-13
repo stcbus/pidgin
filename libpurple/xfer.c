@@ -22,7 +22,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
 #include "glibcompat.h" /* for purple_g_stat on win32 */
 
 #include <glib/gstdio.h>

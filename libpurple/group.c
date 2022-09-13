@@ -24,7 +24,6 @@
 #include "group.h"
 
 #include "debug.h"
-#include "internal.h" /* TODO: we need to kill this */
 #include "purpleprivate.h"
 #include "purpleprotocolserver.h"
 

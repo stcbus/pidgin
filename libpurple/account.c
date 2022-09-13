@@ -21,8 +21,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
-
 #include "accounts.h"
 #include "core.h"
 #include "debug.h"

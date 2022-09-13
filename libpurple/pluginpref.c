@@ -21,8 +21,6 @@
  */
 #include <glib.h>
 
-#include "internal.h"
-
 #include "debug.h"
 #include "pluginpref.h"
 #include "prefs.h"

@@ -21,8 +21,6 @@
 #include <gio/gio.h>
 #include <libsoup/soup.h>
 
-#include "internal.h"
-
 #include "upnp.h"
 
 #include "glibcompat.h"

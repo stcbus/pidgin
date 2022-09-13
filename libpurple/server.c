@@ -25,7 +25,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
 #include "buddylist.h"
 #include "debug.h"
 #include "notify.h"

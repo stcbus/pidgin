@@ -21,8 +21,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
-
 #include "account.h"
 #include "buddylist.h"
 #include "connection.h"

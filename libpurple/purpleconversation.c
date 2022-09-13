@@ -22,8 +22,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
-
 #include "buddylist.h"
 #include "cmds.h"
 #include "conversations.h"

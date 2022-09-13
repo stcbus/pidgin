@@ -21,7 +21,6 @@
  *
  */
 
-#include "internal.h"
 #include "purplewhiteboard.h"
 
 #include "purpleprotocol.h"

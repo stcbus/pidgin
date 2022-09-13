@@ -22,8 +22,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
-
 #include "debug.h"
 #include "purpleenums.h"
 #include "purplemessage.h"

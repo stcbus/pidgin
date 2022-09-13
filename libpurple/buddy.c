@@ -23,7 +23,6 @@
 #include "buddy.h"
 
 #include "debug.h"
-#include "internal.h"
 #include "purplebuddypresence.h"
 #include "purpleconversationmanager.h"
 #include "purpleprotocolclient.h"

@@ -16,8 +16,6 @@
  *
  */
 
-#include "internal.h"
-
 #include "account.h"
 #include "purplemarkup.h"
 #include "cmds.h"

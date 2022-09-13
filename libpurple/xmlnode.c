@@ -26,7 +26,6 @@
 
 #include <glib/gi18n-lib.h>
 
-#include "internal.h"
 #include "debug.h"
 
 #include <libxml/parser.h>
