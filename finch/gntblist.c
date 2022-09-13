@@ -2271,6 +2271,8 @@ static void
 build_protocol_actions(GntMenuItem *item, PurpleProtocol *protocol,
 		PurpleConnection *gc)
 {
+	/* TODO: port to PurpleProtocolActions. */
+#if 0
 	GntWidget *sub = gnt_menu_new(GNT_MENU_POPUP);
 	GList *actions;
 	GntMenuItem *menuitem;
@@ -2289,6 +2291,7 @@ build_protocol_actions(GntMenuItem *item, PurpleProtocol *protocol,
 								   action, (GDestroyNotify)purple_protocol_action_free);
 		}
 	}
+#endif
 }
 
 static gboolean
@@ -2407,11 +2410,14 @@ reconstruct_accounts_menu(void) {
 			continue;
 		protocol = purple_connection_get_protocol(gc);
 
+#if 0
+		/* TODO: port to PurpleProtocolActions */
 		if (PURPLE_PROTOCOL_IMPLEMENTS(protocol, CLIENT, get_actions)) {
 			item = gnt_menuitem_new(purple_account_get_username(account));
 			gnt_menu_add_item(GNT_MENU(sub), item);
 			build_protocol_actions(item, protocol, gc);
 		}
+#endif
 	}
 }
 

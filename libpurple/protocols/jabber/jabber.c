@@ -3884,7 +3884,6 @@ jabber_protocol_class_finalize(G_GNUC_UNUSED JabberProtocolClass *klass)
 static void
 jabber_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
-	client_iface->get_actions     = jabber_get_actions;
 	client_iface->list_emblem     = jabber_list_emblem;
 	client_iface->status_text     = jabber_status_text;
 	client_iface->tooltip_text    = jabber_tooltip_text;

@@ -35,23 +35,6 @@ purple_protocol_client_default_init(PurpleProtocolClientInterface *iface) {
 /******************************************************************************
  * Public API
  *****************************************************************************/
-GList *
-purple_protocol_client_get_actions(PurpleProtocolClient *client,
-                                   PurpleConnection *connection)
-{
-	PurpleProtocolClientInterface *iface = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_PROTOCOL_CLIENT(client), NULL);
-	g_return_val_if_fail(PURPLE_IS_CONNECTION(connection), NULL);
-
-	iface = PURPLE_PROTOCOL_CLIENT_GET_IFACE(client);
-	if(iface != NULL && iface->get_actions != NULL) {
-		return iface->get_actions(client, connection);
-	}
-
-	return NULL;
-}
-
 const gchar *
 purple_protocol_client_list_emblem(PurpleProtocolClient *client,
                                    PurpleBuddy *buddy)

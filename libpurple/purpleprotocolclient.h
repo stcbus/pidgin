@@ -39,14 +39,6 @@ G_DECLARE_INTERFACE(PurpleProtocolClient, purple_protocol_client, PURPLE,
                     PROTOCOL_CLIENT, PurpleProtocol)
 
 /**
- * PURPLE_TYPE_PROTOCOL_CLIENT:
- *
- * The standard _get_type method for #PurpleProtocolClient.
- *
- * Since: 3.0.0
- */
-
-/**
  * PurpleProtocolClient:
  *
  * #PurpleProtocolClient interface defines the behavior of a typical chat
@@ -126,8 +118,6 @@ struct _PurpleProtocolClientInterface {
 	GTypeInterface parent;
 
 	/*< public >*/
-	GList *(*get_actions)(PurpleProtocolClient *client, PurpleConnection *connection);
-
 	const gchar *(*list_emblem)(PurpleProtocolClient *client, PurpleBuddy *buddy);
 
 	gchar *(*status_text)(PurpleProtocolClient *client, PurpleBuddy *buddy);
@@ -158,20 +148,6 @@ struct _PurpleProtocolClientInterface {
 };
 
 G_BEGIN_DECLS
-
-/**
- * purple_protocol_client_get_actions:
- * @client: The #PurpleProtocolClient instance.
- * @connection: The #PurpleConnection instance.
- *
- * Gets a list of actions for @connection.
- *
- * Returns: (transfer full) (element-type PurpleProtocolAction): The list of
- *          actions for @connection.
- *
- * Since: 3.0.0
- */
-GList *purple_protocol_client_get_actions(PurpleProtocolClient *client, PurpleConnection *connection);
 
 /**
  * purple_protocol_client_list_emblem:
