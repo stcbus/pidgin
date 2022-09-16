@@ -203,7 +203,7 @@ gboolean
 pidgin_credential_provider_row_get_active(PidginCredentialProviderRow *row) {
 	g_return_val_if_fail(PIDGIN_IS_CREDENTIAL_PROVIDER_ROW(row), FALSE);
 
-	return gtk_widget_get_visible(row->active);
+	return gtk_check_button_get_active(GTK_CHECK_BUTTON(row->active));
 }
 
 void
@@ -212,7 +212,7 @@ pidgin_credential_provider_row_set_active(PidginCredentialProviderRow *row,
 {
 	g_return_if_fail(PIDGIN_IS_CREDENTIAL_PROVIDER_ROW(row));
 
-	gtk_widget_set_visible(row->active, active);
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(row->active), active);
 
 	g_object_notify_by_pspec(G_OBJECT(row), properties[PROP_ACTIVE]);
 }
