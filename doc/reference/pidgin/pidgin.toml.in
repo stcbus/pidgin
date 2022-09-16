@@ -57,7 +57,6 @@ base_url = "https://keep.imfreedom.org/pidgin/pidgin/file/default/"
 [extra]
 # The same order will be used when generating the index
 content_files = [
-	"signals_gtkaccount.md",
 	"signals_gtkblist.md",
 	"signals_gtkconv.md",
 ]

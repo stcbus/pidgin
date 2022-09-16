@@ -1,5 +1,4 @@
 pidgin_doc_content_files = [
-	'signals_gtkaccount.md',
 	'signals_gtkblist.md',
 	'signals_gtkconv.md',
 ]

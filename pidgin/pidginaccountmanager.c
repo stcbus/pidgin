@@ -44,8 +44,6 @@ enum {
 	RESPONSE_ADD,
 	RESPONSE_MODIFY,
 	RESPONSE_REMOVE,
-	RESPONSE_ADD_OLD,
-	RESPONSE_MODIFY_OLD
 };
 
 enum {
@@ -219,9 +217,6 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 			editor = pidgin_account_editor_new(NULL);
 			gtk_widget_show(editor);
 			break;
-		case RESPONSE_ADD_OLD:
-			pidgin_account_dialog_show(PIDGIN_ADD_ACCOUNT_DIALOG, NULL);
-			break;
 		case RESPONSE_MODIFY:
 			account = pidgin_account_manager_get_selected_account(manager);
 
@@ -229,14 +224,6 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 			gtk_widget_show(editor);
 
 			g_clear_object(&account);
-			break;
-		case RESPONSE_MODIFY_OLD:
-			account = pidgin_account_manager_get_selected_account(manager);
-
-			pidgin_account_dialog_show(PIDGIN_MODIFY_ACCOUNT_DIALOG, account);
-
-			g_clear_object(&account);
-
 			break;
 		case RESPONSE_REMOVE:
 			account = pidgin_account_manager_get_selected_account(manager);
@@ -280,13 +267,15 @@ pidgin_account_manager_row_activated_cb(G_GNUC_UNUSED GtkTreeView *tree_view,
 	GtkTreeIter iter;
 
 	if(gtk_tree_model_get_iter(GTK_TREE_MODEL(manager->model), &iter, path)) {
+		GtkWidget *editor = NULL;
 		PurpleAccount *account = NULL;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(manager->model), &iter,
 		                   COLUMN_ACCOUNT, &account,
 		                   -1);
 
-		pidgin_account_dialog_show(PIDGIN_MODIFY_ACCOUNT_DIALOG, account);
+		editor = pidgin_account_editor_new(account);
+		gtk_widget_show(editor);
 
 		g_clear_object(&account);
 	}

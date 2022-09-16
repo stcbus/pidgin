@@ -28,25 +28,7 @@
 
 #include <purple.h>
 
-typedef enum
-{
-	PIDGIN_ADD_ACCOUNT_DIALOG,
-	PIDGIN_MODIFY_ACCOUNT_DIALOG
-
-} PidginAccountDialogType;
-
-
 G_BEGIN_DECLS
-
-/**
- * pidgin_account_dialog_show:
- * @type:    The type of dialog.
- * @account: The associated account, or %NULL for an Add dialog.
- *
- * Shows an add/modify account dialog.
- */
-void pidgin_account_dialog_show(PidginAccountDialogType type,
-								  PurpleAccount *account);
 
 /**
  * pidgin_accounts_get_ui_ops:
@@ -56,15 +38,6 @@ void pidgin_account_dialog_show(PidginAccountDialogType type,
  * Returns: The UI operations structure.
  */
 PurpleAccountUiOps *pidgin_accounts_get_ui_ops(void);
-
-/**
- * pidgin_accounts_get_handle:
- *
- * Returns the gtkaccounts handle
- *
- * Returns: The handle to the GTK account system
- */
-void *pidgin_accounts_get_handle(void);
 
 /**
  * pidgin_accounts_init:
