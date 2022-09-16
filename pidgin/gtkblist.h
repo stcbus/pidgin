@@ -155,14 +155,6 @@ pidgin_blist_get_emblem(PurpleBlistNode *node);
  */
 gboolean pidgin_blist_node_is_contact_expanded(PurpleBlistNode *node);
 
-/**
- * pidgin_blist_add_alert:
- * @widget:   The widget to add
- *
- * Adds a mini-alert to the blist scrollbook
- */
-void pidgin_blist_add_alert(GtkWidget *widget);
-
 /**************************************************************************
  * GTK Buddy List sorting functions
  **************************************************************************/
