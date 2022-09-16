@@ -24,12 +24,10 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
-  <template class="PidginProtocolChooser" parent="AdwBin">
-    <property name="child">
-      <object class="GtkDropDown" id="dropdown">
-        <property name="factory">
-          <object class="GtkBuilderListItemFactory">
-            <property name="bytes">
+  <template class="PidginProtocolChooser" parent="AdwComboRow">
+    <property name="factory">
+      <object class="GtkBuilderListItemFactory">
+        <property name="bytes">
 <![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
@@ -62,22 +60,20 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
   </template>
 </interface>
 ]]>
-            </property>
-          </object>
         </property>
-        <property name="model">
-          <object class="GtkSortListModel" id="sort">
-            <property name="sorter">
-              <object class="GtkStringSorter">
-                <property name="expression">
-                  <lookup name="name" type="PurpleProtocol"/>
-                </property>
-              </object>
-            </property>
-          </object>
-        </property>
-        <signal name="notify::selected" handler="dropdown_changed_cb" object="PidginProtocolChooser" swapped="no"/>
       </object>
     </property>
+    <property name="model">
+      <object class="GtkSortListModel" id="sort">
+        <property name="sorter">
+          <object class="GtkStringSorter">
+            <property name="expression">
+              <lookup name="name" type="PurpleProtocol"/>
+            </property>
+          </object>
+        </property>
+      </object>
+    </property>
+    <signal name="notify::selected" handler="dropdown_changed_cb" object="PidginProtocolChooser" swapped="no"/>
   </template>
 </interface>

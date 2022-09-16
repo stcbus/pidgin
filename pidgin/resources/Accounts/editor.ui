@@ -47,17 +47,10 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                   <object class="AdwPreferencesGroup" id="login_options">
                     <property name="title" translatable="1">Login Options</property>
                     <child>
-                      <object class="AdwActionRow">
-                        <property name="activatable-widget">protocol</property>
+                      <object class="PidginProtocolChooser" id="protocol">
                         <property name="title" translatable="1">Pro_tocol</property>
                         <property name="use-underline">1</property>
-                        <child>
-                          <object class="PidginProtocolChooser" id="protocol">
-                            <property name="hexpand">1</property>
-                            <property name="valign">center</property>
-                            <signal name="notify::protocol" handler="pidgin_account_editor_protocol_changed_cb" object="PidginAccountEditor" swapped="no"/>
-                          </object>
-                        </child>
+                        <signal name="notify::protocol" handler="pidgin_account_editor_protocol_changed_cb" object="PidginAccountEditor" swapped="no"/>
                       </object>
                     </child>
                     <child>

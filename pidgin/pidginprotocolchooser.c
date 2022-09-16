@@ -34,9 +34,8 @@ static GParamSpec *properties[N_PROPERTIES] = {NULL, };
  * Structs
  *****************************************************************************/
 struct _PidginProtocolChooser {
-	AdwBin parent;
+	AdwComboRow parent;
 
-	GtkDropDown *dropdown;
 	GtkWidget *sort;
 };
 
@@ -56,7 +55,8 @@ dropdown_changed_cb(G_GNUC_UNUSED GObject *obj,
 /******************************************************************************
  * GObject Implementation
  *****************************************************************************/
-G_DEFINE_TYPE(PidginProtocolChooser, pidgin_protocol_chooser, ADW_TYPE_BIN)
+G_DEFINE_TYPE(PidginProtocolChooser, pidgin_protocol_chooser,
+              ADW_TYPE_COMBO_ROW)
 
 static void
 pidgin_protocol_chooser_get_property(GObject *obj, guint prop_id,
@@ -121,8 +121,6 @@ pidgin_protocol_chooser_class_init(PidginProtocolChooserClass *klass)
 	                                            "/im/pidgin/Pidgin3/Protocols/chooser.ui");
 
 	gtk_widget_class_bind_template_child(widget_class, PidginProtocolChooser,
-	                                     dropdown);
-	gtk_widget_class_bind_template_child(widget_class, PidginProtocolChooser,
 	                                     sort);
 
 	gtk_widget_class_bind_template_callback(widget_class, dropdown_changed_cb);
@@ -153,7 +151,7 @@ pidgin_protocol_chooser_get_protocol(PidginProtocolChooser *chooser) {
 
 	g_return_val_if_fail(PIDGIN_IS_PROTOCOL_CHOOSER(chooser), NULL);
 
-	protocol = gtk_drop_down_get_selected_item(chooser->dropdown);
+	protocol = adw_combo_row_get_selected_item(ADW_COMBO_ROW(chooser));
 
 	return protocol;
 }
@@ -167,7 +165,7 @@ pidgin_protocol_chooser_set_protocol(PidginProtocolChooser *chooser,
 	g_return_if_fail(PIDGIN_IS_PROTOCOL_CHOOSER(chooser));
 
 	if(protocol != NULL) {
-		GListModel *model = gtk_drop_down_get_model(chooser->dropdown);
+		GListModel *model = adw_combo_row_get_model(ADW_COMBO_ROW(chooser));
 		guint count = g_list_model_get_n_items(model);
 
 		for(guint i = 0; i < count; i++) {
@@ -182,5 +180,5 @@ pidgin_protocol_chooser_set_protocol(PidginProtocolChooser *chooser,
 		}
 	}
 
-	gtk_drop_down_set_selected(chooser->dropdown, position);
+	adw_combo_row_set_selected(ADW_COMBO_ROW(chooser), position);
 }

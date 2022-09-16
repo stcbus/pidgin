@@ -38,7 +38,7 @@ G_BEGIN_DECLS
 #define PIDGIN_TYPE_PROTOCOL_CHOOSER (pidgin_protocol_chooser_get_type())
 
 G_DECLARE_FINAL_TYPE(PidginProtocolChooser, pidgin_protocol_chooser, PIDGIN,
-                     PROTOCOL_CHOOSER, AdwBin)
+                     PROTOCOL_CHOOSER, AdwComboRow)
 
 /**
  * pidgin_protocol_chooser_new:
