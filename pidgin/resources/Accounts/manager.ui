@@ -113,28 +113,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       </object>
     </child>
     <child type="action">
-      <object class="GtkButton" id="button1">
-        <property name="label" translatable="1">τ</property>
-        <property name="focusable">1</property>
-        <property name="receives-default">1</property>
-        <style>
-          <class name="circular"/>
-        </style>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="praetorians">
-        <property name="label" translatable="1">π</property>
-        <property name="focusable">1</property>
-        <property name="focus-on-click">0</property>
-        <property name="receives-default">1</property>
-        <style>
-          <class name="flat"/>
-          <class name="circular"/>
-        </style>
-      </object>
-    </child>
-    <child type="action">
       <object class="GtkButton" id="button3">
         <property name="label" translatable="1">_Add...</property>
         <property name="focusable">1</property>
@@ -169,10 +147,8 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
       </object>
     </child>
     <action-widgets>
-      <action-widget response="0">button1</action-widget>
-      <action-widget response="1">praetorians</action-widget>
-      <action-widget response="3">button3</action-widget>
-      <action-widget response="4">modify_button</action-widget>
+      <action-widget response="0">button3</action-widget>
+      <action-widget response="1">modify_button</action-widget>
       <action-widget response="2">remove_button</action-widget>
       <action-widget response="-7">button2</action-widget>
     </action-widgets>

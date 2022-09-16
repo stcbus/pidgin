@@ -35,7 +35,6 @@
 
 #include "pidginapplication.h"
 
-#include "gtkaccount.h"
 #include "gtkblist.h"
 #include "gtkdialogs.h"
 #include "gtkprivacy.h"
@@ -43,6 +42,7 @@
 #include "gtksavedstatuses.h"
 #include "gtkxfer.h"
 #include "pidginabout.h"
+#include "pidginaccounteditor.h"
 #include "pidginaccountmanager.h"
 #include "pidginaccountsdisabledmenu.h"
 #include "pidginaccountsenabledmenu.h"
@@ -384,7 +384,8 @@ pidgin_application_edit_account(GSimpleAction *simple, GVariant *parameter,
 
 	account = purple_account_manager_find_by_id(manager, id);
 	if(PURPLE_IS_ACCOUNT(account)) {
-		pidgin_account_dialog_show(PIDGIN_MODIFY_ACCOUNT_DIALOG, account);
+		GtkWidget *editor = pidgin_account_editor_new(account);
+		gtk_widget_show(editor);
 	}
 }
 
