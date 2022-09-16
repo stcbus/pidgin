@@ -36,6 +36,7 @@
     <file compressed="true">Prefs/vv.ui</file>
     <file compressed="true">Privacy/dialog.ui</file>
     <file compressed="true">Protocols/chooser.ui</file>
+    <file compressed="true">Protocols/detailed-view.ui</file>
     <file compressed="true">Roomlist/roomlist.ui</file>
     <file compressed="true">Status/box.ui</file>
     <file compressed="true">Status/editor.ui</file>
