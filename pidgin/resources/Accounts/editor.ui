@@ -19,6 +19,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 -->
 <interface>
+  <requires lib="Adw" version="1.0"/>
   <requires lib="gtk" version="4.0"/>
   <requires lib="pidgin" version="3.0"/>
   <!-- interface-license-type gplv2 -->
@@ -26,35 +27,230 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
   <template class="PidginAccountEditor" parent="GtkDialog">
+    <property name="resizable">0</property>
+    <property name="default-height">600</property>
+    <property name="default-width">400</property>
+    <property name="title" translatable="1">Edit Account</property>
     <signal name="response" handler="pidgin_account_editor_response_cb" swapped="no"/>
     <child internal-child="content_area">
       <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+        <property name="vexpand">1</property>
         <child>
-          <object class="GtkNotebook" id="notebook">
-            <property name="focusable">1</property>
-            <child>
-              <object class="GtkNotebookPage">
-                <property name="position">0</property>
-                <property name="child">
-                  <object class="PidginProxyOptions" id="proxy_options">
-                    <property name="margin-start">12</property>
-                    <property name="margin-end">12</property>
-                    <property name="margin-top">12</property>
-                    <property name="margin-bottom">12</property>
-                    <property name="orientation">vertical</property>
-                    <property name="spacing">6</property>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">1</property>
+            <property name="hexpand">1</property>
+            <property name="child">
+              <object class="AdwPreferencesPage">
+                <property name="vexpand">1</property>
+                <property name="hexpand">1</property>
+                <child>
+                  <object class="AdwPreferencesGroup" id="login_options">
+                    <property name="title" translatable="1">Login Options</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="activatable-widget">protocol</property>
+                        <property name="title" translatable="1">Pro_tocol</property>
+                        <property name="use-underline">1</property>
+                        <child>
+                          <object class="PidginProtocolChooser" id="protocol">
+                            <property name="hexpand">1</property>
+                            <property name="valign">center</property>
+                            <signal name="notify::protocol" handler="pidgin_account_editor_protocol_changed_cb" object="PidginAccountEditor" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="activatable-widget">username</property>
+                        <property name="title" translatable="1">_Username</property>
+                        <property name="use-underline">1</property>
+                        <child>
+                          <object class="GtkEntry" id="username">
+                            <property name="hexpand">1</property>
+                            <property name="valign">center</property>
+                            <property name="truncate-multiline">1</property>
+                            <signal name="changed" handler="pidgin_account_editor_username_changed_cb" object="PidginAccountEditor" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
-                </property>
-                <property name="tab">
-                  <object class="GtkLabel">
-                    <property name="label" translatable="1">_Proxy</property>
-                    <property name="use-underline">1</property>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="1">User Options</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="activatable-widget">alias</property>
+                        <property name="title" translatable="1">_Local alias</property>
+                        <property name="use-underline">1</property>
+                        <child>
+                          <object class="GtkEntry" id="alias">
+                            <property name="truncate-multiline">1</property>
+                            <property name="hexpand">1</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow" id="avatar_row">
+                        <property name="activatable-widget">avatar</property>
+                        <property name="title" translatable="1">Use custom _avatar</property>
+                        <property name="use-underline">1</property>
+                        <property name="visible">0</property>
+                        <child type="prefix">
+                          <object class="GtkSwitch" id="use_custom_avatar">
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="css-classes">flat</property>
+                            <property name="valign">center</property>
+                            <binding name="sensitive">
+                              <lookup name="active">use_custom_avatar</lookup>
+                            </binding>
+                            <child>
+                              <object class="GtkImage" id="avatar">
+                                <property name="icon-name">select-avatar</property>
+                                <property name="icon-size">large</property>
+                              </object>
+                            </child>
+                            <signal name="clicked" handler="pidgin_account_editor_avatar_set_clicked_cb" object="PidginAccountEditor" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="remove">
+                            <property name="label" translatable="1">_Remove</property>
+                            <property name="use-underline">1</property>
+                            <property name="valign">center</property>
+                            <binding name="sensitive">
+                              <lookup name="active">use_custom_avatar</lookup>
+                            </binding>
+                            <signal name="clicked" handler="pidgin_account_editor_avatar_remove_clicked_cb" object="PidginAccountEditor" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
-                </property>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="advanced_group">
+                    <property name="title" translatable="1">Advanced Options</property>
+                    <property name="description" translatable="1">Additional options for this account.</property>
+                    <property name="visible">0</property>
+                    <child type="header-suffix">
+                      <object class="GtkSwitch" id="advanced_toggle">
+                        <property name="active">0</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="1">Proxy</property>
+                    <child>
+                      <object class="AdwComboRow" id="proxy_type">
+                        <property name="title" translatable="1">Proxy t_ype</property>
+                        <property name="use-underline">1</property>
+                        <property name="use-subtitle">1</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>global</item>
+                              <item>none</item>
+                              <item>socks4</item>
+                              <item>socks5</item>
+                              <item>tor</item>
+                              <item>http</item>
+                              <item>envvar</item>
+                            </items>
+                          </object>
+                        </property>
+                        <property name="expression">
+                          <closure type="gchararray" function="pidgin_account_editor_proxy_type_expression_cb"/>
+                        </property>
+                        <signal name="notify::selected" handler="pidgin_account_editor_proxy_type_changed_cb" object="PidginAccountEditor" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPreferencesRow" id="proxy_options">
+                        <property name="visible">0</property>
+                        <child>
+                          <object class="GtkListBox">
+                            <child>
+                              <object class="AdwActionRow">
+                                <property name="activatable-widget">proxy_host</property>
+                                <property name="title" translatable="1">_Host</property>
+                                <property name="use-underline">1</property>
+                                <child>
+                                  <object class="GtkEntry" id="proxy_host">
+                                    <property name="hexpand">1</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwActionRow">
+                                <property name="activatable-widget">proxy_port</property>
+                                <property name="title" translatable="1">P_ort</property>
+                                <property name="use-underline">1</property>
+                                <child>
+                                  <object class="GtkSpinButton" id="proxy_port">
+                                    <property name="text" translatable="1">0</property>
+                                    <property name="adjustment">
+                                      <object class="GtkAdjustment">
+                                        <property name="upper">65535</property>
+                                        <property name="step-increment">1</property>
+                                        <property name="page-increment">10</property>
+                                      </object>
+                                    </property>
+                                    <property name="numeric">1</property>
+                                    <property name="hexpand">1</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwActionRow">
+                                <property name="activatable-widget">proxy_username</property>
+                                <property name="title" translatable="1">User_name</property>
+                                <property name="use-underline">1</property>
+                                <child>
+                                  <object class="GtkEntry" id="proxy_username">
+                                    <property name="hexpand">1</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwActionRow">
+                                <property name="activatable-widget">proxy_password</property>
+                                <property name="title" translatable="1">Pa_ssword</property>
+                                <property name="use-underline">1</property>
+                                <child>
+                                  <object class="GtkPasswordEntry" id="proxy_password">
+                                    <property name="hexpand">1</property>
+                                    <property name="show-peek-icon">1</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
-            </child>
+            </property>
           </object>
         </child>
       </object>
@@ -62,7 +258,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     <child type="action">
       <object class="GtkButton" id="button1">
         <property name="label" translatable="1">_Cancel</property>
-        <property name="focusable">1</property>
         <property name="receives-default">1</property>
         <property name="use-underline">1</property>
       </object>
@@ -70,8 +265,8 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     <child type="action">
       <object class="GtkButton" id="button2">
         <property name="label" translatable="1">_Save</property>
-        <property name="focusable">1</property>
         <property name="receives-default">1</property>
+        <property name="sensitive">0</property>
         <property name="use-underline">1</property>
       </object>
     </child>
