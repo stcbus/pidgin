@@ -737,6 +737,10 @@ pidgin_application_window_added(GtkApplication *application,
 	GTK_APPLICATION_CLASS(pidgin_application_parent_class)->window_added(application,
 	                                                                     window);
 
+	if(strstr(VERSION, "-devel")) {
+		gtk_widget_add_css_class(GTK_WIDGET(window), "devel");
+	}
+
 	g_hash_table_iter_init(&iter, pidgin_application->action_groups);
 	while(g_hash_table_iter_next(&iter, &key, &value)) {
 		GActionGroup *action_group = value;
