@@ -547,38 +547,34 @@ purple_upnp_set_port_mapping(unsigned short portmap, const gchar* protocol,
 	ar->portmap = portmap;
 	g_strlcpy(ar->protocol, protocol, sizeof(ar->protocol));
 
-	/* If we're waiting for a discovery, add to the callbacks list */
-	if(control_info.status == PURPLE_UPNP_STATUS_DISCOVERING) {
-		/* TODO: This will fail because when this cb is triggered,
-		 * the internal IP lookup won't be complete */
-		discovery_callbacks = g_slist_append(
-				discovery_callbacks, do_port_mapping_cb);
-		discovery_callbacks = g_slist_append(
-				discovery_callbacks, ar);
-		return ar;
-	}
+	switch(control_info.status) {
+		case PURPLE_UPNP_STATUS_UNABLE_TO_DISCOVER:
+			if (g_get_monotonic_time() - control_info.lookup_time >
+				300 * G_USEC_PER_SEC) {
+				/* If we haven't had a successful UPnP discovery, check if 5 minutes
+				 * has elapsed since the last try, try again */
+				purple_upnp_discover(do_port_mapping_cb, ar);
+			} else if (cb) {
+				/* Asynchronously trigger a failed response */
+				ar->tima = g_timeout_add(10, fire_port_mapping_failure_cb, ar);
+			} else {
+				/* No need to do anything if nobody expects a response*/
+				g_free(ar);
+				ar = NULL;
+			}
+			break;
 
-	if (control_info.status == PURPLE_UPNP_STATUS_UNDISCOVERED) {
-		purple_upnp_discover(do_port_mapping_cb, ar);
-		return ar;
-	} else if (control_info.status == PURPLE_UPNP_STATUS_UNABLE_TO_DISCOVER) {
-		if (g_get_monotonic_time() - control_info.lookup_time >
-		    300 * G_USEC_PER_SEC) {
-			/* If we haven't had a successful UPnP discovery, check if 5 minutes
-			 * has elapsed since the last try, try again */
+		case PURPLE_UPNP_STATUS_UNDISCOVERED:
+		case PURPLE_UPNP_STATUS_DISCOVERING:
 			purple_upnp_discover(do_port_mapping_cb, ar);
-		} else if (cb) {
-			/* Asynchronously trigger a failed response */
-			ar->tima = g_timeout_add(10, fire_port_mapping_failure_cb, ar);
-		} else {
-			/* No need to do anything if nobody expects a response*/
-			g_free(ar);
-			ar = NULL;
-		}
-		return ar;
+			break;
+
+		case PURPLE_UPNP_STATUS_DISCOVERED:
+		default:
+			do_port_mapping_cb(TRUE, ar);
+			break;
 	}
 
-	do_port_mapping_cb(TRUE, ar);
 	return ar;
 }
 
@@ -595,36 +591,34 @@ purple_upnp_remove_port_mapping(unsigned short portmap, const char* protocol,
 	ar->portmap = portmap;
 	g_strlcpy(ar->protocol, protocol, sizeof(ar->protocol));
 
-	/* If we're waiting for a discovery, add to the callbacks list */
-	if(control_info.status == PURPLE_UPNP_STATUS_DISCOVERING) {
-		discovery_callbacks = g_slist_append(
-				discovery_callbacks, do_port_mapping_cb);
-		discovery_callbacks = g_slist_append(
-				discovery_callbacks, ar);
-		return ar;
-	}
+	switch(control_info.status) {
+		case PURPLE_UPNP_STATUS_UNABLE_TO_DISCOVER:
+			if (g_get_monotonic_time() - control_info.lookup_time >
+				300 * G_USEC_PER_SEC) {
+				/* If we haven't had a successful UPnP discovery, check if 5 minutes
+				 * has elapsed since the last try, try again */
+				purple_upnp_discover(do_port_mapping_cb, ar);
+			} else if (cb) {
+				/* Asynchronously trigger a failed response */
+				ar->tima = g_timeout_add(10, fire_port_mapping_failure_cb, ar);
+			} else {
+				/* No need to do anything if nobody expects a response*/
+				g_free(ar);
+				ar = NULL;
+			}
+			break;
 
-	if (control_info.status == PURPLE_UPNP_STATUS_UNDISCOVERED) {
-		purple_upnp_discover(do_port_mapping_cb, ar);
-		return ar;
-	} else if (control_info.status == PURPLE_UPNP_STATUS_UNABLE_TO_DISCOVER) {
-		if (g_get_monotonic_time() - control_info.lookup_time >
-		    300 * G_USEC_PER_SEC) {
-			/* If we haven't had a successful UPnP discovery, check if 5 minutes
-			 * has elapsed since the last try, try again */
+		case PURPLE_UPNP_STATUS_DISCOVERING:
+		case PURPLE_UPNP_STATUS_UNDISCOVERED:
 			purple_upnp_discover(do_port_mapping_cb, ar);
-		} else if (cb) {
-			/* Asynchronously trigger a failed response */
-			ar->tima = g_timeout_add(10, fire_port_mapping_failure_cb, ar);
-		} else {
-			/* No need to do anything if nobody expects a response*/
-			g_free(ar);
-			ar = NULL;
-		}
-		return ar;
+			break;
+
+		case PURPLE_UPNP_STATUS_DISCOVERED:
+		default:
+			do_port_mapping_cb(TRUE, ar);
+			break;
 	}
 
-	do_port_mapping_cb(TRUE, ar);
 	return ar;
 }
 
