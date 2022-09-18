@@ -19,6 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA
  */
 #include <gio/gio.h>
+
+#include <libgupnp/gupnp-context-manager.h>
+#include <libgupnp/gupnp-control-point.h>
+#include <libgupnp/gupnp-service-info.h>
+#include <libgupnp/gupnp-service-proxy.h>
+
 #include <libsoup/soup.h>
 
 #include "upnp.h"
@@ -38,33 +44,8 @@
 /***************************************************************
 ** General Defines                                             *
 ****************************************************************/
-#define HTTP_OK "200 OK"
-#define DEFAULT_HTTP_PORT 80
-#define DISCOVERY_TIMEOUT 1
 /* limit UPnP-triggered http downloads to 128k */
 #define MAX_UPNP_DOWNLOAD (128 * 1024)
-
-/***************************************************************
-** Discovery/Description Defines                               *
-****************************************************************/
-#define NUM_UDP_ATTEMPTS 2
-
-/* Address and port of an SSDP request used for discovery */
-#define HTTPMU_HOST_ADDRESS "239.255.255.250"
-#define HTTPMU_HOST_PORT 1900
-
-#define SEARCH_REQUEST_DEVICE "urn:schemas-upnp-org:service:%s"
-
-#define SEARCH_REQUEST_STRING \
-	"M-SEARCH * HTTP/1.1\r\n" \
-	"MX: 2\r\n" \
-	"HOST: 239.255.255.250:1900\r\n" \
-	"MAN: \"ssdp:discover\"\r\n" \
-	"ST: urn:schemas-upnp-org:service:%s\r\n" \
-	"\r\n"
-
-#define WAN_IP_CONN_SERVICE "WANIPConnection:1"
-#define WAN_PPP_CONN_SERVICE "WANPPPConnection:1"
 
 /******************************************************************
 ** Action Defines                                                 *
@@ -74,7 +55,7 @@
 	"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" " \
 		"s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n" \
 	  "<s:Body>\r\n" \
-	    "<u:%s xmlns:u=\"urn:schemas-upnp-org:service:%s\">\r\n" \
+	    "<u:%s xmlns:u=\"%s\">\r\n" \
 	      "%s" \
 	    "</u:%s>\r\n" \
 	  "</s:Body>\r\n" \
@@ -111,22 +92,12 @@ typedef enum {
 
 typedef struct {
 	PurpleUPnPStatus status;
-	gchar* control_url;
-	gchar service_type[20];
+	gchar *control_url;
+	gchar *service_type;
 	char publicip[16];
 	char internalip[16];
 	gint64 lookup_time;
 } PurpleUPnPControlInfo;
-
-typedef struct {
-	guint inpa;	/* purple_input_add handle */
-	guint tima;	/* g_timeout_add handle */
-	GSocket *socket;
-	GSocketAddress *server;
-	gchar service_type[20];
-	int retry_count;
-	gchar *full_url;
-} UPnPDiscoveryData;
 
 struct _PurpleUPnPMappingAddRemove
 {
@@ -144,11 +115,10 @@ static PurpleUPnPControlInfo control_info = {
 	PURPLE_UPNP_STATUS_UNDISCOVERED,
 	NULL, "\0", "\0", "\0", 0};
 
+static GUPnPContextManager *manager = NULL;
 static SoupSession *session = NULL;
 static GSList *discovery_callbacks = NULL;
 
-static void purple_upnp_discover_send_broadcast(UPnPDiscoveryData *dd);
-static void lookup_public_ip(void);
 static void lookup_internal_ip(void);
 
 static gboolean
@@ -177,485 +147,144 @@ fire_discovery_callbacks(gboolean success)
 	}
 }
 
-static gboolean
-purple_upnp_compare_device(const PurpleXmlNode* device, const gchar* deviceType)
+static void
+upnp_service_proxy_call_action_cb(GObject *source, GAsyncResult *result,
+                                  G_GNUC_UNUSED gpointer data)
 {
-	PurpleXmlNode* deviceTypeNode = purple_xmlnode_get_child(device, "deviceType");
-	char *tmp;
-	gboolean ret;
+	GError *error = NULL;
+	char *ip = NULL;
+	GUPnPServiceProxyAction *action = NULL;
 
-	if(deviceTypeNode == NULL) {
-		return FALSE;
-	}
+	action = gupnp_service_proxy_call_action_finish(GUPNP_SERVICE_PROXY(source),
+	                                                result, &error);
+	if (error != NULL) {
+		control_info.publicip[0] = '\0';
 
-	tmp = purple_xmlnode_get_data(deviceTypeNode);
-	ret = !g_ascii_strcasecmp(tmp, deviceType);
-	g_free(tmp);
-
-	return ret;
-}
-
-static gboolean
-purple_upnp_compare_service(const PurpleXmlNode* service, const gchar* serviceType)
-{
-	PurpleXmlNode* serviceTypeNode;
-	char *tmp;
-	gboolean ret;
-
-	if(service == NULL) {
-		return FALSE;
-	}
-
-	serviceTypeNode = purple_xmlnode_get_child(service, "serviceType");
-
-	if(serviceTypeNode == NULL) {
-		return FALSE;
-	}
-
-	tmp = purple_xmlnode_get_data(serviceTypeNode);
-	ret = !g_ascii_strcasecmp(tmp, serviceType);
-	g_free(tmp);
-
-	return ret;
-}
-
-static gchar*
-purple_upnp_parse_description_response(const gchar* httpResponse, gsize len,
-	const gchar* httpURL, const gchar* serviceType)
-{
-	gchar *baseURL, *controlURL, *service;
-	PurpleXmlNode *xmlRootNode, *serviceTypeNode, *controlURLNode, *baseURLNode;
-	char *tmp;
-
-	/* create the xml root node */
-	if ((xmlRootNode = purple_xmlnode_from_str(httpResponse, len)) == NULL) {
 		purple_debug_error("upnp",
-			"parse_description_response(): Could not parse xml root node\n");
-		return NULL;
+		                   "Failed to call GetExternalIPAddress action: %s",
+		                   error->message);
+		g_error_free(error);
+		return;
 	}
 
-	/* get the baseURL of the device */
-	baseURL = NULL;
-	if((baseURLNode = purple_xmlnode_get_child(xmlRootNode, "URLBase")) != NULL) {
-		baseURL = purple_xmlnode_get_data(baseURLNode);
-	}
-	/* fixes upnp-descriptions with empty urlbase-element */
-	if(baseURL == NULL){
-		baseURL = g_strdup(httpURL);
-	}
+	gupnp_service_proxy_action_get_result(action, &error,
+	                                      "NewExternalIPAddress",
+	                                      G_TYPE_STRING, &ip, NULL);
+	if (error == NULL) {
+		g_strlcpy(control_info.publicip, ip, sizeof(control_info.publicip));
 
-	/* get the serviceType child that has the service type as its data */
-
-	/* get urn:schemas-upnp-org:device:InternetGatewayDevice:1 and its devicelist */
-	serviceTypeNode = purple_xmlnode_get_child(xmlRootNode, "device");
-	while(!purple_upnp_compare_device(serviceTypeNode,
-			"urn:schemas-upnp-org:device:InternetGatewayDevice:1") &&
-			serviceTypeNode != NULL) {
-		serviceTypeNode = purple_xmlnode_get_next_twin(serviceTypeNode);
-	}
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 1\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-	serviceTypeNode = purple_xmlnode_get_child(serviceTypeNode, "deviceList");
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 2\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-
-	/* get urn:schemas-upnp-org:device:WANDevice:1 and its devicelist */
-	serviceTypeNode = purple_xmlnode_get_child(serviceTypeNode, "device");
-	while(!purple_upnp_compare_device(serviceTypeNode,
-			"urn:schemas-upnp-org:device:WANDevice:1") &&
-			serviceTypeNode != NULL) {
-		serviceTypeNode = purple_xmlnode_get_next_twin(serviceTypeNode);
-	}
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 3\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-	serviceTypeNode = purple_xmlnode_get_child(serviceTypeNode, "deviceList");
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 4\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-
-	/* get urn:schemas-upnp-org:device:WANConnectionDevice:1 and its servicelist */
-	serviceTypeNode = purple_xmlnode_get_child(serviceTypeNode, "device");
-	while(serviceTypeNode && !purple_upnp_compare_device(serviceTypeNode,
-			"urn:schemas-upnp-org:device:WANConnectionDevice:1")) {
-		serviceTypeNode = purple_xmlnode_get_next_twin(serviceTypeNode);
-	}
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 5\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-	serviceTypeNode = purple_xmlnode_get_child(serviceTypeNode, "serviceList");
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 6\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-
-	/* get the serviceType variable passed to this function */
-	service = g_strdup_printf(SEARCH_REQUEST_DEVICE, serviceType);
-	serviceTypeNode = purple_xmlnode_get_child(serviceTypeNode, "service");
-	while(!purple_upnp_compare_service(serviceTypeNode, service) &&
-			serviceTypeNode != NULL) {
-		serviceTypeNode = purple_xmlnode_get_next_twin(serviceTypeNode);
-	}
-
-	g_free(service);
-	if(serviceTypeNode == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): could not get serviceTypeNode 7\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-
-	/* get the controlURL of the service */
-	if((controlURLNode = purple_xmlnode_get_child(serviceTypeNode,
-			"controlURL")) == NULL) {
-		purple_debug_error("upnp",
-			"parse_description_response(): Could not find controlURL\n");
-		g_free(baseURL);
-		purple_xmlnode_free(xmlRootNode);
-		return NULL;
-	}
-
-	tmp = purple_xmlnode_get_data(controlURLNode);
-	if (baseURL && !g_str_has_prefix(tmp, "http://") &&
-	    !g_str_has_prefix(tmp, "HTTP://")) {
-		/* Handle absolute paths in a relative URL.  This probably
-		 * belongs in util.c. */
-		if (tmp[0] == '/') {
-			size_t length;
-			const char *path, *start = strstr(baseURL, "://");
-			start = start ? start + 3 : baseURL;
-			path = strchr(start, '/');
-			length = path ? (gsize)(path - baseURL) : strlen(baseURL);
-			controlURL = g_strdup_printf("%.*s%s", (int)length, baseURL, tmp);
-		} else {
-			controlURL = g_strdup_printf("%s%s", baseURL, tmp);
-		}
-		g_free(tmp);
+		purple_debug_info("upnp", "NAT Returned IP: %s", control_info.publicip);
+		g_free(ip);
 	} else {
-		controlURL = tmp;
-	}
-	g_free(baseURL);
-	purple_xmlnode_free(xmlRootNode);
+		control_info.publicip[0] = '\0';
 
-	return controlURL;
+		purple_debug_error("upnp",
+		                   "Failed to get result from GetExternalIPAddress: %s",
+		                   error->message);
+		g_error_free(error);
+	}
+
+	gupnp_service_proxy_action_unref(action);
 }
 
 static void
-upnp_parse_description_cb(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
-                          gpointer _dd)
+upnp_service_proxy_available_cb(G_GNUC_UNUSED GUPnPControlPoint *cp,
+                                GUPnPServiceProxy *proxy,
+                                G_GNUC_UNUSED gpointer data)
 {
-	UPnPDiscoveryData *dd = _dd;
 	gchar *control_url = NULL;
+	const gchar *service_type = NULL;
 
-	if (msg && SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(msg))) {
-		control_url = purple_upnp_parse_description_response(
-		        msg->response_body->data, msg->response_body->length,
-		        dd->full_url, dd->service_type);
-	}
+	control_url = gupnp_service_info_get_control_url(GUPNP_SERVICE_INFO(proxy));
+	service_type = gupnp_service_info_get_service_type(GUPNP_SERVICE_INFO(proxy));
+	purple_debug_info("upnp",
+	                  "Service proxy available for %s on control URL %s",
+	                  service_type,
+	                  control_url);
 
-	g_free(dd->full_url);
-
-	if(control_url == NULL) {
-		purple_debug_error("upnp",
-			"purple_upnp_parse_description(): control URL is NULL\n");
-	}
-
-	control_info.status = control_url ? PURPLE_UPNP_STATUS_DISCOVERED
-		: PURPLE_UPNP_STATUS_UNABLE_TO_DISCOVER;
 	control_info.lookup_time = g_get_monotonic_time();
 	control_info.control_url = control_url;
-	g_strlcpy(control_info.service_type, dd->service_type,
-		sizeof(control_info.service_type));
+	control_info.service_type = g_strdup(service_type);
 
-	fire_discovery_callbacks(control_url != NULL);
+	if(control_url) {
+		GUPnPServiceProxyAction *action = NULL;
 
-	/* Look up the public and internal IPs */
-	if(control_url != NULL) {
-		lookup_public_ip();
+		control_info.status = PURPLE_UPNP_STATUS_DISCOVERED;
+		fire_discovery_callbacks(TRUE);
+
 		lookup_internal_ip();
-	}
-
-	if (dd->inpa > 0) {
-		g_source_remove(dd->inpa);
-		dd->inpa = 0;
-	}
-	if (dd->tima > 0) {
-		g_source_remove(dd->tima);
-		dd->tima = 0;
-	}
-
-	g_clear_object(&dd->socket);
-	g_clear_object(&dd->server);
-	g_free(dd);
-}
-
-static void
-purple_upnp_parse_description(const gchar* descriptionURL, UPnPDiscoveryData *dd)
-{
-	SoupMessage *msg;
-	gchar *host;
-	gint port;
-
-	/* Remove the timeout because everything it is waiting for has
-	 * successfully completed */
-	g_source_remove(dd->tima);
-	dd->tima = 0;
-
-	/* Extract base url out of the descriptionURL.
-	 * Example description URL: http://192.168.1.1:5678/rootDesc.xml
-	 */
-	if (!g_uri_split_network(descriptionURL, G_URI_FLAGS_NONE, NULL, &host,
-	                         &port, NULL))
-	{
-		upnp_parse_description_cb(NULL, NULL, dd);
-		return;
-	}
-	dd->full_url = g_strdup_printf("http://%s:%d", host, port);
-	g_free(host);
-
-	msg = soup_message_new("GET", descriptionURL);
-	// purple_http_request_set_max_len(msg, MAX_UPNP_DOWNLOAD);
-	soup_session_queue_message(session, msg, upnp_parse_description_cb, dd);
-}
-
-static void
-purple_upnp_parse_discover_response(const gchar* buf, unsigned int buf_len,
-	UPnPDiscoveryData *dd)
-{
-	gchar* startDescURL;
-	gchar* endDescURL;
-	gchar* descURL;
-
-	if(g_strstr_len(buf, buf_len, HTTP_OK) == NULL) {
-		purple_debug_error("upnp",
-			"parse_discover_response(): Failed In HTTP_OK\n");
-		return;
-	}
-
-	if((startDescURL = g_strstr_len(buf, buf_len, "http://")) == NULL) {
-		purple_debug_error("upnp",
-			"parse_discover_response(): Failed In finding http://\n");
-		return;
-	}
-
-	endDescURL = g_strstr_len(startDescURL, buf_len - (startDescURL - buf),
-			"\r");
-	if(endDescURL == NULL) {
-		endDescURL = g_strstr_len(startDescURL,
-				buf_len - (startDescURL - buf), "\n");
-		if(endDescURL == NULL) {
-			purple_debug_error("upnp",
-				"parse_discover_response(): Failed In endDescURL\n");
-			return;
-		}
-	}
-
-	/* XXX: I'm not sure how this could ever happen */
-	if(endDescURL == startDescURL) {
-		purple_debug_error("upnp",
-			"parse_discover_response(): endDescURL == startDescURL\n");
-		return;
-	}
-
-	descURL = g_strndup(startDescURL, endDescURL - startDescURL);
-
-	purple_upnp_parse_description(descURL, dd);
-
-	g_free(descURL);
-
-}
-
-static gboolean
-purple_upnp_discover_timeout(gpointer data)
-{
-	UPnPDiscoveryData* dd = data;
-
-	if (dd->inpa > 0) {
-		g_source_remove(dd->inpa);
-		dd->inpa = 0;
-	}
-	if (dd->tima > 0) {
-		g_source_remove(dd->tima);
-		dd->tima = 0;
-	}
-
-	if (dd->retry_count < NUM_UDP_ATTEMPTS) {
-		/* TODO: We probably shouldn't be incrementing retry_count in two places */
-		dd->retry_count++;
-		purple_upnp_discover_send_broadcast(dd);
+		action = gupnp_service_proxy_action_new("GetExternalIPAddress", NULL);
+		gupnp_service_proxy_call_action_async(proxy, action, NULL,
+		                                      upnp_service_proxy_call_action_cb,
+		                                      NULL);
 	} else {
 		control_info.status = PURPLE_UPNP_STATUS_UNABLE_TO_DISCOVER;
-		control_info.lookup_time = g_get_monotonic_time();
-		control_info.service_type[0] = '\0';
-		g_free(control_info.control_url);
-		control_info.control_url = NULL;
-
 		fire_discovery_callbacks(FALSE);
-
-		g_clear_object(&dd->socket);
-		g_clear_object(&dd->server);
-		g_free(dd);
 	}
-
-	return FALSE;
 }
 
 static void
-purple_upnp_discover_udp_read(GSocket *socket, GIOCondition condition,
-                              gpointer data)
+upnp_context_unavailable_cb(G_GNUC_UNUSED GUPnPContextManager *manager,
+                            GUPnPContext *context, G_GNUC_UNUSED gpointer data)
 {
-	UPnPDiscoveryData *dd = data;
-	gchar buf[65536];
-	gssize len;
+	purple_debug_info("upnp",
+	                  "UPnP context no longer available for interface %s",
+	                  gssdp_client_get_interface(GSSDP_CLIENT(context)));
 
-	len = g_socket_receive(dd->socket, buf, sizeof(buf) - 1, NULL, NULL);
-	if (len >= 0) {
-		buf[len] = '\0';
-	} else {
-		/* We'll either get called again, or time out */
-		return;
-	}
-
-	g_source_remove(dd->inpa);
-	dd->inpa = 0;
-
-	/* parse the response, and see if it was a success */
-	purple_upnp_parse_discover_response(buf, len, dd);
-
-	/* We'll either time out or continue successfully */
+	/* Delete these to prevent them owning refs back on the context. */
+	g_object_set_data(G_OBJECT(context), "WANIPConnection", NULL);
+	g_object_set_data(G_OBJECT(context), "WANPPPConnection", NULL);
 }
 
 static void
-purple_upnp_discover_send_broadcast(UPnPDiscoveryData *dd)
+upnp_context_available_cb(G_GNUC_UNUSED GUPnPContextManager *manager,
+                          GUPnPContext *context, G_GNUC_UNUSED gpointer data)
 {
-	gchar *sendMessage = NULL;
-	size_t totalSize;
-	gboolean sentSuccess;
-	GError *error = NULL;
+	GUPnPControlPoint *cp;
 
-	/* because we are sending over UDP, if there is a failure
-	   we should retry the send NUM_UDP_ATTEMPTS times. Also,
-	   try different requests for WANIPConnection and WANPPPConnection*/
-	for(; dd->retry_count < NUM_UDP_ATTEMPTS; dd->retry_count++) {
-		sentSuccess = FALSE;
+	purple_debug_info("upnp", "UPnP context now available for interface %s",
+	                  gssdp_client_get_interface(GSSDP_CLIENT(context)));
 
-		if((dd->retry_count % 2) == 0) {
-			g_strlcpy(dd->service_type, WAN_IP_CONN_SERVICE, sizeof(dd->service_type));
-		} else {
-			g_strlcpy(dd->service_type, WAN_PPP_CONN_SERVICE, sizeof(dd->service_type));
-		}
+	cp = gupnp_control_point_new(context,
+	                             "urn:schemas-upnp-org:service:WANIPConnection:1");
+	g_signal_connect(cp, "service-proxy-available",
+	                 G_CALLBACK(upnp_service_proxy_available_cb), NULL);
+	gssdp_resource_browser_set_active(GSSDP_RESOURCE_BROWSER(cp), TRUE);
+	g_object_set_data_full(G_OBJECT(context), "WANIPConnection", cp,
+	                       g_object_unref);
 
-		sendMessage = g_strdup_printf(SEARCH_REQUEST_STRING, dd->service_type);
-
-		totalSize = strlen(sendMessage);
-
-		do {
-			gssize sent;
-			g_clear_error(&error);
-			sent = g_socket_send_to(dd->socket, dd->server, sendMessage,
-			                        totalSize, NULL, &error);
-			if (sent >= 0 && (gsize)sent == totalSize) {
-				sentSuccess = TRUE;
-				break;
-			}
-		} while (error != NULL && error->code == G_IO_ERROR_WOULD_BLOCK);
-
-		g_clear_error(&error);
-		g_free(sendMessage);
-
-		if(sentSuccess) {
-			GSource *source;
-			source = g_socket_create_source(dd->socket, G_IO_IN, NULL);
-			g_source_set_callback(source,
-			                      G_SOURCE_FUNC(purple_upnp_discover_udp_read),
-			                      dd, NULL);
-			dd->inpa = g_source_attach(source, NULL);
-			g_source_unref(source);
-			dd->tima = g_timeout_add_seconds(DISCOVERY_TIMEOUT,
-			                                 purple_upnp_discover_timeout, dd);
-			return;
-		}
-	}
-
-	/* We have already done all our retries. Make sure that the callback
-	 * doesn't get called before the original function returns */
-	dd->tima = g_timeout_add(10, purple_upnp_discover_timeout, dd);
+	cp = gupnp_control_point_new(context,
+	                             "urn:schemas-upnp-org:service:WANPPPConnection:1");
+	g_signal_connect(cp, "service-proxy-available",
+	                 G_CALLBACK(upnp_service_proxy_available_cb), NULL);
+	gssdp_resource_browser_set_active(GSSDP_RESOURCE_BROWSER(cp), TRUE);
+	g_object_set_data_full(G_OBJECT(context), "WANPPPConnection", cp,
+	                       g_object_unref);
 }
 
 void
 purple_upnp_discover(PurpleUPnPCallback cb, gpointer cb_data)
 {
-	/* Socket Setup Variables */
-	GSocket *socket;
-	GError *error = NULL;
-
-	/* UDP RECEIVE VARIABLES */
-	UPnPDiscoveryData *dd;
-
-	if (control_info.status == PURPLE_UPNP_STATUS_DISCOVERING) {
-		if (cb) {
-			discovery_callbacks = g_slist_append(
-					discovery_callbacks, cb);
-			discovery_callbacks = g_slist_append(
-					discovery_callbacks, cb_data);
-		}
-		return;
-	}
-
-	dd = g_new0(UPnPDiscoveryData, 1);
 	if (cb) {
 		discovery_callbacks = g_slist_append(discovery_callbacks, cb);
-		discovery_callbacks = g_slist_append(discovery_callbacks,
-				cb_data);
+		discovery_callbacks = g_slist_append(discovery_callbacks, cb_data);
 	}
 
-	/* Set up the sockets */
-	dd->socket = socket =
-	        g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM,
-	                     G_SOCKET_PROTOCOL_DEFAULT, &error);
-	if (socket == NULL) {
-		purple_debug_error(
-		        "upnp", "purple_upnp_discover(): Failed in sock creation: %s",
-		        error->message);
-		g_error_free(error);
-		/* Short circuit the retry attempts */
-		dd->retry_count = NUM_UDP_ATTEMPTS;
-		dd->tima = g_timeout_add(10, purple_upnp_discover_timeout, dd);
+	if (control_info.status == PURPLE_UPNP_STATUS_DISCOVERING) {
 		return;
 	}
 
-	dd->server = g_inet_socket_address_new_from_string(HTTPMU_HOST_ADDRESS,
-	                                                   HTTPMU_HOST_PORT);
+	purple_debug_info("upnp",
+	                  "Starting discovery on all available interfaces");
+
+	g_clear_object(&manager);
+	manager = gupnp_context_manager_create(0);
+	g_signal_connect(manager, "context-available",
+	                 G_CALLBACK(upnp_context_available_cb), NULL);
+	g_signal_connect(manager, "context-unavailable",
+	                 G_CALLBACK(upnp_context_unavailable_cb), NULL);
 
 	control_info.status = PURPLE_UPNP_STATUS_DISCOVERING;
-
-	purple_upnp_discover_send_broadcast(dd);
 }
 
 static SoupMessage *
@@ -674,8 +303,7 @@ purple_upnp_generate_action_message_and_send(const gchar *actionName,
 
 	msg = soup_message_new("POST", control_info.control_url);
 	// purple_http_request_set_max_len(msg, MAX_UPNP_DOWNLOAD);
-	action = g_strdup_printf("\"urn:schemas-upnp-org:service:%s#%s\"",
-	                         control_info.service_type, actionName);
+	action = g_strdup_printf("\"%s#%s\"", control_info.service_type, actionName);
 	soup_message_headers_replace(soup_message_get_request_headers(msg),
 	                             "SOAPAction", action);
 	g_free(action);
@@ -702,52 +330,6 @@ purple_upnp_get_public_ip()
 	}
 
 	return NULL;
-}
-
-static void
-looked_up_public_ip_cb(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
-                       gpointer user_data)
-{
-	gchar* temp, *temp2;
-	const gchar *got_data;
-	size_t got_len;
-
-	if (!SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(msg))) {
-		return;
-	}
-
-	/* extract the ip, or see if there is an error */
-	got_data = msg->response_body->data;
-	got_len = msg->response_body->length;
-	if((temp = g_strstr_len(got_data, got_len,
-			"<NewExternalIPAddress")) == NULL) {
-		purple_debug_error("upnp",
-			"looked_up_public_ip_cb(): Failed Finding <NewExternalIPAddress\n");
-		return;
-	}
-	if(!(temp = g_strstr_len(temp, got_len - (temp - got_data), ">"))) {
-		purple_debug_error("upnp",
-			"looked_up_public_ip_cb(): Failed In Finding >\n");
-		return;
-	}
-	if(!(temp2 = g_strstr_len(temp, got_len - (temp - got_data), "<"))) {
-		purple_debug_error("upnp",
-			"looked_up_public_ip_cb(): Failed In Finding <\n");
-		return;
-	}
-	*temp2 = '\0';
-
-	g_strlcpy(control_info.publicip, temp + 1,
-			sizeof(control_info.publicip));
-
-	purple_debug_info("upnp", "NAT Returned IP: %s\n", control_info.publicip);
-}
-
-static void
-lookup_public_ip()
-{
-	purple_upnp_generate_action_message_and_send("GetExternalIPAddress", "",
-			looked_up_public_ip_cb, NULL);
 }
 
 /* TODO: This could be exported */
@@ -815,7 +397,7 @@ looked_up_internal_ip_cb(GObject *source, GAsyncResult *result,
 }
 
 static void
-lookup_internal_ip()
+lookup_internal_ip(void)
 {
 	gchar *host;
 	gint port;
@@ -1051,9 +633,8 @@ purple_upnp_network_config_changed_cb(GNetworkMonitor *monitor, gboolean availab
 {
 	/* Reset the control_info to default values */
 	control_info.status = PURPLE_UPNP_STATUS_UNDISCOVERED;
-	g_free(control_info.control_url);
-	control_info.control_url = NULL;
-	control_info.service_type[0] = '\0';
+	g_clear_pointer(&control_info.control_url, g_free);
+	g_clear_pointer(&control_info.service_type, g_free);
 	control_info.publicip[0] = '\0';
 	control_info.internalip[0] = '\0';
 	control_info.lookup_time = 0;
@@ -1075,4 +656,8 @@ purple_upnp_uninit(void)
 {
 	soup_session_abort(session);
 	g_clear_object(&session);
+
+	g_clear_pointer(&control_info.control_url, g_free);
+	g_clear_pointer(&control_info.service_type, g_free);
+	g_clear_object(&manager);
 }
