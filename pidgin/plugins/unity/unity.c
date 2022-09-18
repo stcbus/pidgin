@@ -150,7 +150,7 @@ alert(PurpleConversation *conv)
 {
 	gint count;
 	PidginConversation *gtkconv = NULL;
-	PidginConversationWindow *convwin = NULL;
+	PidginDisplayWindow *displaywin = NULL;
 	GtkRoot *root = NULL;
 	GtkWidget *win = NULL;
 
@@ -160,10 +160,10 @@ alert(PurpleConversation *conv)
 	gtkconv = PIDGIN_CONVERSATION(conv);
 	root = gtk_widget_get_root(gtkconv->tab_cont);
 	win = GTK_WIDGET(root);
-	convwin = PIDGIN_CONVERSATION_WINDOW(win);
+	displaywin = PIDGIN_DISPLAY_WINDOW(win);
 
 	if (!gtk_widget_has_focus(win) ||
-		!pidgin_conversation_window_conversation_is_selected(convwin, conv))
+		!pidgin_display_window_conversation_is_selected(displaywin, conv))
 	{
 		count = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(conv),
 				"unity-message-count"));
@@ -289,15 +289,15 @@ message_source_activated(MessagingMenuApp *app, const gchar *id,
 	if (conv) {
 		GtkRoot *root = NULL;
 		GtkWidget *win = NULL;
-		PidginConversationWindow *convwin = NULL;
+		PidginDisplayWindow *displaywin = NULL;
 
 		root = gtk_widget_get_root(PIDGIN_CONVERSATION(conv)->tab_cont);
 		win = GTK_WIDGET(root);
-		convwin = PIDGIN_CONVERSATION_WINDOW(win);
+		displaywin = PIDGIN_DISPLAY_WINDOW(win);
 
 		unalert(conv);
 
-		pidgin_conversation_window_select(convwin, conv);
+		pidgin_display_window_select(displaywin, conv);
 
 		gtk_root_set_focus(root, PIDGIN_CONVERSATION(conv)->entry);
 	}

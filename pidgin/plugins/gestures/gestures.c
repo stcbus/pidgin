@@ -58,7 +58,7 @@ stroke_prev_tab(GtkWidget *widget, void *data)
 	gtkconv = PIDGIN_CONVERSATION(conv);
 	win = gtk_widget_get_toplevel(gtkconv->tab_cont);
 
-	pidgin_conversation_window_select_previous(PIDGIN_CONVERSATION_WINDOW(win));
+	pidgin_display_window_select_previous(PIDGIN_DISPLAY_WINDOW(win));
 }
 
 static void
@@ -72,7 +72,7 @@ stroke_next_tab(GtkWidget *widget, void *data)
 	gtkconv = PIDGIN_CONVERSATION(conv);
 	win = gtk_widget_get_toplevel(gtkconv->tab_cont);
 
-	pidgin_conversation_window_select_next(PIDGIN_CONVERSATION_WINDOW(win));
+	pidgin_display_window_select_next(PIDGIN_DISPLAY_WINDOW(win));
 }
 
 static void
@@ -84,15 +84,15 @@ stroke_new_win(GtkWidget *widget, void *data)
 	conv    = (PurpleConversation *)data;
 	old_win = gtk_widget_get_parent(PIDGIN_CONVERSATION(conv)->tab_cont);
 
-	if(pidgin_conversation_window_get_count(PIDGIN_CONVERSATION_WINDOW(old_win)) <= 1) {
+	if(pidgin_display_window_get_count(PIDGIN_DISPLAY_WINDOW(old_win)) <= 1) {
 		return;
 	}
 
-	new_win = pidgin_conversation_window_new();
+	new_win = pidgin_display_window_new();
 
-	pidgin_conversation_window_remove(PIDGIN_CONVERSATION_WINDOW(old_win),
+	pidgin_display_window_remove(PIDGIN_DISPLAY_WINDOW(old_win),
 	                                  conv);
-	pidgin_conversation_window_add(PIDGIN_CONVERSATION_WINDOW(new_win), conv);
+	pidgin_display_window_add(PIDGIN_DISPLAY_WINDOW(new_win), conv);
 
 	gtk_widget_show_all(new_win);
 }

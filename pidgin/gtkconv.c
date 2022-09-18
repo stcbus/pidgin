@@ -1745,7 +1745,7 @@ pidgin_conv_destroy(PurpleConversation *conv)
 	}
 
 	win = gtk_widget_get_root(gtkconv->tab_cont);
-	pidgin_conversation_window_remove(PIDGIN_CONVERSATION_WINDOW(win), conv);
+	pidgin_display_window_remove(PIDGIN_DISPLAY_WINDOW(win), conv);
 
 	/* If the "Save Conversation" or "Save Icon" dialogs are open then close them */
 	purple_request_close_with_handle(gtkconv);
@@ -2012,9 +2012,9 @@ pidgin_conv_has_focus(PurpleConversation *conv)
 
 	win = gtk_widget_get_root(gtkconv->tab_cont);
 	if(gtk_window_is_active(GTK_WINDOW(win))) {
-		PidginConversationWindow *convwin = PIDGIN_CONVERSATION_WINDOW(win);
+		PidginDisplayWindow *displaywin = PIDGIN_DISPLAY_WINDOW(win);
 
-		if(pidgin_conversation_window_conversation_is_selected(convwin, conv)) {
+		if(pidgin_display_window_conversation_is_selected(displaywin, conv)) {
 			return TRUE;
 		}
 	}
@@ -2026,7 +2026,7 @@ static void
 pidgin_conv_update_fields(PurpleConversation *conv, PidginConvFields fields)
 {
 	PidginConversation *gtkconv;
-	PidginConversationWindow *convwin;
+	PidginDisplayWindow *displaywin;
 	GtkRoot *win;
 
 	gtkconv = PIDGIN_CONVERSATION(conv);
@@ -2034,7 +2034,7 @@ pidgin_conv_update_fields(PurpleConversation *conv, PidginConvFields fields)
 		return;
 
 	win = gtk_widget_get_root(gtkconv->tab_cont);
-	convwin = PIDGIN_CONVERSATION_WINDOW(win);
+	displaywin = PIDGIN_DISPLAY_WINDOW(win);
 
 	if (fields & PIDGIN_CONV_SET_TITLE)
 	{
@@ -2110,7 +2110,7 @@ pidgin_conv_update_fields(PurpleConversation *conv, PidginConvFields fields)
 		if (title != markup)
 			g_free(markup);
 
-		if (pidgin_conversation_window_conversation_is_selected(convwin, conv)) {
+		if (pidgin_display_window_conversation_is_selected(displaywin, conv)) {
 			const char* current_title = gtk_window_get_title(GTK_WINDOW(win));
 			if (current_title == NULL || !purple_strequal(current_title, title)) {
 				gtk_window_set_title(GTK_WINDOW(win), title);
@@ -2743,10 +2743,10 @@ pidgin_conversations_uninit(void)
 static void
 pidgin_conv_placement_place(PidginConversation *conv) {
 	GtkWidget *window = NULL;
-	PidginConversationWindow *conv_window = NULL;
+	PidginDisplayWindow *display_window = NULL;
 
-	window = pidgin_conversation_window_get_default();
-	conv_window = PIDGIN_CONVERSATION_WINDOW(window);
+	window = pidgin_display_window_get_default();
+	display_window = PIDGIN_DISPLAY_WINDOW(window);
 
-	pidgin_conversation_window_add(conv_window, conv->active_conv);
+	pidgin_display_window_add(display_window, conv->active_conv);
 }

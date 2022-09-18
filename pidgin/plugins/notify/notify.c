@@ -208,7 +208,7 @@ static void
 unnotify(PurpleConversation *conv, gboolean reset)
 {
 	PurpleConversation *active_conv = NULL;
-	PidginConversationWindow *purplewin = NULL;
+	PidginDisplayWindow *displaywin = NULL;
 	GtkWidget *win;
 
 	g_return_if_fail(conv != NULL);
@@ -216,9 +216,9 @@ unnotify(PurpleConversation *conv, gboolean reset)
 		return;
 
 	win = gtk_widget_get_toplevel(PIDGIN_CONVERSATION(conv)->tab_cont);
-	purplewin = PIDGIN_CONVERSATION_WINDOW(win);
+	displaywin = PIDGIN_DISPLAY_WINDOW(win);
 
-	activate_conv = pidgin_conversation_window_get_selected(purplewin);
+	activate_conv = pidgin_display_window_get_selected(purplewin);
 
 	/* reset the conversation window title */
 	purple_conversation_autoset_title(active_conv);

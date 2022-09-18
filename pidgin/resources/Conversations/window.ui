@@ -36,14 +36,14 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
       <column type="gchararray"/>
     </columns>
   </object>
-  <template class="PidginConversationWindow" parent="GtkApplicationWindow">
+  <template class="PidginDisplayWindow" parent="GtkApplicationWindow">
     <property name="show-menubar">1</property>
     <property name="default-height">450</property>
     <property name="default-width">950</property>
     <child>
       <object class="GtkEventControllerKey">
         <property name="propagation-phase">capture</property>
-        <signal name="key-pressed" handler="pidgin_conversation_window_key_pressed_cb"/>
+        <signal name="key-pressed" handler="pidgin_display_window_key_pressed_cb"/>
       </object>
     </child>
     <child>
@@ -79,7 +79,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
                         <child internal-child="selection">
                           <object class="GtkTreeSelection" id="selection">
                             <property name="mode">browse</property>
-                            <signal name="changed" handler="pidgin_conversation_window_selection_changed" object="PidginConversationWindow" swapped="no"/>
+                            <signal name="changed" handler="pidgin_display_window_selection_changed" object="PidginDisplayWindow" swapped="no"/>
                           </object>
                         </child>
                         <child>

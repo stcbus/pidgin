@@ -893,7 +893,7 @@ pidgin_application_startup(GApplication *application) {
 
 static void
 pidgin_application_activate(GApplication *application) {
-	GtkWidget *convwin = pidgin_conversation_window_get_default();
+	GtkWidget *convwin = pidgin_display_window_get_default();
 
 	if(GTK_IS_WINDOW(convwin)) {
 		gtk_window_present(GTK_WINDOW(convwin));

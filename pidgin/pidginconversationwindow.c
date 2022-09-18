@@ -30,10 +30,10 @@
 #include "pidgininvitedialog.h"
 
 enum {
-	PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT,
-	PIDGIN_CONVERSATION_WINDOW_COLUMN_NAME,
-	PIDGIN_CONVERSATION_WINDOW_COLUMN_ICON,
-	PIDGIN_CONVERSATION_WINDOW_COLUMN_MARKUP,
+	PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT,
+	PIDGIN_DISPLAY_WINDOW_COLUMN_NAME,
+	PIDGIN_DISPLAY_WINDOW_COLUMN_ICON,
+	PIDGIN_DISPLAY_WINDOW_COLUMN_MARKUP,
 };
 
 enum {
@@ -42,7 +42,7 @@ enum {
 };
 static guint signals[N_SIGNALS] = {0, };
 
-struct _PidginConversationWindow {
+struct _PidginDisplayWindow {
 	GtkApplicationWindow parent;
 
 	GtkWidget *vbox;
@@ -58,7 +58,7 @@ struct _PidginConversationWindow {
 	GtkTreePath *conversation_path;
 };
 
-G_DEFINE_TYPE(PidginConversationWindow, pidgin_conversation_window,
+G_DEFINE_TYPE(PidginDisplayWindow, pidgin_display_window,
               GTK_TYPE_APPLICATION_WINDOW)
 
 static GtkWidget *default_window = NULL;
@@ -67,9 +67,9 @@ static GtkWidget *default_window = NULL;
  * Helpers
  *****************************************************************************/
 static void
-pidgin_conversation_window_actions_set_enabled(GActionMap *map,
-                                               const gchar **actions,
-                                               gboolean enabled)
+pidgin_display_window_actions_set_enabled(GActionMap *map,
+                                          const gchar **actions,
+                                          gboolean enabled)
 {
 	gint i = 0;
 
@@ -90,8 +90,8 @@ pidgin_conversation_window_actions_set_enabled(GActionMap *map,
  * Callbacks
  *****************************************************************************/
 static void
-pidgin_conversation_window_invite_cb(GtkDialog *dialog, gint response_id,
-                                     G_GNUC_UNUSED gpointer data)
+pidgin_display_window_invite_cb(GtkDialog *dialog, gint response_id,
+                                G_GNUC_UNUSED gpointer data)
 {
 	PidginInviteDialog *invite_dialog = PIDGIN_INVITE_DIALOG(dialog);
 	PurpleChatConversation *chat = NULL;
@@ -123,14 +123,14 @@ pidgin_conversation_window_invite_cb(GtkDialog *dialog, gint response_id,
  * Actions
  *****************************************************************************/
 static void
-pidgin_conversation_window_alias(G_GNUC_UNUSED GSimpleAction *simple,
-                                 G_GNUC_UNUSED GVariant *parameter,
-                                 gpointer data)
+pidgin_display_window_alias(G_GNUC_UNUSED GSimpleAction *simple,
+                            G_GNUC_UNUSED GVariant *parameter,
+                            gpointer data)
 {
-	PidginConversationWindow *window = data;
+	PidginDisplayWindow *window = data;
 	PurpleConversation *selected = NULL;
 
-	selected = pidgin_conversation_window_get_selected(window);
+	selected = pidgin_display_window_get_selected(window);
 	if(PURPLE_IS_CONVERSATION(selected)) {
 		PurpleAccount *account;
 		const gchar *name;
@@ -155,29 +155,29 @@ pidgin_conversation_window_alias(G_GNUC_UNUSED GSimpleAction *simple,
 }
 
 static void
-pidgin_conversation_window_close_conversation(G_GNUC_UNUSED GSimpleAction *simple,
-                                              G_GNUC_UNUSED GVariant *parameter,
-                                              gpointer data)
+pidgin_display_window_close_conversation(G_GNUC_UNUSED GSimpleAction *simple,
+                                         G_GNUC_UNUSED GVariant *parameter,
+                                         gpointer data)
 {
-	PidginConversationWindow *window = data;
+	PidginDisplayWindow *window = data;
 	PurpleConversation *selected = NULL;
 
-	selected = pidgin_conversation_window_get_selected(window);
+	selected = pidgin_display_window_get_selected(window);
 	if(PURPLE_IS_CONVERSATION(selected)) {
-		pidgin_conversation_window_remove(window, selected);
+		pidgin_display_window_remove(window, selected);
 		pidgin_conversation_detach(selected);
 	}
 }
 
 static void
-pidgin_conversation_window_get_info(G_GNUC_UNUSED GSimpleAction *simple,
-                                    G_GNUC_UNUSED GVariant *parameter,
-                                    gpointer data)
+pidgin_display_window_get_info(G_GNUC_UNUSED GSimpleAction *simple,
+                               G_GNUC_UNUSED GVariant *parameter,
+                               gpointer data)
 {
-	PidginConversationWindow *window = data;
+	PidginDisplayWindow *window = data;
 	PurpleConversation *selected = NULL;
 
-	selected = pidgin_conversation_window_get_selected(window);
+	selected = pidgin_display_window_get_selected(window);
 	if(PURPLE_IS_CONVERSATION(selected)) {
 		if(PURPLE_IS_IM_CONVERSATION(selected)) {
 			PurpleConnection *connection = NULL;
@@ -190,14 +190,14 @@ pidgin_conversation_window_get_info(G_GNUC_UNUSED GSimpleAction *simple,
 }
 
 static void
-pidgin_conversation_window_invite(G_GNUC_UNUSED GSimpleAction *simple,
-                                  G_GNUC_UNUSED GVariant *parameter,
-                                  gpointer data)
+pidgin_display_window_invite(G_GNUC_UNUSED GSimpleAction *simple,
+                             G_GNUC_UNUSED GVariant *parameter,
+                             gpointer data)
 {
-	PidginConversationWindow *window = data;
+	PidginDisplayWindow *window = data;
 	PurpleConversation *selected = NULL;
 
-	selected = pidgin_conversation_window_get_selected(window);
+	selected = pidgin_display_window_get_selected(window);
 	if(PURPLE_IS_CHAT_CONVERSATION(selected)) {
 		GtkWidget *invite_dialog = NULL;
 
@@ -214,7 +214,7 @@ pidgin_conversation_window_invite(G_GNUC_UNUSED GSimpleAction *simple,
 			gtk_window_set_destroy_with_parent(GTK_WINDOW(invite_dialog), TRUE);
 
 			g_signal_connect(invite_dialog, "response",
-			                 G_CALLBACK(pidgin_conversation_window_invite_cb),
+			                 G_CALLBACK(pidgin_display_window_invite_cb),
 			                 NULL);
 		}
 
@@ -223,14 +223,14 @@ pidgin_conversation_window_invite(G_GNUC_UNUSED GSimpleAction *simple,
 }
 
 static void
-pidgin_conversation_window_send_file(G_GNUC_UNUSED GSimpleAction *simple,
-                                     G_GNUC_UNUSED GVariant *parameter,
-                                     gpointer data)
+pidgin_display_window_send_file(G_GNUC_UNUSED GSimpleAction *simple,
+                                G_GNUC_UNUSED GVariant *parameter,
+                                gpointer data)
 {
-	PidginConversationWindow *window = data;
+	PidginDisplayWindow *window = data;
 	PurpleConversation *selected = NULL;
 
-	selected = pidgin_conversation_window_get_selected(window);
+	selected = pidgin_display_window_get_selected(window);
 	if(PURPLE_IS_IM_CONVERSATION(selected)) {
 		PurpleConnection *connection = NULL;
 
@@ -244,40 +244,40 @@ pidgin_conversation_window_send_file(G_GNUC_UNUSED GSimpleAction *simple,
 static GActionEntry win_entries[] = {
 	{
 		.name = "alias",
-		.activate = pidgin_conversation_window_alias
+		.activate = pidgin_display_window_alias
 	}, {
 		.name = "close",
-		.activate = pidgin_conversation_window_close_conversation
+		.activate = pidgin_display_window_close_conversation
 	}, {
 		.name = "get-info",
-		.activate = pidgin_conversation_window_get_info
+		.activate = pidgin_display_window_get_info
 	}, {
 		.name = "invite",
-		.activate = pidgin_conversation_window_invite
+		.activate = pidgin_display_window_invite
 	}, {
 		.name = "send-file",
-		.activate = pidgin_conversation_window_send_file
+		.activate = pidgin_display_window_send_file
 	}
 };
 
 /*<private>
- * pidgin_conversation_window_conversation_actions:
+ * pidgin_display_window_conversation_actions:
  *
  * A list of action names that are only valid if a conversation is selected.
  */
-static const gchar *pidgin_conversation_window_conversation_actions[] = {
+static const gchar *pidgin_display_window_conversation_actions[] = {
 	"alias",
 	"close",
 	"get-info",
 	NULL
 };
 
-static const gchar *pidgin_conversation_window_im_conversation_actions[] = {
+static const gchar *pidgin_display_window_im_conversation_actions[] = {
 	"send-file",
 	NULL
 };
 
-static const gchar *pidgin_conversation_window_chat_conversation_actions[] = {
+static const gchar *pidgin_display_window_chat_conversation_actions[] = {
 	"invite",
 	NULL
 };
@@ -286,10 +286,10 @@ static const gchar *pidgin_conversation_window_chat_conversation_actions[] = {
  * Callbacks
  *****************************************************************************/
 static void
-pidgin_conversation_window_selection_changed(GtkTreeSelection *selection,
-                                             gpointer data)
+pidgin_display_window_selection_changed(GtkTreeSelection *selection,
+                                        gpointer data)
 {
-	PidginConversationWindow *window = PIDGIN_CONVERSATION_WINDOW(data);
+	PidginDisplayWindow *window = PIDGIN_DISPLAY_WINDOW(data);
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iter;
 	gboolean changed = FALSE;
@@ -301,8 +301,8 @@ pidgin_conversation_window_selection_changed(GtkTreeSelection *selection,
 		gchar *name = NULL;
 
 		gtk_tree_model_get(model, &iter,
-		                   PIDGIN_CONVERSATION_WINDOW_COLUMN_NAME, &name,
-		                   PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT, &obj,
+		                   PIDGIN_DISPLAY_WINDOW_COLUMN_NAME, &name,
+		                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, &obj,
 		                   -1);
 
 		gtk_stack_set_visible_child_name(GTK_STACK(window->stack), name);
@@ -314,24 +314,24 @@ pidgin_conversation_window_selection_changed(GtkTreeSelection *selection,
 		 * actions.
 		 */
 		is_conversation = PURPLE_IS_CONVERSATION(obj);
-		pidgin_conversation_window_actions_set_enabled(G_ACTION_MAP(window),
-							       pidgin_conversation_window_conversation_actions,
+		pidgin_display_window_actions_set_enabled(G_ACTION_MAP(window),
+							       pidgin_display_window_conversation_actions,
 							       is_conversation);
 
 		/* If an IM is selected, enable the IM-specific actions otherwise
 		 * disable them.
 		 */
 		im_selected = PURPLE_IS_IM_CONVERSATION(obj);
-		pidgin_conversation_window_actions_set_enabled(G_ACTION_MAP(window),
-							       pidgin_conversation_window_im_conversation_actions,
+		pidgin_display_window_actions_set_enabled(G_ACTION_MAP(window),
+							       pidgin_display_window_im_conversation_actions,
 							       im_selected);
 
 		/* If a chat is selected, enable the chat-specific actions otherwise
 		 * disable them.
 		 */
 		chat_selected = PURPLE_IS_CHAT_CONVERSATION(obj);
-		pidgin_conversation_window_actions_set_enabled(G_ACTION_MAP(window),
-							       pidgin_conversation_window_chat_conversation_actions,
+		pidgin_display_window_actions_set_enabled(G_ACTION_MAP(window),
+							       pidgin_display_window_chat_conversation_actions,
 							       chat_selected);
 
 		g_clear_object(&obj);
@@ -343,13 +343,13 @@ pidgin_conversation_window_selection_changed(GtkTreeSelection *selection,
 }
 
 static gboolean
-pidgin_conversation_window_key_pressed_cb(GtkEventControllerKey *controller,
-                                          guint keyval,
-                                          G_GNUC_UNUSED guint keycode,
-                                          GdkModifierType state,
-                                          gpointer data)
+pidgin_display_window_key_pressed_cb(GtkEventControllerKey *controller,
+                                     guint keyval,
+                                     G_GNUC_UNUSED guint keycode,
+                                     GdkModifierType state,
+                                     gpointer data)
 {
-	PidginConversationWindow *window = data;
+	PidginDisplayWindow *window = data;
 
 	/* If CTRL was held down... */
 	if (state & GDK_CONTROL_MASK) {
@@ -357,14 +357,14 @@ pidgin_conversation_window_key_pressed_cb(GtkEventControllerKey *controller,
 			case GDK_KEY_Page_Down:
 			case GDK_KEY_KP_Page_Down:
 			case ']':
-				pidgin_conversation_window_select_next(window);
+				pidgin_display_window_select_next(window);
 				return TRUE;
 				break;
 
 			case GDK_KEY_Page_Up:
 			case GDK_KEY_KP_Page_Up:
 			case '[':
-				pidgin_conversation_window_select_previous(window);
+				pidgin_display_window_select_previous(window);
 				return TRUE;
 				break;
 		} /* End of switch */
@@ -374,7 +374,7 @@ pidgin_conversation_window_key_pressed_cb(GtkEventControllerKey *controller,
 	else if (state & GDK_ALT_MASK) {
 		if ('1' <= keyval && keyval <= '9') {
 			guint switchto = keyval - '1';
-			pidgin_conversation_window_select_nth(window, switchto);
+			pidgin_display_window_select_nth(window, switchto);
 
 			return TRUE;
 		}
@@ -387,8 +387,8 @@ pidgin_conversation_window_key_pressed_cb(GtkEventControllerKey *controller,
  * GObjectImplementation
  *****************************************************************************/
 static void
-pidgin_conversation_window_dispose(GObject *obj) {
-	PidginConversationWindow *window = PIDGIN_CONVERSATION_WINDOW(obj);
+pidgin_display_window_dispose(GObject *obj) {
+	PidginDisplayWindow *window = PIDGIN_DISPLAY_WINDOW(obj);
 
 	if(GTK_IS_TREE_MODEL(window->model)) {
 		GtkTreeModel *model = GTK_TREE_MODEL(window->model);
@@ -405,7 +405,7 @@ pidgin_conversation_window_dispose(GObject *obj) {
 				PurpleConversation *conversation = NULL;
 
 				gtk_tree_model_get(model, &iter,
-				                   PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT, &conversation,
+				                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, &conversation,
 				                   -1);
 
 				if(PURPLE_IS_CONVERSATION(conversation)) {
@@ -419,11 +419,11 @@ pidgin_conversation_window_dispose(GObject *obj) {
 		g_clear_pointer(&window->conversation_path, gtk_tree_path_free);
 	}
 
-	G_OBJECT_CLASS(pidgin_conversation_window_parent_class)->dispose(obj);
+	G_OBJECT_CLASS(pidgin_display_window_parent_class)->dispose(obj);
 }
 
 static void
-pidgin_conversation_window_init(PidginConversationWindow *window) {
+pidgin_display_window_init(PidginDisplayWindow *window) {
 	GtkEventController *key = NULL;
 	GtkTreeIter iter;
 
@@ -438,22 +438,22 @@ pidgin_conversation_window_init(PidginConversationWindow *window) {
 	key = gtk_event_controller_key_new();
 	gtk_event_controller_set_propagation_phase(key, GTK_PHASE_CAPTURE);
 	g_signal_connect(G_OBJECT(key), "key-pressed",
-	                 G_CALLBACK(pidgin_conversation_window_key_pressed_cb),
+	                 G_CALLBACK(pidgin_display_window_key_pressed_cb),
 	                 window);
 	gtk_widget_add_controller(GTK_WIDGET(window), key);
 
 	/* Add our toplevels to the tree store. */
 	gtk_tree_store_append(window->model, &iter, NULL);
 	gtk_tree_store_set(window->model, &iter,
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT, window->notification_list,
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_NAME, "__notifications__",
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_MARKUP, _("Notifications"),
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, window->notification_list,
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_NAME, "__notifications__",
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_MARKUP, _("Notifications"),
 	                   -1);
 
 	gtk_tree_store_append(window->model, &iter, NULL);
 	gtk_tree_store_set(window->model, &iter,
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_MARKUP, _("Conversations"),
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_NAME, "__conversations__",
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_MARKUP, _("Conversations"),
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_NAME, "__conversations__",
 	                   -1);
 	gtk_tree_selection_select_iter(window->selection, &iter);
 	window->conversation_path = gtk_tree_model_get_path(GTK_TREE_MODEL(window->model),
@@ -461,14 +461,14 @@ pidgin_conversation_window_init(PidginConversationWindow *window) {
 }
 
 static void
-pidgin_conversation_window_class_init(PidginConversationWindowClass *klass) {
+pidgin_display_window_class_init(PidginDisplayWindowClass *klass) {
 	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
-	obj_class->dispose = pidgin_conversation_window_dispose;
+	obj_class->dispose = pidgin_display_window_dispose;
 
 	/**
-	 * PidginConversationWindow::conversation-switched:
+	 * PidginDisplayWindow::conversation-switched:
 	 * @window: The conversation window.
 	 * @new_conv: The now active conversation.
 	 *
@@ -492,35 +492,35 @@ pidgin_conversation_window_class_init(PidginConversationWindowClass *klass) {
 	    "/im/pidgin/Pidgin3/Conversations/window.ui"
 	);
 
-	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     vbox);
 
-	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     model);
-	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     view);
-	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     selection);
 
-	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     stack);
-	gtk_widget_class_bind_template_child(widget_class, PidginConversationWindow,
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     notification_list);
 
 	gtk_widget_class_bind_template_callback(widget_class,
-	                                        pidgin_conversation_window_selection_changed);
+	                                        pidgin_display_window_selection_changed);
 
 	gtk_widget_class_bind_template_callback(widget_class,
-	                                        pidgin_conversation_window_key_pressed_cb);
+	                                        pidgin_display_window_key_pressed_cb);
 }
 
 /******************************************************************************
  * API
  *****************************************************************************/
 GtkWidget *
-pidgin_conversation_window_get_default(void) {
+pidgin_display_window_get_default(void) {
 	if(!GTK_IS_WIDGET(default_window)) {
-		default_window = pidgin_conversation_window_new();
+		default_window = pidgin_display_window_new();
 		g_object_add_weak_pointer(G_OBJECT(default_window),
 		                          (gpointer)&default_window);
 	}
@@ -529,16 +529,16 @@ pidgin_conversation_window_get_default(void) {
 }
 
 GtkWidget *
-pidgin_conversation_window_new(void) {
+pidgin_display_window_new(void) {
 	return g_object_new(
-		PIDGIN_TYPE_CONVERSATION_WINDOW,
+		PIDGIN_TYPE_DISPLAY_WINDOW,
 		"show-menubar", TRUE,
 		NULL);
 }
 
 void
-pidgin_conversation_window_add(PidginConversationWindow *window,
-                               PurpleConversation *conversation)
+pidgin_display_window_add(PidginDisplayWindow *window,
+                          PurpleConversation *conversation)
 {
 	PidginConversation *gtkconv = NULL;
 	GtkTreeIter parent, iter;
@@ -546,7 +546,7 @@ pidgin_conversation_window_add(PidginConversationWindow *window,
 	const gchar *markup = NULL;
 	gboolean expand = FALSE;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 	g_return_if_fail(PURPLE_IS_CONVERSATION(conversation));
 
 	model = GTK_TREE_MODEL(window->model);
@@ -582,9 +582,9 @@ pidgin_conversation_window_add(PidginConversationWindow *window,
 
 	gtk_tree_store_prepend(window->model, &iter, &parent);
 	gtk_tree_store_set(window->model, &iter,
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT, conversation,
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_NAME, markup,
-	                   PIDGIN_CONVERSATION_WINDOW_COLUMN_MARKUP, markup,
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, conversation,
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_NAME, markup,
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_MARKUP, markup,
 	                   -1);
 
 	/* If we just added the first child, expand the parent. */
@@ -600,14 +600,14 @@ pidgin_conversation_window_add(PidginConversationWindow *window,
 }
 
 void
-pidgin_conversation_window_remove(PidginConversationWindow *window,
-                                  PurpleConversation *conversation)
+pidgin_display_window_remove(PidginDisplayWindow *window,
+                             PurpleConversation *conversation)
 {
 	GtkTreeIter parent, iter;
 	GtkTreeModel *model = NULL;
 	GObject *obj = NULL;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 	g_return_if_fail(PURPLE_IS_CONVERSATION(conversation));
 
 	model = GTK_TREE_MODEL(window->model);
@@ -624,7 +624,7 @@ pidgin_conversation_window_remove(PidginConversationWindow *window,
 
 	do {
 		gtk_tree_model_get(model, &iter,
-		                   PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT, &obj,
+		                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, &obj,
 		                   -1);
 
 		if(PURPLE_CONVERSATION(obj) == conversation) {
@@ -650,11 +650,11 @@ pidgin_conversation_window_remove(PidginConversationWindow *window,
 }
 
 guint
-pidgin_conversation_window_get_count(PidginConversationWindow *window) {
+pidgin_display_window_get_count(PidginDisplayWindow *window) {
 	GtkSelectionModel *model = NULL;
 	guint count = 0;
 
-	g_return_val_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window), 0);
+	g_return_val_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window), 0);
 
 	model = gtk_stack_get_pages(GTK_STACK(window->stack));
 
@@ -666,18 +666,18 @@ pidgin_conversation_window_get_count(PidginConversationWindow *window) {
 }
 
 PurpleConversation *
-pidgin_conversation_window_get_selected(PidginConversationWindow *window) {
+pidgin_display_window_get_selected(PidginDisplayWindow *window) {
 	PurpleConversation *conversation = NULL;
 	GtkTreeSelection *selection = NULL;
 	GtkTreeIter iter;
 
-	g_return_val_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window), NULL);
+	g_return_val_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window), NULL);
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(window->view));
 	if(gtk_tree_selection_get_selected(selection, NULL, &iter)) {
 
 		gtk_tree_model_get(GTK_TREE_MODEL(window->model), &iter,
-		                   PIDGIN_CONVERSATION_WINDOW_COLUMN_OBJECT, &conversation,
+		                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, &conversation,
 		                   -1);
 	}
 
@@ -685,12 +685,12 @@ pidgin_conversation_window_get_selected(PidginConversationWindow *window) {
 }
 
 void
-pidgin_conversation_window_select(PidginConversationWindow *window,
-                                  PurpleConversation *conversation)
+pidgin_display_window_select(PidginDisplayWindow *window,
+                             PurpleConversation *conversation)
 {
 	const gchar *name = NULL;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 	g_return_if_fail(PURPLE_IS_CONVERSATION(conversation));
 
 	name = purple_conversation_get_name(conversation);
@@ -698,13 +698,13 @@ pidgin_conversation_window_select(PidginConversationWindow *window,
 }
 
 void
-pidgin_conversation_window_select_previous(PidginConversationWindow *window) {
+pidgin_display_window_select_previous(PidginDisplayWindow *window) {
 	GtkTreeIter iter;
 	GtkTreeModel *model = NULL;
 	GtkTreeSelection *selection = NULL;
 	gboolean set = FALSE;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 
 	model = GTK_TREE_MODEL(window->model);
 
@@ -717,19 +717,19 @@ pidgin_conversation_window_select_previous(PidginConversationWindow *window) {
 	}
 
 	if(!set) {
-		pidgin_conversation_window_select_last(window);
+		pidgin_display_window_select_last(window);
 	}
 }
 
 
 void
-pidgin_conversation_window_select_next(PidginConversationWindow *window) {
+pidgin_display_window_select_next(PidginDisplayWindow *window) {
 	GtkTreeIter iter;
 	GtkTreeModel *model = NULL;
 	GtkTreeSelection *selection = NULL;
 	gboolean set = FALSE;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 
 	model = GTK_TREE_MODEL(window->model);
 
@@ -742,16 +742,16 @@ pidgin_conversation_window_select_next(PidginConversationWindow *window) {
 	}
 
 	if(!set) {
-		pidgin_conversation_window_select_first(window);
+		pidgin_display_window_select_first(window);
 	}
 }
 
 void
-pidgin_conversation_window_select_first(PidginConversationWindow *window) {
+pidgin_display_window_select_first(PidginDisplayWindow *window) {
 	GtkTreeIter iter;
 	GtkTreeModel *model = NULL;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 
 	model = GTK_TREE_MODEL(window->model);
 
@@ -764,12 +764,12 @@ pidgin_conversation_window_select_first(PidginConversationWindow *window) {
 }
 
 void
-pidgin_conversation_window_select_last(PidginConversationWindow *window) {
+pidgin_display_window_select_last(PidginDisplayWindow *window) {
 	GtkTreeIter iter;
 	GtkTreeModel *model = NULL;
 	gint count = 0;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 
 	model = GTK_TREE_MODEL(window->model);
 	count = gtk_tree_model_iter_n_children(model, NULL);
@@ -783,13 +783,13 @@ pidgin_conversation_window_select_last(PidginConversationWindow *window) {
 }
 
 void
-pidgin_conversation_window_select_nth(PidginConversationWindow *window,
-                                      guint nth)
+pidgin_display_window_select_nth(PidginDisplayWindow *window,
+                                 guint nth)
 {
 	GtkTreeIter iter;
 	GtkTreeModel *model = NULL;
 
-	g_return_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window));
+	g_return_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window));
 
 	model = GTK_TREE_MODEL(window->model);
 
@@ -802,12 +802,12 @@ pidgin_conversation_window_select_nth(PidginConversationWindow *window,
 }
 
 gboolean
-pidgin_conversation_window_conversation_is_selected(PidginConversationWindow *window,
-                                                    PurpleConversation *conversation)
+pidgin_display_window_conversation_is_selected(PidginDisplayWindow *window,
+                                               PurpleConversation *conversation)
 {
 	const gchar *name = NULL, *visible = NULL;
 
-	g_return_val_if_fail(PIDGIN_IS_CONVERSATION_WINDOW(window), FALSE);
+	g_return_val_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window), FALSE);
 	g_return_val_if_fail(PURPLE_IS_CONVERSATION(conversation), FALSE);
 
 	name = purple_conversation_get_name(conversation);

@@ -168,7 +168,7 @@ static void
 conversation_delete_cb(G_GNUC_UNUSED GtkApplication *application,
                        GtkWindow *window, G_GNUC_UNUSED gpointer data)
 {
-	if(!PIDGIN_IS_CONVERSATION_WINDOW(window)) {
+	if(!PIDGIN_IS_DISPLAY_WINDOW(window)) {
 		return;
 	}
 
@@ -273,7 +273,7 @@ static void remove_convs_wintrans(gboolean remove_signal) {
 	for(; wins; wins = wins->next) {
 		GtkWidget *window = wins->data;
 
-		if(!PIDGIN_IS_CONVERSATION_WINDOW(window)) {
+		if(!PIDGIN_IS_DISPLAY_WINDOW(window)) {
 			continue;
 		}
 
@@ -316,7 +316,7 @@ static void update_convs_wintrans(GtkWidget *toggle_btn, const char *pref) {
 		for(; wins; wins = wins->next) {
 			GtkWidget *win = wins->data;
 
-			if(!PIDGIN_IS_CONVERSATION_WINDOW(win)) {
+			if(!PIDGIN_IS_DISPLAY_WINDOW(win)) {
 				continue;
 			}
 
@@ -335,7 +335,7 @@ static void
 new_conversation_cb(G_GNUC_UNUSED GtkApplication *application,
                     GtkWindow *window, G_GNUC_UNUSED gpointer data)
 {
-	if(!PIDGIN_IS_CONVERSATION_WINDOW(window)) {
+	if(!PIDGIN_IS_DISPLAY_WINDOW(window)) {
 		return;
 	}
 
@@ -378,7 +378,7 @@ static void alpha_change(GtkWidget *w, gpointer data) {
 	for(; wins; wins = wins->next) {
 		GtkWidget *window = wins->data;
 
-		if(!PIDGIN_IS_CONVERSATION_WINDOW(window)) {
+		if(!PIDGIN_IS_DISPLAY_WINDOW(window)) {
 			continue;
 		}
 
@@ -416,7 +416,7 @@ update_existing_convs(void) {
 	for(; wins; wins = wins->next) {
 		GtkWidget *window = wins->data;
 
-		if(!PIDGIN_IS_CONVERSATION_WINDOW(window)) {
+		if(!PIDGIN_IS_DISPLAY_WINDOW(window)) {
 			continue;
 		}
 

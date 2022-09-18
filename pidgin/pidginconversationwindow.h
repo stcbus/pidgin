@@ -24,8 +24,8 @@
 # error "only <pidgin.h> may be included directly"
 #endif
 
-#ifndef PIDGIN_CONVERSATION_WINDOW_H
-#define PIDGIN_CONVERSATION_WINDOW_H
+#ifndef PIDGIN_DISPLAY_WINDOW_H
+#define PIDGIN_DISPLAY_WINDOW_H
 
 #include <glib.h>
 
@@ -36,40 +36,40 @@
 G_BEGIN_DECLS
 
 /**
- * PidginConversationWindow:
+ * PidginDisplayWindow:
  *
- * #PidginConversationWindow is a widget that contains #PidginConversations.
+ * #PidginDisplayWindow is a widget that contains #PidginConversations.
  *
  * Since: 3.0.0
  */
 
-#define PIDGIN_TYPE_CONVERSATION_WINDOW (pidgin_conversation_window_get_type())
-G_DECLARE_FINAL_TYPE(PidginConversationWindow, pidgin_conversation_window,
-                     PIDGIN, CONVERSATION_WINDOW, GtkApplicationWindow)
+#define PIDGIN_TYPE_DISPLAY_WINDOW (pidgin_display_window_get_type())
+G_DECLARE_FINAL_TYPE(PidginDisplayWindow, pidgin_display_window,
+                     PIDGIN, DISPLAY_WINDOW, GtkApplicationWindow)
 
 /**
- * pidgin_conversation_window_new:
+ * pidgin_display_window_new:
  *
- * Creates a new #PidginConversationWindow instance.
+ * Creates a new #PidginDisplayWindow instance.
  *
- * Returns: (transfer full): The new #PidginConversationWindow instance.
+ * Returns: (transfer full): The new #PidginDisplayWindow instance.
  */
-GtkWidget *pidgin_conversation_window_new(void);
+GtkWidget *pidgin_display_window_new(void);
 
 /**
- * pidgin_conversation_window_get_default:
+ * pidgin_display_window_get_default:
  *
  * Gets or creates the default conversation window.
  *
- * Returns: (transfer none): The default #PidginConversationWindow.
+ * Returns: (transfer none): The default #PidginDisplayWindow.
  *
  * Since: 3.0.0
  */
-GtkWidget *pidgin_conversation_window_get_default(void);
+GtkWidget *pidgin_display_window_get_default(void);
 
 /**
- * pidgin_conversation_window_add:
- * @window: The #PidginConversationWindow instance.
+ * pidgin_display_window_add:
+ * @window: The #PidginDisplayWindow instance.
  * @conversation: The #PurpleConversation to add to @window.
  *
  * Adds @conversation to @window. If @conversation is already in @window, this
@@ -77,11 +77,11 @@ GtkWidget *pidgin_conversation_window_get_default(void);
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_add(PidginConversationWindow *window, PurpleConversation *conversation);
+void pidgin_display_window_add(PidginDisplayWindow *window, PurpleConversation *conversation);
 
 /**
- * pidgin_conversation_window_remove:
- * @window: The #PidginConversationWindow instance.
+ * pidgin_display_window_remove:
+ * @window: The #PidginDisplayWindow instance.
  * @conversation: The #PurpleConversation to remove from @window.
  *
  * Removes @conversation from @window. If @conversation is not in @window, this
@@ -89,10 +89,10 @@ void pidgin_conversation_window_add(PidginConversationWindow *window, PurpleConv
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_remove(PidginConversationWindow *window, PurpleConversation *conversation);
+void pidgin_display_window_remove(PidginDisplayWindow *window, PurpleConversation *conversation);
 
 /**
- * pidgin_conversation_window_get_count:
+ * pidgin_display_window_get_count:
  * @window: The conversation window instance.
  *
  * Gets the number of conversations that @window contains.
@@ -101,10 +101,10 @@ void pidgin_conversation_window_remove(PidginConversationWindow *window, PurpleC
  *
  * Since: 3.0.0
  */
-guint pidgin_conversation_window_get_count(PidginConversationWindow *window);
+guint pidgin_display_window_get_count(PidginDisplayWindow *window);
 
 /**
- * pidgin_conversation_window_get_selected:
+ * pidgin_display_window_get_selected:
  * @window: The conversation window instance.
  *
  * Gets the currently selected PurpleConversation or %NULL if there is no
@@ -114,10 +114,10 @@ guint pidgin_conversation_window_get_count(PidginConversationWindow *window);
  *
  * Since: 3.0.0
  */
-PurpleConversation *pidgin_conversation_window_get_selected(PidginConversationWindow *window);
+PurpleConversation *pidgin_display_window_get_selected(PidginDisplayWindow *window);
 
 /**
- * pidgin_conversation_window_select:
+ * pidgin_display_window_select:
  * @window: The conversation window instance.
  * @conversation: The conversation to select.
  *
@@ -125,10 +125,10 @@ PurpleConversation *pidgin_conversation_window_get_selected(PidginConversationWi
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_select(PidginConversationWindow *window, PurpleConversation *conversation);
+void pidgin_display_window_select(PidginDisplayWindow *window, PurpleConversation *conversation);
 
 /**
- * pidgin_conversation_window_select_previous:
+ * pidgin_display_window_select_previous:
  * @window: The conversation window instance.
  *
  * Switches to the conversation previous to the currently selected
@@ -138,10 +138,10 @@ void pidgin_conversation_window_select(PidginConversationWindow *window, PurpleC
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_select_previous(PidginConversationWindow *window);
+void pidgin_display_window_select_previous(PidginDisplayWindow *window);
 
 /**
- * pidgin_conversation_window_select_next:
+ * pidgin_display_window_select_next:
  * @window: The conversation window instance.
  *
  * Switches to the conversation next of the currently selected conversation.
@@ -150,10 +150,10 @@ void pidgin_conversation_window_select_previous(PidginConversationWindow *window
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_select_next(PidginConversationWindow *window);
+void pidgin_display_window_select_next(PidginDisplayWindow *window);
 
 /**
- * pidgin_conversation_window_select_first:
+ * pidgin_display_window_select_first:
  * @window: The conversation window instance.
  *
  * Selects the first conversation in @window. If there are no conversations in
@@ -161,10 +161,10 @@ void pidgin_conversation_window_select_next(PidginConversationWindow *window);
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_select_first(PidginConversationWindow *window);
+void pidgin_display_window_select_first(PidginDisplayWindow *window);
 
 /**
- * pidgin_conversation_window_select_last:
+ * pidgin_display_window_select_last:
  * @window: The conversation window instance.
  *
  * Selects the last conversation in @window. If there are no conversations in
@@ -172,10 +172,10 @@ void pidgin_conversation_window_select_first(PidginConversationWindow *window);
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_select_last(PidginConversationWindow *window);
+void pidgin_display_window_select_last(PidginDisplayWindow *window);
 
 /**
- * pidgin_conversation_window_select_nth:
+ * pidgin_display_window_select_nth:
  * @window: The conversation window instance.
  * @nth: The index of the conversation to switch to.
  *
@@ -184,10 +184,10 @@ void pidgin_conversation_window_select_last(PidginConversationWindow *window);
  *
  * Since: 3.0.0
  */
-void pidgin_conversation_window_select_nth(PidginConversationWindow *window, guint nth);
+void pidgin_display_window_select_nth(PidginDisplayWindow *window, guint nth);
 
 /**
- * pidgin_conversation_window_conversation_is_selected:
+ * pidgin_display_window_conversation_is_selected:
  * @window: The conversation window instance.
  * @conversation: The conversation instance.
  *
@@ -197,8 +197,8 @@ void pidgin_conversation_window_select_nth(PidginConversationWindow *window, gui
  *
  * Since: 3.0.0
  */
-gboolean pidgin_conversation_window_conversation_is_selected(PidginConversationWindow *window, PurpleConversation *conversation);
+gboolean pidgin_display_window_conversation_is_selected(PidginDisplayWindow *window, PurpleConversation *conversation);
 
 G_END_DECLS
 
-#endif /* PIDGIN_CONVERSATION_WINDOW_H */
+#endif /* PIDGIN_DISPLAY_WINDOW_H */
