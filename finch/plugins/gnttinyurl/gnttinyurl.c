@@ -21,9 +21,9 @@
 #include <glib.h>
 #include <libsoup/soup.h>
 
-#define PREFS_BASE          "/plugins/gnt/tinyurl"
-#define PREF_LENGTH  PREFS_BASE "/length"
-#define PREF_URL  PREFS_BASE "/url"
+#define PREFS_SCHEMA "im.pidgin.Finch.plugin.TinyURL"
+#define PREF_LENGTH "length"
+#define PREF_URL "url"
 
 #include <purple.h>
 
@@ -235,6 +235,8 @@ static gboolean writing_msg(PurpleConversation *conv, PurpleMessage *msg, gpoint
 	GString *t;
 	GList *iter, *urls, *next;
 	int c = 0;
+	GSettings *settings = NULL;
+	gint min_url_length;
 
 	if (purple_message_get_flags(msg) & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_INVISIBLE))
 		return FALSE;
@@ -245,10 +247,15 @@ static gboolean writing_msg(PurpleConversation *conv, PurpleMessage *msg, gpoint
 	if (!urls)
 		return FALSE;
 
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+	min_url_length = g_settings_get_int(settings, PREF_LENGTH);
+	g_object_unref(settings);
+
 	t = g_string_new(g_strdup(purple_message_get_contents(msg)));
 	for (iter = urls; iter; iter = next) {
 		next = iter->next;
-		if (g_utf8_strlen((char *)iter->data, -1) >= purple_prefs_get_int(PREF_LENGTH)) {
+		if (g_utf8_strlen((char *)iter->data, -1) >= min_url_length) {
 			int pos, x = 0;
 			gchar *j, *s, *str, *orig;
 			glong len = g_utf8_strlen(iter->data, -1);
@@ -300,6 +307,13 @@ process_urls(PurpleConversation *conv, GList *urls)
 	int c;
 	FinchConv *fconv = FINCH_CONV(conv);
 	GntTextView *tv = GNT_TEXT_VIEW(fconv->tv);
+	GSettings *settings = NULL;
+	gchar *tinyurl_prefix = NULL;
+
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+	tinyurl_prefix = g_settings_get_string(settings, PREF_URL);
+	g_object_unref(settings);
 
 	for (iter = urls, c = 1; iter; iter = iter->next, c++) {
 		int i;
@@ -329,9 +343,11 @@ process_urls(PurpleConversation *conv, GList *urls)
 		cbdata->tag = g_strdup_printf("%s%d", "tiny_", tag_num++);
 		cbdata->conv = conv;
 		if (g_ascii_strncasecmp(original_url, "http://", 7) && g_ascii_strncasecmp(original_url, "https://", 8)) {
-			url = g_strdup_printf("%shttp%%3A%%2F%%2F%s", purple_prefs_get_string(PREF_URL), purple_url_encode(original_url));
+			url = g_strdup_printf("%shttp%%3A%%2F%%2F%s", tinyurl_prefix,
+			                      purple_url_encode(original_url));
 		} else {
-			url = g_strdup_printf("%s%s", purple_prefs_get_string(PREF_URL), purple_url_encode(original_url));
+			url = g_strdup_printf("%s%s", tinyurl_prefix,
+			                      purple_url_encode(original_url));
 		}
 		msg = soup_message_new("GET", url);
 		soup_session_queue_message(session, msg, url_fetched, cbdata);
@@ -343,6 +359,7 @@ process_urls(PurpleConversation *conv, GList *urls)
 		g_free(url);
 	}
 	g_list_free(urls);
+	g_free(tinyurl_prefix);
 }
 
 static void
@@ -400,6 +417,8 @@ tinyurl_notify_uri(const char *uri)
 	GntWidget *win;
 	SoupMessage *msg;
 	const gchar *tiny_url;
+	GSettings *settings = NULL;
+	gchar *tinyurl_prefix = NULL;
 
 	/* XXX: The following expects that finch_notify_message gets called. This
 	 * may not always happen, e.g. when another plugin sets its own
@@ -415,13 +434,20 @@ tinyurl_notify_uri(const char *uri)
 		return win;
 	}
 
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+	tinyurl_prefix = g_settings_get_string(settings, PREF_URL);
+	g_object_unref(settings);
+
 	if (g_ascii_strncasecmp(uri, "http://", 7) && g_ascii_strncasecmp(uri, "https://", 8)) {
-		fullurl = g_strdup_printf("%shttp%%3A%%2F%%2F%s",
-				purple_prefs_get_string(PREF_URL), purple_url_encode(uri));
+		fullurl = g_strdup_printf("%shttp%%3A%%2F%%2F%s", tinyurl_prefix,
+		                          purple_url_encode(uri));
 	} else {
-		fullurl = g_strdup_printf("%s%s", purple_prefs_get_string(PREF_URL),
-				purple_url_encode(uri));
+		fullurl = g_strdup_printf("%s%s", tinyurl_prefix,
+		                          purple_url_encode(uri));
 	}
+
+	g_free(tinyurl_prefix);
 
 	g_object_set_data_full(G_OBJECT(win), "gnttinyurl-original", g_strdup(uri), g_free);
 
@@ -484,10 +510,6 @@ tiny_url_load(GPluginPlugin *plugin, GError **error) {
 	PurpleNotifyUiOps *ops = purple_notify_get_ui_ops();
 
 	session = soup_session_new();
-
-	purple_prefs_add_none(PREFS_BASE);
-	purple_prefs_add_int(PREF_LENGTH, 30);
-	purple_prefs_add_string(PREF_URL, "http://tinyurl.com/api-create.php?url=");
 
 	g_object_set_data(G_OBJECT(plugin), "notify-uri", ops->notify_uri);
 	ops->notify_uri = tinyurl_notify_uri;
