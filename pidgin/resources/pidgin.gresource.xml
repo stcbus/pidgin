@@ -15,10 +15,10 @@
     <file compressed="true">Conversations/infopane.ui</file>
     <file compressed="true">Conversations/invite_dialog.ui</file>
     <file compressed="true">Conversations/tab-label.css</file>
-    <file compressed="true">Conversations/window.ui</file>
     <file compressed="true">Debug/debug.ui</file>
     <file compressed="true">Dialogs/addbuddy.ui</file>
     <file compressed="true">Dialogs/addchat.ui</file>
+    <file compressed="true">Display/window.ui</file>
     <file compressed="true">Keypad/keypad.ui</file>
     <file compressed="true">Media/window.ui</file>
     <file compressed="true">Notifications/addcontact.ui</file>

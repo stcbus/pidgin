@@ -347,9 +347,9 @@ pidgin/pidgin.c
 pidgin/pidgincolor.c
 pidgin/pidgincommands.c
 pidgin/pidgincontactlistwindow.c
-pidgin/pidginconversationwindow.c
 pidgin/pidgindebug.c
 pidgin/pidgindialog.c
+pidgin/pidgindisplaywindow.c
 pidgin/pidginiconname.c
 pidgin/pidgininfopane.c
 pidgin/pidgininvitedialog.c
@@ -398,10 +398,10 @@ pidgin/resources/Avatar/menu.ui
 pidgin/resources/BuddyList/window.ui
 pidgin/resources/Conversations/infopane.ui
 pidgin/resources/Conversations/invite_dialog.ui
-pidgin/resources/Conversations/window.ui
 pidgin/resources/Debug/debug.ui
 pidgin/resources/Dialogs/addbuddy.ui
 pidgin/resources/Dialogs/addchat.ui
+pidgin/resources/Display/window.ui
 pidgin/resources/Keypad/keypad.ui
 pidgin/resources/Media/window.ui
 pidgin/resources/Plugins/dialog.ui
