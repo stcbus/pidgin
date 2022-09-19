@@ -32,7 +32,7 @@ struct _PurpleProtocolManager {
 	GObject parent;
 
 	GHashTable *protocols;
-	GArray *list;
+	GPtrArray *list;
 };
 
 static PurpleProtocolManager *default_manager = NULL;
@@ -57,7 +57,9 @@ purple_protocol_manager_get_item(GListModel *list, guint position) {
 	PurpleProtocolManager *manager = PURPLE_PROTOCOL_MANAGER(list);
 	PurpleProtocol *protocol = NULL;
 
-	protocol = g_array_index(manager->list, PurpleProtocol *, position);
+	if(position < manager->list->len) {
+		protocol = g_ptr_array_index(manager->list, position);
+	}
 	return g_object_ref(protocol);
 }
 
@@ -83,7 +85,7 @@ purple_protocol_manager_finalize(GObject *obj) {
 	manager = PURPLE_PROTOCOL_MANAGER(obj);
 
 	g_clear_pointer(&manager->protocols, g_hash_table_destroy);
-	g_clear_pointer(&manager->list, g_array_unref);
+	g_clear_pointer(&manager->list, g_ptr_array_unref);
 
 	G_OBJECT_CLASS(purple_protocol_manager_parent_class)->finalize(obj);
 }
@@ -92,7 +94,7 @@ static void
 purple_protocol_manager_init(PurpleProtocolManager *manager) {
 	manager->protocols = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
 	                                           g_object_unref);
-	manager->list = g_array_new(FALSE, FALSE, sizeof(PurpleProtocol *));
+	manager->list = g_ptr_array_new();
 }
 
 static void
@@ -186,7 +188,7 @@ purple_protocol_manager_register(PurpleProtocolManager *manager,
 
 	g_hash_table_insert(manager->protocols, g_strdup(id),
 	                    g_object_ref(protocol));
-	g_array_append_val(manager->list, protocol);
+	g_ptr_array_add(manager->list, protocol);
 	g_list_model_items_changed(G_LIST_MODEL(manager), manager->list->len - 1, 0, 1);
 
 	g_signal_emit(G_OBJECT(manager), signals[SIG_REGISTERED], 0, protocol);
@@ -214,12 +216,10 @@ purple_protocol_manager_unregister(PurpleProtocolManager *manager,
 	id = purple_protocol_get_id(protocol);
 
 	if(g_hash_table_remove(manager->protocols, id)) {
-		for(guint i = 0; i < manager->list->len; i++) {
-			if(g_array_index(manager->list, PurpleProtocol *, i) == protocol) {
-				g_array_remove_index(manager->list, i);
-				g_list_model_items_changed(G_LIST_MODEL(manager), i, 1, 0);
-				break;
-			}
+		guint position;
+		if(g_ptr_array_find(manager->list, protocol, &position)) {
+			g_ptr_array_remove_index(manager->list, position);
+			g_list_model_items_changed(G_LIST_MODEL(manager), position, 1, 0);
 		}
 
 		g_signal_emit(G_OBJECT(manager), signals[SIG_UNREGISTERED], 0,
