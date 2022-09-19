@@ -785,6 +785,7 @@ static void ggp_pubdir_set_info_got_token(PurpleConnection *gc,
 	ggp_pubdir_record *record = _record;
 	GGPInfo *info = NULL;
 	SoupMessage *msg;
+	GBytes *body = NULL;
 	gchar *url;
 	gchar *request_data;
 	gchar *name, *surname, *city;
@@ -835,8 +836,11 @@ static void ggp_pubdir_set_info_got_token(PurpleConnection *gc,
 	msg = soup_message_new("PUT", url);
 	soup_message_headers_replace(soup_message_get_request_headers(msg),
 	                             "Authorization", token);
-	soup_message_set_request(msg, "application/x-www-form-urlencoded",
-	                         SOUP_MEMORY_TAKE, request_data, -1);
+	body = g_bytes_new_take(request_data, strlen(request_data));
+	soup_message_set_request_body_from_bytes(msg,
+	                                         "application/x-www-form-urlencoded",
+	                                         body);
+	g_bytes_unref(body);
 	soup_session_queue_message(info->http, msg,
 	                           ggp_pubdir_set_info_got_response, NULL);
 

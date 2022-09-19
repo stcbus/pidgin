@@ -162,6 +162,7 @@ ggp_oauth_request_token_got(SoupSession *session, SoupMessage *msg,
 	PurpleAccount *account;
 	PurpleXmlNode *xml;
 	gchar *request_data;
+	GBytes *body = NULL;
 	gboolean succ = TRUE;
 
 	PURPLE_ASSERT_CONNECTION_IS_VALID(data->gc);
@@ -208,8 +209,11 @@ ggp_oauth_request_token_got(SoupSession *session, SoupMessage *msg,
 	// purple_http_request_set_max_len(msg, GGP_OAUTH_RESPONSE_MAX);
 	/* we don't need any results, nor 302 redirection */
 	soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
-	soup_message_set_request(msg, "application/x-www-form-urlencoded",
-	                         SOUP_MEMORY_TAKE, request_data, -1);
+	body = g_bytes_new_take(request_data, strlen(request_data));
+	soup_message_set_request_body_from_bytes(msg,
+	                                         "application/x-www-form-urlencoded",
+	                                         body);
+	g_bytes_unref(body);
 	soup_session_queue_message(session, msg, ggp_oauth_authorization_done,
 	                           data);
 }

@@ -493,12 +493,15 @@ jabber_bosh_connection_http_request_new(PurpleJabberBOSHConnection *conn,
                                         const GString *data)
 {
 	SoupMessage *req;
+	GBytes *body = NULL;
 
 	jabber_stream_restart_inactivity_timer(conn->js);
 
 	req = soup_message_new("POST", conn->url);
-	soup_message_set_request(req, "text/xml; charset=utf-8", SOUP_MEMORY_TAKE,
-	                         data->str, data->len);
+	body = g_bytes_new_take(data->str, data->len);
+	soup_message_set_request_body_from_bytes(req, "text/xml; charset=utf-8",
+	                                         body);
+	g_bytes_unref(body);
 
 	return req;
 }

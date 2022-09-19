@@ -517,6 +517,7 @@ ggp_edisc_xfer_send_init_authenticated(PurpleConnection *gc, gboolean success,
 	PurpleXfer *xfer = _xfer;
 	GGPXfer *edisc_xfer = GGP_XFER(xfer);
 	gchar *data;
+	GBytes *body = NULL;
 
 	if (purple_xfer_is_cancelled(xfer)) {
 		return;
@@ -544,9 +545,11 @@ ggp_edisc_xfer_send_init_authenticated(PurpleConnection *gc, gboolean success,
 	                       purple_xfer_get_remote_user(xfer),
 	                       edisc_xfer->filename,
 	                       (int)purple_xfer_get_size(xfer));
-	soup_message_set_request(msg,
-	                         "application/x-www-form-urlencoded; charset=UTF-8",
-	                         SOUP_MEMORY_TAKE, data, -1);
+	body = g_bytes_new_take(data, strlen(data));
+	soup_message_set_request_body_from_bytes(msg,
+	                                         "application/x-www-form-urlencoded; charset=UTF-8",
+	                                         body);
+	g_bytes_unref(body);
 
 	soup_session_queue_message(sdata->session, msg,
 	                           ggp_edisc_xfer_send_init_ticket_created, xfer);

@@ -88,6 +88,19 @@ soup_message_new_from_encoded_form(const gchar *method,
 	return msg;
 }
 
+static inline void
+soup_message_set_request_body_from_bytes(SoupMessage *msg,
+                                         const gchar *content_type,
+                                         GBytes *bytes)
+{
+	gconstpointer data = NULL;
+	gsize length = 0;
+
+	data = g_bytes_get_data(bytes, &length);
+	soup_message_set_request(msg, content_type, SOUP_MEMORY_COPY,
+	                         data, length);
+}
+
 #endif /* SOUP_MAJOR_VERSION < 3 */
 
 #endif /* PURPLE_SOUPCOMPAT_H */
