@@ -18,18 +18,17 @@
 
 #include NCURSES_HEADER
 
-#define PREFS_PREFIX          "/plugins/gnt/gntgf"
-#define PREFS_EVENT           PREFS_PREFIX "/events"
-#define PREFS_EVENT_SIGNONF   PREFS_EVENT "/signonf"
-#define PREFS_EVENT_IM_MSG    PREFS_EVENT "/immsg"
-#define PREFS_EVENT_CHAT_MSG  PREFS_EVENT "/chatmsg"
-#define PREFS_EVENT_CHAT_NICK PREFS_EVENT "/chatnick"
-#define PREFS_BEEP            PREFS_PREFIX "/beep"
+#define PREFS_SCHEMA "im.pidgin.Finch.plugin.GntGf"
+#define PREFS_EVENT_SIGN_ON_OFF "event-sign-on-off"
+#define PREFS_EVENT_IM_MSG "event-im-message"
+#define PREFS_EVENT_CHAT_MSG "event-chat-message"
+#define PREFS_EVENT_CHAT_NICK "event-chat-nick"
+#define PREFS_BEEP "beep"
 
 #define MAX_COLS	3
 
 #ifdef HAVE_X11
-#define PREFS_URGENT          PREFS_PREFIX "/urgent"
+#define PREFS_URGENT "urgent"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -148,20 +147,30 @@ notify(PurpleConversation *conv, const char *fmt, ...)
 	char *str;
 	int h, w, i;
 	va_list args;
+	GSettings *settings = NULL;
 
-	if (purple_prefs_get_bool(PREFS_BEEP))
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, PREFS_BEEP)) {
 		beep();
+	}
 
 	if (conv != NULL) {
 		FinchConv *fc = FINCH_CONV(conv);
-		if (gnt_widget_has_focus(fc->window))
+		if (gnt_widget_has_focus(fc->window)) {
+			g_object_unref(settings);
 			return;
+		}
 	}
 
 #ifdef HAVE_X11
-	if (purple_prefs_get_bool(PREFS_URGENT))
+	if(g_settings_get_boolean(settings, PREFS_URGENT)) {
 		urgent();
+	}
 #endif
+
+	g_clear_object(&settings);
 
 	window = gnt_vbox_new(FALSE);
 	gnt_widget_set_transient(window, TRUE);
@@ -213,23 +222,47 @@ notify(PurpleConversation *conv, const char *fmt, ...)
 static void
 buddy_signed_on(PurpleBuddy *buddy, gpointer null)
 {
-	if (purple_prefs_get_bool(PREFS_EVENT_SIGNONF))
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, PREFS_EVENT_SIGN_ON_OFF)) {
 		notify(NULL, _("%s just signed on"), purple_buddy_get_alias(buddy));
+	}
+
+	g_object_unref(settings);
 }
 
 static void
 buddy_signed_off(PurpleBuddy *buddy, gpointer null)
 {
-	if (purple_prefs_get_bool(PREFS_EVENT_SIGNONF))
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, PREFS_EVENT_SIGN_ON_OFF)) {
 		notify(NULL, _("%s just signed off"), purple_buddy_get_alias(buddy));
+	}
+
+	g_object_unref(settings);
 }
 
 static void
 received_im_msg(PurpleAccount *account, const char *sender, const char *msg,
 		PurpleIMConversation *im, PurpleMessageFlags flags, gpointer null)
 {
-	if (purple_prefs_get_bool(PREFS_EVENT_IM_MSG))
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, PREFS_EVENT_IM_MSG)) {
 		notify(PURPLE_CONVERSATION(im), _("%s sent you a message"), sender);
+	}
+
+	g_object_unref(settings);
 }
 
 static void
@@ -238,17 +271,28 @@ received_chat_msg(PurpleAccount *account, const char *sender, const char *msg,
 {
 	const char *nick;
 	PurpleConversation *conv = PURPLE_CONVERSATION(chat);
+	GSettings *settings = NULL;
 
 	nick = purple_chat_conversation_get_nick(chat);
 
-	if (g_utf8_collate(sender, nick) == 0)
+	if (g_utf8_collate(sender, nick) == 0) {
 		return;
+	}
 
-	if (purple_prefs_get_bool(PREFS_EVENT_CHAT_NICK) &&
-			(purple_utf8_has_word(msg, nick)))
-		notify(conv, _("%s said your nick in %s"), sender, purple_conversation_get_name(conv));
-	else if (purple_prefs_get_bool(PREFS_EVENT_CHAT_MSG))
-		notify(conv, _("%s sent a message in %s"), sender, purple_conversation_get_name(conv));
+	settings = g_settings_new_with_backend(PREFS_SCHEMA,
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, PREFS_EVENT_CHAT_NICK) &&
+	   purple_utf8_has_word(msg, nick))
+	{
+		notify(conv, _("%s said your nick in %s"), sender,
+		       purple_conversation_get_name(conv));
+	} else if(g_settings_get_boolean(settings, PREFS_EVENT_CHAT_MSG)) {
+		notify(conv, _("%s sent a message in %s"), sender,
+		       purple_conversation_get_name(conv));
+	}
+
+	g_object_unref(settings);
 }
 
 static struct
@@ -257,7 +301,7 @@ static struct
 	char *display;
 } prefs[] =
 {
-	{PREFS_EVENT_SIGNONF, N_("Buddy signs on/off")},
+	{PREFS_EVENT_SIGN_ON_OFF, N_("Buddy signs on/off")},
 	{PREFS_EVENT_IM_MSG, N_("You receive an IM")},
 	{PREFS_EVENT_CHAT_MSG, N_("Someone speaks in a chat")},
 	{PREFS_EVENT_CHAT_NICK, N_("Someone says your name in a chat")},
@@ -344,22 +388,6 @@ gnt_gf_query(GError **error)
 
 static gboolean
 gnt_gf_load(GPluginPlugin *plugin, GError **error) {
-	purple_prefs_add_none("/plugins");
-	purple_prefs_add_none("/plugins/gnt");
-
-	purple_prefs_add_none("/plugins/gnt/gntgf");
-	purple_prefs_add_none(PREFS_EVENT);
-
-	purple_prefs_add_bool(PREFS_EVENT_SIGNONF, TRUE);
-	purple_prefs_add_bool(PREFS_EVENT_IM_MSG, TRUE);
-	purple_prefs_add_bool(PREFS_EVENT_CHAT_MSG, TRUE);
-	purple_prefs_add_bool(PREFS_EVENT_CHAT_NICK, TRUE);
-
-	purple_prefs_add_bool(PREFS_BEEP, TRUE);
-#ifdef HAVE_X11
-	purple_prefs_add_bool(PREFS_URGENT, FALSE);
-#endif
-
 	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-on", plugin,
 			G_CALLBACK(buddy_signed_on), NULL);
 	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-off", plugin,
