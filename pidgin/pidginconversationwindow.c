@@ -22,6 +22,8 @@
 
 #include <glib/gi18n-lib.h>
 
+#include <adwaita.h>
+
 #include "pidginconversationwindow.h"
 
 #include "gtkconv.h"
@@ -305,7 +307,8 @@ pidgin_display_window_selection_changed(GtkTreeSelection *selection,
 		                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, &obj,
 		                   -1);
 
-		gtk_stack_set_visible_child_name(GTK_STACK(window->stack), name);
+		adw_view_stack_set_visible_child_name(ADW_VIEW_STACK(window->stack),
+		                                      name);
 		g_free(name);
 
 		changed = TRUE;
@@ -338,7 +341,8 @@ pidgin_display_window_selection_changed(GtkTreeSelection *selection,
 	}
 
 	if(!changed) {
-		gtk_stack_set_visible_child_name(GTK_STACK(window->stack), "__conversations__");
+		adw_view_stack_set_visible_child_name(ADW_VIEW_STACK(window->stack),
+		                                      "__conversations__");
 	}
 }
 
@@ -572,7 +576,8 @@ pidgin_display_window_add(PidginDisplayWindow *window,
 			gtk_widget_unparent(gtkconv->tab_cont);
 		}
 
-		gtk_stack_add_named(GTK_STACK(window->stack), gtkconv->tab_cont, markup);
+		adw_view_stack_add_named(ADW_VIEW_STACK(window->stack),
+		                         gtkconv->tab_cont, markup);
 		gtk_widget_show(gtkconv->tab_cont);
 
 		if(GTK_IS_WIDGET(parent)) {
@@ -632,8 +637,8 @@ pidgin_display_window_remove(PidginDisplayWindow *window,
 			const gchar *name = NULL;
 
 			name = purple_conversation_get_name(conversation);
-			child = gtk_stack_get_child_by_name(GTK_STACK(window->stack),
-			                                    name);
+			child = adw_view_stack_get_child_by_name(ADW_VIEW_STACK(window->stack),
+			                                         name);
 			if(GTK_IS_WIDGET(child)) {
 				gtk_widget_unparent(child);
 			}
@@ -656,7 +661,7 @@ pidgin_display_window_get_count(PidginDisplayWindow *window) {
 
 	g_return_val_if_fail(PIDGIN_IS_DISPLAY_WINDOW(window), 0);
 
-	model = gtk_stack_get_pages(GTK_STACK(window->stack));
+	model = adw_view_stack_get_pages(ADW_VIEW_STACK(window->stack));
 
 	count = g_list_model_get_n_items(G_LIST_MODEL(model));
 
@@ -694,7 +699,7 @@ pidgin_display_window_select(PidginDisplayWindow *window,
 	g_return_if_fail(PURPLE_IS_CONVERSATION(conversation));
 
 	name = purple_conversation_get_name(conversation);
-	gtk_stack_set_visible_child_name(GTK_STACK(window->stack), name);
+	adw_view_stack_set_visible_child_name(ADW_VIEW_STACK(window->stack), name);
 }
 
 void
@@ -811,7 +816,7 @@ pidgin_display_window_conversation_is_selected(PidginDisplayWindow *window,
 	g_return_val_if_fail(PURPLE_IS_CONVERSATION(conversation), FALSE);
 
 	name = purple_conversation_get_name(conversation);
-	visible = gtk_stack_get_visible_child_name(GTK_STACK(window->stack));
+	visible = adw_view_stack_get_visible_child_name(ADW_VIEW_STACK(window->stack));
 
 	return purple_strequal(name, visible);
 }
