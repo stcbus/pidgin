@@ -24,8 +24,7 @@
 #include <libgupnp/gupnp-control-point.h>
 #include <libgupnp/gupnp-service-info.h>
 #include <libgupnp/gupnp-service-proxy.h>
-
-#include <libsoup/soup.h>
+#include <libgupnp-igd/gupnp-simple-igd.h>
 
 #include "upnp.h"
 
@@ -44,44 +43,8 @@
 /***************************************************************
 ** General Defines                                             *
 ****************************************************************/
-/* limit UPnP-triggered http downloads to 128k */
-#define MAX_UPNP_DOWNLOAD (128 * 1024)
-
-/******************************************************************
-** Action Defines                                                 *
-*******************************************************************/
-#define SOAP_ACTION \
-	"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" \
-	"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" " \
-		"s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n" \
-	  "<s:Body>\r\n" \
-	    "<u:%s xmlns:u=\"%s\">\r\n" \
-	      "%s" \
-	    "</u:%s>\r\n" \
-	  "</s:Body>\r\n" \
-	"</s:Envelope>"
-
-#define PORT_MAPPING_LEASE_TIME "0"
+#define PORT_MAPPING_LEASE_TIME 0
 #define PORT_MAPPING_DESCRIPTION "PURPLE_UPNP_PORT_FORWARD"
-
-#define ADD_PORT_MAPPING_PARAMS \
-	"<NewRemoteHost></NewRemoteHost>\r\n" \
-	"<NewExternalPort>%i</NewExternalPort>\r\n" \
-	"<NewProtocol>%s</NewProtocol>\r\n" \
-	"<NewInternalPort>%i</NewInternalPort>\r\n" \
-	"<NewInternalClient>%s</NewInternalClient>\r\n" \
-	"<NewEnabled>1</NewEnabled>\r\n" \
-	"<NewPortMappingDescription>" \
-	PORT_MAPPING_DESCRIPTION \
-	"</NewPortMappingDescription>\r\n" \
-	"<NewLeaseDuration>" \
-	PORT_MAPPING_LEASE_TIME \
-	"</NewLeaseDuration>\r\n"
-
-#define DELETE_PORT_MAPPING_PARAMS \
-	"<NewRemoteHost></NewRemoteHost>\r\n" \
-	"<NewExternalPort>%i</NewExternalPort>\r\n" \
-	"<NewProtocol>%s</NewProtocol>\r\n"
 
 typedef enum {
 	PURPLE_UPNP_STATUS_UNDISCOVERED = -1,
@@ -99,8 +62,7 @@ typedef struct {
 	gint64 lookup_time;
 } PurpleUPnPControlInfo;
 
-struct _PurpleUPnPMappingAddRemove
-{
+typedef struct {
 	unsigned short portmap;
 	gchar protocol[4];
 	gboolean add;
@@ -108,15 +70,14 @@ struct _PurpleUPnPMappingAddRemove
 	gpointer cb_data;
 	gboolean success;
 	guint tima; /* g_timeout_add handle */
-	SoupMessage *msg;
-};
+} PurpleUPnPMappingAddRemove;
 
 static PurpleUPnPControlInfo control_info = {
 	PURPLE_UPNP_STATUS_UNDISCOVERED,
 	NULL, "\0", "\0", "\0", 0};
 
 static GUPnPContextManager *manager = NULL;
-static SoupSession *session = NULL;
+static GUPnPSimpleIgd *simple_igd = NULL;
 static GSList *discovery_callbacks = NULL;
 
 static void lookup_internal_ip(void);
@@ -287,33 +248,6 @@ purple_upnp_discover(PurpleUPnPCallback cb, gpointer cb_data)
 	control_info.status = PURPLE_UPNP_STATUS_DISCOVERING;
 }
 
-static SoupMessage *
-purple_upnp_generate_action_message_and_send(const gchar *actionName,
-                                             const gchar *actionParams,
-                                             SoupSessionCallback cb,
-                                             gpointer cb_data)
-{
-	SoupMessage *msg;
-	gchar *action;
-	gchar* soapMessage;
-
-	/* set the soap message */
-	soapMessage = g_strdup_printf(SOAP_ACTION, actionName,
-		control_info.service_type, actionParams, actionName);
-
-	msg = soup_message_new("POST", control_info.control_url);
-	// purple_http_request_set_max_len(msg, MAX_UPNP_DOWNLOAD);
-	action = g_strdup_printf("\"%s#%s\"", control_info.service_type, actionName);
-	soup_message_headers_replace(soup_message_get_request_headers(msg),
-	                             "SOAPAction", action);
-	g_free(action);
-	soup_message_set_request(msg, "text/xml; charset=utf-8", SOUP_MEMORY_TAKE,
-	                         soapMessage, strlen(soapMessage));
-	soup_session_queue_message(session, msg, cb, cb_data);
-
-	return msg;
-}
-
 const gchar *
 purple_upnp_get_public_ip()
 {
@@ -431,26 +365,57 @@ lookup_internal_ip(void)
 }
 
 static void
-done_port_mapping_cb(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
-                     gpointer user_data)
+upnp_mapped_external_port_cb(GUPnPSimpleIgd *igd, const gchar *protocol,
+                             G_GNUC_UNUSED const gchar *external_ip,
+                             G_GNUC_UNUSED const gchar *replaces_external_ip,
+                             guint16 external_port,
+                             G_GNUC_UNUSED const gchar *local_ip,
+                             guint16 local_port,
+                             G_GNUC_UNUSED const gchar *description,
+                             gpointer data)
 {
-	PurpleUPnPMappingAddRemove *ar = user_data;
+	PurpleUPnPMappingAddRemove *ar = data;
 
-	gboolean success = TRUE;
-
-	/* determine if port mapping was a success */
-	if (!SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(msg))) {
-		purple_debug_error("upnp",
-		                   "purple_upnp_set_port_mapping(): Failed HTTP_OK: %s",
-		                   soup_message_get_reason_phrase(msg));
-		success =  FALSE;
-	} else {
-		purple_debug_info("upnp",
-		                  "Successfully completed port mapping operation");
+	if(!purple_strequal(ar->protocol, protocol)) {
+		return;
+	}
+	if(external_port != ar->portmap) {
+		return;
 	}
 
-	ar->success = success;
+	purple_debug_info("upnp", "Successfully completed port mapping operation");
+
+	ar->success = TRUE;
 	ar->tima = g_timeout_add(0, fire_ar_cb_async_and_free, ar);
+
+	g_signal_handlers_disconnect_by_data(igd, ar);
+}
+
+static void
+upnp_error_mapping_port_cb(GUPnPSimpleIgd *igd, GError *error,
+                           const gchar *protocol,
+                           guint16 external_port,
+                           G_GNUC_UNUSED const gchar *local_ip,
+                           G_GNUC_UNUSED guint16 local_port,
+                           G_GNUC_UNUSED const gchar *description,
+                           gpointer data)
+{
+	PurpleUPnPMappingAddRemove *ar = data;
+
+	if(!purple_strequal(ar->protocol, protocol)) {
+		return;
+	}
+	if(external_port != ar->portmap) {
+		return;
+	}
+
+	purple_debug_error("upnp", "purple_upnp_set_port_mapping(): Failed: %s",
+	                   error->message);
+
+	ar->success = FALSE;
+	ar->tima = g_timeout_add(0, fire_ar_cb_async_and_free, ar);
+
+	g_signal_handlers_disconnect_by_data(igd, ar);
 }
 
 static void
@@ -458,41 +423,43 @@ do_port_mapping_cb(gboolean has_control_mapping, gpointer data)
 {
 	PurpleUPnPMappingAddRemove *ar = data;
 
-	if (has_control_mapping) {
-		gchar action_name[25];
-		gchar *action_params;
-		if(ar->add) {
-			const gchar *internal_ip;
-			/* get the internal IP */
-			if(!(internal_ip = purple_upnp_get_internal_ip())) {
-				purple_debug_error("upnp",
-					"purple_upnp_set_port_mapping(): couldn't get local ip\n");
-				ar->success = FALSE;
-				ar->tima = g_timeout_add(0, fire_ar_cb_async_and_free, ar);
-				return;
-			}
-			strncpy(action_name, "AddPortMapping",
-					sizeof(action_name));
-			action_params = g_strdup_printf(
-					ADD_PORT_MAPPING_PARAMS,
-					ar->portmap, ar->protocol, ar->portmap,
-					internal_ip);
-		} else {
-			strncpy(action_name, "DeletePortMapping", sizeof(action_name));
-			action_params = g_strdup_printf(
-				DELETE_PORT_MAPPING_PARAMS,
-				ar->portmap, ar->protocol);
-		}
-
-		ar->msg = purple_upnp_generate_action_message_and_send(
-		        action_name, action_params, done_port_mapping_cb, ar);
-
-		g_free(action_params);
+	if (!has_control_mapping) {
+		ar->success = FALSE;
+		ar->tima = g_timeout_add(0, fire_ar_cb_async_and_free, ar);
 		return;
 	}
 
-	ar->success = FALSE;
-	ar->tima = g_timeout_add(0, fire_ar_cb_async_and_free, ar);
+	if(ar->add) {
+		const gchar *internal_ip;
+		/* get the internal IP */
+		if(!(internal_ip = purple_upnp_get_internal_ip())) {
+			purple_debug_error("upnp",
+				"purple_upnp_set_port_mapping(): couldn't get local ip\n");
+			ar->success = FALSE;
+			ar->tima = g_timeout_add(0, fire_ar_cb_async_and_free, ar);
+			return;
+		}
+
+		if(simple_igd == NULL) {
+			simple_igd = gupnp_simple_igd_new();
+		}
+
+		gupnp_simple_igd_add_port(simple_igd, ar->protocol, ar->portmap,
+		                          internal_ip, ar->portmap,
+		                          PORT_MAPPING_LEASE_TIME,
+		                          PORT_MAPPING_DESCRIPTION);
+	} else {
+		if(simple_igd == NULL) {
+			simple_igd = gupnp_simple_igd_new();
+		}
+
+		gupnp_simple_igd_remove_port(simple_igd, ar->protocol, ar->portmap);
+	}
+
+	g_signal_connect(simple_igd, "mapped-external-port",
+	                 G_CALLBACK(upnp_mapped_external_port_cb), ar);
+	g_signal_connect(simple_igd, "error-mapping-port",
+	                 G_CALLBACK(upnp_error_mapping_port_cb), ar);
 }
 
 static gboolean
@@ -505,38 +472,9 @@ fire_port_mapping_failure_cb(gpointer data)
 	return FALSE;
 }
 
-void purple_upnp_cancel_port_mapping(PurpleUPnPMappingAddRemove *ar)
-{
-	GSList *l;
-
-	/* Remove ar from discovery_callbacks if present; it was inserted after a cb.
-	 * The same cb may be in the list multiple times, so be careful to remove
-	 * the one associated with ar. */
-	l = discovery_callbacks;
-	while (l)
-	{
-		GSList *next = l->next;
-
-		if (next && (next->data == ar)) {
-			discovery_callbacks = g_slist_delete_link(discovery_callbacks, next);
-			next = l->next;
-			discovery_callbacks = g_slist_delete_link(discovery_callbacks, l);
-		}
-
-		l = next;
-	}
-
-	if (ar->tima > 0)
-		g_source_remove(ar->tima);
-
-	soup_session_cancel_message(session, ar->msg, SOUP_STATUS_CANCELLED);
-
-	g_free(ar);
-}
-
-PurpleUPnPMappingAddRemove *
-purple_upnp_set_port_mapping(unsigned short portmap, const gchar* protocol,
-		PurpleUPnPCallback cb, gpointer cb_data)
+void
+purple_upnp_set_port_mapping(unsigned short portmap, const gchar *protocol,
+                             PurpleUPnPCallback cb, gpointer cb_data)
 {
 	PurpleUPnPMappingAddRemove *ar;
 
@@ -574,13 +512,11 @@ purple_upnp_set_port_mapping(unsigned short portmap, const gchar* protocol,
 			do_port_mapping_cb(TRUE, ar);
 			break;
 	}
-
-	return ar;
 }
 
-PurpleUPnPMappingAddRemove *
-purple_upnp_remove_port_mapping(unsigned short portmap, const char* protocol,
-		PurpleUPnPCallback cb, gpointer cb_data)
+void
+purple_upnp_remove_port_mapping(unsigned short portmap, const char *protocol,
+                                PurpleUPnPCallback cb, gpointer cb_data)
 {
 	PurpleUPnPMappingAddRemove *ar;
 
@@ -618,8 +554,6 @@ purple_upnp_remove_port_mapping(unsigned short portmap, const char* protocol,
 			do_port_mapping_cb(TRUE, ar);
 			break;
 	}
-
-	return ar;
 }
 
 static void
@@ -637,8 +571,6 @@ purple_upnp_network_config_changed_cb(GNetworkMonitor *monitor, gboolean availab
 void
 purple_upnp_init()
 {
-	session = soup_session_new();
-
 	g_signal_connect(g_network_monitor_get_default(),
 	                 "network-changed",
 	                 G_CALLBACK(purple_upnp_network_config_changed_cb),
@@ -648,9 +580,7 @@ purple_upnp_init()
 void
 purple_upnp_uninit(void)
 {
-	soup_session_abort(session);
-	g_clear_object(&session);
-
+	g_clear_object(&simple_igd);
 	g_clear_pointer(&control_info.control_url, g_free);
 	g_clear_pointer(&control_info.service_type, g_free);
 	g_clear_object(&manager);

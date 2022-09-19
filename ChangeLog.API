@@ -264,7 +264,8 @@ version 3.0.0 (??/??/????):
 		* purple_str_size_to_units now takes a goffset as the size parameter
 		* PTFunc renamed to PurpleThemeFunc
 		* purple_txt_resolve now takes a PurpleAccount as the first parameter
-		* UPnPMappingAddRemove renamed to PurpleUPnPMappingAddRemove
+		* purple_upnp_remove_port_mapping no longer returns anything
+		* purple_upnp_set_port_mapping no longer returns anything
 		* purple_util_fetch_url_request now takes a PurpleAccount as
 		  the first parameter
 		* purple_util_fetch_url_request now takes a length as the eighth
@@ -707,6 +708,8 @@ version 3.0.0 (??/??/????):
 		* purple_txt_resolve_account
 		* PurpleType, use GType instead.
 		* purple_unescape_filename
+		* PurpleUPnPMappingAddRemove
+		* purple_upnp_cancel_port_mapping
 		* purple_url_decode
 		* purple_user_dir
 		* purple_utf8_salvage.  Use g_utf8_make_valid instead.

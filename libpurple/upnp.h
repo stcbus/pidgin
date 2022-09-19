@@ -27,15 +27,11 @@
 #ifndef PURPLE_UPNP_H
 #define PURPLE_UPNP_H
 
-typedef struct _PurpleUPnPMappingAddRemove PurpleUPnPMappingAddRemove;
-
 G_BEGIN_DECLS
 
 /**************************************************************************/
 /* UPnP API                                                               */
 /**************************************************************************/
-
-/* typedef struct _PurpleUPnPRequestData PurpleUPnPRequestData; */
 
 typedef void (*PurpleUPnPCallback) (gboolean success, gpointer data);
 
@@ -80,15 +76,6 @@ void purple_upnp_discover(PurpleUPnPCallback cb, gpointer cb_data);
 const gchar* purple_upnp_get_public_ip(void);
 
 /**
- * purple_upnp_cancel_port_mapping:
- * @mapping_data: The data returned when you initiated the UPnP mapping request.
- *
- * Cancel a pending port mapping request initiated with either
- * purple_upnp_set_port_mapping() or purple_upnp_remove_port_mapping().
- */
-void purple_upnp_cancel_port_mapping(PurpleUPnPMappingAddRemove *mapping_data);
-
-/**
  * purple_upnp_set_port_mapping:
  * @portmap: The port to map to this client
  * @protocol: The protocol to map, either "TCP" or "UDP"
@@ -99,12 +86,8 @@ void purple_upnp_cancel_port_mapping(PurpleUPnPMappingAddRemove *mapping_data);
  * Maps Ports in a UPnP enabled IGD that sits on the local network to
  * this purple client. Essentially, this function takes care of the port
  * forwarding so things like file transfers can work behind NAT firewalls
- *
- * Returns: (transfer full): Data which can be passed to purple_upnp_cancel_port_mapping() to
- *          cancel
  */
-PurpleUPnPMappingAddRemove *purple_upnp_set_port_mapping(unsigned short portmap, const gchar* protocol,
-		PurpleUPnPCallback cb, gpointer cb_data);
+void purple_upnp_set_port_mapping(unsigned short portmap, const gchar *protocol, PurpleUPnPCallback cb, gpointer cb_data);
 
 /**
  * purple_upnp_remove_port_mapping:
@@ -118,12 +101,8 @@ PurpleUPnPMappingAddRemove *purple_upnp_set_port_mapping(unsigned short portmap,
  * to this purple client. Essentially, this function takes care of deleting the
  * port forwarding after they have completed a connection so another client on
  * the local network can take advantage of the port forwarding
- *
- * Returns: (transfer full): Data which can be passed to purple_upnp_cancel_port_mapping() to
- *          cancel
  */
-PurpleUPnPMappingAddRemove *purple_upnp_remove_port_mapping(unsigned short portmap,
-		const gchar* protocol, PurpleUPnPCallback cb, gpointer cb_data);
+void purple_upnp_remove_port_mapping(unsigned short portmap, const gchar *protocol, PurpleUPnPCallback cb, gpointer cb_data);
 
 G_END_DECLS
 

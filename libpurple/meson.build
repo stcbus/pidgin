@@ -310,8 +310,8 @@ libpurple = library('purple',
                     install : true,
                     version : PURPLE_LIB_VERSION,
                     dependencies : # static_link_libs
-                        [dnsapi, ws2_32, glib, gio, gplugin_dep, gupnp, libsoup,
-                         libxml, gdk_pixbuf, gstreamer,
+                        [dnsapi, ws2_32, glib, gio, gplugin_dep, gupnp,
+                         gupnp_igd, libsoup, libxml, gdk_pixbuf, gstreamer,
                          gstreamer_app, json, sqlite3, math])
 
 install_headers(purple_coreheaders,

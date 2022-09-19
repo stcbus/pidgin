@@ -294,6 +294,7 @@ json = dependency('json-glib-1.0', version : '>= 0.14.0')
 #######################################################################
 
 gupnp = dependency('gupnp-1.2', version : '>= 1.2.0')
+gupnp_igd = dependency('gupnp-igd-1.0', version : '>= 1.0.0')
 
 #######################################################################
 # Check for libsoup (required)
