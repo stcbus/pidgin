@@ -16,11 +16,11 @@ finch/gntstatus.c
 finch/gntui.c
 finch/gntxfer.c
 finch/libfinch.c
-finch/plugins/gntclipboard.c
-finch/plugins/gntgf.c
-finch/plugins/gnttinyurl.c
-finch/plugins/grouping.c
-finch/plugins/lastlog.c
+finch/plugins/gntclipboard/gntclipboard.c
+finch/plugins/gntgf/gntgf.c
+finch/plugins/gnttinyurl/gnttinyurl.c
+finch/plugins/grouping/grouping.c
+finch/plugins/lastlog/lastlog.c
 libpurple/account.c
 libpurple/accounts.c
 libpurple/action.c
