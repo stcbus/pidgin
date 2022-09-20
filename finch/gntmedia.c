@@ -45,7 +45,6 @@
 
 typedef struct _FinchMedia FinchMedia;
 typedef struct _FinchMediaClass FinchMediaClass;
-typedef struct _FinchMediaPrivate FinchMediaPrivate;
 typedef enum _FinchMediaState FinchMediaState;
 
 struct _FinchMediaClass
@@ -56,11 +55,7 @@ struct _FinchMediaClass
 struct _FinchMedia
 {
 	GntBox parent;
-	FinchMediaPrivate *priv;
-};
 
-struct _FinchMediaPrivate
-{
 	PurpleMedia *media;
 
 	GntWidget *accept;
@@ -89,7 +84,7 @@ enum {
 	PROP_MEDIA,
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(FinchMedia, finch_media, GNT_TYPE_BOX);
+G_DEFINE_TYPE(FinchMedia, finch_media, GNT_TYPE_BOX);
 
 static void
 finch_media_class_init (FinchMediaClass *klass)
@@ -117,26 +112,23 @@ finch_media_class_init (FinchMediaClass *klass)
 static void
 finch_media_init (FinchMedia *media)
 {
-	media->priv = finch_media_get_instance_private(media);
-
-	media->priv->calling = gnt_label_new(_("Calling..."));
-	media->priv->hangup = gnt_button_new(_("Hangup"));
-	media->priv->accept = gnt_button_new(_("Accept"));
-	media->priv->reject = gnt_button_new(_("Reject"));
+	media->calling = gnt_label_new(_("Calling..."));
+	media->hangup = gnt_button_new(_("Hangup"));
+	media->accept = gnt_button_new(_("Accept"));
+	media->reject = gnt_button_new(_("Reject"));
 
 	gnt_box_set_alignment(GNT_BOX(media), GNT_ALIGN_MID);
 
-	gnt_box_add_widget(GNT_BOX(media), media->priv->accept);
-	gnt_box_add_widget(GNT_BOX(media), media->priv->reject);
+	gnt_box_add_widget(GNT_BOX(media), media->accept);
+	gnt_box_add_widget(GNT_BOX(media), media->reject);
 }
 
 static void
 finch_media_finalize (GObject *media)
 {
 	FinchMedia *gntmedia = FINCH_MEDIA(media);
-	purple_debug_info("gntmedia", "finch_media_finalize\n");
-	if (gntmedia->priv->media)
-		g_object_unref(gntmedia->priv->media);
+	purple_debug_info("gntmedia", "finch_media_finalize");
+	g_clear_object(&gntmedia->media);
 }
 
 static void
@@ -152,19 +144,16 @@ finch_media_connected_cb(PurpleMedia *media, FinchMedia *gntmedia)
 
 	finch_media_emit_message(gntmedia, _("Call in progress."));
 
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->accept);
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->reject);
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->hangup);
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->calling);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->accept);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->reject);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->hangup);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->calling);
 
-	gnt_box_add_widget(GNT_BOX(gntmedia), gntmedia->priv->hangup);
+	gnt_box_add_widget(GNT_BOX(gntmedia), gntmedia->hangup);
 
-	gnt_widget_destroy(gntmedia->priv->accept);
-	gnt_widget_destroy(gntmedia->priv->reject);
-	gnt_widget_destroy(gntmedia->priv->calling);
-	gntmedia->priv->accept = NULL;
-	gntmedia->priv->reject = NULL;
-	gntmedia->priv->calling = NULL;
+	g_clear_pointer(&gntmedia->accept, gnt_widget_destroy);
+	g_clear_pointer(&gntmedia->reject, gnt_widget_destroy);
+	g_clear_pointer(&gntmedia->calling, gnt_widget_destroy);
 
 	parent = gnt_widget_get_toplevel(GNT_WIDGET(gntmedia));
 	gnt_box_readjust(GNT_BOX(parent));
@@ -176,13 +165,13 @@ finch_media_wait_cb(PurpleMedia *media, FinchMedia *gntmedia)
 {
 	GntWidget *parent;
 
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->accept);
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->reject);
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->hangup);
-	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->priv->calling);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->accept);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->reject);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->hangup);
+	gnt_box_remove(GNT_BOX(gntmedia), gntmedia->calling);
 
-	gnt_box_add_widget(GNT_BOX(gntmedia), gntmedia->priv->calling);
-	gnt_box_add_widget(GNT_BOX(gntmedia), gntmedia->priv->hangup);
+	gnt_box_add_widget(GNT_BOX(gntmedia), gntmedia->calling);
+	gnt_box_add_widget(GNT_BOX(gntmedia), gntmedia->hangup);
 
 	parent = gnt_widget_get_toplevel(GNT_WIDGET(gntmedia));
 	gnt_box_readjust(GNT_BOX(parent));
@@ -199,8 +188,7 @@ finch_media_state_changed_cb(PurpleMedia *media, PurpleMediaState state,
 		if (state == PURPLE_MEDIA_STATE_END) {
 			finch_media_emit_message(gntmedia,
 					_("The call has been terminated."));
-			finch_conversation_set_info_widget(
-					gntmedia->priv->conv, NULL);
+			finch_conversation_set_info_widget(gntmedia->conv, NULL);
 			gnt_widget_destroy(GNT_WIDGET(gntmedia));
 			/*
 			 * XXX: This shouldn't have to be here
@@ -220,7 +208,7 @@ finch_media_state_changed_cb(PurpleMedia *media, PurpleMediaState state,
 				purple_media_get_session_type(media, sid);
 		gchar *message = NULL;
 
-		account = purple_media_get_account(gntmedia->priv->media);
+		account = purple_media_get_account(gntmedia->media);
 		buddy = purple_blist_find_buddy(account, name);
 		alias = buddy ? purple_buddy_get_contact_alias(buddy) :	name;
 
@@ -278,27 +266,22 @@ finch_media_set_property (GObject *object, guint prop_id, const GValue *value, G
 	media = FINCH_MEDIA(object);
 	switch (prop_id) {
 		case PROP_MEDIA:
-		{
-			if (media->priv->media)
-				g_object_unref(media->priv->media);
-			media->priv->media = g_value_dup_object(value);
-			g_signal_connect_swapped(G_OBJECT(media->priv->accept), "activate",
-				 G_CALLBACK(finch_media_accept_cb), media->priv->media);
-			g_signal_connect_swapped(G_OBJECT(media->priv->reject), "activate",
-				 G_CALLBACK(finch_media_reject_cb), media->priv->media);
-			g_signal_connect_swapped(G_OBJECT(media->priv->hangup), "activate",
-				 G_CALLBACK(finch_media_hangup_cb), media->priv->media);
+			g_set_object(&media->media, g_value_get_object(value));
+			g_signal_connect_swapped(G_OBJECT(media->accept), "activate",
+				 G_CALLBACK(finch_media_accept_cb), media->media);
+			g_signal_connect_swapped(G_OBJECT(media->reject), "activate",
+				 G_CALLBACK(finch_media_reject_cb), media->media);
+			g_signal_connect_swapped(G_OBJECT(media->hangup), "activate",
+				 G_CALLBACK(finch_media_hangup_cb), media->media);
 
-			if (purple_media_is_initiator(media->priv->media,
-					NULL, NULL) == TRUE) {
-				finch_media_wait_cb(media->priv->media, media);
+			if (purple_media_is_initiator(media->media, NULL, NULL)) {
+				finch_media_wait_cb(media->media, media);
 			}
-			g_signal_connect(G_OBJECT(media->priv->media), "state-changed",
+			g_signal_connect(G_OBJECT(media->media), "state-changed",
 				G_CALLBACK(finch_media_state_changed_cb), media);
-			g_signal_connect(G_OBJECT(media->priv->media), "stream-info",
+			g_signal_connect(G_OBJECT(media->media), "stream-info",
 				G_CALLBACK(finch_media_stream_info_cb), media);
 			break;
-		}
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 			break;
@@ -315,7 +298,7 @@ finch_media_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 
 	switch (prop_id) {
 		case PROP_MEDIA:
-			g_value_set_object(value, media->priv->media);
+			g_value_set_object(value, media->media);
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -352,7 +335,7 @@ finch_new_media(PurpleMediaManager *manager, PurpleMedia *media,
 
 	gntmedia = finch_media_new(media);
 	g_signal_connect(G_OBJECT(gntmedia), "message", G_CALLBACK(gntmedia_message_cb), conv);
-	FINCH_MEDIA(gntmedia)->priv->conv = conv;
+	FINCH_MEDIA(gntmedia)->conv = conv;
 	finch_conversation_set_info_widget(conv, gntmedia);
 	return TRUE;
 }
