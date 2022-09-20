@@ -402,10 +402,7 @@ silcpurple_stream_created(SilcSocketStreamStatus status, SilcStream stream,
 
 	/* Progress */
 	if (params.detach_data) {
-		purple_connection_update_progress(gc, _("Resuming session"), 2, 5);
 		sg->resuming = TRUE;
-	} else {
-		purple_connection_update_progress(gc, _("Performing key exchange"), 2, 5);
 	}
 
 	/* Perform SILC Key Exchange. */
@@ -555,9 +552,6 @@ static void silcpurple_running(SilcClient client, void *context)
 	PurpleAccount *account = purple_connection_get_account(gc);
 	char pkd[256], prd[256];
 
-
-	/* Progress */
-	purple_connection_update_progress(gc, _("Connecting to SILC Server"), 1, 5);
 
 	/* Load SILC key pair */
 	g_snprintf(pkd, sizeof(pkd), "%s" G_DIR_SEPARATOR_S "public_key.pub", silcpurple_silcdir());

@@ -560,8 +560,6 @@ static void irc_login(PurpleAccount *account)
 	irc->msgs = g_hash_table_new(g_str_hash, g_str_equal);
 	irc_msg_table_build(irc);
 
-	purple_connection_update_progress(gc, _("Connecting"), 1, 2);
-
 	client = purple_gio_socket_client_new(account, &error);
 
 	if (client == NULL) {

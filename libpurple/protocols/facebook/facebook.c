@@ -100,11 +100,7 @@ static void
 fb_cb_api_auth(FbApi *api, gpointer data)
 {
 	FbData *fata = data;
-	PurpleConnection *gc;
 
-	gc = fb_data_get_connection(fata);
-
-	purple_connection_update_progress(gc, _("Fetching contacts"), 2, 4);
 	fb_data_save(fata);
 	fb_api_contacts(api);
 }
@@ -295,7 +291,6 @@ fb_cb_api_contacts(FbApi *api, GSList *users, gboolean complete, gpointer data)
 		type = purple_status_get_status_type(status);
 		pstat = purple_status_type_get_primitive(type);
 
-		purple_connection_update_progress(gc, _("Connecting"), 3, 4);
 		fb_api_connect(api, pstat == PURPLE_STATUS_INVISIBLE);
 	}
 
@@ -1110,13 +1105,10 @@ fb_login(PurpleAccount *acct)
 	if (!fb_data_load(fata) || !purple_account_get_remember_password(acct)) {
 		user = purple_account_get_username(acct);
 		pass = purple_connection_get_password(gc);
-		purple_connection_update_progress(gc, _("Authenticating"),
-		                                  1, 4);
 		fb_api_auth(api, user, pass);
 		return;
 	}
 
-	purple_connection_update_progress(gc, _("Fetching contacts"), 2, 4);
 	fb_api_contacts(api);
 }
 

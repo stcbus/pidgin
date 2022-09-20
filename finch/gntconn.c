@@ -123,7 +123,6 @@ finch_connection_get_handle(void)
 
 static PurpleConnectionUiOps ops =
 {
-	NULL, /* connect_progress */
 	NULL, /* connected */
 	NULL, /* disconnected */
 	NULL, /* notice */

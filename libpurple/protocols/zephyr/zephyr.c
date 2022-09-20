@@ -715,7 +715,6 @@ static void zephyr_login(PurpleAccount * account)
 	}
 
 	zephyr->encoding = (char *)purple_account_get_string(account, "encoding", ZEPHYR_FALLBACK_CHARSET);
-	purple_connection_update_progress(gc, _("Connecting"), 0, 8);
 
 	if (!login(zephyr)) {
 		return;

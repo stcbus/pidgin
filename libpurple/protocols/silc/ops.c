@@ -1695,12 +1695,6 @@ silc_get_auth_method(SilcClient client, SilcClientConnection conn,
 	SilcPurpleAskPassphrase internal;
 	const char *password;
 
-	/* Progress */
-	if (sg->resuming)
-		purple_connection_update_progress(gc, _("Resuming session"), 4, 5);
-	else
-		purple_connection_update_progress(gc, _("Authenticating connection"), 4, 5);
-
 	/* Check configuration if we have this connection configured. */
 	if (auth_method == SILC_AUTH_PUBLIC_KEY &&
 	    purple_account_get_bool(sg->account, "pubkey-auth", FALSE)) {
@@ -1741,19 +1735,6 @@ silc_verify_public_key(SilcClient client, SilcClientConnection conn,
 		       SilcPublicKey public_key,
 		       SilcVerifyPublicKey completion, void *context)
 {
-	PurpleConnection *gc = client->application;
-	SilcPurple sg = purple_connection_get_protocol_data(gc);
-
-	if (!sg->conn && (conn_type == SILC_CONN_SERVER ||
-			  conn_type == SILC_CONN_ROUTER)) {
-		/* Progress */
-		if (sg->resuming)
-			purple_connection_update_progress(gc, _("Resuming session"), 3, 5);
-		else
-			purple_connection_update_progress(gc, _("Verifying server public key"),
-							  3, 5);
-	}
-
 	/* Verify public key */
 	silcpurple_verify_public_key(client, conn, NULL, conn_type,
 				     public_key, completion, context);

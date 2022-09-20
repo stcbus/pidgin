@@ -531,7 +531,6 @@ void ggp_async_login_handler(gpointer _gc, gint fd, PurpleInputCondition cond)
 					PURPLE_INPUT_READ,
 					ggp_callback_recv, gc);
 
-				purple_connection_update_progress(gc, _("Connected"), 1, 2);
 				purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
 
 				ggp_buddylist_send(gc);
@@ -893,7 +892,6 @@ static void ggp_login(PurpleAccount *account)
 	purple_str_wipe(glp->password);
 	g_free(glp);
 
-	purple_connection_update_progress(gc, _("Connecting"), 0, 2);
 	if (info->session == NULL) {
 		purple_connection_error (gc,
 			PURPLE_CONNECTION_ERROR_NETWORK_ERROR,

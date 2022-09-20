@@ -337,24 +337,6 @@ _purple_connection_wants_to_die(PurpleConnection *gc) {
 }
 
 void
-purple_connection_update_progress(PurpleConnection *gc, const char *text,
-                                  size_t step, size_t count)
-{
-	PurpleConnectionUiOps *ops;
-
-	g_return_if_fail(PURPLE_IS_CONNECTION(gc));
-	g_return_if_fail(text != NULL);
-	g_return_if_fail(step < count);
-	g_return_if_fail(count > 1);
-
-	ops = purple_connections_get_ui_ops();
-
-	if(ops != NULL && ops->connect_progress != NULL) {
-		ops->connect_progress(gc, text, step, count);
-	}
-}
-
-void
 purple_connection_notice(PurpleConnection *gc, const char *text) {
 	PurpleConnectionUiOps *ops;
 

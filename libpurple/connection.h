@@ -218,11 +218,6 @@ typedef enum
 
 /**
  * PurpleConnectionUiOps:
- * @connect_progress: When an account is connecting, this operation is called to
- *                    notify the UI of what is happening, as well as which @step
- *                    out of @step_count has been reached (which might be
- *                    displayed as a progress bar).
- *                    <sbr/>See purple_connection_update_progress().
  * @connected: Called when a connection is established (just before the
  *   <link linkend="connections-signed-on"><literal>"signed-on"</literal></link>
  *             signal).
@@ -257,11 +252,6 @@ typedef enum
  */
 struct _PurpleConnectionUiOps
 {
-	void (*connect_progress)(PurpleConnection *gc,
-	                         const char *text,
-	                         size_t step,
-	                         size_t step_count);
-
 	void (*connected)(PurpleConnection *gc);
 	void (*disconnected)(PurpleConnection *gc);
 
@@ -467,18 +457,6 @@ const char *purple_connection_get_display_name(PurpleConnection *gc);
  * Returns: The protocol data for the connection.
  */
 void *purple_connection_get_protocol_data(PurpleConnection *gc);
-
-/**
- * purple_connection_update_progress:
- * @gc:    The connection.
- * @text:  Information on the current step.
- * @step:  The current step.
- * @count: The total number of steps.
- *
- * Updates the connection progress.
- */
-void purple_connection_update_progress(PurpleConnection *gc, const char *text,
-									 size_t step, size_t count);
 
 /**
  * purple_connection_notice:

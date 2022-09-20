@@ -1467,56 +1467,19 @@ static void mw_session_stateChange(struct mwSession *session,
 				   gpointer info) {
   struct mwPurpleProtocolData *pd;
   PurpleConnection *gc;
-  const char *msg = NULL;
 
   pd = mwSession_getClientData(session);
   gc = pd->gc;
 
   switch(state) {
-  case mwSession_STARTING:
-    msg = _("Sending Handshake");
-    purple_connection_update_progress(gc, msg, 2, MW_CONNECT_STEPS);
-    break;
-
-  case mwSession_HANDSHAKE:
-    msg = _("Waiting for Handshake Acknowledgement");
-    purple_connection_update_progress(gc, msg, 3, MW_CONNECT_STEPS);
-    break;
-
-  case mwSession_HANDSHAKE_ACK:
-    msg = _("Handshake Acknowledged, Sending Login");
-    purple_connection_update_progress(gc, msg, 4, MW_CONNECT_STEPS);
-    break;
-
-  case mwSession_LOGIN:
-    msg = _("Waiting for Login Acknowledgement");
-    purple_connection_update_progress(gc, msg, 5, MW_CONNECT_STEPS);
-    break;
 
   case mwSession_LOGIN_REDIR:
-    msg = _("Login Redirected");
-    purple_connection_update_progress(gc, msg, 6, MW_CONNECT_STEPS);
     session_loginRedirect(session, info);
     break;
 
-  case mwSession_LOGIN_CONT:
-    msg = _("Forcing Login");
-    purple_connection_update_progress(gc, msg, 7, MW_CONNECT_STEPS);
-    break;
-
-  case mwSession_LOGIN_ACK:
-    msg = _("Login Acknowledged");
-    purple_connection_update_progress(gc, msg, 8, MW_CONNECT_STEPS);
-    break;
-
   case mwSession_STARTED:
-    msg = _("Starting Services");
-    purple_connection_update_progress(gc, msg, 9, MW_CONNECT_STEPS);
-
     session_started(pd);
 
-    msg = _("Connected");
-    purple_connection_update_progress(gc, msg, 10, MW_CONNECT_STEPS);
     purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
     break;
 
@@ -3634,8 +3597,6 @@ static void mw_protocol_login(PurpleAccount *account) {
     mwSession_setProperty(pd->session, mwSession_CLIENT_VER_MINOR,
 			  GUINT_TO_POINTER(minor), NULL);
   }
-
-  purple_connection_update_progress(gc, _("Connecting"), 1, MW_CONNECT_STEPS);
 
   pd->client = purple_gio_socket_client_new(account, &error);
   if (pd->client == NULL) {

@@ -180,7 +180,6 @@ gboolean silcpurple_check_silc_dir(PurpleConnection *gc)
 	if ((g_stat(file_public_key, &st)) == -1) {
 		/* If file doesn't exist */
 		if (errno == ENOENT) {
-			purple_connection_update_progress(gc, _("Creating SILC key pair..."), 1, 5);
 			if (!silc_create_key_pair(SILCPURPLE_DEF_PKCS,
 						  SILCPURPLE_DEF_PKCS_LEN,
 						  file_public_key,
@@ -222,7 +221,6 @@ gboolean silcpurple_check_silc_dir(PurpleConnection *gc)
 	} else {
 		/* If file doesn't exist */
 		if (errno == ENOENT) {
-			purple_connection_update_progress(gc, _("Creating SILC key pair..."), 1, 5);
 			if (!silc_create_key_pair(SILCPURPLE_DEF_PKCS,
 						  SILCPURPLE_DEF_PKCS_LEN,
 						  file_public_key,

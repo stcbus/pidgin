@@ -169,7 +169,6 @@ static void pidgin_connection_notice(PurpleConnection *gc, const char *text)
 
 static PurpleConnectionUiOps conn_ui_ops =
 {
-	NULL,
 	pidgin_connection_connected,
 	pidgin_connection_disconnected,
 	pidgin_connection_notice,

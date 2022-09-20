@@ -1734,9 +1734,6 @@ novell_login_callback(GObject *source_object, GAsyncResult *res, gpointer data)
 	if ((user == NULL) || (conn = user->conn) == NULL)
 		return;
 
-	purple_connection_update_progress(gc, _("Authenticating..."),
-									2, NOVELL_CONNECT_STEPS);
-
 	conn->stream = G_IO_STREAM(sockconn);
 	conn->input =
 	        g_data_input_stream_new(g_io_stream_get_input_stream(conn->stream));
@@ -1763,9 +1760,6 @@ novell_login_callback(GObject *source_object, GAsyncResult *res, gpointer data)
 			PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
 			_("Unable to connect"));
 	}
-
-	purple_connection_update_progress(gc, _("Waiting for response..."),
-									3, NOVELL_CONNECT_STEPS);
 
 	g_free(ua);
 	g_free(my_addr);
@@ -2229,9 +2223,6 @@ novell_login(PurpleAccount * account)
 		purple_connection_set_protocol_data(gc, user);
 
 		/* connect to the server */
-		purple_connection_update_progress(gc, _("Connecting"),
-										1, NOVELL_CONNECT_STEPS);
-
 		user->conn->client = purple_gio_socket_client_new(account, &error);
 		if (user->conn->client == NULL) {
 			purple_connection_take_error(gc, error);

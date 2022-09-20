@@ -1623,55 +1623,17 @@ void jabber_close(PurpleConnection *gc)
 
 void jabber_stream_set_state(JabberStream *js, JabberStreamState state)
 {
-#define JABBER_CONNECT_STEPS \
-	((G_IS_TLS_CONNECTION(js->stream) || \
-	  js->state == JABBER_STREAM_INITIALIZING_ENCRYPTION) \
-	         ? 9 \
-	         : 5)
-
 	js->state = state;
-	switch(state) {
-		case JABBER_STREAM_OFFLINE:
-			break;
-		case JABBER_STREAM_CONNECTING:
-			purple_connection_update_progress(js->gc, _("Connecting"), 1,
-					JABBER_CONNECT_STEPS);
-			break;
-		case JABBER_STREAM_INITIALIZING:
-			purple_connection_update_progress(
-			        js->gc, _("Initializing Stream"),
-			        G_IS_TLS_CONNECTION(js->stream) ? 5 : 2,
-			        JABBER_CONNECT_STEPS);
-			jabber_stream_init(js);
-			break;
-		case JABBER_STREAM_INITIALIZING_ENCRYPTION:
-			purple_connection_update_progress(js->gc, _("Initializing SSL/TLS"),
-											  6, JABBER_CONNECT_STEPS);
-			break;
-		case JABBER_STREAM_AUTHENTICATING:
-			purple_connection_update_progress(
-			        js->gc, _("Authenticating"),
-			        G_IS_TLS_CONNECTION(js->stream) ? 7 : 3,
-			        JABBER_CONNECT_STEPS);
-			break;
-		case JABBER_STREAM_POST_AUTH:
-			purple_connection_update_progress(
-			        js->gc, _("Re-initializing Stream"),
-			        (G_IS_TLS_CONNECTION(js->stream) ? 8 : 4),
-			        JABBER_CONNECT_STEPS);
+	if(state == JABBER_STREAM_INITIALIZING) {
+		jabber_stream_init(js);
+	} else if(state == JABBER_STREAM_CONNECTED) {
+		/* Send initial presence */
+		jabber_presence_send(js, TRUE);
+		/* Start up the inactivity timer */
+		jabber_stream_restart_inactivity_timer(js);
 
-			break;
-		case JABBER_STREAM_CONNECTED:
-			/* Send initial presence */
-			jabber_presence_send(js, TRUE);
-			/* Start up the inactivity timer */
-			jabber_stream_restart_inactivity_timer(js);
-
-			purple_connection_set_state(js->gc, PURPLE_CONNECTION_CONNECTED);
-			break;
+		purple_connection_set_state(js->gc, PURPLE_CONNECTION_CONNECTED);
 	}
-
-#undef JABBER_CONNECT_STEPS
 }
 
 char *jabber_get_next_id(JabberStream *js)

@@ -405,6 +405,8 @@ version 3.0.0 (??/??/????):
 		* purple_connection_new_unregister
 		* purple_connection_destroy
 		* purple_connection_set_account
+		* PurpleConnectionUiOps->connect_progress
+		* purple_connection_update_progress
 		* purple_connections_get_connecting
 		* purple_contact_set_alias
 		* purple_conv_chat_set_users
