@@ -32,8 +32,6 @@
 #include "purplebuddypresence.h"
 #include "status.h"
 
-typedef struct _PurpleStatusPrivate  PurpleStatusPrivate;
-
 /*
  * A type of status.
  */
@@ -66,13 +64,7 @@ struct _PurpleStatusAttribute
 struct _PurpleStatus
 {
 	GObject parent;
-};
 
-/*
- * Private data for PurpleStatus
- */
-struct _PurpleStatusPrivate
-{
 	PurpleStatusType *status_type;
 	PurplePresence *presence;
 
@@ -105,7 +97,7 @@ typedef struct
 
 static GParamSpec *properties[PROP_LAST];
 
-G_DEFINE_TYPE_WITH_PRIVATE(PurpleStatus, purple_status, G_TYPE_OBJECT);
+G_DEFINE_TYPE(PurpleStatus, purple_status, G_TYPE_OBJECT);
 
 static int primitive_scores[] =
 {
@@ -538,8 +530,7 @@ status_has_changed(PurpleStatus *status)
 	{
 		old_status = purple_presence_get_active_status(presence);
 		if (old_status != NULL && (old_status != status)) {
-			PurpleStatusPrivate *priv = purple_status_get_instance_private(old_status);
-			priv->active = FALSE;
+			old_status->active = FALSE;
 			g_object_notify_by_pspec(G_OBJECT(old_status),
 					properties[PROP_ACTIVE]);
 		}
@@ -640,15 +631,12 @@ void
 purple_status_set_active_with_attrs_dict(PurpleStatus *status, gboolean active,
 									     GHashTable *attrs)
 {
-	PurpleStatusPrivate *priv = NULL;
 	gboolean changed = FALSE;
 	GList *l;
 	GList *specified_attr_ids = NULL;
 	PurpleStatusType *status_type;
 
 	g_return_if_fail(PURPLE_IS_STATUS(status));
-
-	priv = purple_status_get_instance_private(status);
 
 	if(!active && purple_status_is_exclusive(status)) {
 		purple_debug_error("status",
@@ -657,10 +645,10 @@ purple_status_set_active_with_attrs_dict(PurpleStatus *status, gboolean active,
 		return;
 	}
 
-	if(priv->active != active) {
+	if(status->active != active) {
 		changed = TRUE;
 	}
-	priv->active = active;
+	status->active = active;
 
 	if(attrs != NULL) {
 		GHashTableIter iter;
@@ -675,7 +663,7 @@ purple_status_set_active_with_attrs_dict(PurpleStatus *status, gboolean active,
 				purple_debug_warning("status",
 				                     "The attribute \"%s\" on the status "
 				                     "\"%s\" is not supported.",
-				                     id, priv->status_type->name);
+				                     id, status->status_type->name);
 
 				/* Skip over the data and move on to the next attribute */
 				continue;
@@ -774,23 +762,17 @@ purple_status_set_active_with_attrs_dict(PurpleStatus *status, gboolean active,
 PurpleStatusType *
 purple_status_get_status_type(PurpleStatus *status)
 {
-	PurpleStatusPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_STATUS(status), NULL);
 
-	priv = purple_status_get_instance_private(status);
-	return priv->status_type;
+	return status->status_type;
 }
 
 PurplePresence *
 purple_status_get_presence(PurpleStatus *status)
 {
-	PurpleStatusPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_STATUS(status), NULL);
 
-	priv = purple_status_get_instance_private(status);
-	return priv->presence;
+	return status->presence;
 }
 
 const char *
@@ -836,12 +818,9 @@ purple_status_is_available(PurpleStatus *status)
 gboolean
 purple_status_is_active(PurpleStatus *status)
 {
-	PurpleStatusPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_STATUS(status), FALSE);
 
-	priv = purple_status_get_instance_private(status);
-	return priv->active;
+	return status->active;
 }
 
 gboolean
@@ -860,13 +839,10 @@ purple_status_is_online(PurpleStatus *status)
 GValue *
 purple_status_get_attr_value(PurpleStatus *status, const char *id)
 {
-	PurpleStatusPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_STATUS(status), NULL);
 	g_return_val_if_fail(id   != NULL, NULL);
 
-	priv = purple_status_get_instance_private(status);
-	return (GValue *)g_hash_table_lookup(priv->attr_values, id);
+	return (GValue *)g_hash_table_lookup(status->attr_values, id);
 }
 
 gboolean
@@ -1067,14 +1043,13 @@ purple_status_set_property(GObject *obj, guint param_id, const GValue *value,
 		GParamSpec *pspec)
 {
 	PurpleStatus *status = PURPLE_STATUS(obj);
-	PurpleStatusPrivate *priv = purple_status_get_instance_private(status);
 
 	switch (param_id) {
 		case PROP_STATUS_TYPE:
-			priv->status_type = g_value_get_pointer(value);
+			status->status_type = g_value_get_pointer(value);
 			break;
 		case PROP_PRESENCE:
-			priv->presence = g_value_get_object(value);
+			status->presence = g_value_get_object(value);
 			break;
 		case PROP_ACTIVE:
 			purple_status_set_active(status, g_value_get_boolean(value));
@@ -1112,29 +1087,26 @@ purple_status_get_property(GObject *obj, guint param_id, GValue *value,
 static void
 purple_status_init(PurpleStatus *status)
 {
-	PurpleStatusPrivate *priv = purple_status_get_instance_private(status);
-
-	priv->attr_values =
-		g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
-		(GDestroyNotify)purple_value_free);
+	status->attr_values = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
+	                                            (GDestroyNotify)purple_value_free);
 }
 
 /* Called when done constructing */
 static void
 purple_status_constructed(GObject *object)
 {
+	PurpleStatus *status = PURPLE_STATUS(object);
 	GList *l;
-	PurpleStatusPrivate *priv = purple_status_get_instance_private(PURPLE_STATUS(object));
 
 	G_OBJECT_CLASS(purple_status_parent_class)->constructed(object);
 
-	for (l = purple_status_type_get_attrs(priv->status_type); l != NULL; l = l->next)
+	for (l = purple_status_type_get_attrs(status->status_type); l != NULL; l = l->next)
 	{
 		PurpleStatusAttribute *attr = (PurpleStatusAttribute *)l->data;
 		GValue *value = purple_status_attribute_get_value(attr);
 		GValue *new_value = purple_value_dup(value);
 
-		g_hash_table_insert(priv->attr_values,
+		g_hash_table_insert(status->attr_values,
 							(char *)purple_status_attribute_get_id(attr),
 							new_value);
 	}
@@ -1148,8 +1120,9 @@ purple_status_constructed(GObject *object)
 static void
 purple_status_finalize(GObject *obj)
 {
-	PurpleStatusPrivate *priv = purple_status_get_instance_private(PURPLE_STATUS(obj));
-	g_hash_table_destroy(priv->attr_values);
+	PurpleStatus *status = PURPLE_STATUS(obj);
+
+	g_hash_table_destroy(status->attr_values);
 
 	G_OBJECT_CLASS(purple_status_parent_class)->finalize(obj);
 }
