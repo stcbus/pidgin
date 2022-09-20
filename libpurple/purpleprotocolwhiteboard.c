@@ -1,5 +1,6 @@
 /*
- * purple
+ * Purple - Internet Messaging Library
+ * Copyright (C) Pidgin Developers <devel@pidgin.im>
  *
  * Purple is the legal property of its developers, whose names are too numerous
  * to list here.  Please refer to the COPYRIGHT file distributed with this
@@ -16,40 +17,37 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "purpleprotocolfactory.h"
-
-G_DEFINE_INTERFACE(PurpleProtocolFactory, purple_protocol_factory,
-                   PURPLE_TYPE_PROTOCOL);
+#include "purpleprotocolwhiteboard.h"
 
 /******************************************************************************
- * GInterface Implementation
+ * GObject Implementation
  *****************************************************************************/
+G_DEFINE_INTERFACE(PurpleProtocolWhiteboard, purple_protocol_whiteboard,
+                   PURPLE_TYPE_PROTOCOL)
+
 static void
-purple_protocol_factory_default_init(PurpleProtocolFactoryInterface *iface) {
+purple_protocol_whiteboard_default_init(PurpleProtocolWhiteboardInterface *iface)
+{
 }
 
 /******************************************************************************
  * Public API
  *****************************************************************************/
 PurpleWhiteboard *
-purple_protocol_factory_whiteboard_new(PurpleProtocolFactory *factory,
-                                       PurpleAccount *account,
-                                       const gchar *who,
-                                       gint state)
+purple_protocol_whiteboard_create(PurpleProtocolWhiteboard *whiteboard,
+                                  PurpleAccount *account, const gchar *who,
+                                  gint state)
 {
-	PurpleProtocolFactoryInterface *iface = NULL;
+	PurpleProtocolWhiteboardInterface *iface = NULL;
 
-	g_return_val_if_fail(PURPLE_IS_PROTOCOL_FACTORY(factory), NULL);
-	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
-	g_return_val_if_fail(who, NULL);
+	g_return_val_if_fail(PURPLE_IS_PROTOCOL_WHITEBOARD(whiteboard), NULL);
 
-	iface = PURPLE_PROTOCOL_FACTORY_GET_IFACE(factory);
-	if(iface && iface->whiteboard_new) {
-		return iface->whiteboard_new(factory, account, who, state);
+	iface = PURPLE_PROTOCOL_WHITEBOARD_GET_IFACE(whiteboard);
+	if(iface != NULL && iface->create != NULL) {
+		return iface->create(whiteboard, account, who, state);
 	}
 
 	return NULL;

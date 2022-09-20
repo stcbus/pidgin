@@ -31,7 +31,6 @@
 #include "purpleenums.h"
 #include "purpleprivate.h"
 #include "purpleprotocolserver.h"
-#include "purpleprotocolfactory.h"
 #include "request.h"
 #include "server.h"
 #include "signals.h"

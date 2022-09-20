@@ -22,7 +22,6 @@
 #include "account.h"
 #include "connection.h"
 #include "debug.h"
-#include "purpleprotocolfactory.h"
 #include "roomlist.h"
 #include "server.h"
 

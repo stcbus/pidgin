@@ -24,7 +24,7 @@
 #include "purplewhiteboard.h"
 
 #include "purpleprotocol.h"
-#include "purpleprotocolfactory.h"
+#include "purpleprotocolwhiteboard.h"
 #include "purplewhiteboarduiops.h"
 #include "util.h"
 
@@ -475,9 +475,9 @@ purple_whiteboard_new(PurpleAccount *account, const gchar *id, gint state) {
 
 	g_return_val_if_fail(PURPLE_IS_PROTOCOL(protocol), NULL);
 
-	if(PURPLE_IS_PROTOCOL_FACTORY(protocol)) {
-		whiteboard = purple_protocol_factory_whiteboard_new(
-			PURPLE_PROTOCOL_FACTORY(protocol), account, id, state);
+	if(PURPLE_IS_PROTOCOL_WHITEBOARD(protocol)) {
+		whiteboard = purple_protocol_whiteboard_create(
+			PURPLE_PROTOCOL_WHITEBOARD(protocol), account, id, state);
 	} else {
 		whiteboard = g_object_new(PURPLE_TYPE_WHITEBOARD,
 			"account", account,

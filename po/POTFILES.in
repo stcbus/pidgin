@@ -265,13 +265,13 @@ libpurple/purplepresence.c
 libpurple/purpleprotocol.c
 libpurple/purpleprotocolchat.c
 libpurple/purpleprotocolclient.c
-libpurple/purpleprotocolfactory.c
 libpurple/purpleprotocolim.c
 libpurple/purpleprotocolmanager.c
 libpurple/purpleprotocolmedia.c
 libpurple/purpleprotocolprivacy.c
 libpurple/purpleprotocolroomlist.c
 libpurple/purpleprotocolserver.c
+libpurple/purpleprotocolwhiteboard.c
 libpurple/purplesqlitehistoryadapter.c
 libpurple/purpleuiinfo.c
 libpurple/purplewhiteboard.c
