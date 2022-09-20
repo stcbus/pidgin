@@ -575,12 +575,15 @@ version 3.0.0 (??/??/????):
 		* PurplePounceCb
 		* PurplePounceEvent
 		* PurplePounceOption
+		* PurplePrefsUiOps
 		* PurpleProxyConnectData
 		* PurpleProxyConnectFunction
 		* purple_proxy_connect
 		* purple_proxy_connect_cancel
 		* purple_proxy_connect_cancel_with_handle
+		* purple_prefs_get_ui_ops
 		* purple_prefs_set_generic
+		* purple_prefs_set_ui_ops
 		* purple_prefs_update_old
 		* purple_presence_add_status
 		* purple_presence_add_list

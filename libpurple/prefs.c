@@ -37,8 +37,6 @@
 #include "purplepath.h"
 #include "util.h"
 
-static PurplePrefsUiOps *prefs_ui_ops = NULL;
-
 struct _PurplePrefCallbackData {
 	PurplePrefCallback func;
 	gpointer data;
@@ -93,25 +91,6 @@ static struct purple_pref prefs = {
 static GHashTable *prefs_hash = NULL;
 static guint       save_timer = 0;
 static gboolean    prefs_loaded = FALSE;
-static GSList     *ui_callbacks = NULL;
-
-#define PURPLE_PREFS_UI_OP_CALL(member, ...) \
-	{ \
-		PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops(); \
-		if (uiop && uiop->member) { \
-			uiop->member(__VA_ARGS__); \
-			return; \
-		} \
-	}
-
-#define PURPLE_PREFS_UI_OP_CALL_RETURN(member, ...) \
-	{ \
-		PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops(); \
-		if (uiop && uiop->member) { \
-			return uiop->member(__VA_ARGS__); \
-		} \
-	}
-
 
 /*********************************************************************
  * Private utility functions                                         *
@@ -240,8 +219,6 @@ sync_prefs(void)
 		return;
 	}
 
-	PURPLE_PREFS_UI_OP_CALL(save);
-
 	node = prefs_to_xmlnode();
 	data = purple_xmlnode_to_formatted_str(node, NULL);
 	purple_util_write_data_to_config_file("prefs.xml", data, -1);
@@ -260,8 +237,6 @@ save_cb(gpointer data)
 static void
 schedule_prefs_save(void)
 {
-	PURPLE_PREFS_UI_OP_CALL(schedule_save);
-
 	if (save_timer == 0)
 		save_timer = g_timeout_add_seconds(5, save_cb, NULL);
 }
@@ -418,13 +393,6 @@ purple_prefs_load()
 	gsize length;
 	GMarkupParseContext *context;
 	GError *error = NULL;
-
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
-	if (uiop && uiop->load) {
-		prefs_loaded = TRUE;
-		return uiop->load();
-	}
 
 	filename = g_build_filename(purple_config_dir(), "prefs.xml", NULL);
 
@@ -644,8 +612,6 @@ add_pref(PurplePrefType type, const char *name)
 void
 purple_prefs_add_none(const char *name)
 {
-	PURPLE_PREFS_UI_OP_CALL(add_none, name);
-
 	add_pref(PURPLE_PREF_NONE, name);
 }
 
@@ -653,8 +619,6 @@ void
 purple_prefs_add_bool(const char *name, gboolean value)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL(add_bool, name, value);
 
 	pref = add_pref(PURPLE_PREF_BOOLEAN, name);
 
@@ -668,8 +632,6 @@ void
 purple_prefs_add_int(const char *name, int value)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL(add_int, name, value);
 
 	pref = add_pref(PURPLE_PREF_INT, name);
 
@@ -689,8 +651,6 @@ purple_prefs_add_string(const char *name, const char *value)
 		return;
 	}
 
-	PURPLE_PREFS_UI_OP_CALL(add_string, name, value);
-
 	pref = add_pref(PURPLE_PREF_STRING, name);
 
 	if(!pref)
@@ -704,8 +664,6 @@ purple_prefs_add_string_list(const char *name, GList *value)
 {
 	struct purple_pref *pref;
 	GList *tmp;
-
-	PURPLE_PREFS_UI_OP_CALL(add_string_list, name, value);
 
 	pref = add_pref(PURPLE_PREF_STRING_LIST, name);
 
@@ -727,9 +685,6 @@ purple_prefs_add_path(const char *name, const char *value)
 {
 	struct purple_pref *pref;
 
-	/* re-use the string UI OP */
-	PURPLE_PREFS_UI_OP_CALL(add_string, name, value);
-
 	pref = add_pref(PURPLE_PREF_PATH, name);
 
 	if(!pref)
@@ -742,9 +697,6 @@ void
 purple_prefs_add_path_list(const char *name, GList *value)
 {
 	struct purple_pref *pref;
-
-	/* re-use the string list UI OP */
-	PURPLE_PREFS_UI_OP_CALL(add_string_list, name, value);
 
 	pref = add_pref(PURPLE_PREF_PATH_LIST, name);
 
@@ -831,8 +783,6 @@ purple_prefs_remove(const char *name)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL(remove, name);
-
 	pref = find_pref(name);
 
 	if(!pref)
@@ -860,43 +810,10 @@ do_callbacks(const char* name, struct purple_pref *pref)
 	}
 }
 
-static void
-do_ui_callbacks(const char *name)
-{
-	GSList *cbs;
-
-	purple_debug_misc("prefs", "trigger callback %s\n", name);
-
-	for (cbs = ui_callbacks; cbs; cbs = cbs->next) {
-		PurplePrefCallbackData *cb = cbs->data;
-		const char *cb_name = cb->name;
-		size_t len = strlen(cb_name);
-		if (!strncmp(cb_name, name, len) &&
-		    (name[len] == 0 || name[len] == '/' ||
-		     (len && name[len - 1] == '/'))) {
-			/* This test should behave like this:
-			 * name    = /toto/tata
-			 * cb_name = /toto/tata --> true
-			 * cb_name = /toto/tatatiti --> false
-			 * cb_name = / --> true
-			 * cb_name = /toto --> true
-			 * cb_name = /toto/ --> true
-			 */
-			purple_prefs_trigger_callback_object(cbs->data);
-		}
-	}
-}
-
 void
 purple_prefs_trigger_callback(const char *name)
 {
 	struct purple_pref *pref;
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
-	if (uiop && uiop->connect_callback) {
-		do_ui_callbacks(name);
-		return;
-	}
 
 	pref = find_pref(name);
 
@@ -914,8 +831,6 @@ void
 purple_prefs_set_bool(const char *name, gboolean value)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL(set_bool, name, value);
 
 	pref = find_pref(name);
 
@@ -939,8 +854,6 @@ void
 purple_prefs_set_int(const char *name, int value)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL(set_int, name, value);
 
 	pref = find_pref(name);
 
@@ -970,8 +883,6 @@ purple_prefs_set_string(const char *name, const char *value)
 		return;
 	}
 
-	PURPLE_PREFS_UI_OP_CALL(set_string, name, value);
-
 	pref = find_pref(name);
 
 	if(pref) {
@@ -995,8 +906,6 @@ void
 purple_prefs_set_string_list(const char *name, GList *value)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL(set_string_list, name, value);
 
 	pref = find_pref(name);
 
@@ -1035,8 +944,6 @@ purple_prefs_set_path(const char *name, const char *value)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL(set_string, name, value);
-
 	pref = find_pref(name);
 
 	if(pref) {
@@ -1060,8 +967,6 @@ void
 purple_prefs_set_path_list(const char *name, GList *value)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL(set_string_list, name, value);
 
 	pref = find_pref(name);
 
@@ -1089,8 +994,6 @@ purple_prefs_exists(const char *name)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL_RETURN(exists, name);
-
 	pref = find_pref(name);
 
 	if (pref != NULL)
@@ -1104,8 +1007,6 @@ purple_prefs_get_pref_type(const char *name)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_type, name);
-
 	pref = find_pref(name);
 
 	if (pref == NULL)
@@ -1118,8 +1019,6 @@ gboolean
 purple_prefs_get_bool(const char *name)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_bool, name);
 
 	pref = find_pref(name);
 
@@ -1141,8 +1040,6 @@ purple_prefs_get_int(const char *name)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_int, name);
-
 	pref = find_pref(name);
 
 	if(!pref) {
@@ -1162,8 +1059,6 @@ const char *
 purple_prefs_get_string(const char *name)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_string, name);
 
 	pref = find_pref(name);
 
@@ -1185,8 +1080,6 @@ purple_prefs_get_string_list(const char *name)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_string_list, name);
-
 	pref = find_pref(name);
 
 	if(!pref) {
@@ -1207,8 +1100,6 @@ purple_prefs_get_path(const char *name)
 {
 	struct purple_pref *pref;
 
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_string, name);
-
 	pref = find_pref(name);
 
 	if(!pref) {
@@ -1228,8 +1119,6 @@ GList *
 purple_prefs_get_path_list(const char *name)
 {
 	struct purple_pref *pref;
-
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_string_list, name);
 
 	pref = find_pref(name);
 
@@ -1319,8 +1208,6 @@ purple_prefs_rename(const char *oldname, const char *newname)
 {
 	struct purple_pref *oldpref, *newpref;
 
-	PURPLE_PREFS_UI_OP_CALL(rename, oldname, newname);
-
 	oldpref = find_pref(oldname);
 
 	/* it's already been renamed, call off the dogs */
@@ -1342,8 +1229,6 @@ void
 purple_prefs_rename_boolean_toggle(const char *oldname, const char *newname)
 {
 		struct purple_pref *oldpref, *newpref;
-
-		PURPLE_PREFS_UI_OP_CALL(rename_boolean_toggle, oldname, newname);
 
 		oldpref = find_pref(oldname);
 
@@ -1390,19 +1275,13 @@ purple_prefs_connect_callback(void *handle, const char *name, PurplePrefCallback
 	struct purple_pref *pref = NULL;
 	PurplePrefCallbackData *cb;
 	static guint cb_id = 0;
-	PurplePrefsUiOps *uiop = NULL;
-
 	g_return_val_if_fail(name != NULL, 0);
 	g_return_val_if_fail(func != NULL, 0);
 
-	uiop = purple_prefs_get_ui_ops();
-
-	if (!(uiop && uiop->connect_callback)) {
-		pref = find_pref(name);
-		if (pref == NULL) {
-			purple_debug_error("prefs", "purple_prefs_connect_callback: Unknown pref %s\n", name);
-			return 0;
-		}
+	pref = find_pref(name);
+	if (pref == NULL) {
+		purple_debug_error("prefs", "purple_prefs_connect_callback: Unknown pref %s\n", name);
+		return 0;
 	}
 
 	cb = g_new0(PurplePrefCallbackData, 1);
@@ -1413,75 +1292,15 @@ purple_prefs_connect_callback(void *handle, const char *name, PurplePrefCallback
 	cb->handle = handle;
 	cb->name = g_strdup(name);
 
-	if (uiop && uiop->connect_callback) {
-		cb->ui_data = uiop->connect_callback(name, cb);
-
-		if (cb->ui_data == NULL) {
-			purple_debug_error("prefs", "purple_prefs_connect_callback: connect failed for %s\n", name);
-			g_free(cb->name);
-			g_free(cb);
-			return 0;
-		}
-
-		ui_callbacks = g_slist_append(ui_callbacks, cb);
-	} else {
-		pref->callbacks = g_slist_append(pref->callbacks, cb);
-	}
+	pref->callbacks = g_slist_append(pref->callbacks, cb);
 
 	return cb->id;
-}
-
-static void
-purple_prefs_trigger_ui_callback_object(PurplePrefCallbackData *cb)
-{
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-	gconstpointer value = NULL;
-	PurplePrefType type = PURPLE_PREF_NONE;
-
-	type = uiop->get_type(cb->name);
-
-	switch (type) {
-		case PURPLE_PREF_INT:
-			if (uiop->get_int) {
-				value = GINT_TO_POINTER(uiop->get_int(cb->name));
-			}
-			break;
-		case PURPLE_PREF_BOOLEAN:
-			if (uiop->get_bool) {
-				value = GINT_TO_POINTER(uiop->get_bool(cb->name));
-			}
-			break;
-		case PURPLE_PREF_STRING:
-		case PURPLE_PREF_PATH:
-			if (uiop->get_string) {
-				value = uiop->get_string(cb->name);
-			}
-			break;
-		case PURPLE_PREF_STRING_LIST:
-		case PURPLE_PREF_PATH_LIST:
-			if (uiop->get_string_list) {
-				value = uiop->get_string_list(cb->name);
-			}
-			break;
-		case PURPLE_PREF_NONE:
-			break;
-		default:
-			purple_debug_error("prefs", "Unexpected type = %i\n", type);
-	}
-
-	cb->func(cb->name, type, value, cb->data);
 }
 
 void
 purple_prefs_trigger_callback_object(PurplePrefCallbackData *cb)
 {
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
-	if (uiop && uiop->connect_callback && uiop->get_type) {
-		purple_prefs_trigger_ui_callback_object(cb);
-	} else {
-		purple_prefs_trigger_callback(cb->name);
-	}
+	purple_prefs_trigger_callback(cb->name);
 }
 
 static gboolean
@@ -1511,35 +1330,10 @@ disco_callback_helper(struct purple_pref *pref, guint callback_id)
 	return FALSE;
 }
 
-static void
-disco_ui_callback_helper(guint callback_id)
-{
-	GSList *cbs;
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
-	for (cbs = ui_callbacks; cbs; cbs = cbs->next) {
-		PurplePrefCallbackData *cb = cbs->data;
-		if (cb->id == callback_id) {
-			uiop->disconnect_callback(cb->name, cb->ui_data);
-
-			ui_callbacks = g_slist_delete_link(ui_callbacks, cbs);
-			g_free(cb->name);
-			g_free(cb);
-			return;
-		}
-	}
-}
-
 void
 purple_prefs_disconnect_callback(guint callback_id)
 {
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
-	if (uiop && uiop->disconnect_callback) {
-		disco_ui_callback_helper(callback_id);
-	} else {
-		disco_callback_helper(&prefs, callback_id);
-	}
+	disco_callback_helper(&prefs, callback_id);
 }
 
 static void
@@ -1567,40 +1361,12 @@ disco_callback_helper_handle(struct purple_pref *pref, void *handle)
 		disco_callback_helper_handle(child, handle);
 }
 
-static void
-disco_ui_callback_helper_handle(void *handle)
-{
-	GSList *cbs;
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
-	for (cbs = ui_callbacks; cbs; cbs = cbs->next) {
-		PurplePrefCallbackData *cb = cbs->data;
-		if (cb->handle != handle) {
-			cbs = cbs->next;
-			continue;
-		}
-
-		uiop->disconnect_callback(cb->name, cb->ui_data);
-
-		ui_callbacks = g_slist_delete_link(ui_callbacks, cbs);
-		g_free(cb->name);
-		g_free(cb);
-		cbs = ui_callbacks;
-	}
-}
-
 void
 purple_prefs_disconnect_by_handle(void *handle)
 {
-	PurplePrefsUiOps *uiop = purple_prefs_get_ui_ops();
-
 	g_return_if_fail(handle != NULL);
 
-	if (uiop && uiop->disconnect_callback) {
-		disco_ui_callback_helper_handle(handle);
-	} else {
-		disco_callback_helper_handle(&prefs, handle);
-	}
+	disco_callback_helper_handle(&prefs, handle);
 }
 
 GList *
@@ -1609,8 +1375,6 @@ purple_prefs_get_children_names(const char *name)
 	GList * list = NULL;
 	struct purple_pref *pref, *child;
 	char sep[2] = "\0\0";;
-
-	PURPLE_PREFS_UI_OP_CALL_RETURN(get_children_names, name);
 
 	pref = find_pref(name);
 
@@ -1744,16 +1508,4 @@ purple_prefs_uninit()
 	purple_prefs_destroy();
 	g_hash_table_destroy(prefs_hash);
 	prefs_hash = NULL;
-}
-
-void
-purple_prefs_set_ui_ops(PurplePrefsUiOps *ops)
-{
-	prefs_ui_ops = ops;
-}
-
-PurplePrefsUiOps *
-purple_prefs_get_ui_ops(void)
-{
-	return prefs_ui_ops;
 }
