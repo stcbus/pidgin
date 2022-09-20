@@ -40,6 +40,7 @@ typedef void (*PurpleAccountUnregistrationCb)(PurpleAccount *account, gboolean s
 #include "buddy.h"
 #include "connection.h"
 #include "group.h"
+#include "purpleconnectionerrorinfo.h"
 #include "purpleprotocol.h"
 #include "purpleproxyinfo.h"
 #include "status.h"

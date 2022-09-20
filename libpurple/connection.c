@@ -101,10 +101,6 @@ static PurpleConnectionUiOps *connection_ui_ops = NULL;
 
 static int connections_handle;
 
-static PurpleConnectionErrorInfo *
-purple_connection_error_info_new(PurpleConnectionError type,
-                                 const gchar *description);
-
 G_DEFINE_TYPE(PurpleConnection, purple_connection, G_TYPE_OBJECT)
 
 /**************************************************************************
@@ -522,22 +518,6 @@ purple_connection_update_last_received(PurpleConnection *gc) {
 	}
 }
 
-static PurpleConnectionErrorInfo *
-purple_connection_error_info_new(PurpleConnectionError type,
-                                 const gchar *description)
-{
-	PurpleConnectionErrorInfo *err;
-
-	g_return_val_if_fail(description != NULL, NULL);
-
-	err = g_new(PurpleConnectionErrorInfo, 1);
-
-	err->type = type;
-	err->description = g_strdup(description);
-
-	return err;
-}
-
 /**************************************************************************
  * GBoxed code
  **************************************************************************/
@@ -566,36 +546,6 @@ purple_connection_ui_ops_get_type(void) {
 
 	return type;
 }
-
-static PurpleConnectionErrorInfo *
-purple_connection_error_info_copy(PurpleConnectionErrorInfo *err)
-{
-	g_return_val_if_fail(err != NULL, NULL);
-
-	return purple_connection_error_info_new(err->type, err->description);
-}
-
-static void
-purple_connection_error_info_free(PurpleConnectionErrorInfo *err) {
-	g_return_if_fail(err != NULL);
-
-	g_free(err->description);
-	g_free(err);
-}
-
-GType
-purple_connection_error_info_get_type(void) {
-	static GType type = 0;
-
-	if (type == 0) {
-		type = g_boxed_type_register_static("PurpleConnectionErrorInfo",
-				(GBoxedCopyFunc)purple_connection_error_info_copy,
-				(GBoxedFreeFunc)purple_connection_error_info_free);
-	}
-
-	return type;
-}
-
 
 /**************************************************************************
  * Helpers
