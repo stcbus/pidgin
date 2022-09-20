@@ -501,10 +501,7 @@ _purple_account_set_current_error(PurpleAccount *account,
 	                   account, old_err, new_err);
 	purple_accounts_schedule_save();
 
-	if(old_err)
-		g_free(old_err->description);
-
-	g_free(old_err);
+	g_clear_pointer(&old_err, purple_connection_error_info_free);
 }
 
 /******************************************************************************
@@ -857,13 +854,11 @@ purple_account_dispose(GObject *object)
 {
 	PurpleAccount *account = PURPLE_ACCOUNT(object);
 
-	if (!purple_account_is_disconnected(account))
+	if (!purple_account_is_disconnected(account)) {
 		purple_account_disconnect(account);
-
-	if (account->presence) {
-		g_object_unref(account->presence);
-		account->presence = NULL;
 	}
+
+	g_clear_object(&account->presence);
 
 	G_OBJECT_CLASS(purple_account_parent_class)->dispose(object);
 }
@@ -875,9 +870,9 @@ purple_account_finalize(GObject *object)
 	PurpleAccount *account = PURPLE_ACCOUNT(object);
 	PurpleConversationManager *manager = NULL;
 
-	purple_debug_info("account", "Destroying account %p\n", account);
+	purple_debug_info("account", "Destroying account %p", account);
 	purple_signal_emit(purple_accounts_get_handle(), "account-destroying",
-						account);
+	                   account);
 
 	manager = purple_conversation_manager_get_default();
 	l = purple_conversation_manager_get_all(manager);
@@ -895,11 +890,7 @@ purple_account_finalize(GObject *object)
 
 	g_clear_object(&account->proxy_info);
 
-	if (account->current_error) {
-		g_free(account->current_error->description);
-		g_free(account->current_error);
-	}
-
+	g_clear_pointer(&account->current_error, purple_connection_error_info_free);
 	g_clear_object(&account->error_notification);
 
 	g_free(account->id);

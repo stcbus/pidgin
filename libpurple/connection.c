@@ -700,9 +700,7 @@ purple_connection_finalize(GObject *object) {
 
 	purple_account_set_connection(account, NULL);
 
-	if(gc->error_info) {
-		purple_connection_error_info_free(gc->error_info);
-	}
+	g_clear_pointer(&gc->error_info, purple_connection_error_info_free);
 
 	if(gc->disconnect_timeout > 0) {
 		g_source_remove(gc->disconnect_timeout);

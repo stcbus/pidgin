@@ -289,14 +289,12 @@ parse_current_error(PurpleXmlNode *node, PurpleAccount *account)
 	}
 
 	child = purple_xmlnode_get_child(node, "description");
-	if (child)
+	if(child) {
 		description = purple_xmlnode_get_data(child);
-	if (description == NULL)
-		description = g_strdup("");
-
-	current_error = g_new0(PurpleConnectionErrorInfo, 1);
-	current_error->type = type;
-	current_error->description = description;
+	}
+	current_error = purple_connection_error_info_new(type,
+	                                                 (description != NULL) ? description : "");
+	g_free(description);
 
 	_purple_account_set_current_error(account, current_error);
 }
@@ -664,11 +662,7 @@ connection_error_cb(PurpleConnection *gc,
 
 	g_return_if_fail(account != NULL);
 
-	err = g_new0(PurpleConnectionErrorInfo, 1);
-
-	err->type = type;
-	err->description = g_strdup(description);
-
+	err = purple_connection_error_info_new(type, description);
 	_purple_account_set_current_error(account, err);
 
 	purple_signal_emit(purple_accounts_get_handle(), "account-connection-error",
