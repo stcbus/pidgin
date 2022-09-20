@@ -26,16 +26,13 @@
 struct _PurpleQueuedOutputStream
 {
 	GFilterOutputStream parent;
-};
 
-typedef struct
-{
 	GAsyncQueue *queue;
 	gboolean pending_queued;
 } PurpleQueuedOutputStreamPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE(PurpleQueuedOutputStream,
-		purple_queued_output_stream, G_TYPE_FILTER_OUTPUT_STREAM)
+G_DEFINE_TYPE(PurpleQueuedOutputStream, purple_queued_output_stream,
+              G_TYPE_FILTER_OUTPUT_STREAM)
 
 /******************************************************************************
  * Helpers
@@ -49,7 +46,6 @@ purple_queued_output_stream_push_bytes_async_cb(GObject *source,
 {
 	GTask *task = G_TASK(user_data);
 	PurpleQueuedOutputStream *stream = g_task_get_source_object(task);
-	PurpleQueuedOutputStreamPrivate *priv = purple_queued_output_stream_get_instance_private(stream);
 	gssize written;
 	GBytes *bytes;
 	gsize size;
@@ -83,7 +79,7 @@ purple_queued_output_stream_push_bytes_async_cb(GObject *source,
 
 	if (task == NULL) {
 		/* Any queued data left? */
-		task = g_async_queue_try_pop(priv->queue);
+		task = g_async_queue_try_pop(stream->queue);
 	}
 
 	if (task != NULL) {
@@ -91,7 +87,7 @@ purple_queued_output_stream_push_bytes_async_cb(GObject *source,
 		purple_queued_output_stream_start_push_bytes_async(task);
 	} else {
 		/* All done */
-		priv->pending_queued = FALSE;
+		stream->pending_queued = FALSE;
 		g_output_stream_clear_pending(G_OUTPUT_STREAM(stream));
 	}
 }
@@ -121,9 +117,8 @@ static void
 purple_queued_output_stream_dispose(GObject *object)
 {
 	PurpleQueuedOutputStream *stream = PURPLE_QUEUED_OUTPUT_STREAM(object);
-	PurpleQueuedOutputStreamPrivate *priv = purple_queued_output_stream_get_instance_private(stream);
 
-	g_clear_pointer(&priv->queue, g_async_queue_unref);
+	g_clear_pointer(&stream->queue, g_async_queue_unref);
 
 	G_OBJECT_CLASS(purple_queued_output_stream_parent_class)->dispose(object);
 }
@@ -139,9 +134,8 @@ purple_queued_output_stream_class_init(PurpleQueuedOutputStreamClass *klass)
 static void
 purple_queued_output_stream_init(PurpleQueuedOutputStream *stream)
 {
-	PurpleQueuedOutputStreamPrivate *priv = purple_queued_output_stream_get_instance_private(stream);
-	priv->queue = g_async_queue_new_full((GDestroyNotify)g_bytes_unref);
-	priv->pending_queued = FALSE;
+	stream->queue = g_async_queue_new_full((GDestroyNotify)g_bytes_unref);
+	stream->pending_queued = FALSE;
 }
 
 /******************************************************************************
@@ -170,12 +164,9 @@ purple_queued_output_stream_push_bytes_async(PurpleQueuedOutputStream *stream,
 	GTask *task;
 	gboolean set_pending;
 	GError *error = NULL;
-	PurpleQueuedOutputStreamPrivate *priv = NULL;
 
 	g_return_if_fail(PURPLE_IS_QUEUED_OUTPUT_STREAM(stream));
 	g_return_if_fail(bytes != NULL);
-
-	priv = purple_queued_output_stream_get_instance_private(stream);
 
 	task = g_task_new(stream, cancellable, callback, user_data);
 	g_task_set_task_data(task, g_bytes_ref(bytes),
@@ -192,21 +183,21 @@ purple_queued_output_stream_push_bytes_async(PurpleQueuedOutputStream *stream,
 	 */
 	if (!set_pending && (!g_error_matches(error,
 			G_IO_ERROR, G_IO_ERROR_PENDING) ||
-			!priv->pending_queued)) {
+			!stream->pending_queued)) {
 		g_task_return_error(task, error);
 		g_object_unref(task);
 		return;
 	}
 
-	g_clear_error (&error);
-	priv->pending_queued = TRUE;
+	g_clear_error(&error);
+	stream->pending_queued = TRUE;
 
 	if (set_pending) {
 		/* Start processing if there were no pending operations */
 		purple_queued_output_stream_start_push_bytes_async(task);
 	} else {
 		/* Otherwise queue the data */
-		g_async_queue_push(priv->queue, task);
+		g_async_queue_push(stream->queue, task);
 	}
 }
 
@@ -226,13 +217,10 @@ void
 purple_queued_output_stream_clear_queue(PurpleQueuedOutputStream *stream)
 {
 	GTask *task;
-	PurpleQueuedOutputStreamPrivate *priv = NULL;
 
 	g_return_if_fail(PURPLE_IS_QUEUED_OUTPUT_STREAM(stream));
 
-	priv = purple_queued_output_stream_get_instance_private(stream);
-
-	while ((task = g_async_queue_try_pop(priv->queue)) != NULL) {
+	while ((task = g_async_queue_try_pop(stream->queue)) != NULL) {
 		g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_CANCELLED,
 				"PurpleQueuedOutputStream queue cleared");
 		g_object_unref(task);
