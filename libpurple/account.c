@@ -46,10 +46,7 @@
 struct _PurpleAccount
 {
 	GObject gparent;
-};
 
-typedef struct
-{
 	gchar *id;
 
 	char *username;             /* The username.                          */
@@ -132,7 +129,7 @@ enum
 
 static GParamSpec    *properties[PROP_LAST];
 
-G_DEFINE_TYPE_WITH_PRIVATE(PurpleAccount, purple_account, G_TYPE_OBJECT);
+G_DEFINE_TYPE(PurpleAccount, purple_account, G_TYPE_OBJECT);
 
 /******************************************************************************
  * Helpers
@@ -213,14 +210,15 @@ struct register_completed_closure
 static gboolean
 purple_account_register_completed_cb(gpointer data)
 {
+	PurpleAccount *account = NULL;
 	struct register_completed_closure *closure = data;
-	PurpleAccountPrivate *priv;
 
-	priv = purple_account_get_instance_private(closure->account);
+	account = closure->account;
 
-	if (priv->registration_cb)
-		(priv->registration_cb)(closure->account, closure->succeeded,
-				priv->registration_cb_user_data);
+	if (account->registration_cb) {
+		(account->registration_cb)(closure->account, closure->succeeded,
+		                           account->registration_cb_user_data);
+	}
 
 	g_object_unref(closure->account);
 	g_free(closure);
@@ -418,10 +416,9 @@ static void
 add_all_buddies_to_permit_list(PurpleAccount *account, gboolean local)
 {
 	GSList *list;
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 
 	/* Remove anyone in the permit list who is not in the buddylist */
-	for (list = priv->permit; list != NULL; ) {
+	for (list = account->permit; list != NULL; ) {
 		char *person = list->data;
 		list = list->next;
 		if (!purple_blist_find_buddy(account, person))
@@ -435,8 +432,12 @@ add_all_buddies_to_permit_list(PurpleAccount *account, gboolean local)
 		PurpleBuddy *buddy = list->data;
 		const gchar *name = purple_buddy_get_name(buddy);
 
-		if (!g_slist_find_custom(priv->permit, name, (GCompareFunc)g_utf8_collate))
+		if (!g_slist_find_custom(account->permit, name,
+		                         (GCompareFunc)g_utf8_collate))
+		{
 			purple_account_privacy_permit_add(account, name, local);
+		}
+
 		list = g_slist_delete_link(list, list);
 	}
 }
@@ -446,41 +447,40 @@ _purple_account_set_current_error(PurpleAccount *account,
 		PurpleConnectionErrorInfo *new_err)
 {
 	PurpleConnectionErrorInfo *old_err;
-	PurpleAccountPrivate *priv;
 	PurpleNotificationManager *manager = NULL;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
-	priv = purple_account_get_instance_private(account);
 
-	old_err = priv->current_error;
+	old_err = account->current_error;
 
 	if(new_err == old_err)
 		return;
 
-	priv->current_error = new_err;
+	account->current_error = new_err;
 
 	manager = purple_notification_manager_get_default();
 
-	if(PURPLE_IS_NOTIFICATION(priv->error_notification)) {
-		purple_notification_manager_remove(manager, priv->error_notification);
-		g_clear_object(&priv->error_notification);
+	if(PURPLE_IS_NOTIFICATION(account->error_notification)) {
+		purple_notification_manager_remove(manager,
+		                                   account->error_notification);
+		g_clear_object(&account->error_notification);
 	}
 
 	if(new_err != NULL) {
 		PurpleProtocol *protocol = NULL;
 		gchar *title = NULL;
 
-		priv->error_notification =
+		account->error_notification =
 			purple_notification_new(PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR,
 			                        account, new_err, NULL);
 
-		if(priv->enabled) {
-			title = g_strdup_printf(_("%s disconnected"), priv->username);
+		if(account->enabled) {
+			title = g_strdup_printf(_("%s disconnected"), account->username);
 		} else {
-			title = g_strdup_printf(_("%s disabled"), priv->username);
+			title = g_strdup_printf(_("%s disabled"), account->username);
 		}
 
-		purple_notification_set_title(priv->error_notification, title);
+		purple_notification_set_title(account->error_notification, title);
 		g_free(title);
 
 		protocol = purple_account_get_protocol(account);
@@ -488,12 +488,12 @@ _purple_account_set_current_error(PurpleAccount *account,
 			const gchar *icon_name = purple_protocol_get_icon_name(protocol);
 
 			if(icon_name != NULL) {
-				purple_notification_set_icon_name(priv->error_notification,
+				purple_notification_set_icon_name(account->error_notification,
 				                                  icon_name);
 			}
 		}
 
-		purple_notification_manager_add(manager, priv->error_notification);
+		purple_notification_manager_add(manager, account->error_notification);
 	}
 
 	purple_signal_emit(purple_accounts_get_handle(),
@@ -633,13 +633,12 @@ _purple_account_to_xmlnode(PurpleAccount *account)
 	gchar *data = NULL;
 	const char *tmp;
 	PurpleProxyInfo *proxy_info;
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 
 	node = purple_xmlnode_new("account");
 
-	if(priv->id != NULL) {
+	if(account->id != NULL) {
 		child = purple_xmlnode_new_child(node, "id");
-		purple_xmlnode_insert_data(child, priv->id, -1);
+		purple_xmlnode_insert_data(child, account->id, -1);
 	}
 
 	child = purple_xmlnode_new_child(node, "protocol");
@@ -649,7 +648,7 @@ _purple_account_to_xmlnode(PurpleAccount *account)
 	purple_xmlnode_insert_data(child, purple_account_get_username(account), -1);
 
 	child = purple_xmlnode_new_child(node, "enabled");
-	data = g_strdup_printf("%d", priv->enabled);
+	data = g_strdup_printf("%d", account->enabled);
 	purple_xmlnode_insert_data(child, data, -1);
 	g_clear_pointer(&data, g_free);
 
@@ -666,10 +665,10 @@ _purple_account_to_xmlnode(PurpleAccount *account)
 		purple_xmlnode_insert_data(child, tmp, -1);
 	}
 
-	if (g_hash_table_size(priv->settings) > 0)
+	if (g_hash_table_size(account->settings) > 0)
 	{
 		child = purple_xmlnode_new_child(node, "settings");
-		g_hash_table_foreach(priv->settings, setting_to_xmlnode, child);
+		g_hash_table_foreach(account->settings, setting_to_xmlnode, child);
 	}
 
 	if ((proxy_info = purple_account_get_proxy_info(account)) != NULL)
@@ -678,7 +677,7 @@ _purple_account_to_xmlnode(PurpleAccount *account)
 		purple_xmlnode_insert_child(node, child);
 	}
 
-	child = current_error_to_xmlnode(priv->current_error);
+	child = current_error_to_xmlnode(account->current_error);
 	purple_xmlnode_insert_child(node, child);
 
 	return node;
@@ -689,10 +688,8 @@ _purple_account_to_xmlnode(PurpleAccount *account)
  *****************************************************************************/
 static void
 purple_account_set_id(PurpleAccount *account, const gchar *id) {
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
-
-	g_free(priv->id);
-	priv->id = g_strdup(id);
+	g_free(account->id);
+	account->id = g_strdup(id);
 
 	g_object_notify_by_pspec(G_OBJECT(account), properties[PROP_ID]);
 }
@@ -793,19 +790,16 @@ purple_account_get_property(GObject *obj, guint param_id, GValue *value,
 static void
 purple_account_init(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
+	account->settings = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
+	                                          delete_setting);
 
-	priv->settings = g_hash_table_new_full(g_str_hash, g_str_equal,
-			g_free, delete_setting);
-
-	priv->privacy_type = PURPLE_ACCOUNT_PRIVACY_ALLOW_ALL;
+	account->privacy_type = PURPLE_ACCOUNT_PRIVACY_ALLOW_ALL;
 }
 
 static void
 purple_account_constructed(GObject *object)
 {
 	PurpleAccount *account = PURPLE_ACCOUNT(object);
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 	gchar *username, *protocol_id;
 	PurpleProtocol *protocol = NULL;
 	PurpleProtocolManager *manager = NULL;
@@ -814,7 +808,7 @@ purple_account_constructed(GObject *object)
 	G_OBJECT_CLASS(purple_account_parent_class)->constructed(object);
 
 	/* If we didn't get an id, just generate a random one. */
-	if(priv->id == NULL) {
+	if(account->id == NULL) {
 		gchar *uuid = g_uuid_string_random();
 
 		purple_account_set_id(account, uuid);
@@ -841,16 +835,16 @@ purple_account_constructed(GObject *object)
 	purple_account_set_status_types(account,
 			purple_protocol_get_status_types(protocol, account));
 
-	priv->presence = PURPLE_PRESENCE(purple_account_presence_new(account));
+	account->presence = PURPLE_PRESENCE(purple_account_presence_new(account));
 
 	status_type = purple_account_get_status_type_with_primitive(account,
 			PURPLE_STATUS_AVAILABLE);
 	if (status_type != NULL)
-		purple_presence_set_status_active(priv->presence,
+		purple_presence_set_status_active(account->presence,
 										purple_status_type_get_id(status_type),
 										TRUE);
 	else
-		purple_presence_set_status_active(priv->presence,
+		purple_presence_set_status_active(account->presence,
 										"offline",
 										TRUE);
 
@@ -862,14 +856,13 @@ static void
 purple_account_dispose(GObject *object)
 {
 	PurpleAccount *account = PURPLE_ACCOUNT(object);
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 
 	if (!purple_account_is_disconnected(account))
 		purple_account_disconnect(account);
 
-	if (priv->presence) {
-		g_object_unref(priv->presence);
-		priv->presence = NULL;
+	if (account->presence) {
+		g_object_unref(account->presence);
+		account->presence = NULL;
 	}
 
 	G_OBJECT_CLASS(purple_account_parent_class)->dispose(object);
@@ -880,7 +873,6 @@ purple_account_finalize(GObject *object)
 {
 	GList *l;
 	PurpleAccount *account = PURPLE_ACCOUNT(object);
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 	PurpleConversationManager *manager = NULL;
 
 	purple_debug_info("account", "Destroying account %p\n", account);
@@ -901,26 +893,26 @@ purple_account_finalize(GObject *object)
 
 	purple_account_set_status_types(account, NULL);
 
-	g_clear_object(&priv->proxy_info);
+	g_clear_object(&account->proxy_info);
 
-	if (priv->current_error) {
-		g_free(priv->current_error->description);
-		g_free(priv->current_error);
+	if (account->current_error) {
+		g_free(account->current_error->description);
+		g_free(account->current_error);
 	}
 
-	g_clear_object(&priv->error_notification);
+	g_clear_object(&account->error_notification);
 
-	g_free(priv->id);
-	g_free(priv->username);
-	g_free(priv->alias);
-	g_free(priv->user_info);
-	g_free(priv->buddy_icon_path);
-	g_free(priv->protocol_id);
+	g_free(account->id);
+	g_free(account->username);
+	g_free(account->alias);
+	g_free(account->user_info);
+	g_free(account->buddy_icon_path);
+	g_free(account->protocol_id);
 
-	g_hash_table_destroy(priv->settings);
+	g_hash_table_destroy(account->settings);
 
-	g_slist_free_full(priv->deny, g_free);
-	g_slist_free_full(priv->permit, g_free);
+	g_slist_free_full(account->deny, g_free);
+	g_slist_free_full(account->permit, g_free);
 
 	G_OBJECT_CLASS(purple_account_parent_class)->finalize(object);
 }
@@ -1028,13 +1020,9 @@ purple_account_new(const gchar *username, const gchar *protocol_id) {
 
 const gchar *
 purple_account_get_id(PurpleAccount *account) {
-	PurpleAccountPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-
-	return priv->id;
+	return account->id;
 }
 
 void
@@ -1079,14 +1067,10 @@ purple_account_connect(PurpleAccount *account)
 void
 purple_account_set_register_callback(PurpleAccount *account, PurpleAccountRegistrationCb cb, void *user_data)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	priv->registration_cb = cb;
-	priv->registration_cb_user_data = user_data;
+	account->registration_cb = cb;
+	account->registration_cb_user_data = user_data;
 }
 
 void
@@ -1129,35 +1113,29 @@ purple_account_unregister(PurpleAccount *account,
 void
 purple_account_disconnect(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
 	const char *username;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(!purple_account_is_disconnecting(account));
 	g_return_if_fail(!purple_account_is_disconnected(account));
 
-	priv = purple_account_get_instance_private(account);
-
 	username = purple_account_get_username(account);
 	purple_debug_info("account", "Disconnecting account %s (%p)\n",
 	                  username ? username : "(null)", account);
 
-	priv->disconnecting = TRUE;
+	account->disconnecting = TRUE;
 
 	purple_account_set_connection(account, NULL);
 
-	priv->disconnecting = FALSE;
+	account->disconnecting = FALSE;
 }
 
 gboolean
 purple_account_is_disconnecting(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), TRUE);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->disconnecting;
+	return account->disconnecting;
 }
 
 void
@@ -1316,14 +1294,10 @@ purple_account_request_change_user_info(PurpleAccount *account)
 void
 purple_account_set_username(PurpleAccount *account, const char *username)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	g_free(priv->username);
-	priv->username = g_strdup(username);
+	g_free(account->username);
+	account->username = g_strdup(username);
 
 	g_object_notify_by_pspec(G_OBJECT(account), properties[PROP_USERNAME]);
 
@@ -1337,25 +1311,21 @@ purple_account_set_username(PurpleAccount *account, const char *username)
 void
 purple_account_set_private_alias(PurpleAccount *account, const char *alias)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
 	/*
-	 * Do nothing if alias and priv->alias are both NULL.  Or if
+	 * Do nothing if alias and account->alias are both NULL.  Or if
 	 * they're the exact same string.
 	 */
-	if (alias == priv->alias)
+	if (alias == account->alias)
 		return;
 
-	if ((!alias && priv->alias) || (alias && !priv->alias) ||
-			g_utf8_collate(priv->alias, alias))
+	if ((!alias && account->alias) || (alias && !account->alias) ||
+			g_utf8_collate(account->alias, alias))
 	{
-		char *old = priv->alias;
+		char *old = account->alias;
 
-		priv->alias = g_strdup(alias);
+		account->alias = g_strdup(alias);
 		g_object_notify_by_pspec(G_OBJECT(account),
 						 properties[PROP_PRIVATE_ALIAS]);
 		purple_signal_emit(purple_accounts_get_handle(), "account-alias-changed",
@@ -1369,14 +1339,10 @@ purple_account_set_private_alias(PurpleAccount *account, const char *alias)
 void
 purple_account_set_user_info(PurpleAccount *account, const char *user_info)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	g_free(priv->user_info);
-	priv->user_info = g_strdup(user_info);
+	g_free(account->user_info);
+	account->user_info = g_strdup(user_info);
 
 	g_object_notify_by_pspec(G_OBJECT(account), properties[PROP_USER_INFO]);
 
@@ -1385,14 +1351,10 @@ purple_account_set_user_info(PurpleAccount *account, const char *user_info)
 
 void purple_account_set_buddy_icon_path(PurpleAccount *account, const char *path)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	g_free(priv->buddy_icon_path);
-	priv->buddy_icon_path = g_strdup(path);
+	g_free(account->buddy_icon_path);
+	account->buddy_icon_path = g_strdup(path);
 
 	g_object_notify_by_pspec(G_OBJECT(account),
 			properties[PROP_BUDDY_ICON_PATH]);
@@ -1403,15 +1365,11 @@ void purple_account_set_buddy_icon_path(PurpleAccount *account, const char *path
 void
 purple_account_set_protocol_id(PurpleAccount *account, const char *protocol_id)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(protocol_id != NULL);
 
-	priv = purple_account_get_instance_private(account);
-
-	g_free(priv->protocol_id);
-	priv->protocol_id = g_strdup(protocol_id);
+	g_free(account->protocol_id);
+	account->protocol_id = g_strdup(protocol_id);
 
 	g_object_notify_by_pspec(G_OBJECT(account), properties[PROP_PROTOCOL_ID]);
 
@@ -1421,14 +1379,10 @@ purple_account_set_protocol_id(PurpleAccount *account, const char *protocol_id)
 void
 purple_account_set_connection(PurpleAccount *account, PurpleConnection *gc)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	g_clear_object(&priv->gc);
-	priv->gc = gc;
+	g_clear_object(&account->gc);
+	account->gc = gc;
 
 	g_object_notify_by_pspec(G_OBJECT(account), properties[PROP_CONNECTION]);
 }
@@ -1436,12 +1390,9 @@ purple_account_set_connection(PurpleAccount *account, PurpleConnection *gc)
 void
 purple_account_set_remember_password(PurpleAccount *account, gboolean value)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-	priv->remember_pass = value;
+	account->remember_pass = value;
 
 	g_object_notify_by_pspec(G_OBJECT(account),
 			properties[PROP_REMEMBER_PASSWORD]);
@@ -1452,15 +1403,12 @@ purple_account_set_remember_password(PurpleAccount *account, gboolean value)
 void
 purple_account_set_enabled(PurpleAccount *account, gboolean value) {
 	PurpleConnection *gc;
-	PurpleAccountPrivate *priv;
 	gboolean was_enabled = FALSE;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	was_enabled = priv->enabled;
-	priv->enabled = value;
+	was_enabled = account->enabled;
+	account->enabled = value;
 
 	gc = purple_account_get_connection(account);
 	if(was_enabled && !value)
@@ -1473,7 +1421,7 @@ purple_account_set_enabled(PurpleAccount *account, gboolean value) {
 	if ((gc != NULL) && (_purple_connection_wants_to_die(gc)))
 		return;
 
-	if (value && purple_presence_is_online(priv->presence))
+	if (value && purple_presence_is_online(account->presence))
 		purple_account_connect(account);
 	else if (!value && !purple_account_is_disconnected(account))
 		purple_account_disconnect(account);
@@ -1484,13 +1432,9 @@ purple_account_set_enabled(PurpleAccount *account, gboolean value) {
 void
 purple_account_set_proxy_info(PurpleAccount *account, PurpleProxyInfo *info)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
-	if(g_set_object(&priv->proxy_info, info)) {
+	if(g_set_object(&account->proxy_info, info)) {
 		g_object_notify_by_pspec(G_OBJECT(account),
 		                         properties[PROP_PROXY_INFO]);
 
@@ -1501,29 +1445,22 @@ purple_account_set_proxy_info(PurpleAccount *account, PurpleProxyInfo *info)
 void
 purple_account_set_privacy_type(PurpleAccount *account, PurpleAccountPrivacyType privacy_type)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-	priv->privacy_type = privacy_type;
+	account->privacy_type = privacy_type;
 }
 
 void
 purple_account_set_status_types(PurpleAccount *account, GList *status_types)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-
 	/* Out with the old... */
-	g_list_free_full(priv->status_types,
+	g_list_free_full(account->status_types,
 	                 (GDestroyNotify)purple_status_type_destroy);
 
 	/* In with the new... */
-	priv->status_types = status_types;
+	account->status_types = status_types;
 }
 
 void
@@ -1586,47 +1523,37 @@ purple_account_set_silence_suppression(PurpleAccount *account, gboolean value)
 void
 purple_account_clear_settings(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	priv = purple_account_get_instance_private(account);
-	g_hash_table_destroy(priv->settings);
+	g_hash_table_destroy(account->settings);
 
-	priv->settings = g_hash_table_new_full(g_str_hash, g_str_equal,
-											  g_free, delete_setting);
+	account->settings = g_hash_table_new_full(g_str_hash, g_str_equal,
+	                                          g_free, delete_setting);
 }
 
 void
 purple_account_remove_setting(PurpleAccount *account, const char *setting)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(setting != NULL);
 
-	priv = purple_account_get_instance_private(account);
-
-	g_hash_table_remove(priv->settings, setting);
+	g_hash_table_remove(account->settings, setting);
 }
 
 void
 purple_account_set_int(PurpleAccount *account, const char *name, int value)
 {
 	PurpleAccountSetting *setting;
-	PurpleAccountPrivate *priv;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(name    != NULL);
-
-	priv = purple_account_get_instance_private(account);
 
 	setting = g_new0(PurpleAccountSetting, 1);
 
 	g_value_init(&setting->value, G_TYPE_INT);
 	g_value_set_int(&setting->value, value);
 
-	g_hash_table_insert(priv->settings, g_strdup(name), setting);
+	g_hash_table_insert(account->settings, g_strdup(name), setting);
 
 	purple_accounts_schedule_save();
 }
@@ -1636,19 +1563,16 @@ purple_account_set_string(PurpleAccount *account, const char *name,
 						const char *value)
 {
 	PurpleAccountSetting *setting;
-	PurpleAccountPrivate *priv;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(name    != NULL);
-
-	priv = purple_account_get_instance_private(account);
 
 	setting = g_new0(PurpleAccountSetting, 1);
 
 	g_value_init(&setting->value, G_TYPE_STRING);
 	g_value_set_string(&setting->value, value);
 
-	g_hash_table_insert(priv->settings, g_strdup(name), setting);
+	g_hash_table_insert(account->settings, g_strdup(name), setting);
 
 	purple_accounts_schedule_save();
 }
@@ -1657,19 +1581,16 @@ void
 purple_account_set_bool(PurpleAccount *account, const char *name, gboolean value)
 {
 	PurpleAccountSetting *setting;
-	PurpleAccountPrivate *priv;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 	g_return_if_fail(name    != NULL);
-
-	priv = purple_account_get_instance_private(account);
 
 	setting = g_new0(PurpleAccountSetting, 1);
 
 	g_value_init(&setting->value, G_TYPE_BOOLEAN);
 	g_value_set_boolean(&setting->value, value);
 
-	g_hash_table_insert(priv->settings, g_strdup(name), setting);
+	g_hash_table_insert(account->settings, g_strdup(name), setting);
 
 	purple_accounts_schedule_save();
 }
@@ -1695,69 +1616,52 @@ purple_account_is_disconnected(PurpleAccount *account)
 const char *
 purple_account_get_username(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->username;
+	return account->username;
 }
 
 const char *
 purple_account_get_private_alias(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->alias;
+	return account->alias;
 }
 
 const char *
 purple_account_get_user_info(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->user_info;
+	return account->user_info;
 }
 
 const char *
 purple_account_get_buddy_icon_path(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->buddy_icon_path;
+	return account->buddy_icon_path;
 }
 
 const char *
 purple_account_get_protocol_id(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->protocol_id;
+	return account->protocol_id;
 }
 
 PurpleProtocol *
 purple_account_get_protocol(PurpleAccount *account) {
-	PurpleAccountPrivate *priv = NULL;
 	PurpleProtocolManager *manager = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
 	manager = purple_protocol_manager_get_default();
 
-	return purple_protocol_manager_find(manager, priv->protocol_id);
+	return purple_protocol_manager_find(manager, account->protocol_id);
 }
 
 const char *
@@ -1776,12 +1680,9 @@ purple_account_get_protocol_name(PurpleAccount *account)
 PurpleConnection *
 purple_account_get_connection(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->gc;
+	return account->gc;
 }
 
 const gchar *
@@ -1823,45 +1724,32 @@ purple_account_get_name_for_display(PurpleAccount *account)
 gboolean
 purple_account_get_remember_password(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->remember_pass;
+	return account->remember_pass;
 }
 
 gboolean
 purple_account_get_enabled(PurpleAccount *account) {
-	PurpleAccountPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 
-	priv = purple_account_get_instance_private(account);
-
-	return priv->enabled;
+	return account->enabled;
 }
 
 PurpleProxyInfo *
 purple_account_get_proxy_info(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->proxy_info;
+	return account->proxy_info;
 }
 
 PurpleAccountPrivacyType
 purple_account_get_privacy_type(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), PURPLE_ACCOUNT_PRIVACY_ALLOW_ALL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->privacy_type;
+	return account->privacy_type;
 }
 
 gboolean
@@ -1870,22 +1758,20 @@ purple_account_privacy_permit_add(PurpleAccount *account, const char *who,
 {
 	char *name;
 	PurpleBuddy *buddy;
-	PurpleAccountPrivate *priv;
 	PurpleAccountUiOps *ui_ops = purple_accounts_get_ui_ops();
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 	g_return_val_if_fail(who     != NULL, FALSE);
 
-	priv = purple_account_get_instance_private(account);
 	name = g_strdup(purple_normalize(account, who));
 
-	if (g_slist_find_custom(priv->permit, name, (GCompareFunc)g_strcmp0) != NULL) {
+	if (g_slist_find_custom(account->permit, name, (GCompareFunc)g_strcmp0) != NULL) {
 		/* This buddy already exists, so bail out */
 		g_free(name);
 		return FALSE;
 	}
 
-	priv->permit = g_slist_append(priv->permit, name);
+	account->permit = g_slist_append(account->permit, name);
 
 	if (!local_only && purple_account_is_connected(account))
 		purple_serv_add_permit(purple_account_get_connection(account), who);
@@ -1912,16 +1798,14 @@ purple_account_privacy_permit_remove(PurpleAccount *account, const char *who,
 	const char *name;
 	PurpleBuddy *buddy;
 	char *del;
-	PurpleAccountPrivate *priv;
 	PurpleAccountUiOps *ui_ops = purple_accounts_get_ui_ops();
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 	g_return_val_if_fail(who     != NULL, FALSE);
 
-	priv = purple_account_get_instance_private(account);
 	name = purple_normalize(account, who);
 
-	l = g_slist_find_custom(priv->permit, name, (GCompareFunc)g_strcmp0);
+	l = g_slist_find_custom(account->permit, name, (GCompareFunc)g_strcmp0);
 	if (l == NULL) {
 		/* We didn't find the buddy we were looking for, so bail out */
 		return FALSE;
@@ -1931,7 +1815,7 @@ purple_account_privacy_permit_remove(PurpleAccount *account, const char *who,
 	 * l->data == who. In such cases, freeing l->data here can cause crashes
 	 * later when who is used. */
 	del = l->data;
-	priv->permit = g_slist_delete_link(priv->permit, l);
+	account->permit = g_slist_delete_link(account->permit, l);
 
 	if (!local_only && purple_account_is_connected(account)) {
 		purple_serv_remove_permit(purple_account_get_connection(account), who);
@@ -1958,22 +1842,22 @@ purple_account_privacy_deny_add(PurpleAccount *account, const char *who,
 {
 	char *name;
 	PurpleBuddy *buddy;
-	PurpleAccountPrivate *priv;
 	PurpleAccountUiOps *ui_ops = purple_accounts_get_ui_ops();
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 	g_return_val_if_fail(who     != NULL, FALSE);
 
-	priv = purple_account_get_instance_private(account);
 	name = g_strdup(purple_normalize(account, who));
 
-	if (g_slist_find_custom(priv->deny, name, (GCompareFunc)g_strcmp0) != NULL) {
+	if (g_slist_find_custom(account->deny, name,
+	                        (GCompareFunc)g_strcmp0) != NULL)
+	{
 		/* This buddy already exists, so bail out */
 		g_free(name);
 		return FALSE;
 	}
 
-	priv->deny = g_slist_append(priv->deny, name);
+	account->deny = g_slist_append(account->deny, name);
 
 	if (!local_only && purple_account_is_connected(account))
 		purple_serv_add_deny(purple_account_get_connection(account), who);
@@ -1999,16 +1883,14 @@ purple_account_privacy_deny_remove(PurpleAccount *account, const char *who,
 	const char *normalized;
 	char *name;
 	PurpleBuddy *buddy;
-	PurpleAccountPrivate *priv;
 	PurpleAccountUiOps *ui_ops = purple_accounts_get_ui_ops();
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 	g_return_val_if_fail(who     != NULL, FALSE);
 
-	priv = purple_account_get_instance_private(account);
 	normalized = purple_normalize(account, who);
 
-	l = g_slist_find_custom(priv->deny, normalized, (GCompareFunc)g_strcmp0);
+	l = g_slist_find_custom(account->deny, normalized, (GCompareFunc)g_strcmp0);
 	if (l == NULL) {
 		/* We didn't find the buddy we were looking for, so bail out */
 		return FALSE;
@@ -2017,7 +1899,7 @@ purple_account_privacy_deny_remove(PurpleAccount *account, const char *who,
 	buddy = purple_blist_find_buddy(account, normalized);
 
 	name = l->data;
-	priv->deny = g_slist_delete_link(priv->deny, l);
+	account->deny = g_slist_delete_link(account->deny, l);
 
 	if (!local_only && purple_account_is_connected(account)) {
 		purple_serv_remove_deny(purple_account_get_connection(account), name);
@@ -2044,7 +1926,6 @@ purple_account_privacy_allow(PurpleAccount *account, const char *who)
 {
 	GSList *list;
 	PurpleAccountPrivacyType type = purple_account_get_privacy_type(account);
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 
 	switch (type) {
 		case PURPLE_ACCOUNT_PRIVACY_ALLOW_ALL:
@@ -2059,7 +1940,7 @@ purple_account_privacy_allow(PurpleAccount *account, const char *who)
 			{
 				/* Empty the allow-list. */
 				const char *norm = purple_normalize(account, who);
-				for (list = priv->permit; list != NULL;) {
+				for (list = account->permit; list != NULL;) {
 					char *person = list->data;
 					list = list->next;
 					if (!purple_strequal(norm, person))
@@ -2090,14 +1971,13 @@ purple_account_privacy_deny(PurpleAccount *account, const char *who)
 {
 	GSList *list;
 	PurpleAccountPrivacyType type = purple_account_get_privacy_type(account);
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
 
 	switch (type) {
 		case PURPLE_ACCOUNT_PRIVACY_ALLOW_ALL:
 			{
 				/* Empty the deny-list. */
 				const char *norm = purple_normalize(account, who);
-				for (list = priv->deny; list != NULL; ) {
+				for (list = account->deny; list != NULL; ) {
 					char *person = list->data;
 					list = list->next;
 					if (!purple_strequal(norm, person))
@@ -2134,30 +2014,22 @@ purple_account_privacy_deny(PurpleAccount *account, const char *who)
 GSList *
 purple_account_privacy_get_permitted(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->permit;
+	return account->permit;
 }
 
 GSList *
 purple_account_privacy_get_denied(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->deny;
+	return account->deny;
 }
 
 gboolean
 purple_account_privacy_check(PurpleAccount *account, const char *who)
 {
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
-
 	switch (purple_account_get_privacy_type(account)) {
 		case PURPLE_ACCOUNT_PRIVACY_ALLOW_ALL:
 			return TRUE;
@@ -2167,11 +2039,11 @@ purple_account_privacy_check(PurpleAccount *account, const char *who)
 
 		case PURPLE_ACCOUNT_PRIVACY_ALLOW_USERS:
 			who = purple_normalize(account, who);
-			return (g_slist_find_custom(priv->permit, who, (GCompareFunc)g_strcmp0) != NULL);
+			return (g_slist_find_custom(account->permit, who, (GCompareFunc)g_strcmp0) != NULL);
 
 		case PURPLE_ACCOUNT_PRIVACY_DENY_USERS:
 			who = purple_normalize(account, who);
-			return (g_slist_find_custom(priv->deny, who, (GCompareFunc)g_strcmp0) == NULL);
+			return (g_slist_find_custom(account->deny, who, (GCompareFunc)g_strcmp0) == NULL);
 
 		case PURPLE_ACCOUNT_PRIVACY_ALLOW_BUDDYLIST:
 			return (purple_blist_find_buddy(account, who) != NULL);
@@ -2184,25 +2056,18 @@ purple_account_privacy_check(PurpleAccount *account, const char *who)
 PurpleStatus *
 purple_account_get_active_status(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return purple_presence_get_active_status(priv->presence);
+	return purple_presence_get_active_status(account->presence);
 }
 
 PurpleStatus *
 purple_account_get_status(PurpleAccount *account, const char *status_id)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 	g_return_val_if_fail(status_id != NULL, NULL);
 
-	priv = purple_account_get_instance_private(account);
-
-	return purple_presence_get_status(priv->presence, status_id);
+	return purple_presence_get_status(account->presence, status_id);
 }
 
 PurpleStatusType *
@@ -2245,37 +2110,27 @@ purple_account_get_status_type_with_primitive(PurpleAccount *account, PurpleStat
 PurplePresence *
 purple_account_get_presence(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->presence;
+	return account->presence;
 }
 
 gboolean
 purple_account_is_status_active(PurpleAccount *account,
 							  const char *status_id)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 	g_return_val_if_fail(status_id != NULL, FALSE);
 
-	priv = purple_account_get_instance_private(account);
-
-	return purple_presence_is_status_active(priv->presence, status_id);
+	return purple_presence_is_status_active(account->presence, status_id);
 }
 
 GList *
 purple_account_get_status_types(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	priv = purple_account_get_instance_private(account);
-	return priv->status_types;
+	return account->status_types;
 }
 
 int
@@ -2283,14 +2138,11 @@ purple_account_get_int(PurpleAccount *account, const char *name,
 					 int default_value)
 {
 	PurpleAccountSetting *setting;
-	PurpleAccountPrivate *priv;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), default_value);
 	g_return_val_if_fail(name    != NULL, default_value);
 
-	priv = purple_account_get_instance_private(account);
-
-	setting = g_hash_table_lookup(priv->settings, name);
+	setting = g_hash_table_lookup(account->settings, name);
 
 	if (setting == NULL)
 		return default_value;
@@ -2305,14 +2157,11 @@ purple_account_get_string(PurpleAccount *account, const char *name,
 						const char *default_value)
 {
 	PurpleAccountSetting *setting;
-	PurpleAccountPrivate *priv;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), default_value);
 	g_return_val_if_fail(name    != NULL, default_value);
 
-	priv = purple_account_get_instance_private(account);
-
-	setting = g_hash_table_lookup(priv->settings, name);
+	setting = g_hash_table_lookup(account->settings, name);
 
 	if (setting == NULL)
 		return default_value;
@@ -2327,14 +2176,11 @@ purple_account_get_bool(PurpleAccount *account, const char *name,
 					  gboolean default_value)
 {
 	PurpleAccountSetting *setting;
-	PurpleAccountPrivate *priv;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), default_value);
 	g_return_val_if_fail(name    != NULL, default_value);
 
-	priv = purple_account_get_instance_private(account);
-
-	setting = g_hash_table_lookup(priv->settings, name);
+	setting = g_hash_table_lookup(account->settings, name);
 
 	if (setting == NULL)
 		return default_value;
@@ -2483,9 +2329,9 @@ gboolean purple_account_supports_offline_message(PurpleAccount *account, PurpleB
 const PurpleConnectionErrorInfo *
 purple_account_get_current_error(PurpleAccount *account)
 {
-	PurpleAccountPrivate *priv = purple_account_get_instance_private(account);
+	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 
-	return priv->current_error;
+	return account->current_error;
 }
 
 void
