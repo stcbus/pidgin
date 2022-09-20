@@ -405,6 +405,7 @@ version 3.0.0 (??/??/????):
 		* purple_connection_new_unregister
 		* purple_connection_destroy
 		* purple_connection_set_account
+		* purple_connection_ssl_error
 		* PurpleConnectionUiOps->connect_progress
 		* purple_connection_update_progress
 		* purple_connections_get_connecting
@@ -666,6 +667,7 @@ version 3.0.0 (??/??/????):
 		* purple_srv_cancel
 		* purple_srv_resolve_account
 		* purple_srv_txt_query_destroy
+		* PurpleSslErrorType
 		* purple_str_add_cr
 		* purple_strcasereplace
 		* PurpleStunNatType

@@ -195,21 +195,6 @@ struct _PurpleConnectionErrorInfo
 	char *description;
 };
 
-/**
- * PurpleSslErrorType:
- * @PURPLE_SSL_HANDSHAKE_FAILED: The handshake failed
- * @PURPLE_SSL_CONNECT_FAILED: The connection failed
- * @PURPLE_SSL_CERTIFICATE_INVALID: The certificated is invalid
- *
- * Possible SSL errors.
- */
-typedef enum
-{
-	PURPLE_SSL_HANDSHAKE_FAILED = 1,
-	PURPLE_SSL_CONNECT_FAILED = 2,
-	PURPLE_SSL_CERTIFICATE_INVALID = 3
-} PurpleSslErrorType;
-
 #include <time.h>
 
 #include "account.h"
@@ -495,19 +480,6 @@ purple_connection_error(PurpleConnection *gc,
  */
 PurpleConnectionErrorInfo *
 purple_connection_get_error_info(PurpleConnection *gc);
-
-/**
- * purple_connection_ssl_error:
- * @gc: The connection.
- * @ssl_error: The SSL error type.
- *
- * Closes a connection due to an SSL error; this is basically a shortcut to
- * turning the #PurpleSslErrorType into a #PurpleConnectionError and a
- * human-readable string and then calling purple_connection_error().
- */
-void
-purple_connection_ssl_error (PurpleConnection *gc,
-                             PurpleSslErrorType ssl_error);
 
 /*
  * purple_connection_g_error

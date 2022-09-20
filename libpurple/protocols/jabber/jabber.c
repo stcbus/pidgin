@@ -731,10 +731,14 @@ tls_handshake_cb(GObject *source_object, GAsyncResult *res, gpointer data)
 			/* Connection already closed/freed. Escape. */
 		} else if (g_error_matches(error, G_TLS_ERROR, G_TLS_ERROR_HANDSHAKE)) {
 			/* In Gio, a handshake error is because of the cert */
-			purple_connection_ssl_error(js->gc, PURPLE_SSL_CERTIFICATE_INVALID);
+			purple_connection_error(js->gc,
+			                        PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR,
+			                        _("SSL peer presented an invalid certificate"));
 		} else {
 			/* Report any other errors as handshake failing */
-			purple_connection_ssl_error(js->gc, PURPLE_SSL_HANDSHAKE_FAILED);
+			purple_connection_error(js->gc,
+			                        PURPLE_CONNECTION_ERROR_ENCRYPTION_ERROR,
+			                        _("SSL Handshake Failed"));
 		}
 
 		g_error_free(error);
@@ -770,7 +774,8 @@ static void tls_init(JabberStream *js)
 		                     "Error creating TLS client connection: %s",
 		                     error->message);
 		g_clear_error(&error);
-		purple_connection_ssl_error(js->gc, PURPLE_SSL_CONNECT_FAILED);
+		purple_connection_error(js->gc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
+		                        _("SSL Connection Failed"));
 		return;
 	}
 

@@ -426,36 +426,6 @@ purple_connection_get_error_info(PurpleConnection *gc) {
 }
 
 void
-purple_connection_ssl_error(PurpleConnection *gc,
-                            PurpleSslErrorType ssl_error)
-{
-	PurpleConnectionError reason;
-	const gchar *message;
-
-	switch (ssl_error) {
-		case PURPLE_SSL_HANDSHAKE_FAILED:
-			message = _("SSL Handshake Failed");
-			reason = PURPLE_CONNECTION_ERROR_ENCRYPTION_ERROR;
-			break;
-		case PURPLE_SSL_CONNECT_FAILED:
-			message = _("SSL Connection Failed");
-			reason = PURPLE_CONNECTION_ERROR_NETWORK_ERROR;
-			break;
-		case PURPLE_SSL_CERTIFICATE_INVALID:
-			/* TODO: maybe PURPLE_SSL_* should be more specific? */
-			message = _("SSL peer presented an invalid certificate");
-			reason = PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR;
-			break;
-		default:
-			g_assert_not_reached ();
-			message = _("Unknown SSL error");
-			reason = PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR;
-	}
-
-	purple_connection_error(gc, reason, message);
-}
-
-void
 purple_connection_g_error(PurpleConnection *pc, const GError *error) {
 	PurpleConnectionError reason;
 
