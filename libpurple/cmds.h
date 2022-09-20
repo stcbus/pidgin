@@ -141,36 +141,6 @@ typedef enum {
 	PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS = 0x08
 } PurpleCmdFlag;
 
-/**
- * PurpleCommandsUiOps:
- * @register_command: If implemented, the UI is responsible for handling
- *		commands. See @purple_cmd_register for the argument values.
- * @unregister_command: Should be implemented if register_command is
- *		implemented. @name and @prpl_id will have the same value
- *		that were used for the register_command call.
- *
- * Command UI operations;  UIs should implement this if they want to handle
- * commands themselves, rather than relying on the core.
- *
- * See <link linkend="chapter-ui-ops">List of <literal>UiOps</literal>
- * Structures</link>
- *
- * Since: 2.11.0
- */
-typedef struct {
-	void (*register_command)(const gchar *name, PurpleCmdPriority priority,
-				 PurpleCmdFlag flags, const gchar *prpl_id,
-				 const gchar *help, PurpleCmdId id);
-
-	void (*unregister_command)(const gchar *name, const gchar *prpl_id);
-
-	/*< private >*/
-	void (*_purple_reserved1)(void);
-	void (*_purple_reserved2)(void);
-	void (*_purple_reserved3)(void);
-	void (*_purple_reserved4)(void);
-} PurpleCommandsUiOps;
-
 G_BEGIN_DECLS
 
 /**************************************************************************/
@@ -325,26 +295,6 @@ GList *purple_cmd_help(PurpleConversation *conv, const gchar *cmd);
  * Returns: The handle
  */
 gpointer purple_cmds_get_handle(void);
-
-/**
- * purple_cmds_set_ui_ops:
- * @ops: The UI operations structure.
- *
- * Sets the UI operations structure to be used when registering and
- * unregistering commands.  The UI operations need only be set if the
- * UI wants to handle the commands itself; otherwise, leave it as NULL.
- */
-void purple_cmds_set_ui_ops(PurpleCommandsUiOps *ops);
-
-/**
- * purple_cmds_get_ui_ops:
- *
- * Returns the UI operations structure to be used when registering and
- * unregistering commands.
- *
- * Returns: (transfer none): The UI operations structure.
- */
-PurpleCommandsUiOps *purple_cmds_get_ui_ops(void);
 
 /**
  * purple_cmds_init:

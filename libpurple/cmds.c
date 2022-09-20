@@ -20,7 +20,6 @@
 #include "purplemarkup.h"
 #include "cmds.h"
 
-static PurpleCommandsUiOps *cmds_ui_ops = NULL;
 static GList *cmds = NULL;
 static guint next_id = 1;
 
@@ -49,7 +48,6 @@ PurpleCmdId purple_cmd_register(const gchar *cmd, const gchar *args,
 {
 	PurpleCmdId id;
 	PurpleCmd *c;
-	PurpleCommandsUiOps *ops;
 
 	g_return_val_if_fail(cmd != NULL && *cmd != '\0', 0);
 	g_return_val_if_fail(args != NULL, 0);
@@ -69,10 +67,6 @@ PurpleCmdId purple_cmd_register(const gchar *cmd, const gchar *args,
 	c->data = data;
 
 	cmds = g_list_insert_sorted(cmds, c, (GCompareFunc)cmds_compare_func);
-
-	ops = purple_cmds_get_ui_ops();
-	if (ops && ops->register_command)
-		ops->register_command(cmd, p, f, protocol_id, helpstr, c->id);
 
 	purple_signal_emit(purple_cmds_get_handle(), "cmd-added", cmd, p, f);
 
@@ -98,7 +92,6 @@ void purple_cmd_unregister(PurpleCmdId id)
 {
 	PurpleCmd *c;
 	GList *l;
-	PurpleCommandsUiOps *ops;
 
 	l = g_list_find_custom(cmds, GUINT_TO_POINTER(id), purple_cmd_cmp_id);
 	if (!l) {
@@ -106,11 +99,6 @@ void purple_cmd_unregister(PurpleCmdId id)
 	}
 
 	c = l->data;
-
-	ops = purple_cmds_get_ui_ops();
-	if (ops && ops->unregister_command) {
-		ops->unregister_command(c->cmd, c->protocol_id);
-	}
 
 	cmds = g_list_delete_link(cmds, l);
 	purple_signal_emit(purple_cmds_get_handle(), "cmd-removed", c->cmd);
@@ -386,21 +374,6 @@ gpointer purple_cmds_get_handle(void)
 {
 	static int handle;
 	return &handle;
-}
-
-void
-purple_cmds_set_ui_ops(PurpleCommandsUiOps *ops)
-{
-	cmds_ui_ops = ops;
-}
-
-PurpleCommandsUiOps *
-purple_cmds_get_ui_ops(void)
-{
-	/* It is perfectly acceptable for cmds_ui_ops to be NULL; this just
-	 * means that the default libpurple implementation will be used.
-	 */
-	return cmds_ui_ops;
 }
 
 void purple_cmds_init(void)

@@ -399,6 +399,9 @@ version 3.0.0 (??/??/????):
 		* purple_certificate_get_fingerprint_sha256
 		* Purple Cipher API (PurpleCipherContext and friends).
 		  Use GLib's GHmac or GChecksum instead.
+		* PurpleCommandsUiOps
+		* purple_cmds_get_ui_ops
+		* purple_cmds_set_ui_ops
 		* PURPLE_CMD_FUNC
 		* purple_connection_error_reason
 		* PURPLE_CONNECTION_FLAG_ALLOW_CUSTOM_SMILEY
