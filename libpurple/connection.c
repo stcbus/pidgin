@@ -874,19 +874,12 @@ _purple_connection_new(PurpleAccount *account, gboolean is_registration,
 		}
 	}
 
-	if(PURPLE_IS_PROTOCOL_FACTORY(protocol)) {
-		PurpleProtocolFactory *factory = PURPLE_PROTOCOL_FACTORY(protocol);
-
-		gc = purple_protocol_factory_connection_new(factory, account,
-		                                            password);
-	} else {
-		gc = g_object_new(
-			PURPLE_TYPE_CONNECTION,
-			"protocol", protocol,
-			"account", account,
-			"password", password,
-			NULL);
-	}
+	gc = g_object_new(
+		PURPLE_TYPE_CONNECTION,
+		"protocol", protocol,
+		"account", account,
+		"password", password,
+		NULL);
 
 	g_return_if_fail(gc != NULL);
 
@@ -947,18 +940,12 @@ _purple_connection_new_unregister(PurpleAccount *account, const char *password,
 		return;
 	}
 
-	if(PURPLE_IS_PROTOCOL_FACTORY(protocol)) {
-		PurpleProtocolFactory *factory = PURPLE_PROTOCOL_FACTORY(protocol);
-		gc = purple_protocol_factory_connection_new(factory, account,
-		                                            password);
-	} else {
-		gc = g_object_new(
-			PURPLE_TYPE_CONNECTION,
-			"protocol", protocol,
-			"account", account,
-			"password", password,
-			NULL);
-	}
+	gc = g_object_new(
+		PURPLE_TYPE_CONNECTION,
+		"protocol", protocol,
+		"account", account,
+		"password", password,
+		NULL);
 
 	g_return_if_fail(gc != NULL);
 

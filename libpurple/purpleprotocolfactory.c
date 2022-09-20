@@ -35,24 +35,6 @@ purple_protocol_factory_default_init(PurpleProtocolFactoryInterface *iface) {
 /******************************************************************************
  * Public API
  *****************************************************************************/
-PurpleConnection *
-purple_protocol_factory_connection_new(PurpleProtocolFactory *factory,
-                                       PurpleAccount *account,
-                                       const gchar *password)
-{
-	PurpleProtocolFactoryInterface *iface = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_PROTOCOL_FACTORY(factory), NULL);
-	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
-
-	iface = PURPLE_PROTOCOL_FACTORY_GET_IFACE(factory);
-	if(iface && iface->connection_new) {
-		return iface->connection_new(factory, account, password);
-	}
-
-	return NULL;
-}
-
 PurpleWhiteboard *
 purple_protocol_factory_whiteboard_new(PurpleProtocolFactory *factory,
                                        PurpleAccount *account,

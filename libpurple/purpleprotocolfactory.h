@@ -31,9 +31,6 @@
 #include <glib-object.h>
 
 #include <libpurple/account.h>
-#include <libpurple/connection.h>
-#include <libpurple/purpleprotocol.h>
-#include <libpurple/roomlist.h>
 
 G_BEGIN_DECLS
 
@@ -68,10 +65,6 @@ struct _PurpleProtocolFactoryInterface {
 	GTypeInterface parent_iface;
 
 	/*< public >*/
-	PurpleConnection *(*connection_new)(PurpleProtocolFactory *factory,
-	                                    PurpleAccount *account,
-	                                    const gchar *password);
-
 	PurpleWhiteboard *(*whiteboard_new)(PurpleProtocolFactory *factory,
 	                                    PurpleAccount *account,
 	                                    const gchar *who,
@@ -87,21 +80,6 @@ struct _PurpleProtocolFactoryInterface {
  *
  * Since: 3.0.0
  */
-
-/**
- * purple_protocol_factory_connection_new:
- * @factory: The #PurpleProtocolFactory instance.
- * @account: The #PurpleAccount to create the connection for.
- * @password: The password for @account.
- *
- * Creates a new protocol-specific #PurpleConnection subclass.
- *
- * Returns: (transfer full): The new #PurpleConnection subclass.
- *
- * Since: 3.0.0
- */
-PurpleConnection *purple_protocol_factory_connection_new(PurpleProtocolFactory *factory,
-		PurpleAccount *account, const gchar *password);
 
 /**
  * purple_protocol_factory_whiteboard_new:
