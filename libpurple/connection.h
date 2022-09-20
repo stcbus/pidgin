@@ -115,10 +115,6 @@ typedef enum
  *   <link linkend="connections-signing-off"><literal>"signing-off"</literal></link>
  *   and <link linkend="connections-signed-off"><literal>"signed-off"</literal></link>
  *                signals).
- * @notice: Used to display connection-specific notices. (Pidgin's Gtk user
- *          interface implements this as a no-op; purple_connection_notice(),
- *          which uses this operation, is not used by any of the protocols
- *          shipped with libpurple.)
  * @network_connected: Called when libpurple discovers that the computer's
  *                     network connection is active.  On Linux, this uses
  *                     Network Manager if available; on Windows, it uses
@@ -144,8 +140,6 @@ struct _PurpleConnectionUiOps
 {
 	void (*connected)(PurpleConnection *gc);
 	void (*disconnected)(PurpleConnection *gc);
-
-	void (*notice)(PurpleConnection *gc, const char *text);
 
 	void (*network_connected)(void);
 	void (*network_disconnected)(void);
@@ -340,15 +334,6 @@ const char *purple_connection_get_display_name(PurpleConnection *gc);
  * Returns: The protocol data for the connection.
  */
 void *purple_connection_get_protocol_data(PurpleConnection *gc);
-
-/**
- * purple_connection_notice:
- * @gc:   The connection.
- * @text: The notice text.
- *
- * Displays a connection-specific notice.
- */
-void purple_connection_notice(PurpleConnection *gc, const char *text);
 
 /**
  * purple_connection_error:

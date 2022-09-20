@@ -164,14 +164,10 @@ pidgin_connection_network_disconnected(void) {
 	}
 }
 
-static void pidgin_connection_notice(PurpleConnection *gc, const char *text)
-{ }
-
 static PurpleConnectionUiOps conn_ui_ops =
 {
 	pidgin_connection_connected,
 	pidgin_connection_disconnected,
-	pidgin_connection_notice,
 	pidgin_connection_network_connected,
 	pidgin_connection_network_disconnected,
 	pidgin_connection_report_disconnect,

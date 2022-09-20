@@ -404,10 +404,12 @@ version 3.0.0 (??/??/????):
 		* PURPLE_CONNECTION_FLAG_ALLOW_CUSTOM_SMILEY
 		* purple_connection_new
 		* purple_connection_new_unregister
+		* purple_connection_notice
 		* purple_connection_destroy
 		* purple_connection_set_account
 		* purple_connection_ssl_error
 		* PurpleConnectionUiOps->connect_progress
+		* PurpleConnectionUiOps->notice
 		* purple_connection_update_progress
 		* purple_connections_get_connecting
 		* purple_contact_set_alias

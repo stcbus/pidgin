@@ -332,20 +332,6 @@ _purple_connection_wants_to_die(PurpleConnection *gc) {
 	return gc->wants_to_die;
 }
 
-void
-purple_connection_notice(PurpleConnection *gc, const char *text) {
-	PurpleConnectionUiOps *ops;
-
-	g_return_if_fail(PURPLE_IS_CONNECTION(gc));
-	g_return_if_fail(text != NULL);
-
-	ops = purple_connections_get_ui_ops();
-
-	if(ops != NULL && ops->notice != NULL) {
-		ops->notice(gc, text);
-	}
-}
-
 static gboolean
 purple_connection_disconnect_cb(gpointer data) {
 	PurpleAccount *account = data;
