@@ -300,11 +300,10 @@ pidgin_quit(void)
 	g_application_quit(g_application_get_default());
 }
 
-static PurpleCoreUiOps core_ops =
-{
-	pidgin_prefs_init,
-	pidgin_ui_init,
-	pidgin_quit,
+static PurpleCoreUiOps core_ops = {
+	.ui_prefs_init = pidgin_prefs_init,
+	.ui_init = pidgin_ui_init,
+	.quit = pidgin_quit,
 };
 
 PurpleCoreUiOps *

@@ -45,11 +45,10 @@ finch_quit(void)
 	finch_ui_uninit();
 }
 
-static PurpleCoreUiOps core_ops =
-{
-	finch_prefs_init,
-	finch_ui_init,
-	finch_quit,
+static PurpleCoreUiOps core_ops = {
+	.ui_prefs_init = finch_prefs_init,
+	.ui_init = finch_ui_init,
+	.quit = finch_quit,
 };
 
 static PurpleCoreUiOps *
