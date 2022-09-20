@@ -215,13 +215,17 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 	switch(response_id) {
 		case RESPONSE_ADD:
 			editor = pidgin_account_editor_new(NULL);
-			gtk_widget_show(editor);
+			gtk_window_set_transient_for(GTK_WINDOW(editor),
+			                             GTK_WINDOW(dialog));
+			gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
 			break;
 		case RESPONSE_MODIFY:
 			account = pidgin_account_manager_get_selected_account(manager);
 
 			editor = pidgin_account_editor_new(account);
-			gtk_widget_show(editor);
+			gtk_window_set_transient_for(GTK_WINDOW(editor),
+			                             GTK_WINDOW(dialog));
+			gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
 
 			g_clear_object(&account);
 			break;

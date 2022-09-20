@@ -102,12 +102,10 @@ G_DEFINE_TYPE(PidginApplication, pidgin_application, GTK_TYPE_APPLICATION)
  * and if that fails, returns NULL.
  */
 static GtkWindow *
-pidgin_application_get_active_window(void) {
-	GApplication *application = NULL;
+pidgin_application_get_active_window(PidginApplication *application) {
 	GtkApplication *gtk_application = NULL;
 	GtkWindow *window = NULL;
 
-	application = g_application_get_default();
 	gtk_application = GTK_APPLICATION(application);
 
 	window = gtk_application_get_active_window(gtk_application);
@@ -121,6 +119,32 @@ pidgin_application_get_active_window(void) {
 	}
 
 	return window;
+}
+
+/*
+ * pidgin_application_present_transient_window:
+ * @application: The application instance.
+ * @window: The [class@Gtk.Window] to present.
+ *
+ * Presents a window and makes sure its transient parent is set to the currently
+ * active window of @application.
+ *
+ * Since: 3.0.0
+ */
+static void
+pidgin_application_present_transient_window(PidginApplication *application,
+                                            GtkWindow *window)
+{
+	GtkWindow *active_window = NULL;
+
+	g_return_if_fail(PIDGIN_IS_APPLICATION(application));
+	g_return_if_fail(GTK_IS_WINDOW(window));
+
+	active_window = pidgin_application_get_active_window(application);
+
+	gtk_window_set_transient_for(window, active_window);
+
+	gtk_window_present_with_time(window, GDK_CURRENT_TIME);
 }
 
 static void
@@ -263,43 +287,31 @@ static void
 pidgin_application_about(GSimpleAction *simple, GVariant *parameter,
                          gpointer data)
 {
+	PidginApplication *application = data;
 	static GtkWidget *about = NULL;
 
 	if(!GTK_IS_WIDGET(about)) {
-		GtkWindow *window = NULL;
-
 		about = pidgin_about_dialog_new();
 		g_object_add_weak_pointer(G_OBJECT(about), (gpointer)&about);
-
-		window = pidgin_application_get_active_window();
-		if(GTK_IS_WINDOW(window)) {
-			gtk_window_set_transient_for(GTK_WINDOW(about), window);
-		}
 	}
 
-	gtk_widget_show(about);
+	pidgin_application_present_transient_window(application, GTK_WINDOW(about));
 }
 
 static void
 pidgin_application_accounts(GSimpleAction *simple, GVariant *parameter,
                             gpointer data)
 {
+	PidginApplication *application = data;
 	static GtkWidget *manager = NULL;
 
 	if(!GTK_IS_WIDGET(manager)) {
-		GtkWindow *window = NULL;
-
 		manager = pidgin_account_manager_new();
 		g_object_add_weak_pointer(G_OBJECT(manager), (gpointer)&manager);
-
-		window = pidgin_application_get_active_window();
-		if(GTK_IS_WINDOW(window)) {
-			gtk_window_set_transient_for(GTK_WINDOW(manager), window);
-		}
 	}
 
-
-	gtk_window_present_with_time(GTK_WINDOW(manager), GDK_CURRENT_TIME);
+	pidgin_application_present_transient_window(application,
+	                                            GTK_WINDOW(manager));
 }
 
 static void
@@ -374,6 +386,7 @@ static void
 pidgin_application_edit_account(GSimpleAction *simple, GVariant *parameter,
                                 gpointer data)
 {
+	PidginApplication *application = data;
 	PurpleAccount *account = NULL;
 	PurpleAccountManager *manager = NULL;
 	const gchar *id = NULL;
@@ -385,7 +398,9 @@ pidgin_application_edit_account(GSimpleAction *simple, GVariant *parameter,
 	account = purple_account_manager_find_by_id(manager, id);
 	if(PURPLE_IS_ACCOUNT(account)) {
 		GtkWidget *editor = pidgin_account_editor_new(account);
-		gtk_widget_show(editor);
+
+		pidgin_application_present_transient_window(application,
+		                                            GTK_WINDOW(editor));
 	}
 }
 
@@ -443,7 +458,7 @@ pidgin_application_new_status(G_GNUC_UNUSED GSimpleAction *simple,
                               G_GNUC_UNUSED gpointer data)
 {
 	GtkWidget *editor = pidgin_status_editor_new(NULL);
-	gtk_widget_show(editor);
+	gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
 }
 
 static void
@@ -457,21 +472,16 @@ static void
 pidgin_application_plugins(GSimpleAction *simple, GVariant *parameter,
                            gpointer data)
 {
+	PidginApplication *application = data;
 	static GtkWidget *dialog = NULL;
 
 	if(!GTK_IS_WIDGET(dialog)) {
-		GtkWindow *window = NULL;
-
 		dialog = pidgin_plugins_dialog_new();
 		g_object_add_weak_pointer(G_OBJECT(dialog), (gpointer)&dialog);
-
-		window = pidgin_application_get_active_window();
-		if(GTK_IS_WINDOW(window)) {
-			gtk_window_set_transient_for(GTK_WINDOW(dialog), window);
-		}
 	}
 
-	gtk_window_present_with_time(GTK_WINDOW(dialog), GDK_CURRENT_TIME);
+	pidgin_application_present_transient_window(application,
+	                                            GTK_WINDOW(dialog));
 }
 
 static void
@@ -513,21 +523,16 @@ static void
 pidgin_application_show_status_manager(GSimpleAction *simple,
                                        GVariant *parameter, gpointer data)
 {
+	PidginApplication *application = data;
 	static GtkWidget *manager = NULL;
 
 	if(!GTK_IS_WIDGET(manager)) {
-		GtkWindow *window = NULL;
-
 		manager = pidgin_status_manager_new();
 		g_object_add_weak_pointer(G_OBJECT(manager), (gpointer)&manager);
-
-		window = pidgin_application_get_active_window();
-		if(GTK_IS_WINDOW(window)) {
-			gtk_window_set_transient_for(GTK_WINDOW(manager), window);
-		}
 	}
 
-	gtk_widget_show(manager);
+	pidgin_application_present_transient_window(application,
+	                                            GTK_WINDOW(manager));
 }
 
 static GActionEntry app_entries[] = {
