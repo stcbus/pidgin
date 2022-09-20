@@ -34,7 +34,6 @@
 typedef struct _PurpleAccount       PurpleAccount;
 
 typedef gboolean (*PurpleFilterAccountFunc)(PurpleAccount *account);
-typedef void (*PurpleAccountRequestAuthorizationCb)(const char *response, void *data);
 typedef void (*PurpleAccountRegistrationCb)(PurpleAccount *account, gboolean succeeded, void *user_data);
 typedef void (*PurpleAccountUnregistrationCb)(PurpleAccount *account, gboolean succeeded, void *user_data);
 

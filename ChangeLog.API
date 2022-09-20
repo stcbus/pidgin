@@ -329,6 +329,7 @@ version 3.0.0 (??/??/????):
 		* network-configuration-changed signal
 		* PurpleAccount->ui_data
 		* PurpleAccountPrefsUiOps
+		* PurpleAccountRequestAuthorizationCb
 		* PurpleAccountRequestType
 		* PurpleAccountUiOps:close_account_request
 		* PurpleAccountUiOps:request_add
