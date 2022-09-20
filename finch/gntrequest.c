@@ -811,22 +811,14 @@ finch_request_folder(const char *title, const char *dirname, GCallback ok_cb,
 	return data->dialog;
 }
 
-static PurpleRequestUiOps uiops =
-{
-	0,
-	finch_request_input,
-	finch_request_choice,
-	finch_request_action,
-	NULL,
-	NULL,
-	finch_request_fields,
-	finch_request_file,
-	finch_request_folder,
-	finch_close_request,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+static PurpleRequestUiOps uiops = {
+	.request_input = finch_request_input,
+	.request_choice = finch_request_choice,
+	.request_action = finch_request_action,
+	.request_fields = finch_request_fields,
+	.request_file = finch_request_file,
+	.request_folder = finch_request_folder,
+	.close_request = finch_close_request,
 };
 
 PurpleRequestUiOps *finch_request_get_ui_ops()

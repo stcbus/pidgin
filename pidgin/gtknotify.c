@@ -627,19 +627,14 @@ void pidgin_notify_uninit(void)
 	purple_signals_disconnect_by_handle(pidgin_notify_get_handle());
 }
 
-static PurpleNotifyUiOps ops =
-{
-	pidgin_notify_message,
-	pidgin_notify_formatted,
-	pidgin_notify_searchresults,
-	pidgin_notify_searchresults_new_rows,
-	pidgin_notify_userinfo,
-	pidgin_notify_uri,
-	pidgin_close_notify,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+static PurpleNotifyUiOps ops = {
+	.notify_message = pidgin_notify_message,
+	.notify_formatted = pidgin_notify_formatted,
+	.notify_searchresults = pidgin_notify_searchresults,
+	.notify_searchresults_new_rows = pidgin_notify_searchresults_new_rows,
+	.notify_userinfo = pidgin_notify_userinfo,
+	.notify_uri = pidgin_notify_uri,
+	.close_notify = pidgin_close_notify,
 };
 
 PurpleNotifyUiOps *

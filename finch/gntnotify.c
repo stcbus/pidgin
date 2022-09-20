@@ -396,21 +396,14 @@ finch_notify_uri(const char *url)
 		_("URI"), url, NULL, NULL);
 }
 
-static PurpleNotifyUiOps ops =
-{
-	finch_notify_message,
-	finch_notify_formatted,
-	finch_notify_searchresults,
-	finch_notify_sr_new_rows,
-	finch_notify_userinfo,
-	finch_notify_uri,
-	finch_close_notify,       /* The rest of the notify-uiops return a GntWidget.
-                                     These widgets should be destroyed from here. */
-	NULL,
-	NULL,
-	NULL,
-	NULL
-
+static PurpleNotifyUiOps ops = {
+	.notify_message = finch_notify_message,
+	.notify_formatted = finch_notify_formatted,
+	.notify_searchresults = finch_notify_searchresults,
+	.notify_searchresults_new_rows = finch_notify_sr_new_rows,
+	.notify_userinfo = finch_notify_userinfo,
+	.notify_uri = finch_notify_uri,
+	.close_notify = finch_close_notify,
 };
 
 PurpleNotifyUiOps *finch_notify_get_ui_ops()

@@ -658,14 +658,9 @@ pidgin_roomlist_new(PurpleRoomlist *list)
 }
 
 static PurpleRoomlistUiOps ops = {
-	pidgin_roomlist_dialog_show_with_account,
-	pidgin_roomlist_new,
-	NULL,
-	pidgin_roomlist_add_room,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+	.show_with_account = pidgin_roomlist_dialog_show_with_account,
+	.create = pidgin_roomlist_new,
+	.add_room = pidgin_roomlist_add_room,
 };
 
 

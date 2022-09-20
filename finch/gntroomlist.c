@@ -308,17 +308,11 @@ fl_add_room(PurpleRoomlist *roomlist, PurpleRoomlistRoom *room)
 	gnt_tree_set_expanded(GNT_TREE(froomlist.tree), room, category == NULL);
 }
 
-static PurpleRoomlistUiOps ui_ops =
-{
-	fl_show_with_account, /* void (*show_with_account)(PurpleAccount *account); **< Force the ui to pop up a dialog and get the list */
-	fl_create, /* void (*create)(PurpleRoomlist *list); **< A new list was created. */
-	fl_set_fields, /* void (*set_fields)(PurpleRoomlist *list, GList *fields); **< Sets the columns. */
-	fl_add_room, /* void (*add_room)(PurpleRoomlist *list, PurpleRoomlistRoom *room); **< Add a room to the list. */
-
-	NULL, /* void (*_purple_reserved1)(void); */
-	NULL, /* void (*_purple_reserved2)(void); */
-	NULL, /* void (*_purple_reserved3)(void); */
-	NULL /* void (*_purple_reserved4)(void); */
+static PurpleRoomlistUiOps ui_ops = {
+	.show_with_account = fl_show_with_account,
+	.create = fl_create,
+	.set_fields = fl_set_fields,
+	.add_room = fl_add_room,
 };
 
 PurpleRoomlistUiOps *finch_roomlist_get_ui_ops(void)

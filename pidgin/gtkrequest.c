@@ -2458,22 +2458,17 @@ pidgin_request_get_dialog_window(void *ui_handle)
 	return GTK_WINDOW(data->dialog);
 }
 
-static PurpleRequestUiOps ops =
-{
-	PURPLE_REQUEST_FEATURE_HTML,
-	pidgin_request_input,
-	pidgin_request_choice,
-	pidgin_request_action,
-	pidgin_request_wait,
-	pidgin_request_wait_update,
-	pidgin_request_fields,
-	pidgin_request_file,
-	pidgin_request_folder,
-	pidgin_close_request,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+static PurpleRequestUiOps ops = {
+	.features = PURPLE_REQUEST_FEATURE_HTML,
+	.request_input = pidgin_request_input,
+	.request_choice = pidgin_request_choice,
+	.request_action = pidgin_request_action,
+	.request_wait = pidgin_request_wait,
+	.request_wait_update = pidgin_request_wait_update,
+	.request_fields = pidgin_request_fields,
+	.request_file = pidgin_request_file,
+	.request_folder = pidgin_request_folder,
+	.close_request = pidgin_close_request,
 };
 
 PurpleRequestUiOps *

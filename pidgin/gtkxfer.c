@@ -921,9 +921,8 @@ pidgin_xfer_new_xfer(PurpleXfer *xfer)
 	                 G_CALLBACK(pidgin_xfer_visible_notify), NULL);
 }
 
-static PurpleXferUiOps ops =
-{
-	pidgin_xfer_new_xfer
+static PurpleXferUiOps ops = {
+	.new_xfer = pidgin_xfer_new_xfer
 };
 
 /**************************************************************************

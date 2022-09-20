@@ -587,15 +587,14 @@ pidgin_whiteboard_class_init(PidginWhiteboardClass *klass)
 /******************************************************************************
  * API
  *****************************************************************************/
-static PurpleWhiteboardUiOps ui_ops =
-{
-	pidgin_whiteboard_create,
-	pidgin_whiteboard_destroy,
-	pidgin_whiteboard_set_dimensions,
-	pidgin_whiteboard_set_brush,
-	pidgin_whiteboard_draw_brush_point,
-	pidgin_whiteboard_draw_brush_line,
-	pidgin_whiteboard_clear,
+static PurpleWhiteboardUiOps ui_ops = {
+	.create = pidgin_whiteboard_create,
+	.destroy = pidgin_whiteboard_destroy,
+	.set_dimensions = pidgin_whiteboard_set_dimensions,
+	.set_brush = pidgin_whiteboard_set_brush,
+	.draw_point = pidgin_whiteboard_draw_brush_point,
+	.draw_line = pidgin_whiteboard_draw_brush_line,
+	.clear = pidgin_whiteboard_clear,
 };
 
 PurpleWhiteboardUiOps *

@@ -1069,24 +1069,16 @@ finch_conv_has_focus(PurpleConversation *conv)
 	return FALSE;
 }
 
-static PurpleConversationUiOps conv_ui_ops =
-{
-	finch_create_conversation,
-	finch_destroy_conversation,
-	NULL, /* write_chat */
-	NULL, /* write_im */
-	finch_write_conv,
-	finch_chat_add_users,
-	finch_chat_rename_user,
-	finch_chat_remove_users,
-	finch_chat_update_user,
-	finch_conv_present, /* present */
-	finch_conv_has_focus, /* has_focus */
-	NULL, /* send_confirm */
-	NULL,
-	NULL,
-	NULL,
-	NULL
+static PurpleConversationUiOps conv_ui_ops = {
+	.create_conversation = finch_create_conversation,
+	.destroy_conversation = finch_destroy_conversation,
+	.write_conv = finch_write_conv,
+	.chat_add_users = finch_chat_add_users,
+	.chat_rename_user = finch_chat_rename_user,
+	.chat_remove_users = finch_chat_remove_users,
+	.chat_update_user = finch_chat_update_user,
+	.present = finch_conv_present,
+	.has_focus = finch_conv_has_focus,
 };
 
 PurpleConversationUiOps *finch_conv_get_ui_ops()

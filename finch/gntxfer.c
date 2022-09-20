@@ -496,9 +496,8 @@ finch_xfer_new_xfer(PurpleXfer *xfer)
 	                 G_CALLBACK(finch_xfer_visible_notify), NULL);
 }
 
-static PurpleXferUiOps ops =
-{
-	finch_xfer_new_xfer
+static PurpleXferUiOps ops = {
+	.new_xfer = finch_xfer_new_xfer
 };
 
 /**************************************************************************
