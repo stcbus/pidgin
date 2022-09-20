@@ -164,17 +164,12 @@ pidgin_connection_network_disconnected(void) {
 	}
 }
 
-static PurpleConnectionUiOps conn_ui_ops =
-{
-	pidgin_connection_connected,
-	pidgin_connection_disconnected,
-	pidgin_connection_network_connected,
-	pidgin_connection_network_disconnected,
-	pidgin_connection_report_disconnect,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+static PurpleConnectionUiOps conn_ui_ops = {
+	.connected = pidgin_connection_connected,
+	.disconnected = pidgin_connection_disconnected,
+	.network_connected = pidgin_connection_network_connected,
+	.network_disconnected = pidgin_connection_network_disconnected,
+	.report_disconnect = pidgin_connection_report_disconnect,
 };
 
 PurpleConnectionUiOps *

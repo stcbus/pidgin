@@ -121,17 +121,8 @@ finch_connection_get_handle(void)
 	return &handle;
 }
 
-static PurpleConnectionUiOps ops =
-{
-	NULL, /* connected */
-	NULL, /* disconnected */
-	NULL, /* network_connected */
-	NULL, /* network_disconnected */
-	finch_connection_report_disconnect,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+static PurpleConnectionUiOps ops = {
+	.report_disconnect = finch_connection_report_disconnect,
 };
 
 PurpleConnectionUiOps *finch_connections_get_ui_ops()
