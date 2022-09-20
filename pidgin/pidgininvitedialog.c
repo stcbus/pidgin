@@ -21,14 +21,12 @@
 
 struct _PidginInviteDialog {
 	GtkDialog parent;
-};
 
-typedef struct {
 	GtkWidget *contact;
 	GtkWidget *message;
 
 	PurpleChatConversation *conversation;
-} PidginInviteDialogPrivate;
+};
 
 enum {
 	PROP_ZERO,
@@ -40,7 +38,7 @@ enum {
 
 static GParamSpec *properties[N_PROPERTIES] = {0, };
 
-G_DEFINE_TYPE_WITH_PRIVATE(PidginInviteDialog, pidgin_invite_dialog, GTK_TYPE_DIALOG);
+G_DEFINE_TYPE(PidginInviteDialog, pidgin_invite_dialog, GTK_TYPE_DIALOG);
 
 /******************************************************************************
  * Helpers
@@ -49,13 +47,9 @@ static void
 pidgin_invite_dialog_set_conversation(PidginInviteDialog *dialog,
                                       PurpleChatConversation *conversation)
 {
-	PidginInviteDialogPrivate *priv = NULL;
-
 	g_return_if_fail(PIDGIN_IS_INVITE_DIALOG(dialog));
 
-	priv = pidgin_invite_dialog_get_instance_private(dialog);
-
-	priv->conversation = g_object_ref(conversation);
+	dialog->conversation = g_object_ref(conversation);
 
 	g_object_notify_by_pspec(G_OBJECT(dialog), properties[PROP_CONVERSATION]);
 }
@@ -119,13 +113,11 @@ pidgin_invite_dialog_set_property(GObject *obj,
 
 static void
 pidgin_invite_dialog_finalize(GObject *obj) {
-	PidginInviteDialogPrivate *priv = NULL;
+	PidginInviteDialog *dialog = PIDGIN_INVITE_DIALOG(obj);
 
-	priv = pidgin_invite_dialog_get_instance_private(PIDGIN_INVITE_DIALOG(obj));
-
-	g_clear_pointer(&priv->contact, g_free);
-	g_clear_pointer(&priv->message, g_free);
-	g_clear_object(&priv->conversation);
+	g_clear_pointer(&dialog->contact, g_free);
+	g_clear_pointer(&dialog->message, g_free);
+	g_clear_object(&dialog->conversation);
 
 	G_OBJECT_CLASS(pidgin_invite_dialog_parent_class)->finalize(obj);
 }
@@ -149,16 +141,10 @@ pidgin_invite_dialog_class_init(PidginInviteDialogClass *klass) {
 		"/im/pidgin/Pidgin3/Conversations/invite_dialog.ui"
 	);
 
-	gtk_widget_class_bind_template_child_private(
-		widget_class,
-		PidginInviteDialog,
-		contact
-	);
-	gtk_widget_class_bind_template_child_private(
-		widget_class,
-		PidginInviteDialog,
-		message
-	);
+	gtk_widget_class_bind_template_child(widget_class, PidginInviteDialog,
+	                                     contact);
+	gtk_widget_class_bind_template_child(widget_class, PidginInviteDialog,
+	                                     message);
 
 	properties[PROP_CONTACT] = g_param_spec_string(
 		"contact",
@@ -197,27 +183,19 @@ pidgin_invite_dialog_new(PurpleChatConversation *conversation) {
 
 const gchar *
 pidgin_invite_dialog_get_contact(PidginInviteDialog *dialog) {
-	PidginInviteDialogPrivate *priv = NULL;
-
 	g_return_val_if_fail(PIDGIN_IS_INVITE_DIALOG(dialog), NULL);
 
-	priv = pidgin_invite_dialog_get_instance_private(dialog);
-
-	return gtk_editable_get_text(GTK_EDITABLE(priv->contact));
+	return gtk_editable_get_text(GTK_EDITABLE(dialog->contact));
 }
 
 void
 pidgin_invite_dialog_set_contact(PidginInviteDialog *dialog,
                                  const gchar *contact)
 {
-	PidginInviteDialogPrivate *priv = NULL;
-
 	g_return_if_fail(PIDGIN_IS_INVITE_DIALOG(dialog));
 
-	priv = pidgin_invite_dialog_get_instance_private(dialog);
-
 	if(contact != NULL) {
-		gtk_editable_set_text(GTK_EDITABLE(priv->contact), contact);
+		gtk_editable_set_text(GTK_EDITABLE(dialog->contact), contact);
 
 		g_object_notify_by_pspec(G_OBJECT(dialog), properties[PROP_CONTACT]);
 	}
@@ -225,27 +203,19 @@ pidgin_invite_dialog_set_contact(PidginInviteDialog *dialog,
 
 const gchar *
 pidgin_invite_dialog_get_message(PidginInviteDialog *dialog) {
-	PidginInviteDialogPrivate *priv = NULL;
-
 	g_return_val_if_fail(PIDGIN_IS_INVITE_DIALOG(dialog), NULL);
 
-	priv = pidgin_invite_dialog_get_instance_private(dialog);
-
-	return gtk_editable_get_text(GTK_EDITABLE(priv->message));
+	return gtk_editable_get_text(GTK_EDITABLE(dialog->message));
 }
 
 void
 pidgin_invite_dialog_set_message(PidginInviteDialog *dialog,
                                  const gchar *message)
 {
-	PidginInviteDialogPrivate *priv = NULL;
-
 	g_return_if_fail(PIDGIN_IS_INVITE_DIALOG(dialog));
 
-	priv = pidgin_invite_dialog_get_instance_private(dialog);
-
 	if(message != NULL) {
-		gtk_editable_set_text(GTK_EDITABLE(priv->message), message);
+		gtk_editable_set_text(GTK_EDITABLE(dialog->message), message);
 
 		g_object_notify_by_pspec(G_OBJECT(dialog), properties[PROP_MESSAGE]);
 	}
@@ -253,11 +223,7 @@ pidgin_invite_dialog_set_message(PidginInviteDialog *dialog,
 
 PurpleChatConversation *
 pidgin_invite_dialog_get_conversation(PidginInviteDialog *dialog) {
-	PidginInviteDialogPrivate *priv = NULL;
-
 	g_return_val_if_fail(PIDGIN_IS_INVITE_DIALOG(dialog), NULL);
 
-	priv = pidgin_invite_dialog_get_instance_private(dialog);
-
-	return priv->conversation;
+	return dialog->conversation;
 }
