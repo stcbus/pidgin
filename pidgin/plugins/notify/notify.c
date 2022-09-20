@@ -153,6 +153,7 @@ notify(PurpleConversation *conv, gboolean increment)
 	gint count;
 	gboolean has_focus;
 	PidginConvWindow *purplewin = NULL;
+	GSettings *settings = NULL;
 
 	if (conv == NULL || PIDGIN_CONVERSATION(conv) == NULL)
 		return 0;
@@ -162,18 +163,23 @@ notify(PurpleConversation *conv, gboolean increment)
 
 	purplewin = PIDGIN_CONVERSATION(conv)->win;
 
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
 	/* If we aren't doing notifications for this type of conversation, return */
 	if ((PURPLE_IS_IM_CONVERSATION(conv) &&
-	     !purple_prefs_get_bool("/plugins/gtk/X11/notify/type_im")) ||
+	     !g_settings_get_boolean(settings, "type-im")) ||
 	    (PURPLE_IS_CHAT_CONVERSATION(conv) &&
-	     !purple_prefs_get_bool("/plugins/gtk/X11/notify/type_chat")))
+	     !g_settings_get_boolean(settings, "type-chat")))
+	{
+		g_object_unref(settings);
 		return 0;
+	}
 
 	g_object_get(G_OBJECT(purplewin->window),
 	             "has-toplevel-focus", &has_focus, NULL);
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/type_focused") ||
-	    !has_focus) {
+	if(g_settings_get_boolean(settings, "type-focused") || !has_focus) {
 		if (increment) {
 			count = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(conv), "notify-message-count"));
 			count++;
@@ -183,25 +189,39 @@ notify(PurpleConversation *conv, gboolean increment)
 		notify_win(purplewin, conv);
 	}
 
+	g_object_unref(settings);
+
 	return 0;
 }
 
 static void
 notify_win(PidginConvWindow *purplewin, PurpleConversation *conv)
 {
+	GSettings *settings = NULL;
+
 	if (count_messages(purplewin) <= 0)
 		return;
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/method_count"))
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, "method-count")) {
 		handle_count_title(purplewin);
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/method_count_xprop"))
+	}
+	if(g_settings_get_boolean(settings, "method-count-xprop")) {
 		handle_count_xprop(purplewin);
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/method_string"))
+	}
+	if(g_settings_get_boolean(settings, "method-string")) {
 		handle_string(purplewin);
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/method_urgent"))
+	}
+	if(g_settings_get_boolean(settings, "method-urgent")) {
 		handle_urgent(purplewin, TRUE);
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/method_present"))
+	}
+	if(g_settings_get_boolean(settings, "method-present")) {
 		handle_present(conv);
+	}
+
+	g_object_unref(settings);
 }
 
 static void
@@ -251,36 +271,53 @@ static gboolean
 message_displayed_cb(PurpleConversation *conv, PurpleMessage *msg, gpointer _unused)
 {
 	PurpleMessageFlags flags = purple_message_get_flags(msg);
+	GSettings *settings = NULL;
+
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
 
 	/* Ignore anything that's not a received message or a system message */
-	if (!(flags & (PURPLE_MESSAGE_RECV|PURPLE_MESSAGE_SYSTEM)))
+	if(!(flags & (PURPLE_MESSAGE_RECV|PURPLE_MESSAGE_SYSTEM))) {
+		g_object_unref(settings);
 		return FALSE;
+	}
 	/* Don't highlight for delayed messages */
-	if ((flags & PURPLE_MESSAGE_RECV) && (flags & PURPLE_MESSAGE_DELAYED))
+	if((flags & PURPLE_MESSAGE_RECV) && (flags & PURPLE_MESSAGE_DELAYED)) {
+		g_object_unref(settings);
 		return FALSE;
+	}
 	/* Check whether to highlight for system message for either chat or IM */
 	if (flags & PURPLE_MESSAGE_SYSTEM) {
 		if (PURPLE_IS_CHAT_CONVERSATION(conv)) {
-			if (!purple_prefs_get_bool("/plugins/gtk/X11/notify/type_chat_sys"))
+			if (!g_settings_get_boolean(settings, "type-chat-sys")) {
+				g_object_unref(settings);
 				return FALSE;
+			}
 		} else if (PURPLE_IS_IM_CONVERSATION(conv)) {
-			if (!purple_prefs_get_bool("/plugins/gtk/X11/notify/type_im_sys"))
+			if (!g_settings_get_boolean(settings, "type-im-sys")) {
+				g_object_unref(settings);
 				return FALSE;
+			}
 		} else {
 			/* System message not from chat or IM, ignore */
+			g_object_unref(settings);
 			return FALSE;
 		}
 	}
 	
 	/* If it's a chat, check if we should only highlight when nick is mentioned */
 	if ((PURPLE_IS_CHAT_CONVERSATION(conv) &&
-	     purple_prefs_get_bool("/plugins/gtk/X11/notify/type_chat_nick") &&
+	     g_settings_get_boolean(settings, "type-chat-nick") &&
 	     !(flags & PURPLE_MESSAGE_NICK)))
-	    return FALSE;
+	{
+		g_object_unref(settings);
+		return FALSE;
+	}
 
 	/* Nothing speaks against notifying, do so */
 	notify(conv, TRUE);
 
+	g_object_unref(settings);
 	return FALSE;
 }
 
@@ -288,23 +325,35 @@ static void
 im_sent_im(PurpleAccount *account, PurpleMessage *msg, gpointer _unused)
 {
 	PurpleIMConversation *im = NULL;
+	GSettings *settings = NULL;
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/notify_send")) {
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, "notify-send")) {
 		im = purple_conversations_find_im_with_account(
 			purple_message_get_recipient(msg), account);
 		unnotify(PURPLE_CONVERSATION(im), TRUE);
 	}
+
+	g_object_unref(settings);
 }
 
 static void
 chat_sent_im(PurpleAccount *account, PurpleMessage *msg, int id)
 {
 	PurpleChatConversation *chat = NULL;
+	GSettings *settings = NULL;
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/notify_send")) {
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, "notify-send")) {
 		chat = purple_conversations_find_chat(purple_account_get_connection(account), id);
 		unnotify(PURPLE_CONVERSATION(chat), TRUE);
 	}
+
+	g_object_unref(settings);
 }
 
 static int
@@ -313,6 +362,7 @@ attach_signals(PurpleConversation *conv)
 	PidginConversation *gtkconv = NULL;
 	GSList *webview_ids = NULL, *entry_ids = NULL;
 	guint id;
+	GSettings *settings = NULL;
 
 	gtkconv = PIDGIN_CONVERSATION(conv);
 	if (!gtkconv) {
@@ -320,7 +370,10 @@ attach_signals(PurpleConversation *conv)
 		return 0;
 	}
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/notify_focus")) {
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
+	if(g_settings_get_boolean(settings, "notify_focus")) {
 		/* TODO should really find a way to make this work no matter
 		 * where the focus is inside the conv window, without having
 		 * to bind to focus-in-event on the g(d|t)kwindow */
@@ -335,7 +388,7 @@ attach_signals(PurpleConversation *conv)
 		webview_ids = g_slist_append(webview_ids, GUINT_TO_POINTER(id));
 	}
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/notify_click")) {
+	if(g_settings_get_boolean(settings, "notify-click")) {
 		/* TODO similarly should really find a way to allow for
 		 * clicking in other places of the window */
 		id = g_signal_connect(G_OBJECT(gtkconv->entry), "button-press-event",
@@ -347,7 +400,7 @@ attach_signals(PurpleConversation *conv)
 		webview_ids = g_slist_append(webview_ids, GUINT_TO_POINTER(id));
 	}
 
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/notify_type")) {
+	if(g_settings_get_boolean(settings, "notify-type")) {
 		id = g_signal_connect(G_OBJECT(gtkconv->entry), "key-press-event",
 		                      G_CALLBACK(unnotify_cb), conv);
 		entry_ids = g_slist_append(entry_ids, GUINT_TO_POINTER(id));
@@ -356,6 +409,7 @@ attach_signals(PurpleConversation *conv)
 	g_object_set_data(G_OBJECT(conv), "notify-webview-signals", webview_ids);
 	g_object_set_data(G_OBJECT(conv), "notify-entry-signals", entry_ids);
 
+	g_object_unref(settings);
 	return 0;
 }
 
@@ -401,6 +455,7 @@ conv_switched(PurpleConversation *conv)
 {
 #if 0
 	PidginConvWindow *purplewin = purple_conversation_get_window(new_conv);
+	GSettings *settings = NULL;
 #endif
 
 	/*
@@ -410,16 +465,21 @@ conv_switched(PurpleConversation *conv)
 	notify(conv, FALSE);
 
 #if 0
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
 	printf("conv_switched - %p - %p\n", old_conv, new_conv);
 	printf("count - %d\n", count_messages(purplewin));
-	if (purple_prefs_get_bool("/plugins/gtk/X11/notify/notify_switch"))
+	if(g_settings_get_boolean(settings, "notify-switch")) {
 		unnotify(new_conv, FALSE);
-	else {
+	} else {
 		/* if we don't have notification on the window then we don't want to
 		 * re-notify it */
 		if (count_messages(purplewin))
 			notify_win(purplewin);
 	}
+
+	g_object_unref(settings);
 #endif
 }
 
@@ -452,17 +512,25 @@ static void
 handle_string(PidginConvWindow *purplewin)
 {
 	GtkWindow *window = NULL;
-	gchar newtitle[256];
+	gchar *prefix = NULL;
+	gchar *newtitle = NULL;
+	GSettings *settings = NULL;
 
 	g_return_if_fail(purplewin != NULL);
 
 	window = GTK_WINDOW(purplewin->window);
 	g_return_if_fail(window != NULL);
 
-	g_snprintf(newtitle, sizeof(newtitle), "%s%s",
-	           purple_prefs_get_string("/plugins/gtk/X11/notify/title_string"),
-	           gtk_window_get_title(window));
+	settings = g_settings_new_with_backend("im.pidgin.Pidgin.plugin.Notify",
+	                                       purple_core_get_settings_backend());
+
+	prefix = g_settings_get_string("title-string");
+	newtitle = g_strconcat(prefix, gtk_window_get_title(window), NULL);
 	gtk_window_set_title(window, newtitle);
+
+	g_free(prefix);
+	g_free(newtitle);
+	g_object_unref(settings);
 }
 
 static void
@@ -846,29 +914,6 @@ notify_load(GPluginPlugin *plugin, GError **error)
 	void *gtk_conv_handle = pidgin_conversations_get_handle();
 
 	my_plugin = plugin;
-
-	purple_prefs_add_none("/plugins/gtk");
-	purple_prefs_add_none("/plugins/gtk/X11");
-	purple_prefs_add_none("/plugins/gtk/X11/notify");
-
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/type_im", TRUE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/type_im_sys", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/type_chat", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/type_chat_nick", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/type_chat_sys", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/type_focused", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/method_string", FALSE);
-	purple_prefs_add_string("/plugins/gtk/X11/notify/title_string", "(*)");
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/method_urgent", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/method_count", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/method_count_xprop", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/method_raise", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/method_present", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/notify_focus", TRUE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/notify_click", FALSE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/notify_type", TRUE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/notify_send", TRUE);
-	purple_prefs_add_bool("/plugins/gtk/X11/notify/notify_switch", TRUE);
 
 	purple_signal_connect(gtk_conv_handle, "displayed-im-msg", plugin,
 	                    G_CALLBACK(message_displayed_cb), NULL);
