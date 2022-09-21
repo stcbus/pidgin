@@ -191,35 +191,6 @@ char *purple_markup_get_tag_name(const char *tag);
  */
 const char * purple_markup_unescape_entity(const char *text, int *length);
 
-/**
- * purple_markup_get_css_property:
- * @style: A string containing the inline CSS text.
- * @opt:   The requested CSS property.
- *
- * Returns a newly allocated string containing the value of the CSS property specified
- * in opt. The @style argument is expected to point to a HTML inline CSS.
- * The function will seek for the CSS property and return its value.
- *
- * For example, purple_markup_get_css_property("direction:rtl;color:#dc4d1b;",
- * "color") would return "#dc4d1b".
- *
- * On error or if the requested property was not found, the function returns
- * %NULL.
- *
- * Returns: The value of the requested CSS property.
- */
-char * purple_markup_get_css_property(const gchar *style, const gchar *opt);
-
-/**
- * purple_markup_is_rtl:
- * @html:  The HTML text.
- *
- * Check if the given HTML contains RTL text.
- *
- * Returns:  TRUE if the text contains RTL text, FALSE otherwise.
- */
-gboolean purple_markup_is_rtl(const char *html);
-
 G_END_DECLS
 
 #endif /* PURPLE_MARKUP_H */

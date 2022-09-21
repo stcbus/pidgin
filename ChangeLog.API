@@ -473,6 +473,8 @@ version 3.0.0 (??/??/????):
 		  purple_ipv6_address_is_valid. Use g_hostname_is_ip_address()
 		  or #GInetAddress instead.
 		* purple_markup_extract_info_field
+		* purple_markup_get_css_property
+		* purple_markup_is_rtl
 		* PurpleMimeDocument, PurpleMimePart,
 		  purple_mime_document_new, purple_mime_document_free,
 		  purple_mime_document_parse, purple_mime_document_parsen,
