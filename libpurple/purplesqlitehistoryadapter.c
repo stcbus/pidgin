@@ -28,12 +28,10 @@
 
 struct _PurpleSqliteHistoryAdapter {
 	PurpleHistoryAdapter parent;
-};
 
-typedef struct {
 	gchar *filename;
 	sqlite3 *db;
-} PurpleSqliteHistoryAdapterPrivate;
+};
 
 enum {
 	PROP_0,
@@ -42,9 +40,8 @@ enum {
 };
 static GParamSpec *properties[N_PROPERTIES] = {NULL, };
 
-G_DEFINE_TYPE_WITH_PRIVATE(PurpleSqliteHistoryAdapter,
-                           purple_sqlite_history_adapter,
-                           PURPLE_TYPE_HISTORY_ADAPTER)
+G_DEFINE_TYPE(PurpleSqliteHistoryAdapter, purple_sqlite_history_adapter,
+              PURPLE_TYPE_HISTORY_ADAPTER)
 
 /******************************************************************************
  * Helpers
@@ -53,12 +50,8 @@ static void
 purple_sqlite_history_adapter_set_filename(PurpleSqliteHistoryAdapter *adapter,
                                            const gchar *filename)
 {
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
-
-	priv = purple_sqlite_history_adapter_get_instance_private(adapter);
-
-	g_free(priv->filename);
-	priv->filename = g_strdup(filename);
+	g_free(adapter->filename);
+	adapter->filename = g_strdup(filename);
 
 	g_object_notify_by_pspec(G_OBJECT(adapter), properties[PROP_FILENAME]);
 }
@@ -69,11 +62,8 @@ purple_sqlite_history_adapter_run_migrations(PurpleSqliteHistoryAdapter *adapter
 {
 	GBytes *bytes = NULL;
 	GResource *resource = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 	gchar *error_msg = NULL;
 	const gchar *script = NULL;
-
-	priv = purple_sqlite_history_adapter_get_instance_private(adapter);
 
 	resource = purple_get_resource();
 
@@ -85,7 +75,7 @@ purple_sqlite_history_adapter_run_migrations(PurpleSqliteHistoryAdapter *adapter
 	}
 
 	script = (const gchar *)g_bytes_get_data(bytes, NULL);
-	sqlite3_exec(priv->db, script, NULL, NULL, &error_msg);
+	sqlite3_exec(adapter->db, script, NULL, NULL, &error_msg);
 	g_bytes_unref(bytes);
 
 	if(error_msg != NULL) {
@@ -155,10 +145,7 @@ purple_sqlite_history_adapter_build_query(PurpleSqliteHistoryAdapter *adapter,
 	gboolean first = FALSE;
 	sqlite3_stmt *prepared_statement = NULL;
 	gint index = 1;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 	gint query_items = 0;
-
-	priv = purple_sqlite_history_adapter_get_instance_private(adapter);
 
 	split = g_strsplit(search_query, " ", -1);
 	for(i = 0; split[i] != NULL; i++) {
@@ -244,14 +231,14 @@ purple_sqlite_history_adapter_build_query(PurpleSqliteHistoryAdapter *adapter,
 	}
 	g_string_append(query, ";");
 
-	sqlite3_prepare_v2(priv->db, query->str, -1, &prepared_statement, NULL);
+	sqlite3_prepare_v2(adapter->db, query->str, -1, &prepared_statement, NULL);
 
 	g_string_free(query, TRUE);
 
 	if(prepared_statement == NULL) {
 		g_set_error(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		            "Error creating the prepared statement: %s",
-		            sqlite3_errmsg(priv->db));
+		            sqlite3_errmsg(adapter->db));
 
 		g_list_free_full(ins, g_free);
 		g_list_free_full(froms, g_free);
@@ -289,37 +276,36 @@ purple_sqlite_history_adapter_activate(PurpleHistoryAdapter *adapter,
                                        GError **error)
 {
 	PurpleSqliteHistoryAdapter *sqlite_adapter = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 	gint rc = 0;
 
 	sqlite_adapter = PURPLE_SQLITE_HISTORY_ADAPTER(adapter);
-	priv = purple_sqlite_history_adapter_get_instance_private(sqlite_adapter);
 
-	if(priv->db != NULL) {
+	if(sqlite_adapter->db != NULL) {
 		g_set_error_literal(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		                    _("Adapter has already been activated"));
 
 		return FALSE;
 	}
 
-	if(priv->filename == NULL) {
+	if(sqlite_adapter->filename == NULL) {
 		g_set_error_literal(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		                    _("No filename specified"));
 
 		return FALSE;
 	}
 
-	rc = sqlite3_open(priv->filename, &priv->db);
+	rc = sqlite3_open(sqlite_adapter->filename, &sqlite_adapter->db);
 	if(rc != SQLITE_OK) {
 		g_set_error(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
-		            _("Error opening database in purplesqlitehistoryadapter for file %s"), priv->filename);
-		g_clear_pointer(&priv->db, sqlite3_close);
+		            _("Error opening database in purplesqlitehistoryadapter for file %s"),
+		            sqlite_adapter->filename);
+		g_clear_pointer(&sqlite_adapter->db, sqlite3_close);
 
 		return FALSE;
 	}
 
 	if(!purple_sqlite_history_adapter_run_migrations(sqlite_adapter, error)) {
-		g_clear_pointer(&priv->db, sqlite3_close);
+		g_clear_pointer(&sqlite_adapter->db, sqlite3_close);
 
 		return FALSE;
 	}
@@ -332,11 +318,9 @@ purple_sqlite_history_adapter_deactivate(PurpleHistoryAdapter *adapter,
                                          GError **error)
 {
 	PurpleSqliteHistoryAdapter *sqlite_adapter = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 
 	sqlite_adapter = PURPLE_SQLITE_HISTORY_ADAPTER(adapter);
-	priv = purple_sqlite_history_adapter_get_instance_private(sqlite_adapter);
-	g_clear_pointer(&priv->db, sqlite3_close);
+	g_clear_pointer(&sqlite_adapter->db, sqlite3_close);
 
 	return TRUE;
 }
@@ -346,14 +330,12 @@ purple_sqlite_history_adapter_query(PurpleHistoryAdapter *adapter,
                                     const gchar *query, GError **error)
 {
 	PurpleSqliteHistoryAdapter *sqlite_adapter = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 	sqlite3_stmt *prepared_statement = NULL;
 	GList *results = NULL;
 
 	sqlite_adapter = PURPLE_SQLITE_HISTORY_ADAPTER(adapter);
-	priv = purple_sqlite_history_adapter_get_instance_private(sqlite_adapter);
 
-	if(priv->db == NULL) {
+	if(sqlite_adapter->db == NULL) {
 		g_set_error_literal(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		                    _("Adapter has not been activated"));
 
@@ -419,14 +401,12 @@ purple_sqlite_history_adapter_remove(PurpleHistoryAdapter *adapter,
                                      const gchar *query, GError **error)
 {
 	PurpleSqliteHistoryAdapter *sqlite_adapter = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 	sqlite3_stmt * prepared_statement = NULL;
 	gint result = 0;
 
 	sqlite_adapter = PURPLE_SQLITE_HISTORY_ADAPTER(adapter);
-	priv = purple_sqlite_history_adapter_get_instance_private(sqlite_adapter);
 
-	if(priv->db == NULL) {
+	if(sqlite_adapter->db == NULL) {
 		g_set_error_literal(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		                    _("Adapter has not been activated"));
 
@@ -447,7 +427,7 @@ purple_sqlite_history_adapter_remove(PurpleHistoryAdapter *adapter,
 	if(result != SQLITE_DONE) {
 		g_set_error(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		            "Error removing from the database: %s",
-		            sqlite3_errmsg(priv->db));
+		            sqlite3_errmsg(sqlite_adapter->db));
 
 		sqlite3_finalize(prepared_statement);
 
@@ -466,7 +446,6 @@ purple_sqlite_history_adapter_write(PurpleHistoryAdapter *adapter,
 {
 	PurpleAccount *account = NULL;
 	PurpleSqliteHistoryAdapter *sqlite_adapter = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 	sqlite3_stmt *prepared_statement = NULL;
 	gchar *timestamp = NULL;
 	gchar *content_type = NULL;
@@ -480,21 +459,20 @@ purple_sqlite_history_adapter_write(PurpleHistoryAdapter *adapter,
 	         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	sqlite_adapter = PURPLE_SQLITE_HISTORY_ADAPTER(adapter);
-	priv = purple_sqlite_history_adapter_get_instance_private(sqlite_adapter);
 
-	if(priv->db == NULL) {
+	if(sqlite_adapter->db == NULL) {
 		g_set_error_literal(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		                    _("Adapter has not been activated"));
 
 		return FALSE;
 	}
 
-	sqlite3_prepare_v2(priv->db, script, -1, &prepared_statement, NULL);
+	sqlite3_prepare_v2(sqlite_adapter->db, script, -1, &prepared_statement, NULL);
 
 	if(prepared_statement == NULL) {
 		g_set_error(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		            "Error creating the prepared statement: %s",
-		            sqlite3_errmsg(priv->db));
+		            sqlite3_errmsg(sqlite_adapter->db));
 		return FALSE;
 	}
 
@@ -543,7 +521,7 @@ purple_sqlite_history_adapter_write(PurpleHistoryAdapter *adapter,
 	if(result != SQLITE_DONE) {
 		g_set_error(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
 		            "Error writing to the database: %s",
-		            sqlite3_errmsg(priv->db));
+		            sqlite3_errmsg(sqlite_adapter->db));
 
 		sqlite3_finalize(prepared_statement);
 
@@ -596,18 +574,16 @@ purple_sqlite_history_adapter_set_property(GObject *obj, guint param_id,
 static void
 purple_sqlite_history_adapter_finalize(GObject *obj) {
 	PurpleSqliteHistoryAdapter *adapter = NULL;
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
 
 	adapter = PURPLE_SQLITE_HISTORY_ADAPTER(obj);
-	priv = purple_sqlite_history_adapter_get_instance_private(adapter);
 
-	g_clear_pointer(&priv->filename, g_free);
+	g_clear_pointer(&adapter->filename, g_free);
 
-	if(priv->db != NULL) {
+	if(adapter->db != NULL) {
 		g_warning("PurpleSqliteHistoryAdapter was finalized before being "
 		          "deactivated");
 
-		g_clear_pointer(&priv->db, sqlite3_close);
+		g_clear_pointer(&adapter->db, sqlite3_close);
 	}
 
 	G_OBJECT_CLASS(purple_sqlite_history_adapter_parent_class)->finalize(obj);
@@ -663,12 +639,13 @@ purple_sqlite_history_adapter_new(const gchar *filename) {
 }
 
 const gchar *
-purple_sqlite_history_adapter_get_filename(PurpleSqliteHistoryAdapter *adapter) {
-	PurpleSqliteHistoryAdapterPrivate *priv = NULL;
+purple_sqlite_history_adapter_get_filename(PurpleSqliteHistoryAdapter *adapter)
+{
+	PurpleSqliteHistoryAdapter *sqlite_adapter = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_SQLITE_HISTORY_ADAPTER(adapter), NULL);
 
-	priv = purple_sqlite_history_adapter_get_instance_private(adapter);
+	sqlite_adapter = PURPLE_SQLITE_HISTORY_ADAPTER(adapter);
 
-	return priv->filename;
+	return sqlite_adapter->filename;
 }
