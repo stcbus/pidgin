@@ -23,35 +23,32 @@
 
 #include "thrift.h"
 
-typedef struct
-{
-	GByteArray *bytes;
-	gboolean internal;
-	guint offset;
-	guint pos;
-	guint lastbool;
-} FbThriftPrivate;
-
 /**
  * FbThrift:
  *
  * Represents a reader/writer for compact Thrift data.
  */
-struct _FbThrift
-{
+struct _FbThrift {
 	GObject parent;
-	FbThriftPrivate *priv;
+
+	GByteArray *bytes;
+	gboolean internal;
+	guint offset;
+	guint pos;
+	guint lastbool;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(FbThrift, fb_thrift, G_TYPE_OBJECT);
+G_DEFINE_TYPE(FbThrift, fb_thrift, G_TYPE_OBJECT);
 
 static void
 fb_thrift_dispose(GObject *obj)
 {
-	FbThriftPrivate *priv = FB_THRIFT(obj)->priv;
+	FbThrift* thft = FB_THRIFT(obj);
 
-	if (priv->internal) {
-		g_byte_array_free(priv->bytes, TRUE);
+	if (thft->internal) {
+		g_byte_array_free(thft->bytes, TRUE);
+		thft->bytes = NULL;
+		thft->internal = FALSE;
 	}
 }
 
@@ -66,27 +63,22 @@ fb_thrift_class_init(FbThriftClass *klass)
 static void
 fb_thrift_init(FbThrift *thft)
 {
-	FbThriftPrivate *priv = fb_thrift_get_instance_private(thft);
-
-	thft->priv = priv;
 }
 
 FbThrift *
 fb_thrift_new(GByteArray *bytes, guint offset)
 {
 	FbThrift *thft;
-	FbThriftPrivate *priv;
 
 	thft = g_object_new(FB_TYPE_THRIFT, NULL);
-	priv = thft->priv;
 
 	if (bytes != NULL) {
-		priv->bytes = bytes;
-		priv->offset = offset;
-		priv->pos = offset;
+		thft->bytes = bytes;
+		thft->offset = offset;
+		thft->pos = offset;
 	} else {
-		priv->bytes = g_byte_array_new();
-		priv->internal = TRUE;
+		thft->bytes = g_byte_array_new();
+		thft->internal = TRUE;
 	}
 
 	return thft;
@@ -95,73 +87,60 @@ fb_thrift_new(GByteArray *bytes, guint offset)
 const GByteArray *
 fb_thrift_get_bytes(FbThrift *thft)
 {
-	FbThriftPrivate *priv;
-
 	g_return_val_if_fail(FB_IS_THRIFT(thft), NULL);
-	priv = thft->priv;
-	return priv->bytes;
+
+	return thft->bytes;
 }
 
 guint
 fb_thrift_get_pos(FbThrift *thft)
 {
-	FbThriftPrivate *priv;
-
 	g_return_val_if_fail(FB_IS_THRIFT(thft), 0);
-	priv = thft->priv;
-	return priv->pos;
+
+	return thft->pos;
 }
 
 void
 fb_thrift_set_pos(FbThrift *thft, guint pos)
 {
-	FbThriftPrivate *priv;
-
 	g_return_if_fail(FB_IS_THRIFT(thft));
-	priv = thft->priv;
-	priv->pos = pos;
+
+	thft->pos = pos;
 }
 
 void
 fb_thrift_reset(FbThrift *thft)
 {
-	FbThriftPrivate *priv;
-
 	g_return_if_fail(FB_IS_THRIFT(thft));
-	priv = thft->priv;
-	priv->pos = priv->offset;
+
+	thft->pos = thft->offset;
 }
 
 gboolean
 fb_thrift_read(FbThrift *thft, gpointer data, guint size)
 {
-	FbThriftPrivate *priv;
-
 	g_return_val_if_fail(FB_IS_THRIFT(thft), FALSE);
-	priv = thft->priv;
 
-	if ((priv->pos + size) > priv->bytes->len) {
+	if ((thft->pos + size) > thft->bytes->len) {
 		return FALSE;
 	}
 
 	if ((data != NULL) && (size > 0)) {
-		memcpy(data, priv->bytes->data + priv->pos, size);
+		memcpy(data, thft->bytes->data + thft->pos, size);
 	}
 
-	priv->pos += size;
+	thft->pos += size;
 	return TRUE;
 }
 
 gboolean
 fb_thrift_read_bool(FbThrift *thft, gboolean *value)
 {
-	FbThriftPrivate *priv;
 	guint8 byte;
 
 	g_return_val_if_fail(FB_IS_THRIFT(thft), FALSE);
-	priv = thft->priv;
 
-	if ((priv->lastbool & 0x03) != 0x01) {
+	if ((thft->lastbool & 0x03) != 0x01) {
 		if (!fb_thrift_read_byte(thft, &byte)) {
 			return FALSE;
 		}
@@ -170,15 +149,15 @@ fb_thrift_read_bool(FbThrift *thft, gboolean *value)
 			*value = (byte & 0x0F) == 0x01;
 		}
 
-		priv->lastbool = 0;
+		thft->lastbool = 0;
 		return TRUE;
 	}
 
 	if (value != NULL) {
-		*value = ((priv->lastbool & 0x04) >> 2) != 0;
+		*value = ((thft->lastbool & 0x04) >> 2) != 0;
 	}
 
-	priv->lastbool = 0;
+	thft->lastbool = 0;
 	return TRUE;
 }
 
@@ -344,14 +323,12 @@ gboolean
 fb_thrift_read_field(FbThrift *thft, FbThriftType *type, gint16 *id,
 					 gint16 lastid)
 {
-	FbThriftPrivate *priv;
 	gint16 i16;
 	guint8 byte;
 
 	g_return_val_if_fail(FB_IS_THRIFT(thft), FALSE);
 	g_return_val_if_fail(type != NULL, FALSE);
 	g_return_val_if_fail(id != NULL, FALSE);
-	priv = thft->priv;
 
 	if (!fb_thrift_read_byte(thft, &byte)) {
 		return FALSE;
@@ -374,10 +351,10 @@ fb_thrift_read_field(FbThrift *thft, FbThriftType *type, gint16 *id,
 	}
 
 	if (*type == FB_THRIFT_TYPE_BOOL) {
-		priv->lastbool = 0x01;
+		thft->lastbool = 0x01;
 
 		if ((byte & 0x0F) == 0x01) {
-			priv->lastbool |= 0x01 << 2;
+			thft->lastbool |= 0x01 << 2;
 		}
 	}
 
@@ -396,17 +373,15 @@ fb_thrift_read_stop(FbThrift *thft)
 gboolean
 fb_thrift_read_isstop(FbThrift *thft)
 {
-	FbThriftPrivate *priv;
 	guint8 byte;
 
 	g_return_val_if_fail(FB_IS_THRIFT(thft), FALSE);
-	priv = thft->priv;
 
 	if (!fb_thrift_read_byte(thft, &byte)) {
 		return FALSE;
 	}
 
-	priv->pos--;
+	thft->pos--;
 	return byte == FB_THRIFT_TYPE_STOP;
 }
 
@@ -477,35 +452,30 @@ fb_thrift_read_set(FbThrift *thft, FbThriftType *type, guint *size)
 void
 fb_thrift_write(FbThrift *thft, gconstpointer data, guint size)
 {
-	FbThriftPrivate *priv;
-
 	g_return_if_fail(FB_IS_THRIFT(thft));
-	priv = thft->priv;
 
-	g_byte_array_append(priv->bytes, data, size);
-	priv->pos += size;
+	g_byte_array_append(thft->bytes, data, size);
+	thft->pos += size;
 }
 
 void
 fb_thrift_write_bool(FbThrift *thft, gboolean value)
 {
-	FbThriftPrivate *priv;
 	guint pos;
 
 	g_return_if_fail(FB_IS_THRIFT(thft));
-	priv = thft->priv;
 
-	if ((priv->lastbool & 0x03) != 0x02) {
+	if ((thft->lastbool & 0x03) != 0x02) {
 		fb_thrift_write_byte(thft, value ? 0x01 : 0x02);
 		return;
 	}
 
-	pos = priv->lastbool >> 3;
-	priv->lastbool = 0;
+	pos = thft->lastbool >> 3;
+	thft->lastbool = 0;
 
-	if ((pos >= priv->offset) && (pos < priv->bytes->len)) {
-		priv->bytes->data[pos] &= ~0x0F;
-		priv->bytes->data[pos] |= value ? 0x01 : 0x02;
+	if ((pos >= thft->offset) && (pos < thft->bytes->len)) {
+		thft->bytes->data[pos] &= ~0x0F;
+		thft->bytes->data[pos] |= value ? 0x01 : 0x02;
 	}
 }
 
@@ -594,14 +564,12 @@ void
 fb_thrift_write_field(FbThrift *thft, FbThriftType type, gint16 id,
 					  gint16 lastid)
 {
-	FbThriftPrivate *priv;
 	gint16 diff;
 
 	g_return_if_fail(FB_IS_THRIFT(thft));
-	priv = thft->priv;
 
 	if (type == FB_THRIFT_TYPE_BOOL) {
-		priv->lastbool = (priv->pos << 3) | 0x02;
+		thft->lastbool = (thft->pos << 3) | 0x02;
 	}
 
 	type = fb_thrift_t2ct(type);

@@ -49,8 +49,14 @@ enum
 	PROP_N
 };
 
-typedef struct
-{
+/**
+ * FbApi:
+ *
+ * Represents a Facebook Messenger connection.
+ */
+struct _FbApi {
+	GObject parent;
+
 	FbMqtt *mqtt;
 	SoupSession *cons;
 	PurpleConnection *gc;
@@ -69,17 +75,6 @@ typedef struct
 	guint unread;
 	FbId lastmid;
 	gchar *contacts_delta;
-} FbApiPrivate;
-
-/**
- * FbApi:
- *
- * Represents a Facebook Messenger connection.
- */
-struct _FbApi
-{
-	GObject parent;
-	FbApiPrivate *priv;
 };
 
 static void fb_api_error_literal(FbApi *api, FbApiError error,
@@ -100,36 +95,36 @@ fb_api_sticker(FbApi *api, FbId sid, FbApiMessage *msg);
 void
 fb_api_contacts_delta(FbApi *api, const gchar *delta_cursor);
 
-G_DEFINE_TYPE_WITH_PRIVATE(FbApi, fb_api, G_TYPE_OBJECT);
+G_DEFINE_TYPE(FbApi, fb_api, G_TYPE_OBJECT);
 
 static void
 fb_api_set_property(GObject *obj, guint prop, const GValue *val,
                     GParamSpec *pspec)
 {
-	FbApiPrivate *priv = FB_API(obj)->priv;
+	FbApi *api = FB_API(obj);
 
 	switch (prop) {
 	case PROP_CID:
-		g_free(priv->cid);
-		priv->cid = g_value_dup_string(val);
+		g_free(api->cid);
+		api->cid = g_value_dup_string(val);
 		break;
 	case PROP_DID:
-		g_free(priv->did);
-		priv->did = g_value_dup_string(val);
+		g_free(api->did);
+		api->did = g_value_dup_string(val);
 		break;
 	case PROP_MID:
-		priv->mid = g_value_get_uint64(val);
+		api->mid = g_value_get_uint64(val);
 		break;
 	case PROP_STOKEN:
-		g_free(priv->stoken);
-		priv->stoken = g_value_dup_string(val);
+		g_free(api->stoken);
+		api->stoken = g_value_dup_string(val);
 		break;
 	case PROP_TOKEN:
-		g_free(priv->token);
-		priv->token = g_value_dup_string(val);
+		g_free(api->token);
+		api->token = g_value_dup_string(val);
 		break;
 	case PROP_UID:
-		priv->uid = g_value_get_int64(val);
+		api->uid = g_value_get_int64(val);
 		break;
 
 	default:
@@ -141,26 +136,26 @@ fb_api_set_property(GObject *obj, guint prop, const GValue *val,
 static void
 fb_api_get_property(GObject *obj, guint prop, GValue *val, GParamSpec *pspec)
 {
-	FbApiPrivate *priv = FB_API(obj)->priv;
+	FbApi *api = FB_API(obj);
 
 	switch (prop) {
 	case PROP_CID:
-		g_value_set_string(val, priv->cid);
+		g_value_set_string(val, api->cid);
 		break;
 	case PROP_DID:
-		g_value_set_string(val, priv->did);
+		g_value_set_string(val, api->did);
 		break;
 	case PROP_MID:
-		g_value_set_uint64(val, priv->mid);
+		g_value_set_uint64(val, api->mid);
 		break;
 	case PROP_STOKEN:
-		g_value_set_string(val, priv->stoken);
+		g_value_set_string(val, api->stoken);
 		break;
 	case PROP_TOKEN:
-		g_value_set_string(val, priv->token);
+		g_value_set_string(val, api->token);
 		break;
 	case PROP_UID:
-		g_value_set_int64(val, priv->uid);
+		g_value_set_int64(val, api->uid);
 		break;
 
 	default:
@@ -173,22 +168,25 @@ fb_api_get_property(GObject *obj, guint prop, GValue *val, GParamSpec *pspec)
 static void
 fb_api_dispose(GObject *obj)
 {
-	FbApiPrivate *priv = FB_API(obj)->priv;
+	FbApi *api = FB_API(obj);
 
-	soup_session_abort(priv->cons);
-
-	if (G_UNLIKELY(priv->mqtt != NULL)) {
-		g_object_unref(priv->mqtt);
+	if(api->cons != NULL) {
+		soup_session_abort(api->cons);
 	}
 
-	g_object_unref(priv->cons);
-	g_queue_free_full(priv->msgs, (GDestroyNotify) fb_api_message_free);
+	g_clear_object(&api->mqtt);
 
-	g_free(priv->cid);
-	g_free(priv->did);
-	g_free(priv->stoken);
-	g_free(priv->token);
-	g_free(priv->contacts_delta);
+	g_clear_object(&api->cons);
+	if(api->msgs != NULL) {
+		g_queue_free_full(api->msgs, (GDestroyNotify)fb_api_message_free);
+		api->msgs = NULL;
+	}
+
+	g_clear_pointer(&api->cid, g_free);
+	g_clear_pointer(&api->did, g_free);
+	g_clear_pointer(&api->stoken, g_free);
+	g_clear_pointer(&api->token, g_free);
+	g_clear_pointer(&api->contacts_delta, g_free);
 }
 
 static void
@@ -506,10 +504,7 @@ fb_api_class_init(FbApiClass *klass)
 static void
 fb_api_init(FbApi *api)
 {
-	FbApiPrivate *priv = fb_api_get_instance_private(api);
-	api->priv = priv;
-
-	priv->msgs = g_queue_new();
+	api->msgs = g_queue_new();
 }
 
 GQuark
@@ -529,7 +524,6 @@ fb_api_json_chk(FbApi *api, gconstpointer data, gssize size, JsonNode **node)
 {
 	const gchar *str;
 	FbApiError errc = FB_API_ERROR_GENERAL;
-	FbApiPrivate *priv;
 	FbJsonValues *values;
 	gboolean success = TRUE;
 	gchar *msg;
@@ -547,7 +541,6 @@ fb_api_json_chk(FbApi *api, gconstpointer data, gssize size, JsonNode **node)
 	};
 
 	g_return_val_if_fail(FB_IS_API(api), FALSE);
-	priv = api->priv;
 
 	if (G_UNLIKELY(size == 0)) {
 		fb_api_error_literal(api, FB_API_ERROR_GENERAL, _("Empty JSON data"));
@@ -579,11 +572,8 @@ fb_api_json_chk(FbApi *api, gconstpointer data, gssize size, JsonNode **node)
 		errc = FB_API_ERROR_AUTH;
 		success = FALSE;
 
-		g_free(priv->stoken);
-		priv->stoken = NULL;
-
-		g_free(priv->token);
-		priv->token = NULL;
+		g_clear_pointer(&api->stoken, g_free);
+		g_clear_pointer(&api->token, g_free);
 	}
 
 	/* 509 is used for "invalid attachment id" */
@@ -600,8 +590,7 @@ fb_api_json_chk(FbApi *api, gconstpointer data, gssize size, JsonNode **node)
 		errc = FB_API_ERROR_QUEUE;
 		success = FALSE;
 
-		g_free(priv->stoken);
-		priv->stoken = NULL;
+		g_clear_pointer(&api->stoken, g_free);
 	}
 
 	g_object_unref(values);
@@ -688,7 +677,6 @@ fb_api_http_req(FbApi *api, const gchar *url, const gchar *name,
                 const gchar *method, FbHttpParams *params,
                 SoupSessionCallback callback)
 {
-	FbApiPrivate *priv = api->priv;
 	gchar *data;
 	gchar *key;
 	gchar *val;
@@ -698,7 +686,7 @@ fb_api_http_req(FbApi *api, const gchar *url, const gchar *name,
 	SoupMessage *msg;
 
 	fb_http_params_set_str(params, "api_key", FB_API_KEY);
-	fb_http_params_set_str(params, "device_id", priv->did);
+	fb_http_params_set_str(params, "device_id", api->did);
 	fb_http_params_set_str(params, "fb_api_req_friendly_name", name);
 	fb_http_params_set_str(params, "format", "json");
 	fb_http_params_set_str(params, "method", method);
@@ -731,14 +719,14 @@ fb_api_http_req(FbApi *api, const gchar *url, const gchar *name,
 	msg = soup_message_new_from_encoded_form("POST", url, soup_form_encode_hash(params));
 	fb_http_params_free(params);
 
-	if (priv->token != NULL) {
-		data = g_strdup_printf("OAuth %s", priv->token);
+	if (api->token != NULL) {
+		data = g_strdup_printf("OAuth %s", api->token);
 		soup_message_headers_replace(soup_message_get_request_headers(msg),
 		                             "Authorization", data);
 		g_free(data);
 	}
 
-	soup_session_queue_message(priv->cons, msg, callback, api);
+	soup_session_queue_message(api->cons, msg, callback, api);
 
 	fb_util_debug(FB_UTIL_DEBUG_INFO, "HTTP Request (%p):", msg);
 	fb_util_debug(FB_UTIL_DEBUG_INFO, "  Request URL: %s", url);
@@ -815,12 +803,11 @@ static void
 fb_api_cb_mqtt_error(FbMqtt *mqtt, GError *error, gpointer data)
 {
 	FbApi *api = data;
-	FbApiPrivate *priv = api->priv;
 
-	if (!priv->retrying) {
-		priv->retrying = TRUE;
+	if (!api->retrying) {
+		api->retrying = TRUE;
 		fb_util_debug_info("Attempting to reconnect the MQTT stream...");
-		fb_api_connect(api, priv->invisible);
+		fb_api_connect(api, api->invisible);
 	} else {
 		g_signal_emit_by_name(api, "error", error);
 	}
@@ -831,7 +818,6 @@ fb_api_cb_mqtt_open(FbMqtt *mqtt, gpointer data)
 {
 	const GByteArray *bytes;
 	FbApi *api = data;
-	FbApiPrivate *priv = api->priv;
 	FbThrift *thft;
 	GByteArray *cytes;
 	GError *err = NULL;
@@ -844,13 +830,13 @@ fb_api_cb_mqtt_open(FbMqtt *mqtt, gpointer data)
 
 	/* Write the client identifier */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_STRING, 1, 0);
-	fb_thrift_write_str(thft, priv->cid);
+	fb_thrift_write_str(thft, api->cid);
 
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_STRUCT, 4, 1);
 
 	/* Write the user identifier */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_I64, 1, 0);
-	fb_thrift_write_i64(thft, priv->uid);
+	fb_thrift_write_i64(thft, api->uid);
 
 	/* Write the information string */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_STRING, 2, 1);
@@ -874,11 +860,11 @@ fb_api_cb_mqtt_open(FbMqtt *mqtt, gpointer data)
 
 	/* Write the visibility state */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_BOOL, 7, 6);
-	fb_thrift_write_bool(thft, !priv->invisible);
+	fb_thrift_write_bool(thft, !api->invisible);
 
 	/* Write the device identifier */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_STRING, 8, 7);
-	fb_thrift_write_str(thft, priv->did);
+	fb_thrift_write_str(thft, api->did);
 
 	/* Write the UNKNOWN ("fg"?) */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_BOOL, 9, 8);
@@ -894,7 +880,7 @@ fb_api_cb_mqtt_open(FbMqtt *mqtt, gpointer data)
 
 	/* Write the MQTT identifier */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_I64, 12, 11);
-	fb_thrift_write_i64(thft, priv->mid);
+	fb_thrift_write_i64(thft, api->mid);
 
 	/* Write the UNKNOWN */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_LIST, 14, 12);
@@ -903,7 +889,7 @@ fb_api_cb_mqtt_open(FbMqtt *mqtt, gpointer data)
 
 	/* Write the token */
 	fb_thrift_write_field(thft, FB_THRIFT_TYPE_STRING, 15, 14);
-	fb_thrift_write_str(thft, priv->token);
+	fb_thrift_write_str(thft, api->token);
 
 	/* Write the STOP for the struct */
 	fb_thrift_write_stop(thft);
@@ -927,7 +913,6 @@ static void
 fb_api_connect_queue(FbApi *api)
 {
 	FbApiMessage *msg;
-	FbApiPrivate *priv = api->priv;
 	gchar *json;
 	JsonBuilder *bldr;
 
@@ -937,11 +922,10 @@ fb_api_connect_queue(FbApi *api)
 	fb_json_bldr_add_int(bldr, "sync_api_version", 3);
 	fb_json_bldr_add_str(bldr, "encoding", "JSON");
 
-	if (priv->stoken == NULL) {
-		fb_json_bldr_add_int(bldr, "initial_titan_sequence_id",
-		                     priv->sid);
-		fb_json_bldr_add_str(bldr, "device_id", priv->did);
-		fb_json_bldr_add_int(bldr, "entity_fbid", priv->uid);
+	if (api->stoken == NULL) {
+		fb_json_bldr_add_int(bldr, "initial_titan_sequence_id", api->sid);
+		fb_json_bldr_add_str(bldr, "device_id", api->did);
+		fb_json_bldr_add_int(bldr, "entity_fbid", api->uid);
 
 		fb_json_bldr_obj_begin(bldr, "queue_params");
 		fb_json_bldr_add_str(bldr, "buzz_on_deltas_enabled", "false");
@@ -965,21 +949,21 @@ fb_api_connect_queue(FbApi *api)
 		return;
 	}
 
-	fb_json_bldr_add_int(bldr, "last_seq_id", priv->sid);
-	fb_json_bldr_add_str(bldr, "sync_token", priv->stoken);
+	fb_json_bldr_add_int(bldr, "last_seq_id", api->sid);
+	fb_json_bldr_add_str(bldr, "sync_token", api->stoken);
 
 	json = fb_json_bldr_close(bldr, JSON_NODE_OBJECT, NULL);
 	fb_api_publish(api, "/messenger_sync_get_diffs", "%s", json);
 	g_signal_emit_by_name(api, "connect");
 	g_free(json);
 
-	if (!g_queue_is_empty(priv->msgs)) {
-		msg = g_queue_peek_head(priv->msgs);
+	if (!g_queue_is_empty(api->msgs)) {
+		msg = g_queue_peek_head(api->msgs);
 		fb_api_message_send(api, msg);
 	}
 
-	if (priv->retrying) {
-		priv->retrying = FALSE;
+	if (api->retrying) {
+		api->retrying = FALSE;
 		fb_util_debug_info("Reconnected the MQTT stream");
 	}
 }
@@ -990,7 +974,6 @@ fb_api_cb_seqid(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 {
 	const gchar *str;
 	FbApi *api = data;
-	FbApiPrivate *priv = api->priv;
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *root;
@@ -1013,10 +996,10 @@ fb_api_cb_seqid(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 	);
 
 	str = fb_json_values_next_str(values, "0");
-	priv->sid = g_ascii_strtoll(str, NULL, 10);
-	priv->unread = fb_json_values_next_int(values, 0);
+	api->sid = g_ascii_strtoll(str, NULL, 10);
+	api->unread = fb_json_values_next_int(values, 0);
 
-	if (priv->sid == 0) {
+	if (api->sid == 0) {
 		fb_api_error_literal(api, FB_API_ERROR_GENERAL,
 		                     _("Failed to get sync_sequence_id"));
 	} else {
@@ -1031,7 +1014,6 @@ static void
 fb_api_cb_mqtt_connect(FbMqtt *mqtt, gpointer data)
 {
 	FbApi *api = data;
-	FbApiPrivate *priv = api->priv;
 	gchar *json;
 	JsonBuilder *bldr;
 
@@ -1061,7 +1043,7 @@ fb_api_cb_mqtt_connect(FbMqtt *mqtt, gpointer data)
 	/* Notifications seem to lead to some sort of sending rate limit */
 	fb_mqtt_unsubscribe(mqtt, "/orca_message_notifications", NULL);
 
-	if (priv->sid == 0) {
+	if (api->sid == 0) {
 		bldr = fb_json_bldr_new(JSON_NODE_OBJECT);
 		fb_json_bldr_add_str(bldr, "1", "0");
 		fb_api_http_query(api, FB_API_QUERY_SEQ_ID, bldr,
@@ -1230,7 +1212,6 @@ static void
 fb_api_cb_publish_typing(FbApi *api, GByteArray *pload)
 {
 	const gchar *str;
-	FbApiPrivate *priv = api->priv;
 	FbApiTyping typg;
 	FbJsonValues *values;
 	GError *err = NULL;
@@ -1257,7 +1238,7 @@ fb_api_cb_publish_typing(FbApi *api, GByteArray *pload)
 	if (g_ascii_strcasecmp(str, "typ") == 0) {
 		typg.uid = fb_json_values_next_int(values, 0);
 
-		if (typg.uid != priv->uid) {
+		if (typg.uid != api->uid) {
 			typg.state = fb_json_values_next_int(values, 0);
 			g_signal_emit_by_name(api, "typing", &typg);
 		}
@@ -1271,7 +1252,6 @@ static void
 fb_api_cb_publish_ms_r(FbApi *api, GByteArray *pload)
 {
 	FbApiMessage *msg;
-	FbApiPrivate *priv = api->priv;
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *root;
@@ -1292,11 +1272,11 @@ fb_api_cb_publish_ms_r(FbApi *api, GByteArray *pload)
 
 	if (fb_json_values_next_bool(values, TRUE)) {
 		/* Pop and free the successful message */
-		msg = g_queue_pop_head(priv->msgs);
+		msg = g_queue_pop_head(api->msgs);
 		fb_api_message_free(msg);
 
-		if (!g_queue_is_empty(priv->msgs)) {
-			msg = g_queue_peek_head(priv->msgs);
+		if (!g_queue_is_empty(api->msgs)) {
+			msg = g_queue_peek_head(api->msgs);
 			fb_api_message_send(api, msg);
 		}
 	} else {
@@ -1449,7 +1429,6 @@ static void
 fb_api_cb_publish_ms(FbApi *api, GByteArray *pload)
 {
 	const gchar *data;
-	FbApiPrivate *priv = api->priv;
 	FbJsonValues *values;
 	FbThrift *thft;
 	gchar *stoken;
@@ -1503,13 +1482,13 @@ fb_api_cb_publish_ms(FbApi *api, GByteArray *pload)
 		return;
 	);
 
-	priv->sid = fb_json_values_next_int(values, 0);
+	api->sid = fb_json_values_next_int(values, 0);
 	stoken = fb_json_values_next_str_dup(values, NULL);
 	g_object_unref(values);
 
 	if (G_UNLIKELY(stoken != NULL)) {
-		g_free(priv->stoken);
-		priv->stoken = stoken;
+		g_free(api->stoken);
+		api->stoken = stoken;
 		g_signal_emit_by_name(api, "connect");
 		json_node_free(root);
 		return;
@@ -1569,7 +1548,6 @@ fb_api_cb_publish_ms_new_message(FbApi *api, JsonNode *root, GSList *msgs, GErro
 	const gchar *body;
 	const gchar *str;
 	GError *err = NULL;
-	FbApiPrivate *priv = api->priv;
 	FbApiMessage *dmsg;
 	FbApiMessage msg;
 	FbId id;
@@ -1606,19 +1584,19 @@ fb_api_cb_publish_ms_new_message(FbApi *api, JsonNode *root, GSList *msgs, GErro
 		}
 
 		/* Ignore sequential duplicates */
-		if (id == priv->lastmid) {
+		if (id == api->lastmid) {
 			fb_util_debug_info("Ignoring duplicate %" FB_ID_FORMAT, id);
 			goto beach;
 		}
 
-		priv->lastmid = id;
+		api->lastmid = id;
 		fb_api_message_reset(&msg, FALSE);
 		msg.uid = fb_json_values_next_int(values, 0);
 		oid = fb_json_values_next_int(values, 0);
 		msg.tid = fb_json_values_next_int(values, 0);
 		msg.tstamp = fb_json_values_next_int(values, 0);
 
-		if (msg.uid == priv->uid) {
+		if (msg.uid == api->uid) {
 			msg.flags |= FB_API_MESSAGE_FLAG_SELF;
 
 			if (msg.tid == 0) {
@@ -1919,31 +1897,29 @@ FbApi *
 fb_api_new(PurpleConnection *gc, GProxyResolver *resolver)
 {
 	FbApi *api;
-	FbApiPrivate *priv;
 
 	api = g_object_new(FB_TYPE_API, NULL);
-	priv = api->priv;
 
-	priv->gc = gc;
-	priv->cons = soup_session_new_with_options(
+	api->gc = gc;
+	api->cons = soup_session_new_with_options(
 	        "proxy-resolver", resolver,
 	        "user-agent", FB_API_AGENT,
 	        NULL);
-	priv->mqtt = fb_mqtt_new(gc);
+	api->mqtt = fb_mqtt_new(gc);
 
-	g_signal_connect(priv->mqtt,
+	g_signal_connect(api->mqtt,
 	                 "connect",
 	                 G_CALLBACK(fb_api_cb_mqtt_connect),
 	                 api);
-	g_signal_connect(priv->mqtt,
+	g_signal_connect(api->mqtt,
 	                 "error",
 	                 G_CALLBACK(fb_api_cb_mqtt_error),
 	                 api);
-	g_signal_connect(priv->mqtt,
+	g_signal_connect(api->mqtt,
 	                 "open",
 	                 G_CALLBACK(fb_api_cb_mqtt_open),
 	                 api);
-	g_signal_connect(priv->mqtt,
+	g_signal_connect(api->mqtt,
 	                 "publish",
 	                 G_CALLBACK(fb_api_cb_mqtt_publish),
 	                 api);
@@ -1954,38 +1930,32 @@ fb_api_new(PurpleConnection *gc, GProxyResolver *resolver)
 void
 fb_api_rehash(FbApi *api)
 {
-	FbApiPrivate *priv;
-
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
-	if (priv->cid == NULL) {
-		priv->cid = fb_util_rand_alnum(32);
+	if (api->cid == NULL) {
+		api->cid = fb_util_rand_alnum(32);
 	}
 
-	if (priv->did == NULL) {
-		priv->did = g_uuid_string_random();
+	if (api->did == NULL) {
+		api->did = g_uuid_string_random();
 	}
 
-	if (priv->mid == 0) {
-		priv->mid = g_random_int();
+	if (api->mid == 0) {
+		api->mid = g_random_int();
 	}
 
-	if (strlen(priv->cid) > 20) {
-		priv->cid = g_realloc_n(priv->cid , 21, sizeof *priv->cid);
-		priv->cid[20] = 0;
+	if (strlen(api->cid) > 20) {
+		api->cid = g_realloc_n(api->cid , 21, sizeof *api->cid);
+		api->cid[20] = 0;
 	}
 }
 
 gboolean
 fb_api_is_invisible(FbApi *api)
 {
-	FbApiPrivate *priv;
-
 	g_return_val_if_fail(FB_IS_API(api), FALSE);
-	priv = api->priv;
 
-	return priv->invisible;
+	return api->invisible;
 }
 
 static void
@@ -2100,7 +2070,6 @@ fb_api_cb_auth(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
                gpointer data)
 {
 	FbApi *api = data;
-	FbApiPrivate *priv = api->priv;
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *root;
@@ -2120,9 +2089,9 @@ fb_api_cb_auth(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 		return;
 	);
 
-	g_free(priv->token);
-	priv->token = fb_json_values_next_str_dup(values, NULL);
-	priv->uid = fb_json_values_next_int(values, 0);
+	g_free(api->token);
+	api->token = fb_json_values_next_str_dup(values, NULL);
+	api->uid = fb_json_values_next_int(values, 0);
 
 	g_signal_emit_by_name(api, "auth");
 	g_object_unref(values);
@@ -2233,7 +2202,6 @@ static GSList *
 fb_api_cb_contacts_nodes(FbApi *api, JsonNode *root, GSList *users)
 {
 	const gchar *str;
-	FbApiPrivate *priv = api->priv;
 	FbApiUser *user;
 	FbId uid;
 	FbJsonValues *values;
@@ -2262,7 +2230,7 @@ fb_api_cb_contacts_nodes(FbApi *api, JsonNode *root, GSList *users)
 		str = fb_json_values_next_str(values, NULL);
 
 		if ((!purple_strequal(str, "ARE_FRIENDS") &&
-		    (uid != priv->uid)) || (uid == 0))
+		    (uid != api->uid)) || (uid == 0))
 		{
 			if (!is_array) {
 				break;
@@ -2323,7 +2291,6 @@ fb_api_cb_contacts(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 	const gchar *cursor;
 	const gchar *delta_cursor;
 	FbApi *api = data;
-	FbApiPrivate *priv = api->priv;
 	FbJsonValues *values;
 	gboolean complete;
 	gboolean is_delta;
@@ -2391,8 +2358,8 @@ fb_api_cb_contacts(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 
 	if (G_UNLIKELY(err == NULL)) {
 		if (is_delta || complete) {
-			g_free(priv->contacts_delta);
-			priv->contacts_delta = g_strdup(is_delta ? cursor : delta_cursor);
+			g_free(api->contacts_delta);
+			api->contacts_delta = g_strdup(is_delta ? cursor : delta_cursor);
 		}
 
 		if (users) {
@@ -2416,14 +2383,12 @@ fb_api_cb_contacts(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 void
 fb_api_contacts(FbApi *api)
 {
-	FbApiPrivate *priv;
 	JsonBuilder *bldr;
 
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
-	if (priv->contacts_delta) {
-		fb_api_contacts_delta(api, priv->contacts_delta);
+	if (api->contacts_delta) {
+		fb_api_contacts_delta(api, api->contacts_delta);
 		return;
 	}
 
@@ -2474,38 +2439,31 @@ fb_api_contacts_delta(FbApi *api, const gchar *delta_cursor)
 void
 fb_api_connect(FbApi *api, gboolean invisible)
 {
-	FbApiPrivate *priv;
-
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
-	priv->invisible = invisible;
-	fb_mqtt_open(priv->mqtt, FB_MQTT_HOST, FB_MQTT_PORT);
+	api->invisible = invisible;
+	fb_mqtt_open(api->mqtt, FB_MQTT_HOST, FB_MQTT_PORT);
 }
 
 void
 fb_api_disconnect(FbApi *api)
 {
-	FbApiPrivate *priv;
-
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
-	fb_mqtt_disconnect(priv->mqtt);
+	fb_mqtt_disconnect(api->mqtt);
 }
 
 static void
 fb_api_message_send(FbApi *api, FbApiMessage *msg)
 {
 	const gchar *tpfx;
-	FbApiPrivate *priv = api->priv;
 	FbId id;
 	FbId mid;
 	gchar *json;
 	JsonBuilder *bldr;
 
 	mid = FB_API_MSGID(g_get_real_time() / 1000, g_random_int());
-	priv->lastmid = mid;
+	api->lastmid = mid;
 
 	if (msg->tid != 0) {
 		tpfx = "tfbid_";
@@ -2518,7 +2476,7 @@ fb_api_message_send(FbApi *api, FbApiMessage *msg)
 	bldr = fb_json_bldr_new(JSON_NODE_OBJECT);
 	fb_json_bldr_add_str(bldr, "body", msg->text);
 	fb_json_bldr_add_strf(bldr, "msgid", "%" FB_ID_FORMAT, mid);
-	fb_json_bldr_add_strf(bldr, "sender_fbid", "%" FB_ID_FORMAT, priv->uid);
+	fb_json_bldr_add_strf(bldr, "sender_fbid", "%" FB_ID_FORMAT, api->uid);
 	fb_json_bldr_add_strf(bldr, "to", "%s%" FB_ID_FORMAT, tpfx, id);
 
 	json = fb_json_bldr_close(bldr, JSON_NODE_OBJECT, NULL);
@@ -2530,12 +2488,10 @@ void
 fb_api_message(FbApi *api, FbId id, gboolean thread, const gchar *text)
 {
 	FbApiMessage *msg;
-	FbApiPrivate *priv;
 	gboolean empty;
 
 	g_return_if_fail(FB_IS_API(api));
 	g_return_if_fail(text != NULL);
-	priv = api->priv;
 
 	msg = g_new0(FbApiMessage, 1);
 	msg->text = g_strdup(text);
@@ -2546,10 +2502,10 @@ fb_api_message(FbApi *api, FbId id, gboolean thread, const gchar *text)
 		msg->uid = id;
 	}
 
-	empty = g_queue_is_empty(priv->msgs);
-	g_queue_push_tail(priv->msgs, msg);
+	empty = g_queue_is_empty(api->msgs);
+	g_queue_push_tail(api->msgs, msg);
 
-	if (empty && fb_mqtt_connected(priv->mqtt, FALSE)) {
+	if (empty && fb_mqtt_connected(api->mqtt, FALSE)) {
 		fb_api_message_send(api, msg);
 	}
 }
@@ -2557,7 +2513,6 @@ fb_api_message(FbApi *api, FbId id, gboolean thread, const gchar *text)
 void
 fb_api_publish(FbApi *api, const gchar *topic, const gchar *format, ...)
 {
-	FbApiPrivate *priv;
 	GByteArray *bytes;
 	GByteArray *cytes;
 	gchar *msg;
@@ -2567,7 +2522,6 @@ fb_api_publish(FbApi *api, const gchar *topic, const gchar *format, ...)
 	g_return_if_fail(FB_IS_API(api));
 	g_return_if_fail(topic != NULL);
 	g_return_if_fail(format != NULL);
-	priv = api->priv;
 
 	va_start(ap, format);
 	msg = g_strdup_vprintf(format, ap);
@@ -2585,7 +2539,7 @@ fb_api_publish(FbApi *api, const gchar *topic, const gchar *format, ...)
 	                      "Writing message (topic: %s)",
 			      topic);
 
-	fb_mqtt_publish(priv->mqtt, topic, cytes);
+	fb_mqtt_publish(api->mqtt, topic, cytes);
 	g_byte_array_free(cytes, TRUE);
 	g_byte_array_free(bytes, TRUE);
 }
@@ -2594,16 +2548,14 @@ void
 fb_api_read(FbApi *api, FbId id, gboolean thread)
 {
 	const gchar *key;
-	FbApiPrivate *priv;
 	gchar *json;
 	JsonBuilder *bldr;
 
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
 	bldr = fb_json_bldr_new(JSON_NODE_OBJECT);
 	fb_json_bldr_add_bool(bldr, "state", TRUE);
-	fb_json_bldr_add_int(bldr, "syncSeqId", priv->sid);
+	fb_json_bldr_add_int(bldr, "syncSeqId", api->sid);
 	fb_json_bldr_add_str(bldr, "mark", "read");
 
 	key = thread ? "threadFbId" : "otherUserFbId";
@@ -2838,19 +2790,17 @@ fb_api_cb_unread(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 void
 fb_api_unread(FbApi *api)
 {
-	FbApiPrivate *priv;
 	JsonBuilder *bldr;
 
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
-	if (priv->unread < 1) {
+	if (api->unread < 1) {
 		return;
 	}
 
 	bldr = fb_json_bldr_new(JSON_NODE_OBJECT);
 	fb_json_bldr_add_str(bldr, "2", "true");
-	fb_json_bldr_add_int(bldr, "1", priv->unread);
+	fb_json_bldr_add_int(bldr, "1", api->unread);
 	fb_json_bldr_add_str(bldr, "12", "true");
 	fb_json_bldr_add_str(bldr, "13", "false");
 	fb_api_http_query(api, FB_API_QUERY_THREADS, bldr,
@@ -2918,7 +2868,6 @@ fb_api_thread_parse(FbApi *api, FbApiThread *thrd, JsonNode *root,
                     GError **error)
 {
 	const gchar *str;
-	FbApiPrivate *priv = api->priv;
 	FbApiUser *user;
 	FbId uid;
 	FbJsonValues *values;
@@ -2961,7 +2910,7 @@ fb_api_thread_parse(FbApi *api, FbApiThread *thrd, JsonNode *root,
 		uid = FB_ID_FROM_STR(str);
 		num_users++;
 
-		if (uid != priv->uid) {
+		if (uid != api->uid) {
 			user = g_new0(FbApiUser, 1);
 			user->uid = uid;
 			user->name = fb_json_values_next_str_dup(values, NULL);
@@ -3083,7 +3032,6 @@ fb_api_cb_thread_create(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 void
 fb_api_thread_create(FbApi *api, GSList *uids)
 {
-	FbApiPrivate *priv;
 	FbHttpParams *prms;
 	FbId *uid;
 	gchar *json;
@@ -3092,12 +3040,11 @@ fb_api_thread_create(FbApi *api, GSList *uids)
 
 	g_return_if_fail(FB_IS_API(api));
 	g_warn_if_fail(g_slist_length(uids) > 1);
-	priv = api->priv;
 
 	bldr = fb_json_bldr_new(JSON_NODE_ARRAY);
 	fb_json_bldr_obj_begin(bldr, NULL);
 	fb_json_bldr_add_str(bldr, "type", "id");
-	fb_json_bldr_add_strf(bldr, "id", "%" FB_ID_FORMAT, priv->uid);
+	fb_json_bldr_add_strf(bldr, "id", "%" FB_ID_FORMAT, api->uid);
 	fb_json_bldr_obj_end(bldr);
 
 	for (l = uids; l != NULL; l = l->next) {
@@ -3141,22 +3088,20 @@ fb_api_thread_invite(FbApi *api, FbId tid, FbId uid)
 void
 fb_api_thread_remove(FbApi *api, FbId tid, FbId uid)
 {
-	FbApiPrivate *priv;
 	FbHttpParams *prms;
 	gchar *json;
 	JsonBuilder *bldr;
 
 	g_return_if_fail(FB_IS_API(api));
-	priv = api->priv;
 
 	prms = fb_http_params_new();
 	fb_http_params_set_strf(prms, "id", "t_%" FB_ID_FORMAT, tid);
 
 	if (uid == 0) {
-		uid = priv->uid;
+		uid = api->uid;
 	}
 
-	if (uid != priv->uid) {
+	if (uid != api->uid) {
 		bldr = fb_json_bldr_new(JSON_NODE_ARRAY);
 		fb_json_bldr_add_strf(bldr, NULL, "%" FB_ID_FORMAT, uid);
 		json = fb_json_bldr_close(bldr, JSON_NODE_ARRAY, NULL);
