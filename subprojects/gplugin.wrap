@@ -1,4 +1,5 @@
-[wrap-hg]
-directory = gplugin
-url = https://keep.imfreedom.org/gplugin/gplugin
-revision = v0.38.1
+[wrap-file]
+directory = gplugin-v0.38.1
+source_url = https://keep.imfreedom.org/gplugin/gplugin/archive/v0.38.1.tar.bz2
+source_filename = gplugin-0.38.1.tar.bz2
+source_hash = 4dbea43ce9094debf633e1873d2c2e94cf27d193666a0d34a0a32598f209fe52

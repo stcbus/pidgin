@@ -1,6 +1,5 @@
-[wrap-git]
-directory=gi-docgen
-url=https://gitlab.gnome.org/GNOME/gi-docgen.git
-push-url=ssh://git@gitlab.gnome.org:GNOME/gi-docgen.git
-revision=main
-depth=1
+[wrap-file]
+directory = gi-docgen-2022.1
+source_url = https://download.gnome.org/sources/gi-docgen/2022/gi-docgen-2022.1.tar.xz
+source_filename = gi-docgen-2022.1.tar.xz
+source_hash = fefe3153979595ddad2dc81d5efa7e54c8ca3770f91a5a75710c8fd6fad4575f

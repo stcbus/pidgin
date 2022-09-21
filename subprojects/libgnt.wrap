@@ -1,4 +1,5 @@
-[wrap-hg]
-directory = libgnt
-url = https://keep.imfreedom.org/libgnt/libgnt
-revision = default
+[wrap-file]
+directory = libgnt-b7174f76d7ee
+source_url = https://keep.imfreedom.org/libgnt/libgnt/archive/b7174f76d7ee.tar.bz2
+source_filename = libgnt-b7174f76d7ee.tar.bz2
+source_hash = 56f76698c7bd050ae044410a8450f0ae063cdadab425a518866bd650acbbe652
