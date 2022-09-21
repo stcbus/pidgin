@@ -34,14 +34,6 @@
 #  include "win32/gtkwin32dep.h"
 #endif
 
-/**
- * PIDGIN_UI:
- *
- * Our UI's identifier.
- */
-/* leave this as gtk-gaim until we have a decent way to migrate UI-prefs */
-#define PIDGIN_UI "gtk-gaim"
-
 /* change this only when we have a sane upgrade path for old prefs */
 #define PIDGIN_PREFS_ROOT "/pidgin"
 

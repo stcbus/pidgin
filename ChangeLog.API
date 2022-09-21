@@ -1121,6 +1121,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_tooltip_setup_for_widget
 		* pidgin_tooltip_show
 		* PidginThemeFont
+		* PIDGIN_UI
 		* PidginUnseenState enum and all values.
 		* PidginUtilMiniDialogCallback; use PidginMiniDialogCallback
 		  instead

@@ -799,7 +799,7 @@ pidgin_application_startup(GApplication *application) {
 
 	purple_core_set_ui_ops(pidgin_core_get_ui_ops());
 
-	ui_info = purple_ui_info_new(PIDGIN_UI, PIDGIN_NAME, VERSION,
+	ui_info = purple_ui_info_new("pidgin3", PIDGIN_NAME, VERSION,
 	                             "https://pidgin.im",
 	                             "https://developer.pidgin.im", "pc");
 

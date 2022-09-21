@@ -182,7 +182,7 @@ init_libpurple(int argc, char **argv)
 	purple_core_set_ui_ops(gnt_core_get_ui_ops());
 	purple_idle_set_ui(finch_idle_new());
 
-	ui_info = purple_ui_info_new("finch", _("Finch"), VERSION,
+	ui_info = purple_ui_info_new("finch3", _("Finch"), VERSION,
 	                             "https://pidgin.im",
 	                             "https://developer.pidgin.im", "console");
 

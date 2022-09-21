@@ -18,6 +18,9 @@
 
 #include <libpurple/purplepath.h>
 
+#include <libpurple/core.h>
+#include <libpurple/purpleuiinfo.h>
+
 #ifdef _WIN32
 # include "win32/win32dep.h"
 #endif
@@ -40,7 +43,15 @@ purple_xdg_dir(gchar **xdg_dir, const gchar *xdg_base_dir,
 {
 	if (!*xdg_dir) {
 		if (!custom_user_dir) {
-			*xdg_dir = g_build_filename(xdg_base_dir, "purple", NULL);
+			PurpleUiInfo *info = purple_core_get_ui_info();
+			const gchar *id = NULL;
+
+			id = purple_ui_info_get_id(info);
+			if(id == NULL) {
+				id = "purple";
+			}
+
+			*xdg_dir = g_build_filename(xdg_base_dir, id, NULL);
 		} else {
 			*xdg_dir = g_build_filename(custom_user_dir, xdg_type, NULL);
 		}
@@ -79,12 +90,7 @@ purple_data_dir(void) {
 void
 purple_util_set_user_dir(const gchar *dir) {
 	g_free(custom_user_dir);
-
-	if(dir != NULL && *dir) {
-		custom_user_dir = g_strdup(dir);
-	} else {
-		custom_user_dir = NULL;
-	}
+	custom_user_dir = g_strdup(dir);
 
 	g_clear_pointer(&user_dir, g_free);
 	g_clear_pointer(&cache_dir, g_free);
