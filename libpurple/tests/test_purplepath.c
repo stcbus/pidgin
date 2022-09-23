@@ -2,6 +2,8 @@
 
 #include <purple.h>
 
+#include "test_ui.h"
+
 static void
 test_purplepath_home_dir(void) {
 	const gchar *home_dir;
@@ -18,7 +20,7 @@ static void
 test_purplepath_cache_dir(void) {
 	gchar *cache_dir;
 
-	cache_dir = g_build_filename(g_get_user_cache_dir(), "purple", NULL);
+	cache_dir = g_build_filename(g_get_user_cache_dir(), "test", NULL);
 	g_assert_cmpstr(cache_dir, ==, purple_cache_dir());
 	g_free(cache_dir);
 }
@@ -27,7 +29,7 @@ static void
 test_purplepath_config_dir(void) {
 	gchar *config_dir;
 
-	config_dir = g_build_filename(g_get_user_config_dir(), "purple", NULL);
+	config_dir = g_build_filename(g_get_user_config_dir(), "test", NULL);
 	g_assert_cmpstr(config_dir, ==, purple_config_dir());
 	g_free(config_dir);
 }
@@ -36,7 +38,7 @@ static void
 test_purplepath_data_dir(void) {
 	gchar *data_dir;
 
-	data_dir = g_build_filename(g_get_user_data_dir(), "purple", NULL);
+	data_dir = g_build_filename(g_get_user_data_dir(), "test", NULL);
 	g_assert_cmpstr(data_dir, ==, purple_data_dir());
 	g_free(data_dir);
 }
@@ -44,6 +46,8 @@ test_purplepath_data_dir(void) {
 gint
 main(gint argc, gchar **argv) {
 	g_test_init(&argc, &argv, NULL);
+
+	test_ui_purple_init();
 
 	g_test_add_func("/purplepath/homedir",
 	                test_purplepath_home_dir);
