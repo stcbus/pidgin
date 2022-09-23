@@ -239,6 +239,7 @@ libpurple/purpleattachment.c
 libpurple/purplebuddypresence.c
 libpurple/purplechatconversation.c
 libpurple/purplechatuser.c
+libpurple/purplecontact.c
 libpurple/purpleconversation.c
 libpurple/purpleconversationmanager.c
 libpurple/purpleconversationuiops.c
@@ -289,6 +290,7 @@ libpurple/stun.c
 libpurple/tests/test_account_manager.c
 libpurple/tests/test_account_option.c
 libpurple/tests/test_circular_buffer.c
+libpurple/tests/test_contact.c
 libpurple/tests/test_credential_manager.c
 libpurple/tests/test_credential_provider.c
 libpurple/tests/test_history_adapter.c
