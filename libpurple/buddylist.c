@@ -232,7 +232,7 @@ buddy_to_xmlnode(PurpleBuddy *buddy)
 }
 
 static PurpleXmlNode *
-contact_to_xmlnode(PurpleContact *contact)
+contact_to_xmlnode(PurpleMetaContact *contact)
 {
 	PurpleXmlNode *node, *child;
 	PurpleBlistNode *bnode;
@@ -316,9 +316,9 @@ group_to_xmlnode(PurpleGroup *group)
 	{
 		if (purple_blist_node_is_transient(cnode))
 			continue;
-		if (PURPLE_IS_CONTACT(cnode))
+		if (PURPLE_IS_META_CONTACT(cnode))
 		{
-			child = contact_to_xmlnode(PURPLE_CONTACT(cnode));
+			child = contact_to_xmlnode(PURPLE_META_CONTACT(cnode));
 			purple_xmlnode_insert_child(node, child);
 		}
 		else if (PURPLE_IS_CHAT(cnode))
@@ -498,7 +498,7 @@ parse_setting(PurpleBlistNode *node, PurpleXmlNode *setting)
 }
 
 static void
-parse_buddy(PurpleGroup *group, PurpleContact *contact, PurpleXmlNode *bnode) {
+parse_buddy(PurpleGroup *group, PurpleMetaContact *contact, PurpleXmlNode *bnode) {
 	PurpleAccount *account;
 	PurpleAccountManager *manager = purple_account_manager_get_default();
 	PurpleBuddy *buddy;
@@ -546,7 +546,7 @@ parse_buddy(PurpleGroup *group, PurpleContact *contact, PurpleXmlNode *bnode) {
 static void
 parse_contact(PurpleGroup *group, PurpleXmlNode *cnode)
 {
-	PurpleContact *contact = purple_contact_new();
+	PurpleMetaContact *contact = purple_meta_contact_new();
 	PurpleXmlNode *x;
 	const char *alias;
 
@@ -554,7 +554,7 @@ parse_contact(PurpleGroup *group, PurpleXmlNode *cnode)
 			_purple_blist_get_last_child((PurpleBlistNode*)group));
 
 	if ((alias = purple_xmlnode_get_attrib(cnode, "alias"))) {
-		purple_contact_set_alias(contact, alias);
+		purple_meta_contact_set_alias(contact, alias);
 	}
 
 	for (x = cnode->child; x; x = x->next) {
@@ -980,14 +980,14 @@ void purple_blist_add_chat(PurpleChat *chat, PurpleGroup *group, PurpleBlistNode
 			cnode);
 }
 
-void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGroup *group, PurpleBlistNode *node)
+void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleMetaContact *contact, PurpleGroup *group, PurpleBlistNode *node)
 {
 	PurpleBuddyListClass *klass = NULL;
 	PurpleBuddyListPrivate *priv = NULL;
 	PurpleBlistNode *cnode, *bnode;
 	PurpleCountingNode *contact_counter, *group_counter;
 	PurpleGroup *g;
-	PurpleContact *c;
+	PurpleMetaContact *c;
 	PurpleAccount *account;
 	struct _purple_hbuddy *hb, *hb2;
 	GHashTable *account_buddies;
@@ -1007,7 +1007,7 @@ void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGr
 		return;
 
 	if (node && PURPLE_IS_BUDDY(node)) {
-		c = (PurpleContact*)node->parent;
+		c = (PurpleMetaContact*)node->parent;
 		g = (PurpleGroup*)node->parent->parent;
 	} else if (contact) {
 		c = contact;
@@ -1021,7 +1021,7 @@ void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGr
 			purple_blist_add_group(
 			        g, purple_blist_get_last_sibling(priv->root));
 		}
-		c = purple_contact_new();
+		c = purple_meta_contact_new();
 		purple_blist_add_contact(c, g,
 				_purple_blist_get_last_child((PurpleBlistNode*)g));
 	}
@@ -1074,9 +1074,9 @@ void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGr
 		}
 
 		if (!bnode->parent->child) {
-			purple_blist_remove_contact((PurpleContact*)bnode->parent);
+			purple_blist_remove_contact((PurpleMetaContact*)bnode->parent);
 		} else {
-			purple_contact_invalidate_priority_buddy((PurpleContact*)bnode->parent);
+			purple_meta_contact_invalidate_priority_buddy((PurpleMetaContact*)bnode->parent);
 
 			if (klass && klass->update) {
 				klass->update(purplebuddylist, bnode->parent);
@@ -1131,7 +1131,7 @@ void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGr
 
 	g_hash_table_replace(account_buddies, hb2, buddy);
 
-	purple_contact_invalidate_priority_buddy(purple_buddy_get_contact(buddy));
+	purple_meta_contact_invalidate_priority_buddy(purple_buddy_get_contact(buddy));
 
 	if (klass) {
 		if (klass->save_node) {
@@ -1149,7 +1149,7 @@ void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGr
 			PURPLE_BLIST_NODE(buddy));
 }
 
-void purple_blist_add_contact(PurpleContact *contact, PurpleGroup *group, PurpleBlistNode *node)
+void purple_blist_add_contact(PurpleMetaContact *contact, PurpleGroup *group, PurpleBlistNode *node)
 {
 	PurpleBuddyListClass *klass = NULL;
 	PurpleBuddyListPrivate *priv = NULL;
@@ -1157,7 +1157,7 @@ void purple_blist_add_contact(PurpleContact *contact, PurpleGroup *group, Purple
 	PurpleBlistNode *gnode, *cnode, *bnode;
 	PurpleCountingNode *contact_counter, *group_counter;
 
-	g_return_if_fail(PURPLE_IS_CONTACT(contact));
+	g_return_if_fail(PURPLE_IS_META_CONTACT(contact));
 	g_return_if_fail(PURPLE_IS_BUDDY_LIST(purplebuddylist));
 
 	if (PURPLE_BLIST_NODE(contact) == node)
@@ -1166,7 +1166,7 @@ void purple_blist_add_contact(PurpleContact *contact, PurpleGroup *group, Purple
 	klass = PURPLE_BUDDY_LIST_GET_CLASS(purplebuddylist);
 	priv = purple_buddy_list_get_instance_private(purplebuddylist);
 
-	if (node && (PURPLE_IS_CONTACT(node) ||
+	if (node && (PURPLE_IS_META_CONTACT(node) ||
 				PURPLE_IS_CHAT(node)))
 		g = PURPLE_GROUP(node->parent);
 	else if (group)
@@ -1260,7 +1260,7 @@ void purple_blist_add_contact(PurpleContact *contact, PurpleGroup *group, Purple
 		}
 	}
 
-	if (node && (PURPLE_IS_CONTACT(node) ||
+	if (node && (PURPLE_IS_META_CONTACT(node) ||
 				PURPLE_IS_CHAT(node))) {
 		if (node->next)
 			node->next->prev = cnode;
@@ -1381,14 +1381,14 @@ void purple_blist_add_group(PurpleGroup *group, PurpleBlistNode *node)
 			gnode);
 }
 
-void purple_blist_remove_contact(PurpleContact *contact)
+void purple_blist_remove_contact(PurpleMetaContact *contact)
 {
 	PurpleBuddyListClass *klass = NULL;
 	PurpleBlistNode *node, *gnode;
 	PurpleGroup *group;
 
 	g_return_if_fail(PURPLE_IS_BUDDY_LIST(purplebuddylist));
-	g_return_if_fail(PURPLE_IS_CONTACT(contact));
+	g_return_if_fail(PURPLE_IS_META_CONTACT(contact));
 
 	klass = PURPLE_BUDDY_LIST_GET_CLASS(purplebuddylist);
 	node = (PurpleBlistNode *)contact;
@@ -1443,7 +1443,7 @@ void purple_blist_remove_buddy(PurpleBuddy *buddy)
 	PurpleBuddyListPrivate *priv = NULL;
 	PurpleBlistNode *node, *cnode, *gnode;
 	PurpleCountingNode *contact_counter, *group_counter;
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 	PurpleGroup *group;
 	struct _purple_hbuddy hb;
 	GHashTable *account_buddies;
@@ -1458,7 +1458,7 @@ void purple_blist_remove_buddy(PurpleBuddy *buddy)
 	node = PURPLE_BLIST_NODE(buddy);
 	cnode = node->parent;
 	gnode = (cnode != NULL) ? cnode->parent : NULL;
-	contact = (PurpleContact *)cnode;
+	contact = (PurpleMetaContact *)cnode;
 	group = (PurpleGroup *)gnode;
 
 	/* Remove the node from its parent */
@@ -1487,8 +1487,8 @@ void purple_blist_remove_buddy(PurpleBuddy *buddy)
 		purple_counting_node_change_total_size(contact_counter, -1);
 
 		/* Re-sort the contact */
-		if (cnode->child && purple_contact_get_priority_buddy(contact) == buddy) {
-			purple_contact_invalidate_priority_buddy(contact);
+		if (cnode->child && purple_meta_contact_get_priority_buddy(contact) == buddy) {
+			purple_meta_contact_invalidate_priority_buddy(contact);
 
 			if (klass && klass->update) {
 				klass->update(purplebuddylist, cnode);
@@ -1838,7 +1838,7 @@ void purple_blist_add_account(PurpleAccount *account)
 		if (!PURPLE_IS_GROUP(gnode))
 			continue;
 		for (cnode = gnode->child; cnode; cnode = cnode->next) {
-			if (PURPLE_IS_CONTACT(cnode)) {
+			if (PURPLE_IS_META_CONTACT(cnode)) {
 				gboolean recompute = FALSE;
 					for (bnode = cnode->child; bnode; bnode = bnode->next) {
 						if (PURPLE_IS_BUDDY(bnode) &&
@@ -1857,8 +1857,8 @@ void purple_blist_add_account(PurpleAccount *account)
 				        if (recompute ||
 				            purple_blist_node_get_bool(
 				                    cnode, "show_offline")) {
-					        purple_contact_invalidate_priority_buddy(
-					                (PurpleContact *)cnode);
+					        purple_meta_contact_invalidate_priority_buddy(
+					                (PurpleMetaContact *)cnode);
 					        klass->update(purplebuddylist,
 					                      cnode);
 				        }
@@ -1881,7 +1881,7 @@ void purple_blist_remove_account(PurpleAccount *account)
 	PurpleCountingNode *contact_counter, *group_counter;
 	PurpleBuddy *buddy;
 	PurpleChat *chat;
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 	PurpleGroup *group;
 	GList *list = NULL, *iter = NULL;
 
@@ -1896,9 +1896,9 @@ void purple_blist_remove_account(PurpleAccount *account)
 		group = (PurpleGroup *)gnode;
 
 		for (cnode = gnode->child; cnode; cnode = cnode->next) {
-			if (PURPLE_IS_CONTACT(cnode)) {
+			if (PURPLE_IS_META_CONTACT(cnode)) {
 				gboolean recompute = FALSE;
-				contact = (PurpleContact *)cnode;
+				contact = (PurpleMetaContact *)cnode;
 
 				for (bnode = cnode->child; bnode; bnode = bnode->next) {
 					if (!PURPLE_IS_BUDDY(bnode))
@@ -1928,8 +1928,8 @@ void purple_blist_remove_account(PurpleAccount *account)
 						if (!g_list_find(list, presence))
 							list = g_list_prepend(list, presence);
 
-						if (purple_contact_get_priority_buddy(contact) == buddy)
-							purple_contact_invalidate_priority_buddy(contact);
+						if (purple_meta_contact_get_priority_buddy(contact) == buddy)
+							purple_meta_contact_invalidate_priority_buddy(contact);
 						else
 							recompute = TRUE;
 
@@ -1941,7 +1941,7 @@ void purple_blist_remove_account(PurpleAccount *account)
 					}
 				}
 				if (recompute) {
-					purple_contact_invalidate_priority_buddy(contact);
+					purple_meta_contact_invalidate_priority_buddy(contact);
 
 					if (klass && klass->update) {
 						klass->update(purplebuddylist,
@@ -1988,7 +1988,7 @@ purple_blist_walk(PurpleBlistWalkFunc group_func,
 		}
 
 		for(meta_contact = group->child; meta_contact != NULL; meta_contact = meta_contact->next) {
-			if(PURPLE_IS_CONTACT(meta_contact)) {
+			if(PURPLE_IS_META_CONTACT(meta_contact)) {
 				if(meta_contact_func != NULL) {
 					meta_contact_func(meta_contact, data);
 				}

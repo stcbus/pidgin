@@ -281,7 +281,7 @@ void purple_blist_add_chat(PurpleChat *chat, PurpleGroup *group, PurpleBlistNode
  * group if node is NULL.  If both are NULL, the buddy will be added to
  * the default group.
  */
-void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleContact *contact, PurpleGroup *group, PurpleBlistNode *node);
+void purple_blist_add_buddy(PurpleBuddy *buddy, PurpleMetaContact *contact, PurpleGroup *group, PurpleBlistNode *node);
 
 /**
  * purple_blist_add_group:
@@ -306,7 +306,7 @@ void purple_blist_add_group(PurpleGroup *group, PurpleBlistNode *node);
  * The new contact will be inserted after insert or prepended to the list if
  * node is NULL.
  */
-void purple_blist_add_contact(PurpleContact *contact, PurpleGroup *group, PurpleBlistNode *node);
+void purple_blist_add_contact(PurpleMetaContact *contact, PurpleGroup *group, PurpleBlistNode *node);
 
 /**
  * purple_blist_remove_buddy:
@@ -329,7 +329,7 @@ void purple_blist_remove_buddy(PurpleBuddy *buddy);
  *
  * See purple_blist_remove_buddy().
  */
-void purple_blist_remove_contact(PurpleContact *contact);
+void purple_blist_remove_contact(PurpleMetaContact *contact);
 
 /**
  * purple_blist_remove_chat:

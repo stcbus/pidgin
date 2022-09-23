@@ -27,7 +27,7 @@
  *****************************************************************************/
 static void
 purple_demo_protocol_load_status(PurpleAccount *account, PurpleGroup *group,
-                                 PurpleContact *contact, PurpleBuddy *buddy,
+                                 PurpleMetaContact *contact, PurpleBuddy *buddy,
                                  JsonObject *buddy_object)
 {
 	JsonObject *status_object = NULL;
@@ -98,7 +98,7 @@ purple_demo_protocol_load_icon(PurpleAccount *account, const gchar *name)
 
 static void
 purple_demo_protocol_load_buddies(PurpleAccount *account, PurpleGroup *group,
-                                  PurpleContact *contact, GList *buddies)
+                                  PurpleMetaContact *contact, GList *buddies)
 {
 	while(buddies != NULL) {
 		JsonNode *buddy_node = NULL;
@@ -142,14 +142,14 @@ purple_demo_protocol_load_contacts(PurpleAccount *account, PurpleGroup *group,
                                    GList *contacts)
 {
 	while(contacts != NULL) {
-		PurpleContact *contact = NULL;
+		PurpleMetaContact *contact = NULL;
 		JsonNode *contact_node = NULL;
 		JsonObject *contact_object = NULL;
 
 		contact_node = (JsonNode *)contacts->data;
 		contact_object = json_node_get_object(contact_node);
 
-		contact = purple_contact_new();
+		contact = purple_meta_contact_new();
 
 		/* Set the contact's alias if one was specified. */
 		if(json_object_has_member(contact_object, "alias")) {
@@ -157,7 +157,7 @@ purple_demo_protocol_load_contacts(PurpleAccount *account, PurpleGroup *group,
 
 			alias = json_object_get_string_member(contact_object, "alias");
 
-			purple_contact_set_alias(contact, alias);
+			purple_meta_contact_set_alias(contact, alias);
 		}
 
 		/* Add the contact to the group. */

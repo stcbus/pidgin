@@ -23,35 +23,35 @@
 # error "only <purple.h> may be included directly"
 #endif
 
-#ifndef PURPLE_CONTACT_H
-#define PURPLE_CONTACT_H
+#ifndef PURPLE_META_CONTACT_H
+#define PURPLE_META_CONTACT_H
 
-#define PURPLE_TYPE_CONTACT             (purple_contact_get_type())
-#define PURPLE_CONTACT(obj)             (G_TYPE_CHECK_INSTANCE_CAST((obj), PURPLE_TYPE_CONTACT, PurpleContact))
-#define PURPLE_CONTACT_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST((klass), PURPLE_TYPE_CONTACT, PurpleContactClass))
-#define PURPLE_IS_CONTACT(obj)          (G_TYPE_CHECK_INSTANCE_TYPE((obj), PURPLE_TYPE_CONTACT))
-#define PURPLE_IS_CONTACT_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE((klass), PURPLE_TYPE_CONTACT))
-#define PURPLE_CONTACT_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS((obj), PURPLE_TYPE_CONTACT, PurpleContactClass))
+#define PURPLE_TYPE_META_CONTACT             (purple_meta_contact_get_type())
+#define PURPLE_META_CONTACT(obj)             (G_TYPE_CHECK_INSTANCE_CAST((obj), PURPLE_TYPE_META_CONTACT, PurpleMetaContact))
+#define PURPLE_META_CONTACT_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST((klass), PURPLE_TYPE_META_CONTACT, PurpleMetaContactClass))
+#define PURPLE_IS_META_CONTACT(obj)          (G_TYPE_CHECK_INSTANCE_TYPE((obj), PURPLE_TYPE_META_CONTACT))
+#define PURPLE_IS_META_CONTACT_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE((klass), PURPLE_TYPE_META_CONTACT))
+#define PURPLE_META_CONTACT_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS((obj), PURPLE_TYPE_META_CONTACT, PurpleMetaContactClass))
 
-typedef struct _PurpleContact PurpleContact;
-typedef struct _PurpleContactClass PurpleContactClass;
+typedef struct _PurpleMetaContact PurpleMetaContact;
+typedef struct _PurpleMetaContactClass PurpleMetaContactClass;
 
 #include "countingnode.h"
 #include "group.h"
 
 /**
- * PurpleContact:
+ * PurpleMetaContact:
  *
  * A contact on the buddy list.
  *
  * A contact is a counting node, which means it keeps track of the counts of
  * the buddies under this contact.
  */
-struct _PurpleContact {
+struct _PurpleMetaContact {
 	PurpleCountingNode counting;
 };
 
-struct _PurpleContactClass {
+struct _PurpleMetaContactClass {
 	PurpleCountingNodeClass counting_class;
 
 	/*< private >*/
@@ -68,62 +68,62 @@ G_BEGIN_DECLS
 /**************************************************************************/
 
 /**
- * purple_contact_get_type:
+ * purple_meta_contact_get_type:
  *
- * Returns: The #GType for the #PurpleContact object.
+ * Returns: The #GType for the #PurpleMetaContact object.
  */
-GType purple_contact_get_type(void);
+GType purple_meta_contact_get_type(void);
 
 /**
- * purple_contact_new:
+ * purple_meta_contact_new:
  *
  * Creates a new contact
  *
  * Returns:       A new contact struct
  */
-PurpleContact *purple_contact_new(void);
+PurpleMetaContact *purple_meta_contact_new(void);
 
 /**
- * purple_contact_get_group:
+ * purple_meta_contact_get_group:
  * @contact:  The contact
  *
- * Gets the PurpleGroup from a PurpleContact
+ * Gets the PurpleGroup from a PurpleMetaContact
  *
  * Returns: (transfer none): The group.
  */
-PurpleGroup *purple_contact_get_group(const PurpleContact *contact);
+PurpleGroup *purple_meta_contact_get_group(const PurpleMetaContact *contact);
 
 /**
- * purple_contact_get_priority_buddy:
+ * purple_meta_contact_get_priority_buddy:
  * @contact:  The contact
  *
  * Returns the highest priority buddy for a given contact.
  *
  * Returns: (transfer none): The highest priority buddy.
  */
-PurpleBuddy *purple_contact_get_priority_buddy(PurpleContact *contact);
+PurpleBuddy *purple_meta_contact_get_priority_buddy(PurpleMetaContact *contact);
 
 /**
- * purple_contact_set_alias:
+ * purple_meta_contact_set_alias:
  * @contact:  The contact
  * @alias:    The alias
  *
  * Sets the alias for a contact.
  */
-void purple_contact_set_alias(PurpleContact *contact, const char *alias);
+void purple_meta_contact_set_alias(PurpleMetaContact *contact, const char *alias);
 
 /**
- * purple_contact_get_alias:
+ * purple_meta_contact_get_alias:
  * @contact:  The contact
  *
  * Gets the alias for a contact.
  *
  * Returns:  The alias, or NULL if it is not set.
  */
-const char *purple_contact_get_alias(PurpleContact *contact);
+const char *purple_meta_contact_get_alias(PurpleMetaContact *contact);
 
 /**
- * purple_contact_on_account:
+ * purple_meta_contact_on_account:
  * @contact:  The contact to search through.
  * @account:  The account.
  *
@@ -131,19 +131,19 @@ const char *purple_contact_get_alias(PurpleContact *contact);
  *
  * Returns: TRUE if there are any buddies from account in the contact, or FALSE otherwise.
  */
-gboolean purple_contact_on_account(PurpleContact *contact, PurpleAccount *account);
+gboolean purple_meta_contact_on_account(PurpleMetaContact *contact, PurpleAccount *account);
 
 /**
- * purple_contact_invalidate_priority_buddy:
+ * purple_meta_contact_invalidate_priority_buddy:
  * @contact:  The contact
  *
  * Invalidates the priority buddy so that the next call to
- * purple_contact_get_priority_buddy recomputes it.
+ * purple_meta_contact_get_priority_buddy recomputes it.
  */
-void purple_contact_invalidate_priority_buddy(PurpleContact *contact);
+void purple_meta_contact_invalidate_priority_buddy(PurpleMetaContact *contact);
 
 /**
- * purple_contact_merge:
+ * purple_meta_contact_merge:
  * @source:  The contact to merge
  * @node:    The place to merge to (a buddy or contact)
  *
@@ -151,10 +151,10 @@ void purple_contact_invalidate_priority_buddy(PurpleContact *contact);
  *
  * All of the buddies from source will be moved to target
  */
-void purple_contact_merge(PurpleContact *source, PurpleBlistNode *node);
+void purple_meta_contact_merge(PurpleMetaContact *source, PurpleBlistNode *node);
 
 
 G_END_DECLS
 
-#endif /* PURPLE_CONTACT_H */
+#endif /* PURPLE_META_CONTACT_H */
 

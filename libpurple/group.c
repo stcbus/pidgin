@@ -67,7 +67,7 @@ GSList *purple_group_get_accounts(PurpleGroup *group) {
 		if (PURPLE_IS_CHAT(cnode)) {
 			if (!g_slist_find(l, purple_chat_get_account(PURPLE_CHAT(cnode))))
 				l = g_slist_append(l, purple_chat_get_account(PURPLE_CHAT(cnode)));
-		} else if (PURPLE_IS_CONTACT(cnode)) {
+		} else if (PURPLE_IS_META_CONTACT(cnode)) {
 			for (bnode = cnode->child; bnode; bnode = bnode->next) {
 				if (PURPLE_IS_BUDDY(bnode)) {
 					if (!g_slist_find(l, purple_buddy_get_account(PURPLE_BUDDY(bnode))))
@@ -83,8 +83,8 @@ GSList *purple_group_get_accounts(PurpleGroup *group) {
 gboolean purple_group_on_account(PurpleGroup *g, PurpleAccount *account) {
 	PurpleBlistNode *cnode;
 	for (cnode = ((PurpleBlistNode *)g)->child; cnode; cnode = cnode->next) {
-		if (PURPLE_IS_CONTACT(cnode)) {
-			if(purple_contact_on_account((PurpleContact *) cnode, account))
+		if (PURPLE_IS_META_CONTACT(cnode)) {
+			if(purple_meta_contact_on_account((PurpleMetaContact *) cnode, account))
 				return TRUE;
 		} else if (PURPLE_IS_CHAT(cnode)) {
 			PurpleChat *chat = (PurpleChat *)cnode;
@@ -137,11 +137,11 @@ void purple_group_set_name(PurpleGroup *source, const char *name) {
 		while (child)
 		{
 			next = child->next;
-			if (PURPLE_IS_CONTACT(child)) {
+			if (PURPLE_IS_META_CONTACT(child)) {
 				PurpleBlistNode *bnode;
-				purple_blist_add_contact((PurpleContact *)child, dest, prev);
+				purple_blist_add_contact((PurpleMetaContact *)child, dest, prev);
 				for (bnode = child->child; bnode != NULL; bnode = bnode->next) {
-					purple_blist_add_buddy((PurpleBuddy *)bnode, (PurpleContact *)child,
+					purple_blist_add_buddy((PurpleBuddy *)bnode, (PurpleMetaContact *)child,
 							NULL, bnode->prev);
 					moved_buddies = g_list_append(moved_buddies, bnode);
 				}
@@ -166,7 +166,7 @@ void purple_group_set_name(PurpleGroup *source, const char *name) {
 
 		/* Build a GList of all buddies in this group */
 		for (cnode = PURPLE_BLIST_NODE(source)->child; cnode != NULL; cnode = cnode->next) {
-			if (PURPLE_IS_CONTACT(cnode))
+			if (PURPLE_IS_META_CONTACT(cnode))
 				for (bnode = cnode->child; bnode != NULL; bnode = bnode->next)
 					moved_buddies = g_list_append(moved_buddies, bnode);
 		}

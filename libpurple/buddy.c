@@ -436,7 +436,7 @@ purple_buddy_get_alias_only(PurpleBuddy *buddy) {
 const gchar *
 purple_buddy_get_contact_alias(PurpleBuddy *buddy) {
 	PurpleBuddyPrivate *priv = NULL;
-	PurpleContact *c = NULL;
+	PurpleMetaContact *c = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_BUDDY(buddy), NULL);
 
@@ -450,8 +450,8 @@ purple_buddy_get_contact_alias(PurpleBuddy *buddy) {
 
 	/* The contact alias */
 	c = purple_buddy_get_contact(buddy);
-	if((c != NULL) && (purple_contact_get_alias(c) != NULL)) {
-		return purple_contact_get_alias(c);
+	if((c != NULL) && (purple_meta_contact_get_alias(c) != NULL)) {
+		return purple_meta_contact_get_alias(c);
 	}
 
 	/* The server alias */
@@ -610,15 +610,15 @@ purple_buddy_get_server_alias(PurpleBuddy *buddy) {
 	return NULL;
 }
 
-PurpleContact *
+PurpleMetaContact *
 purple_buddy_get_contact(PurpleBuddy *buddy) {
 	PurpleBlistNode *parent = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_BUDDY(buddy), NULL);
 
 	parent = purple_blist_node_get_parent(PURPLE_BLIST_NODE(buddy));
-	if(PURPLE_IS_CONTACT(parent)) {
-		return PURPLE_CONTACT(parent);
+	if(PURPLE_IS_META_CONTACT(parent)) {
+		return PURPLE_META_CONTACT(parent);
 	}
 
 	return NULL;
@@ -660,7 +660,7 @@ purple_buddy_update_status(PurpleBuddy *buddy, PurpleStatus *old_status) {
 
 	if(old_online != new_online) {
 		PurpleBlistNode *cnode = NULL, *gnode = NULL;
-		PurpleContact *contact = NULL;
+		PurpleMetaContact *contact = NULL;
 		PurpleCountingNode *contact_counter = NULL, *group_counter = NULL;
 		gint delta = 0, limit = 0;
 
@@ -678,7 +678,7 @@ purple_buddy_update_status(PurpleBuddy *buddy, PurpleStatus *old_status) {
 		}
 
 		cnode = purple_blist_node_get_parent(PURPLE_BLIST_NODE(buddy));
-		contact = PURPLE_CONTACT(cnode);
+		contact = PURPLE_META_CONTACT(cnode);
 		contact_counter = PURPLE_COUNTING_NODE(contact);
 		gnode = purple_blist_node_get_parent(cnode);
 		group_counter = PURPLE_COUNTING_NODE(gnode);
@@ -702,7 +702,7 @@ purple_buddy_update_status(PurpleBuddy *buddy, PurpleStatus *old_status) {
 	 * because something, somewhere changed.  Calling the stuff below
 	 * certainly won't hurt anything.  Unless you're on a K6-2 300.
 	 */
-	purple_contact_invalidate_priority_buddy(purple_buddy_get_contact(buddy));
+	purple_meta_contact_invalidate_priority_buddy(purple_buddy_get_contact(buddy));
 
 	purple_blist_update_node(blist, PURPLE_BLIST_NODE(buddy));
 }
@@ -737,7 +737,7 @@ purple_buddy_get_group(PurpleBuddy *buddy) {
 	g_return_val_if_fail(PURPLE_IS_BUDDY(buddy), NULL);
 
 	contact = purple_blist_node_get_parent(PURPLE_BLIST_NODE(buddy));
-	if(!PURPLE_IS_CONTACT(contact)) {
+	if(!PURPLE_IS_META_CONTACT(contact)) {
 		return purple_blist_get_default_group();
 	}
 

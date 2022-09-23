@@ -27,9 +27,9 @@
 #include "purpleprivate.h"
 #include "util.h"
 
-typedef struct _PurpleContactPrivate    PurpleContactPrivate;
+typedef struct _PurpleMetaContactPrivate    PurpleMetaContactPrivate;
 
-struct _PurpleContactPrivate {
+struct _PurpleMetaContactPrivate {
 	char *alias;                  /* The user-set alias of the contact  */
 	PurpleBuddy *priority_buddy;  /* The "top" buddy for this contact   */
 	gboolean priority_valid;      /* Is priority valid?                 */
@@ -48,18 +48,18 @@ enum
  *****************************************************************************/
 static GParamSpec *properties[PROP_LAST];
 
-G_DEFINE_TYPE_WITH_PRIVATE(PurpleContact, purple_contact,
+G_DEFINE_TYPE_WITH_PRIVATE(PurpleMetaContact, purple_meta_contact,
 		PURPLE_TYPE_COUNTING_NODE);
 
 /******************************************************************************
  * API
  *****************************************************************************/
 static void
-purple_contact_compute_priority_buddy(PurpleContact *contact) {
+purple_meta_contact_compute_priority_buddy(PurpleMetaContact *contact) {
 	PurpleBlistNode *bnode;
 	PurpleBuddy *new_priority = NULL;
-	PurpleContactPrivate *priv =
-			purple_contact_get_instance_private(contact);
+	PurpleMetaContactPrivate *priv =
+			purple_meta_contact_get_instance_private(contact);
 
 	priv->priority_buddy = NULL;
 	for (bnode = PURPLE_BLIST_NODE(contact)->child;
@@ -102,24 +102,24 @@ purple_contact_compute_priority_buddy(PurpleContact *contact) {
 }
 
 PurpleGroup *
-purple_contact_get_group(const PurpleContact *contact)
+purple_meta_contact_get_group(const PurpleMetaContact *contact)
 {
-	g_return_val_if_fail(PURPLE_IS_CONTACT(contact), NULL);
+	g_return_val_if_fail(PURPLE_IS_META_CONTACT(contact), NULL);
 
 	return PURPLE_GROUP(PURPLE_BLIST_NODE(contact)->parent);
 }
 
 void
-purple_contact_set_alias(PurpleContact *contact, const char *alias)
+purple_meta_contact_set_alias(PurpleMetaContact *contact, const char *alias)
 {
-	PurpleContactPrivate *priv = NULL;
+	PurpleMetaContactPrivate *priv = NULL;
 	PurpleConversationManager *manager = NULL;
 	PurpleBlistNode *bnode;
 	char *old_alias;
 	char *new_alias = NULL;
 
-	g_return_if_fail(PURPLE_IS_CONTACT(contact));
-	priv = purple_contact_get_instance_private(contact);
+	g_return_if_fail(PURPLE_IS_META_CONTACT(contact));
+	priv = purple_meta_contact_get_instance_private(contact);
 
 	if ((alias != NULL) && (*alias != '\0'))
 		new_alias = purple_utf8_strip_unprintables(alias);
@@ -165,24 +165,24 @@ purple_contact_set_alias(PurpleContact *contact, const char *alias)
 	g_free(old_alias);
 }
 
-const char *purple_contact_get_alias(PurpleContact* contact)
+const char *purple_meta_contact_get_alias(PurpleMetaContact* contact)
 {
-	PurpleContactPrivate *priv = NULL;
+	PurpleMetaContactPrivate *priv = NULL;
 
-	g_return_val_if_fail(PURPLE_IS_CONTACT(contact), NULL);
+	g_return_val_if_fail(PURPLE_IS_META_CONTACT(contact), NULL);
 
-	priv = purple_contact_get_instance_private(contact);
+	priv = purple_meta_contact_get_instance_private(contact);
 	if (priv->alias)
 		return priv->alias;
 
-	return purple_buddy_get_alias(purple_contact_get_priority_buddy(contact));
+	return purple_buddy_get_alias(purple_meta_contact_get_priority_buddy(contact));
 }
 
-gboolean purple_contact_on_account(PurpleContact *c, PurpleAccount *account)
+gboolean purple_meta_contact_on_account(PurpleMetaContact *c, PurpleAccount *account)
 {
 	PurpleBlistNode *bnode, *cnode = (PurpleBlistNode *) c;
 
-	g_return_val_if_fail(PURPLE_IS_CONTACT(c), FALSE);
+	g_return_val_if_fail(PURPLE_IS_META_CONTACT(c), FALSE);
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
 
 	for (bnode = cnode->child; bnode; bnode = bnode->next) {
@@ -198,43 +198,43 @@ gboolean purple_contact_on_account(PurpleContact *c, PurpleAccount *account)
 	return FALSE;
 }
 
-void purple_contact_invalidate_priority_buddy(PurpleContact *contact)
+void purple_meta_contact_invalidate_priority_buddy(PurpleMetaContact *contact)
 {
-	PurpleContactPrivate *priv = NULL;
+	PurpleMetaContactPrivate *priv = NULL;
 
-	g_return_if_fail(PURPLE_IS_CONTACT(contact));
+	g_return_if_fail(PURPLE_IS_META_CONTACT(contact));
 
-	priv = purple_contact_get_instance_private(contact);
+	priv = purple_meta_contact_get_instance_private(contact);
 	priv->priority_valid = FALSE;
 }
 
-PurpleBuddy *purple_contact_get_priority_buddy(PurpleContact *contact)
+PurpleBuddy *purple_meta_contact_get_priority_buddy(PurpleMetaContact *contact)
 {
-	PurpleContactPrivate *priv = NULL;
+	PurpleMetaContactPrivate *priv = NULL;
 
-	g_return_val_if_fail(PURPLE_IS_CONTACT(contact), NULL);
+	g_return_val_if_fail(PURPLE_IS_META_CONTACT(contact), NULL);
 
-	priv = purple_contact_get_instance_private(contact);
+	priv = purple_meta_contact_get_instance_private(contact);
 	if (!priv->priority_valid)
-		purple_contact_compute_priority_buddy(contact);
+		purple_meta_contact_compute_priority_buddy(contact);
 
 	return priv->priority_buddy;
 }
 
-void purple_contact_merge(PurpleContact *source, PurpleBlistNode *node)
+void purple_meta_contact_merge(PurpleMetaContact *source, PurpleBlistNode *node)
 {
 	PurpleBlistNode *sourcenode = (PurpleBlistNode*)source;
 	PurpleBlistNode *prev, *cur, *next;
-	PurpleContact *target;
+	PurpleMetaContact *target;
 
-	g_return_if_fail(PURPLE_IS_CONTACT(source));
+	g_return_if_fail(PURPLE_IS_META_CONTACT(source));
 	g_return_if_fail(PURPLE_IS_BLIST_NODE(node));
 
-	if (PURPLE_IS_CONTACT(node)) {
-		target = (PurpleContact *)node;
+	if (PURPLE_IS_META_CONTACT(node)) {
+		target = (PurpleMetaContact *)node;
 		prev = _purple_blist_get_last_child(node);
 	} else if (PURPLE_IS_BUDDY(node)) {
-		target = (PurpleContact *)node->parent;
+		target = (PurpleMetaContact *)node->parent;
 		prev = node;
 	} else {
 		return;
@@ -260,14 +260,14 @@ void purple_contact_merge(PurpleContact *source, PurpleBlistNode *node)
  **************************************************************************/
 /* Set method for GObject properties */
 static void
-purple_contact_set_property(GObject *obj, guint param_id, const GValue *value,
+purple_meta_contact_set_property(GObject *obj, guint param_id, const GValue *value,
 		GParamSpec *pspec)
 {
-	PurpleContact *contact = PURPLE_CONTACT(obj);
+	PurpleMetaContact *contact = PURPLE_META_CONTACT(obj);
 
 	switch (param_id) {
 		case PROP_ALIAS:
-			purple_contact_set_alias(contact, g_value_get_string(value));
+			purple_meta_contact_set_alias(contact, g_value_get_string(value));
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
@@ -277,19 +277,19 @@ purple_contact_set_property(GObject *obj, guint param_id, const GValue *value,
 
 /* Get method for GObject properties */
 static void
-purple_contact_get_property(GObject *obj, guint param_id, GValue *value,
+purple_meta_contact_get_property(GObject *obj, guint param_id, GValue *value,
 		GParamSpec *pspec)
 {
-	PurpleContact *contact = PURPLE_CONTACT(obj);
-	PurpleContactPrivate *priv =
-			purple_contact_get_instance_private(contact);
+	PurpleMetaContact *contact = PURPLE_META_CONTACT(obj);
+	PurpleMetaContactPrivate *priv =
+			purple_meta_contact_get_instance_private(contact);
 
 	switch (param_id) {
 		case PROP_ALIAS:
 			g_value_set_string(value, priv->alias);
 			break;
 		case PROP_PRIORITY_BUDDY:
-			g_value_set_object(value, purple_contact_get_priority_buddy(contact));
+			g_value_set_object(value, purple_meta_contact_get_priority_buddy(contact));
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
@@ -299,7 +299,7 @@ purple_contact_get_property(GObject *obj, guint param_id, GValue *value,
 
 /* GObject initialization function */
 static void
-purple_contact_init(PurpleContact *contact)
+purple_meta_contact_init(PurpleMetaContact *contact)
 {
 	purple_blist_new_node(purple_blist_get_default(),
 	                      PURPLE_BLIST_NODE(contact));
@@ -307,26 +307,26 @@ purple_contact_init(PurpleContact *contact)
 
 /* GObject finalize function */
 static void
-purple_contact_finalize(GObject *object)
+purple_meta_contact_finalize(GObject *object)
 {
-	PurpleContactPrivate *priv = purple_contact_get_instance_private(
-			PURPLE_CONTACT(object));
+	PurpleMetaContactPrivate *priv = purple_meta_contact_get_instance_private(
+			PURPLE_META_CONTACT(object));
 
 	g_free(priv->alias);
 
-	G_OBJECT_CLASS(purple_contact_parent_class)->finalize(object);
+	G_OBJECT_CLASS(purple_meta_contact_parent_class)->finalize(object);
 }
 
 /* Class initializer function */
-static void purple_contact_class_init(PurpleContactClass *klass)
+static void purple_meta_contact_class_init(PurpleMetaContactClass *klass)
 {
 	GObjectClass *obj_class = G_OBJECT_CLASS(klass);
 
-	obj_class->finalize = purple_contact_finalize;
+	obj_class->finalize = purple_meta_contact_finalize;
 
 	/* Setup properties */
-	obj_class->get_property = purple_contact_get_property;
-	obj_class->set_property = purple_contact_set_property;
+	obj_class->get_property = purple_meta_contact_get_property;
+	obj_class->set_property = purple_meta_contact_set_property;
 
 	properties[PROP_ALIAS] = g_param_spec_string(
 		"alias",
@@ -347,9 +347,9 @@ static void purple_contact_class_init(PurpleContactClass *klass)
 	g_object_class_install_properties(obj_class, PROP_LAST, properties);
 }
 
-PurpleContact *
-purple_contact_new(void)
+PurpleMetaContact *
+purple_meta_contact_new(void)
 {
-	return g_object_new(PURPLE_TYPE_CONTACT, NULL);
+	return g_object_new(PURPLE_TYPE_META_CONTACT, NULL);
 }
 

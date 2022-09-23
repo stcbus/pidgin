@@ -141,7 +141,7 @@ purple_buddy_presence_update_idle(PurplePresence *presence, gboolean old_idle)
 		purple_signal_emit(purple_blist_get_handle(), "buddy-idle-changed", buddy,
 		                 old_idle, idle);
 
-	purple_contact_invalidate_priority_buddy(purple_buddy_get_contact(buddy));
+	purple_meta_contact_invalidate_priority_buddy(purple_buddy_get_contact(buddy));
 
 	/* Should this be done here? It'd perhaps make more sense to
 	 * connect to buddy-[un]idle signals and update from there

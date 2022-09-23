@@ -360,7 +360,7 @@ add_completion_list(PidginCompletionData *data)
 
 		for (cnode = gnode->child; cnode != NULL; cnode = cnode->next)
 		{
-			if (!PURPLE_IS_CONTACT(cnode))
+			if (!PURPLE_IS_META_CONTACT(cnode))
 				continue;
 
 			g_object_get(cnode, "alias", &alias, NULL);

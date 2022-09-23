@@ -1260,7 +1260,7 @@ _remove_purple_buddies(NMUser *user)
 		for (cnode = purple_blist_node_get_first_child(gnode);
 				cnode;
 				cnode = purple_blist_node_get_sibling_next(cnode)) {
-			if (!PURPLE_IS_CONTACT(cnode))
+			if (!PURPLE_IS_META_CONTACT(cnode))
 				continue;
 			for (bnode = purple_blist_node_get_first_child(cnode);
 					bnode;

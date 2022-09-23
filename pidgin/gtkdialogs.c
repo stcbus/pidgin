@@ -243,7 +243,7 @@ pidgin_dialogs_alias_chat(PurpleChat *chat)
 }
 
 static void
-pidgin_dialogs_remove_contact_cb(PurpleContact *contact)
+pidgin_dialogs_remove_contact_cb(PurpleMetaContact *contact)
 {
 	PurpleBlistNode *bnode, *cnode;
 	PurpleGroup *group;
@@ -259,9 +259,9 @@ pidgin_dialogs_remove_contact_cb(PurpleContact *contact)
 }
 
 void
-pidgin_dialogs_remove_contact(PurpleContact *contact)
+pidgin_dialogs_remove_contact(PurpleMetaContact *contact)
 {
-	PurpleBuddy *buddy = purple_contact_get_priority_buddy(contact);
+	PurpleBuddy *buddy = purple_meta_contact_get_priority_buddy(contact);
 
 	g_return_if_fail(contact != NULL);
 	g_return_if_fail(buddy != NULL);
@@ -340,7 +340,7 @@ pidgin_dialogs_remove_group_cb(PurpleGroup *group)
 	cnode = ((PurpleBlistNode*)group)->child;
 
 	while (cnode) {
-		if (PURPLE_IS_CONTACT(cnode)) {
+		if (PURPLE_IS_META_CONTACT(cnode)) {
 			bnode = cnode->child;
 			cnode = cnode->next;
 			while (bnode) {

@@ -76,13 +76,13 @@ pidgin_avatar_find_buddy_icon(PurpleBuddy *buddy,
 {
 	GdkPixbufAnimation *ret = NULL;
 	GInputStream *stream = NULL;
-	PurpleContact *contact = NULL;
+	PurpleMetaContact *contact = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_BUDDY(buddy), NULL);
 
 	/* First check if our user has set a custom icon for this buddy. */
 	contact = purple_buddy_get_contact(buddy);
-	if(PURPLE_IS_CONTACT(contact)) {
+	if(PURPLE_IS_META_CONTACT(contact)) {
 		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
 		PurpleImage *custom_image = NULL;
 
@@ -264,7 +264,7 @@ pidgin_avatar_set_custom_response_cb(GtkNativeDialog *native, gint response,
 	file = gtk_file_chooser_get_file(chooser);
 	filename = g_file_get_path(file);
 	if(filename != NULL) {
-		PurpleContact *contact = purple_buddy_get_contact(buddy);
+		PurpleMetaContact *contact = purple_buddy_get_contact(buddy);
 		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
 
 		purple_buddy_icons_node_set_custom_icon_from_file(node, filename);
@@ -308,7 +308,7 @@ pidgin_avatar_clear_custom_cb(GSimpleAction *action, GVariant *parameter,
 
 	buddy = pidgin_avatar_get_effective_buddy(avatar);
 	if(PURPLE_IS_BUDDY(buddy)) {
-		PurpleContact *contact = purple_buddy_get_contact(buddy);
+		PurpleMetaContact *contact = purple_buddy_get_contact(buddy);
 		PurpleBlistNode *node = PURPLE_BLIST_NODE(contact);
 
 		purple_buddy_icons_node_set_custom_icon_from_file(node, NULL);

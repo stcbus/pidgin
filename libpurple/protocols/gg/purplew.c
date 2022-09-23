@@ -103,7 +103,7 @@ GList * ggp_purplew_group_get_buddies(PurpleGroup *group, PurpleAccount *account
 
 	gnode = PURPLE_BLIST_NODE(group);
 	for (cnode = gnode->child; cnode; cnode = cnode->next) {
-		if (!PURPLE_IS_CONTACT(cnode))
+		if (!PURPLE_IS_META_CONTACT(cnode))
 			continue;
 		for (bnode = cnode->child; bnode; bnode = bnode->next) {
 			PurpleBuddy *buddy;

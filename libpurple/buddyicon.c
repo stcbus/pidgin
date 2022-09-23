@@ -882,7 +882,7 @@ purple_buddy_icons_node_set_custom_icon(PurpleBlistNode *node,
 
 	g_return_val_if_fail(node != NULL, NULL);
 
-	if (!PURPLE_IS_CONTACT(node) &&
+	if (!PURPLE_IS_META_CONTACT(node) &&
 	    !PURPLE_IS_CHAT(node) &&
 	    !PURPLE_IS_GROUP(node)) {
 		return NULL;
@@ -914,7 +914,7 @@ purple_buddy_icons_node_set_custom_icon(PurpleBlistNode *node,
 
 	manager = purple_conversation_manager_get_default();
 
-	if (PURPLE_IS_CONTACT(node)) {
+	if (PURPLE_IS_META_CONTACT(node)) {
 		PurpleBlistNode *child;
 		for (child = purple_blist_node_get_first_child(node);
 		     child;
@@ -976,7 +976,7 @@ purple_buddy_icons_node_set_custom_icon_from_file(PurpleBlistNode *node,
 
 	g_return_val_if_fail(node != NULL, NULL);
 
-	if (!PURPLE_IS_CONTACT(node) &&
+	if (!PURPLE_IS_META_CONTACT(node) &&
 	    !PURPLE_IS_CHAT(node) &&
 	    !PURPLE_IS_GROUP(node)) {
 		return NULL;
@@ -1062,7 +1062,7 @@ _purple_buddy_icons_blist_loaded_cb(void)
 				g_free(path);
 			}
 		}
-		else if (PURPLE_IS_CONTACT(node) ||
+		else if (PURPLE_IS_META_CONTACT(node) ||
 		         PURPLE_IS_CHAT(node) ||
 		         PURPLE_IS_GROUP(node))
 		{

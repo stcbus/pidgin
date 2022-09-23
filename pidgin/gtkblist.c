@@ -181,8 +181,8 @@ static PurpleBuddy *
 pidgin_blist_get_selected_buddy(PidginBuddyList *blist) {
 	PurpleBuddy *buddy = NULL;
 
-	if(PURPLE_IS_CONTACT(blist->selected_node)) {
-		buddy = purple_contact_get_priority_buddy(PURPLE_CONTACT(blist->selected_node));
+	if(PURPLE_IS_META_CONTACT(blist->selected_node)) {
+		buddy = purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(blist->selected_node));
 	} else if(PURPLE_IS_BUDDY(blist->selected_node)) {
 		buddy = PURPLE_BUDDY(blist->selected_node);
 	}
@@ -264,8 +264,8 @@ pidgin_blist_add_buddy_cb(G_GNUC_UNUSED GSimpleAction *action,
 		if (PURPLE_IS_BUDDY(node)) {
 			PurpleGroup *group = purple_buddy_get_group(PURPLE_BUDDY(node));
 			purple_blist_request_add_buddy(NULL, NULL, purple_group_get_name(group), NULL);
-		} else if (PURPLE_IS_CONTACT(node) || PURPLE_IS_CHAT(node)) {
-			PurpleGroup *group = purple_contact_get_group(PURPLE_CONTACT(node));
+		} else if (PURPLE_IS_META_CONTACT(node) || PURPLE_IS_CHAT(node)) {
+			PurpleGroup *group = purple_meta_contact_get_group(PURPLE_META_CONTACT(node));
 			purple_blist_request_add_buddy(NULL, NULL, purple_group_get_name(group), NULL);
 		} else if (PURPLE_IS_GROUP(node)) {
 			purple_blist_request_add_buddy(NULL, NULL, purple_group_get_name(PURPLE_GROUP(node)), NULL);
@@ -291,8 +291,8 @@ pidgin_blist_add_chat_cb(G_GNUC_UNUSED GSimpleAction *action,
 		gtk_tree_model_get(GTK_TREE_MODEL(blist->treemodel), &iter, NODE_COLUMN, &node, -1);
 		if (PURPLE_IS_BUDDY(node))
 			purple_blist_request_add_chat(NULL, purple_buddy_get_group(PURPLE_BUDDY(node)), NULL, NULL);
-		if (PURPLE_IS_CONTACT(node) || PURPLE_IS_CHAT(node))
-			purple_blist_request_add_chat(NULL, purple_contact_get_group(PURPLE_CONTACT(node)), NULL, NULL);
+		if (PURPLE_IS_META_CONTACT(node) || PURPLE_IS_CHAT(node))
+			purple_blist_request_add_chat(NULL, purple_meta_contact_get_group(PURPLE_META_CONTACT(node)), NULL, NULL);
 		else if (PURPLE_IS_GROUP(node))
 			purple_blist_request_add_chat(NULL, (PurpleGroup*)node, NULL, NULL);
 	} else {
@@ -511,8 +511,8 @@ pidgin_blist_remove_cb(G_GNUC_UNUSED GSimpleAction *action,
 		pidgin_dialogs_remove_chat(PURPLE_CHAT(node));
 	} else if(PURPLE_IS_GROUP(node)) {
 		pidgin_dialogs_remove_group(PURPLE_GROUP(node));
-	} else if(PURPLE_IS_CONTACT(node)) {
-		pidgin_dialogs_remove_contact(PURPLE_CONTACT(node));
+	} else if(PURPLE_IS_META_CONTACT(node)) {
+		pidgin_dialogs_remove_contact(PURPLE_META_CONTACT(node));
 	}
 }
 
@@ -658,8 +658,8 @@ static void gtk_blist_renderer_editing_started_cb(GtkCellRenderer *renderer,
 	gtk_tree_path_free (path);
 	gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &iter, NODE_COLUMN, &node, -1);
 
-	if (PURPLE_IS_CONTACT(node))
-		text = purple_contact_get_alias(PURPLE_CONTACT(node));
+	if (PURPLE_IS_META_CONTACT(node))
+		text = purple_meta_contact_get_alias(PURPLE_META_CONTACT(node));
 	else if (PURPLE_IS_BUDDY(node))
 		text = purple_buddy_get_alias(PURPLE_BUDDY(node));
 	else if (PURPLE_IS_GROUP(node))
@@ -695,7 +695,7 @@ gtk_blist_do_personize(GList *merges)
 		if (PURPLE_IS_BUDDY(node))
 			node = purple_blist_node_get_parent(node);
 
-		if (!PURPLE_IS_CONTACT(node))
+		if (!PURPLE_IS_META_CONTACT(node))
 			continue;
 
 		for (b = purple_blist_node_get_first_child(node);
@@ -723,7 +723,7 @@ gtk_blist_do_personize(GList *merges)
 		if (node == contact)
 			continue;
 
-		purple_contact_merge((PurpleContact *)node, contact);
+		purple_meta_contact_merge((PurpleMetaContact *)node, contact);
 	}
 
 	/* And show the expanded contact, so the people know what's going on */
@@ -744,10 +744,10 @@ gtk_blist_auto_personize(PurpleBlistNode *group, const char *alias)
 	     contact != NULL;
 	     contact = purple_blist_node_get_sibling_next(contact)) {
 		char *node_alias;
-		if (!PURPLE_IS_CONTACT(contact))
+		if (!PURPLE_IS_META_CONTACT(contact))
 			continue;
 
-		node_alias = g_utf8_casefold(purple_contact_get_alias((PurpleContact *)contact), -1);
+		node_alias = g_utf8_casefold(purple_meta_contact_get_alias((PurpleMetaContact *)contact), -1);
 		if (node_alias && !g_utf8_collate(node_alias, a)) {
 			merges = g_list_append(merges, contact);
 			i++;
@@ -804,23 +804,23 @@ static void gtk_blist_renderer_edited_cb(GtkCellRendererText *text_rend, char *a
 	gtk_tree_view_set_enable_search (GTK_TREE_VIEW(gtkblist->treeview), TRUE);
 	g_object_set(G_OBJECT(gtkblist->text_rend), "editable", FALSE, NULL);
 
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleContact *contact = PURPLE_CONTACT(node);
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleMetaContact *contact = PURPLE_META_CONTACT(node);
 		PidginBlistNode *gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
 
 		/*
-		 * Using purple_contact_get_alias here breaks because we
+		 * Using purple_meta_contact_get_alias here breaks because we
 		 * specifically want to check the contact alias only (i.e. not
-		 * the priority buddy, which purple_contact_get_alias does).
+		 * the priority buddy, which purple_meta_contact_get_alias does).
 		 * The "alias" GObject property gives us just the alias.
 		 */
 		g_object_get(contact, "alias", &alias, NULL);
 
 		if (alias || gtknode->contact_expanded) {
-			purple_contact_set_alias(contact, arg2);
+			purple_meta_contact_set_alias(contact, arg2);
 			gtk_blist_auto_personize(purple_blist_node_get_parent(node), arg2);
 		} else {
-			PurpleBuddy *buddy = purple_contact_get_priority_buddy(contact);
+			PurpleBuddy *buddy = purple_meta_contact_get_priority_buddy(contact);
 			purple_buddy_set_local_alias(buddy, arg2);
 			purple_serv_alias_buddy(buddy);
 			gtk_blist_auto_personize(purple_blist_node_get_parent(node), arg2);
@@ -1239,7 +1239,7 @@ static void gtk_blist_row_collapsed_cb(GtkTreeView *tv, GtkTreeIter *iter, GtkTr
 		purple_blist_node_set_bool(node, "collapsed", TRUE);
 
 		for(cnode = purple_blist_node_get_first_child(node); cnode; cnode = purple_blist_node_get_sibling_next(cnode)) {
-			if (PURPLE_IS_CONTACT(cnode)) {
+			if (PURPLE_IS_META_CONTACT(cnode)) {
 				gtknode = g_object_get_data(G_OBJECT(cnode), UI_DATA);
 				if (!gtknode->contact_expanded)
 					continue;
@@ -1248,7 +1248,7 @@ static void gtk_blist_row_collapsed_cb(GtkTreeView *tv, GtkTreeIter *iter, GtkTr
 			}
 		}
 		gtk_widget_trigger_tooltip_query(gtkblist->treeview);
-	} else if(PURPLE_IS_CONTACT(node)) {
+	} else if(PURPLE_IS_META_CONTACT(node)) {
 		pidgin_blist_collapse_contact_cb(NULL, node);
 	}
 }
@@ -1261,11 +1261,11 @@ static void gtk_blist_row_activated_cb(GtkTreeView *tv, GtkTreePath *path, GtkTr
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(gtkblist->treemodel), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &iter, NODE_COLUMN, &node, -1);
 
-	if(PURPLE_IS_CONTACT(node) || PURPLE_IS_BUDDY(node)) {
+	if(PURPLE_IS_META_CONTACT(node) || PURPLE_IS_BUDDY(node)) {
 		PurpleBuddy *buddy;
 
-		if(PURPLE_IS_CONTACT(node))
-			buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+		if(PURPLE_IS_META_CONTACT(node))
+			buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 		else
 			buddy = (PurpleBuddy*)node;
 
@@ -1307,7 +1307,7 @@ pidgin_blist_expand_contact_cb(GtkWidget *w, PurpleBlistNode *node)
 	PurpleBlistNode *bnode;
 	GtkTreePath *path;
 
-	if(!PURPLE_IS_CONTACT(node)) {
+	if(!PURPLE_IS_META_CONTACT(node)) {
 		return;
 	}
 
@@ -1341,7 +1341,7 @@ pidgin_blist_collapse_contact_cb(GtkWidget *w, PurpleBlistNode *node)
 	PurpleBlistNode *bnode;
 	PidginBlistNode *gtknode;
 
-	if(!PURPLE_IS_CONTACT(node))
+	if(!PURPLE_IS_META_CONTACT(node))
 		return;
 
 	gtknode = g_object_get_data(G_OBJECT(node), UI_DATA);
@@ -1377,8 +1377,8 @@ pidgin_blist_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
 	if(state & GDK_CONTROL_MASK && (keyval == 'o' || keyval == 'O')) {
 		PurpleBuddy *buddy;
 
-		if(PURPLE_IS_CONTACT(node)) {
-			buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+		if(PURPLE_IS_META_CONTACT(node)) {
+			buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 		} else if(PURPLE_IS_BUDDY(node)) {
 			buddy = (PurpleBuddy*)node;
 		} else {
@@ -1424,7 +1424,7 @@ pidgin_blist_key_press_cb(G_GNUC_UNUSED GtkEventControllerKey *controller,
 				path = gtk_tree_model_get_path(model, &iter);
 				if (!gtk_tree_view_row_expanded(tv, path)) {
 					/* Expand the Group */
-					if (PURPLE_IS_CONTACT(node)) {
+					if (PURPLE_IS_META_CONTACT(node)) {
 						pidgin_blist_expand_contact_cb(NULL, node);
 						gtk_tree_path_free(path);
 						return TRUE;
@@ -1498,9 +1498,9 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node,
 		enabled = purple_blist_node_get_bool(node, "gtk-persistent");
 		variant = g_variant_new_boolean(enabled);
 		g_simple_action_set_state(G_SIMPLE_ACTION(action), variant);
-	} else if ((PURPLE_IS_CONTACT(node)) && (gtknode->contact_expanded)) {
+	} else if ((PURPLE_IS_META_CONTACT(node)) && (gtknode->contact_expanded)) {
 		menu = gtk_application_get_menu_by_id(gtk_application, "contact");
-	} else if (PURPLE_IS_CONTACT(node) || PURPLE_IS_BUDDY(node)) {
+	} else if (PURPLE_IS_META_CONTACT(node) || PURPLE_IS_BUDDY(node)) {
 		PurpleAccount *account = NULL;
 		PurpleBuddy *buddy = NULL;
 		PurpleConnection *connection = NULL;
@@ -1510,8 +1510,8 @@ pidgin_blist_show_context_menu(GtkWidget *tv, PurpleBlistNode *node,
 
 		menu = gtk_application_get_menu_by_id(gtk_application, "buddy");
 
-		if(PURPLE_IS_CONTACT(node)) {
-			buddy = purple_contact_get_priority_buddy(PURPLE_CONTACT(node));
+		if(PURPLE_IS_META_CONTACT(node)) {
+			buddy = purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node));
 		} else {
 			buddy = PURPLE_BUDDY(node);
 		}
@@ -1625,7 +1625,7 @@ gtk_blist_button_press_cb(GtkGestureClick *click, gint n_press, gdouble x,
 
 	/* CTRL+middle click expands or collapse a contact */
 	} else if ((button == GDK_BUTTON_MIDDLE) && (n_press == 1) &&
-			   (state & GDK_CONTROL_MASK) && PURPLE_IS_CONTACT(node)) {
+			   (state & GDK_CONTROL_MASK) && PURPLE_IS_META_CONTACT(node)) {
 		if (gtknode->contact_expanded)
 			pidgin_blist_collapse_contact_cb(NULL, node);
 		else
@@ -1634,11 +1634,11 @@ gtk_blist_button_press_cb(GtkGestureClick *click, gint n_press, gdouble x,
 
 	/* Double middle click gets info */
 	} else if ((button == GDK_BUTTON_MIDDLE) && (n_press == 2) &&
-			   (PURPLE_IS_CONTACT(node) || PURPLE_IS_BUDDY(node))) {
+			   (PURPLE_IS_META_CONTACT(node) || PURPLE_IS_BUDDY(node))) {
 		PurpleAccount *account;
 		PurpleBuddy *b;
-		if(PURPLE_IS_CONTACT(node))
-			b = purple_contact_get_priority_buddy((PurpleContact*)node);
+		if(PURPLE_IS_META_CONTACT(node))
+			b = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 		else
 			b = (PurpleBuddy *)node;
 
@@ -1711,15 +1711,15 @@ static GdkPixbuf *pidgin_blist_get_buddy_icon(PurpleBlistNode *node,
 	GdkPixbuf *buf, *ret = NULL;
 	PurpleBuddyIcon *icon = NULL;
 	PurpleAccount *account = NULL;
-	PurpleContact *contact = NULL;
+	PurpleMetaContact *contact = NULL;
 	PurpleImage *custom_img;
 	PurpleProtocol *protocol = NULL;
 	PurpleBuddyIconSpec *icon_spec = NULL;
 	gint orig_width, orig_height, scale_width, scale_height;
 
-	if (PURPLE_IS_CONTACT(node)) {
-		buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
-		contact = (PurpleContact*)node;
+	if (PURPLE_IS_META_CONTACT(node)) {
+		buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
+		contact = (PurpleMetaContact*)node;
 	} else if (PURPLE_IS_BUDDY(node)) {
 		buddy = (PurpleBuddy*)node;
 		contact = purple_buddy_get_contact(buddy);
@@ -1922,9 +1922,9 @@ pidgin_blist_get_status_icon_name(PurpleBlistNode *node) {
 	PurpleBuddy *buddy = NULL;
 	PurpleChat *chat = NULL;
 
-	if(PURPLE_IS_CONTACT(node)) {
+	if(PURPLE_IS_META_CONTACT(node)) {
 		if(!gtknode->contact_expanded) {
-			buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+			buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 			if(buddy != NULL) {
 				gtkbuddynode = g_object_get_data(G_OBJECT(buddy), UI_DATA);
 			}
@@ -2074,9 +2074,9 @@ pidgin_blist_query_tooltip_for_node(PurpleBlistNode *node, GtkTooltip *tooltip)
 			add_tip_for_account(grid, row, account);
 		}
 
-	} else if (PURPLE_IS_CONTACT(node)) {
+	} else if (PURPLE_IS_META_CONTACT(node)) {
 		PurpleBlistNode *child;
-		PurpleBuddy *b = purple_contact_get_priority_buddy(PURPLE_CONTACT(node));
+		PurpleBuddy *b = purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node));
 		gint row = 0;
 
 		for(child = node->child; child; child = child->next) {
@@ -2249,13 +2249,13 @@ static char *pidgin_get_tooltip_text(PurpleBlistNode *node, gboolean full)
 			cur = g_list_delete_link(cur, cur);
 		}
 	}
-	else if (PURPLE_IS_CONTACT(node) || PURPLE_IS_BUDDY(node))
+	else if (PURPLE_IS_META_CONTACT(node) || PURPLE_IS_BUDDY(node))
 	{
 		/* NOTE: THIS FUNCTION IS NO LONGER CALLED FOR CONTACTS.
 		 * It is only called by create_tip_for_node(), and create_tip_for_node() is never called for a contact.
 		 */
 		PurpleAccount *account;
-		PurpleContact *c;
+		PurpleMetaContact *c;
 		PurpleBuddy *b;
 		PurplePresence *presence;
 		PurpleNotifyUserInfo *user_info;
@@ -2264,10 +2264,10 @@ static char *pidgin_get_tooltip_text(PurpleBlistNode *node, gboolean full)
 		gchar *alias;
 		time_t idle_secs, signon;
 
-		if (PURPLE_IS_CONTACT(node))
+		if (PURPLE_IS_META_CONTACT(node))
 		{
-			c = (PurpleContact *)node;
-			b = purple_contact_get_priority_buddy(c);
+			c = (PurpleMetaContact *)node;
+			b = purple_meta_contact_get_priority_buddy(c);
 		}
 		else
 		{
@@ -2356,7 +2356,7 @@ static char *pidgin_get_tooltip_text(PurpleBlistNode *node, gboolean full)
 			PurpleBlistNode *bnode;
 			int lastseen = 0;
 
-			if (gtknode && (!gtknode->contact_expanded || PURPLE_IS_CONTACT(node)))
+			if (gtknode && (!gtknode->contact_expanded || PURPLE_IS_META_CONTACT(node)))
 			{
 				/* We're either looking at a buddy for a collapsed contact or
 				 * an expanded contact itself so we show the most recent
@@ -2488,9 +2488,9 @@ pidgin_blist_get_emblem(PurpleBlistNode *node)
 	PurplePresence *p = NULL;
 	PurpleStatus *tune;
 
-	if(PURPLE_IS_CONTACT(node)) {
+	if(PURPLE_IS_META_CONTACT(node)) {
 		if(!gtknode->contact_expanded) {
-			buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+			buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 		}
 	} else if(PURPLE_IS_BUDDY(node)) {
 		PidginBlistNode *pidgin_node = NULL;
@@ -2595,14 +2595,14 @@ pidgin_blist_get_name_markup(PurpleBuddy *b, gboolean selected, gboolean aliased
 	const char *name, *name_color, *status_color, *dim_grey;
 	char *text = NULL;
 	PurpleProtocol *protocol = NULL;
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 	PurplePresence *presence;
 	PidginBlistNode *gtkcontactnode = NULL;
 	char *idletime = NULL, *statustext = NULL, *nametext = NULL;
 	gchar *contact_alias;
 
 	/* XXX Good luck cleaning up this crap */
-	contact = PURPLE_CONTACT(PURPLE_BLIST_NODE(b)->parent);
+	contact = PURPLE_META_CONTACT(PURPLE_BLIST_NODE(b)->parent);
 	if(contact) {
 		gtkcontactnode = g_object_get_data(G_OBJECT(contact), UI_DATA);
 	}
@@ -2742,7 +2742,7 @@ static void pidgin_blist_hide_node(PurpleBuddyList *list, PurpleBlistNode *node,
 		gtkblist->selected_node = NULL;
 	if (get_iter_from_node(node, &iter)) {
 		gtk_tree_store_remove(gtkblist->treemodel, &iter);
-		if(update && (PURPLE_IS_CONTACT(node) ||
+		if(update && (PURPLE_IS_META_CONTACT(node) ||
 			PURPLE_IS_BUDDY(node) || PURPLE_IS_CHAT(node))) {
 			pidgin_blist_update(list, node->parent);
 		}
@@ -2848,7 +2848,7 @@ pidgin_blist_node_is_contact_expanded(PurpleBlistNode *node) {
 			return FALSE;
 	}
 
-	g_return_val_if_fail(PURPLE_IS_CONTACT(node), FALSE);
+	g_return_val_if_fail(PURPLE_IS_META_CONTACT(node), FALSE);
 
 	pidgin_node = g_object_get_data(G_OBJECT(node), UI_DATA);
 
@@ -2979,8 +2979,8 @@ pidgin_blist_search_equal_func(GtkTreeModel *model, gint column,
 		return TRUE;
 
 	compare = NULL;
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleBuddy *b = purple_contact_get_priority_buddy(PURPLE_CONTACT(node));
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleBuddy *b = purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node));
 		if (!purple_buddy_get_local_alias(b))
 			compare = purple_buddy_get_name(b);
 	} else if (PURPLE_IS_BUDDY(node)) {
@@ -3298,7 +3298,7 @@ static gboolean insert_node(PurpleBuddyList *list, PurpleBlistNode *node, GtkTre
 	if(get_iter_from_node(node, &cur))
 		curptr = &cur;
 
-	if(PURPLE_IS_CONTACT(node) || PURPLE_IS_CHAT(node)) {
+	if(PURPLE_IS_META_CONTACT(node) || PURPLE_IS_CHAT(node)) {
 		current_sort_method->func(node, list, parent_iter, curptr, iter);
 	} else {
 		sort_method_none(node, list, parent_iter, curptr, iter);
@@ -3331,7 +3331,7 @@ static gboolean insert_node(PurpleBuddyList *list, PurpleBlistNode *node, GtkTre
 		if(PURPLE_IS_GROUP(node->parent)) {
 			if(!purple_blist_node_get_bool(node->parent, "collapsed"))
 				expand = gtk_tree_model_get_path(GTK_TREE_MODEL(gtkblist->treemodel), &parent_iter);
-		} else if(PURPLE_IS_CONTACT(node->parent) &&
+		} else if(PURPLE_IS_META_CONTACT(node->parent) &&
 				gtkparentnode->contact_expanded) {
 			expand = gtk_tree_model_get_path(GTK_TREE_MODEL(gtkblist->treemodel), &parent_iter);
 		}
@@ -3362,7 +3362,7 @@ static void pidgin_blist_update_group(PurpleBuddyList *list,
 		gnode = node;
 	else if (PURPLE_IS_BUDDY(node))
 		gnode = node->parent->parent;
-	else if (PURPLE_IS_CONTACT(node) || PURPLE_IS_CHAT(node))
+	else if (PURPLE_IS_META_CONTACT(node) || PURPLE_IS_CHAT(node))
 		gnode = node->parent;
 	else
 		return;
@@ -3485,7 +3485,7 @@ static void buddy_node(PurpleBuddy *buddy, GtkTreeIter *iter, PurpleBlistNode *n
 static void pidgin_blist_update_contact(PurpleBuddyList *list, PurpleBlistNode *node)
 {
 	PurpleBlistNode *cnode;
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 	PurpleBuddy *buddy;
 	PidginBlistNode *gtknode;
 
@@ -3497,7 +3497,7 @@ static void pidgin_blist_update_contact(PurpleBuddyList *list, PurpleBlistNode *
 	else
 		cnode = node;
 
-	g_return_if_fail(PURPLE_IS_CONTACT(cnode));
+	g_return_if_fail(PURPLE_IS_META_CONTACT(cnode));
 
 	/* First things first, update the group */
 	if (PURPLE_IS_BUDDY(node))
@@ -3505,8 +3505,8 @@ static void pidgin_blist_update_contact(PurpleBuddyList *list, PurpleBlistNode *
 	else
 		pidgin_blist_update_group(list, cnode->parent);
 
-	contact = (PurpleContact*)cnode;
-	buddy = purple_contact_get_priority_buddy(contact);
+	contact = (PurpleMetaContact*)cnode;
+	buddy = purple_meta_contact_get_priority_buddy(contact);
 
 	if (buddy_is_displayable(buddy))
 	{
@@ -3521,7 +3521,7 @@ static void pidgin_blist_update_contact(PurpleBuddyList *list, PurpleBlistNode *
 			gchar *mark;
 			const gchar *icon_name = NULL;
 
-			mark = g_markup_escape_text(purple_contact_get_alias(contact), -1);
+			mark = g_markup_escape_text(purple_meta_contact_get_alias(contact), -1);
 
 			icon_name = pidgin_blist_get_status_icon_name(cnode);
 
@@ -3656,7 +3656,7 @@ static void pidgin_blist_update(PurpleBuddyList *list, PurpleBlistNode *node)
 
 	if(PURPLE_IS_GROUP(node)) {
 		pidgin_blist_update_group(list, node);
-	} else if(PURPLE_IS_CONTACT(node)) {
+	} else if(PURPLE_IS_META_CONTACT(node)) {
 		pidgin_blist_update_contact(list, node);
 	} else if(PURPLE_IS_BUDDY(node)) {
 		pidgin_blist_update_buddy(list, node, TRUE);
@@ -3998,8 +3998,8 @@ static void sort_method_alphabetical(PurpleBlistNode *node, PurpleBuddyList *bli
 
 	const char *my_name;
 
-	if(PURPLE_IS_CONTACT(node)) {
-		my_name = purple_contact_get_alias((PurpleContact*)node);
+	if(PURPLE_IS_META_CONTACT(node)) {
+		my_name = purple_meta_contact_get_alias((PurpleMetaContact*)node);
 	} else if(PURPLE_IS_CHAT(node)) {
 		my_name = purple_chat_get_name((PurpleChat*)node);
 	} else {
@@ -4019,8 +4019,8 @@ static void sort_method_alphabetical(PurpleBlistNode *node, PurpleBuddyList *bli
 
 		gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &more_z, NODE_COLUMN, &n, -1);
 
-		if(PURPLE_IS_CONTACT(n)) {
-			this_name = purple_contact_get_alias((PurpleContact*)n);
+		if(PURPLE_IS_META_CONTACT(n)) {
+			this_name = purple_meta_contact_get_alias((PurpleMetaContact*)n);
 		} else if(PURPLE_IS_CHAT(n)) {
 			this_name = purple_chat_get_name((PurpleChat*)n);
 		} else {
@@ -4058,8 +4058,8 @@ static void sort_method_status(PurpleBlistNode *node, PurpleBuddyList *blist, Gt
 
 	PurpleBuddy *my_buddy, *this_buddy;
 
-	if(PURPLE_IS_CONTACT(node)) {
-		my_buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+	if(PURPLE_IS_META_CONTACT(node)) {
+		my_buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 	} else if(PURPLE_IS_CHAT(node)) {
 		if (cur != NULL) {
 			*iter = *cur;
@@ -4086,16 +4086,16 @@ static void sort_method_status(PurpleBlistNode *node, PurpleBuddyList *blist, Gt
 
 		gtk_tree_model_get(GTK_TREE_MODEL(gtkblist->treemodel), &more_z, NODE_COLUMN, &n, -1);
 
-		if(PURPLE_IS_CONTACT(n)) {
-			this_buddy = purple_contact_get_priority_buddy((PurpleContact*)n);
+		if(PURPLE_IS_META_CONTACT(n)) {
+			this_buddy = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)n);
 		} else {
 			this_buddy = NULL;
 		}
 
 		name_cmp = purple_utf8_strcasecmp(
-			purple_contact_get_alias(purple_buddy_get_contact(my_buddy)),
+			purple_meta_contact_get_alias(purple_buddy_get_contact(my_buddy)),
 			(this_buddy
-			 ? purple_contact_get_alias(purple_buddy_get_contact(this_buddy))
+			 ? purple_meta_contact_get_alias(purple_buddy_get_contact(this_buddy))
 			 : NULL));
 
 		presence_cmp = purple_buddy_presence_compare(

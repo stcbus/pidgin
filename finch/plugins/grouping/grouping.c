@@ -80,8 +80,8 @@ static gboolean on_offline_init()
 
 static gboolean on_offline_can_add_node(PurpleBlistNode *node)
 {
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleContact *contact = PURPLE_CONTACT(node);
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleMetaContact *contact = PURPLE_META_CONTACT(node);
 		if (purple_counting_node_get_current_size(PURPLE_COUNTING_NODE(contact)) > 0)
 			return TRUE;
 		return FALSE;
@@ -105,8 +105,8 @@ static gpointer on_offline_find_parent(PurpleBlistNode *node)
 {
 	gpointer ret = NULL;
 
-	if (PURPLE_IS_CONTACT(node)) {
-		node = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)));
+	if (PURPLE_IS_META_CONTACT(node)) {
+		node = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)));
 		ret = PURPLE_BUDDY_IS_ONLINE(PURPLE_BUDDY(node)) ? online : offline;
 	} else if (PURPLE_IS_BUDDY(node)) {
 		ret = purple_blist_node_get_parent(node);
@@ -163,8 +163,8 @@ static gboolean meebo_init()
 
 static gpointer meebo_find_parent(PurpleBlistNode *node)
 {
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleBuddy *buddy = purple_contact_get_priority_buddy(PURPLE_CONTACT(node));
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleBuddy *buddy = purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node));
 		if (buddy && !PURPLE_BUDDY_IS_ONLINE(buddy)) {
 			return &meebo;
 		}

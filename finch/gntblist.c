@@ -105,7 +105,7 @@ typedef struct
 static FinchBuddyList *ggblist;
 
 static void add_buddy(PurpleBuddy *buddy, FinchBuddyList *ggblist);
-static void add_contact(PurpleContact *contact, FinchBuddyList *ggblist);
+static void add_contact(PurpleMetaContact *contact, FinchBuddyList *ggblist);
 static void add_group(PurpleGroup *group, FinchBuddyList *ggblist);
 static void add_chat(PurpleChat *chat, FinchBuddyList *ggblist);
 static void add_node(PurpleBlistNode *node, FinchBuddyList *ggblist);
@@ -161,7 +161,7 @@ static gboolean default_can_add_node(PurpleBlistNode *node)
 			return TRUE;  /* Show if the buddy just signed off */
 		if (purple_blist_node_get_bool(node, "show_offline"))
 			return TRUE;
-	} else if (PURPLE_IS_CONTACT(node)) {
+	} else if (PURPLE_IS_META_CONTACT(node)) {
 		PurpleBlistNode *child;
 		for (child = purple_blist_node_get_first_child(node);
 				child; child = purple_blist_node_get_sibling_next(child)) {
@@ -197,7 +197,7 @@ static gpointer default_find_parent(PurpleBlistNode *node)
 {
 	gpointer ret = NULL;
 
-	if (PURPLE_IS_BUDDY(node) || PURPLE_IS_CONTACT(node) || PURPLE_IS_CHAT(node))
+	if (PURPLE_IS_BUDDY(node) || PURPLE_IS_META_CONTACT(node) || PURPLE_IS_CHAT(node))
 		ret = purple_blist_node_get_parent(node);
 
 	if (ret)
@@ -215,8 +215,8 @@ static gboolean default_create_tooltip(gpointer selected_row, GString **body, ch
 
 	str = g_string_new("");
 
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleBuddy *pr = purple_contact_get_priority_buddy((PurpleContact*)node);
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleBuddy *pr = purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node);
 		gboolean offline = !PURPLE_BUDDY_IS_ONLINE(pr);
 		gboolean showoffline = purple_prefs_get_bool(PREF_ROOT "/showoffline");
 		const char *name = purple_buddy_get_name(pr);
@@ -329,8 +329,8 @@ get_display_color(PurpleBlistNode  *node)
 	PurpleBuddy *buddy;
 	int color = 0;
 
-	if (PURPLE_IS_CONTACT(node))
-		node = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)));
+	if (PURPLE_IS_META_CONTACT(node))
+		node = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)));
 	if (!PURPLE_IS_BUDDY(node))
 		return 0;
 
@@ -360,8 +360,8 @@ get_blist_node_flag(FinchBuddyList *ggblist, PurpleBlistNode *node)
 
 	if (fnode && fnode->signed_timer)
 		flag |= GNT_TEXT_FLAG_BLINK;
-	else if (PURPLE_IS_CONTACT(node)) {
-		node = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)));
+	else if (PURPLE_IS_META_CONTACT(node)) {
+		node = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)));
 		fnode = g_object_get_data(G_OBJECT(node), UI_DATA);
 		if (fnode && fnode->signed_timer)
 			flag |= GNT_TEXT_FLAG_BLINK;
@@ -396,8 +396,8 @@ add_node(PurpleBlistNode *node, FinchBuddyList *ggblist)
 
 	if(PURPLE_IS_BUDDY(node)) {
 		add_buddy((PurpleBuddy*)node, ggblist);
-	} else if (PURPLE_IS_CONTACT(node)) {
-		add_contact((PurpleContact*)node, ggblist);
+	} else if (PURPLE_IS_META_CONTACT(node)) {
+		add_contact((PurpleMetaContact*)node, ggblist);
 	} else if (PURPLE_IS_GROUP(node)) {
 		add_group((PurpleGroup*)node, ggblist);
 	} else if (PURPLE_IS_CHAT(node)) {
@@ -486,7 +486,7 @@ node_update(PurpleBuddyList *list, PurpleBlistNode *node)
 		node_update(list, purple_blist_node_get_parent(node));
 	} else if (PURPLE_IS_CHAT(node)) {
 		add_node(node, FINCH_BUDDY_LIST(list));
-	} else if (PURPLE_IS_CONTACT(node)) {
+	} else if (PURPLE_IS_META_CONTACT(node)) {
 		if (g_object_get_data(G_OBJECT(node), UI_DATA) == NULL) {
 			/* The core seems to expect the UI to add the buddies. */
 			for (node = purple_blist_node_get_first_child(node); node; node = purple_blist_node_get_sibling_next(node))
@@ -787,8 +787,8 @@ get_display_name(PurpleBlistNode *node)
 	char status[8] = " ";
 	const char *name = NULL;
 
-	if (PURPLE_IS_CONTACT(node))
-		node = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)));  /* XXX: this can return NULL?! */
+	if (PURPLE_IS_META_CONTACT(node))
+		node = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)));  /* XXX: this can return NULL?! */
 
 	if (node == NULL)
 		return NULL;
@@ -858,7 +858,7 @@ add_chat(PurpleChat *chat, FinchBuddyList *ggblist)
 }
 
 static void
-add_contact(PurpleContact *contact, FinchBuddyList *ggblist)
+add_contact(PurpleMetaContact *contact, FinchBuddyList *ggblist)
 {
 	gpointer parent;
 	PurpleBlistNode *node = (PurpleBlistNode*)contact;
@@ -886,7 +886,7 @@ add_buddy(PurpleBuddy *buddy, FinchBuddyList *ggblist)
 {
 	gpointer parent;
 	PurpleBlistNode *node = (PurpleBlistNode *)buddy;
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 
 	if(g_object_get_data(G_OBJECT(node), UI_DATA)) {
 		return;
@@ -900,7 +900,7 @@ add_buddy(PurpleBuddy *buddy, FinchBuddyList *ggblist)
 				parent, NULL));
 
 	blist_update_row_flags(ggblist, (PurpleBlistNode *)buddy);
-	if (buddy == purple_contact_get_priority_buddy(contact)) {
+	if (buddy == purple_meta_contact_get_priority_buddy(contact)) {
 		blist_update_row_flags(ggblist, (PurpleBlistNode *)contact);
 	}
 }
@@ -914,8 +914,8 @@ selection_activate(GntWidget *widget, FinchBuddyList *ggblist)
 	if (!node)
 		return;
 
-	if (PURPLE_IS_CONTACT(node))
-		node = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)));
+	if (PURPLE_IS_META_CONTACT(node))
+		node = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)));
 
 	if (PURPLE_IS_BUDDY(node))
 	{
@@ -1210,7 +1210,7 @@ append_extended_menu(GntMenu *menu, PurpleBlistNode *node)
 
 /* Xerox'd from gtkdialogs.c:purple_gtkdialogs_remove_contact_cb */
 static void
-remove_contact(PurpleContact *contact)
+remove_contact(PurpleMetaContact *contact)
 {
 	PurpleBlistNode *bnode, *cnode;
 	PurpleGroup *group;
@@ -1233,10 +1233,10 @@ rename_blist_node(PurpleBlistNode *node, const char *newname)
 	if (name && !*name)
 		name = NULL;
 
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleContact *contact = (PurpleContact*)node;
-		PurpleBuddy *buddy = purple_contact_get_priority_buddy(contact);
-		purple_contact_set_alias(contact, name);
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleMetaContact *contact = (PurpleMetaContact*)node;
+		PurpleBuddy *buddy = purple_meta_contact_get_priority_buddy(contact);
+		purple_meta_contact_set_alias(contact, name);
 		purple_buddy_set_local_alias(buddy, name);
 		purple_serv_alias_buddy(buddy);
 	} else if (PURPLE_IS_BUDDY(node)) {
@@ -1257,8 +1257,8 @@ finch_blist_rename_node_cb(PurpleBlistNode *selected, PurpleBlistNode *node)
 	char *prompt;
 	const char *text;
 
-	if (PURPLE_IS_CONTACT(node))
-		name = purple_contact_get_alias((PurpleContact*)node);
+	if (PURPLE_IS_META_CONTACT(node))
+		name = purple_meta_contact_get_alias((PurpleMetaContact*)node);
 	else if (PURPLE_IS_BUDDY(node))
 		name = purple_buddy_get_contact_alias((PurpleBuddy*)node);
 	else if (PURPLE_IS_CHAT(node))
@@ -1288,7 +1288,7 @@ remove_group(PurpleGroup *group)
 	cnode = purple_blist_node_get_first_child(((PurpleBlistNode*)group));
 
 	while (cnode) {
-		if (PURPLE_IS_CONTACT(cnode)) {
+		if (PURPLE_IS_META_CONTACT(cnode)) {
 			bnode = purple_blist_node_get_first_child(cnode);
 			cnode = purple_blist_node_get_sibling_next(cnode);
 			while (bnode) {
@@ -1322,8 +1322,8 @@ remove_group(PurpleGroup *group)
 static void
 finch_blist_remove_node(PurpleBlistNode *node)
 {
-	if (PURPLE_IS_CONTACT(node)) {
-		remove_contact((PurpleContact*)node);
+	if (PURPLE_IS_META_CONTACT(node)) {
+		remove_contact((PurpleMetaContact*)node);
 	} else if (PURPLE_IS_BUDDY(node)) {
 		PurpleBuddy *buddy = (PurpleBuddy*)node;
 		PurpleGroup *group = purple_buddy_get_group(buddy);
@@ -1343,9 +1343,9 @@ finch_blist_remove_node_cb(PurpleBlistNode *selected, PurpleBlistNode *node)
 	char *primary;
 	const char *name, *sec = NULL;
 
-	if (PURPLE_IS_CONTACT(node)) {
-		PurpleContact *c = (PurpleContact*)node;
-		name = purple_contact_get_alias(c);
+	if (PURPLE_IS_META_CONTACT(node)) {
+		PurpleMetaContact *c = (PurpleMetaContact*)node;
+		name = purple_meta_contact_get_alias(c);
 		if (purple_counting_node_get_total_size(PURPLE_COUNTING_NODE(c)) > 1)
 			sec = _("Removing this contact will also remove all the buddies in the contact");
 	} else if (PURPLE_IS_BUDDY(node)) {
@@ -1384,8 +1384,8 @@ finch_blist_toggle_tag_buddy(PurpleBlistNode *node)
 	} else {
 		ggblist->tagged = g_list_prepend(ggblist->tagged, node);
 	}
-	if (PURPLE_IS_CONTACT(node))
-		update_buddy_display(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)), ggblist);
+	if (PURPLE_IS_META_CONTACT(node))
+		update_buddy_display(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)), ggblist);
 	else if (PURPLE_IS_BUDDY(node))
 		update_buddy_display((PurpleBuddy*)node, ggblist);
 	else
@@ -1396,15 +1396,15 @@ static void
 finch_blist_place_tagged(PurpleBlistNode *target)
 {
 	PurpleGroup *tg = NULL;
-	PurpleContact *tc = NULL;
+	PurpleMetaContact *tc = NULL;
 
 	if (PURPLE_IS_GROUP(target))
 		tg = (PurpleGroup*)target;
 	else if (PURPLE_IS_BUDDY(target)) {
-		tc = (PurpleContact*)purple_blist_node_get_parent(target);
+		tc = (PurpleMetaContact*)purple_blist_node_get_parent(target);
 		tg = (PurpleGroup*)purple_blist_node_get_parent((PurpleBlistNode*)tc);
-	} else if (PURPLE_IS_CONTACT(target)) {
-		tc = (PurpleContact *)target;
+	} else if (PURPLE_IS_META_CONTACT(target)) {
+		tc = (PurpleMetaContact *)target;
 		tg = (PurpleGroup *)purple_blist_node_get_parent(target);
 	} else if (PURPLE_IS_CHAT(target)) {
 		tg = (PurpleGroup*)purple_blist_node_get_parent(target);
@@ -1423,24 +1423,24 @@ finch_blist_place_tagged(PurpleBlistNode *target)
 				update_node_display(node, ggblist);
 				/* Add the group after the current group */
 				purple_blist_add_group((PurpleGroup*)node, (PurpleBlistNode*)tg);
-			} else if (PURPLE_IS_CONTACT(node)) {
-				update_buddy_display(purple_contact_get_priority_buddy((PurpleContact*)node), ggblist);
+			} else if (PURPLE_IS_META_CONTACT(node)) {
+				update_buddy_display(purple_meta_contact_get_priority_buddy((PurpleMetaContact*)node), ggblist);
 				if (PURPLE_BLIST_NODE(tg) == target) {
 					/* The target is a group, just add the contact to the group. */
-					purple_blist_add_contact((PurpleContact*)node, tg, NULL);
+					purple_blist_add_contact((PurpleMetaContact*)node, tg, NULL);
 				} else if (tc) {
 					/* The target is either a buddy, or a contact. Merge with that contact. */
-					purple_contact_merge((PurpleContact*)node, (PurpleBlistNode*)tc);
+					purple_meta_contact_merge((PurpleMetaContact*)node, (PurpleBlistNode*)tc);
 				} else {
 					/* The target is a chat. Add the contact to the group after this chat. */
-					purple_blist_add_contact((PurpleContact*)node, NULL, target);
+					purple_blist_add_contact((PurpleMetaContact*)node, NULL, target);
 				}
 			} else if (PURPLE_IS_BUDDY(node)) {
 				update_buddy_display((PurpleBuddy*)node, ggblist);
 				if (PURPLE_BLIST_NODE(tg) == target) {
 					/* The target is a group. Add this buddy in a new contact under this group. */
 					purple_blist_add_buddy((PurpleBuddy*)node, NULL, tg, NULL);
-				} else if (PURPLE_IS_CONTACT(target)) {
+				} else if (PURPLE_IS_META_CONTACT(target)) {
 					/* Add to the contact. */
 					purple_blist_add_buddy((PurpleBuddy*)node, tc, NULL, NULL);
 				} else if (PURPLE_IS_BUDDY(target)) {
@@ -1482,7 +1482,7 @@ draw_context_menu(FinchBuddyList *ggblist)
 	tree = GNT_TREE(ggblist->tree);
 
 	node = gnt_tree_get_selection_data(tree);
-	if (node && !(PURPLE_IS_BUDDY(node) || PURPLE_IS_CONTACT(node) ||
+	if (node && !(PURPLE_IS_BUDDY(node) || PURPLE_IS_META_CONTACT(node) ||
 	              PURPLE_IS_GROUP(node) || PURPLE_IS_CHAT(node)))
 		return;
 
@@ -1498,10 +1498,10 @@ draw_context_menu(FinchBuddyList *ggblist)
 	if (!node) {
 		create_group_menu(GNT_MENU(context), NULL);
 		title = g_strdup(_("Buddy List"));
-	} else if (PURPLE_IS_CONTACT(node)) {
-		ggblist->cnode = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(node)));
+	} else if (PURPLE_IS_META_CONTACT(node)) {
+		ggblist->cnode = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(node)));
 		create_buddy_menu(GNT_MENU(context), (PurpleBuddy*)ggblist->cnode);
-		title = g_strdup(purple_contact_get_alias((PurpleContact*)node));
+		title = g_strdup(purple_meta_contact_get_alias((PurpleMetaContact*)node));
 	} else if (PURPLE_IS_BUDDY(node)) {
 		PurpleBuddy *buddy = (PurpleBuddy *)node;
 		create_buddy_menu(GNT_MENU(context), buddy);
@@ -1526,13 +1526,13 @@ draw_context_menu(FinchBuddyList *ggblist)
 		add_custom_action(GNT_MENU(context), _("Remove"),
 				G_CALLBACK(finch_blist_remove_node_cb), node);
 
-		if (ggblist->tagged && (PURPLE_IS_CONTACT(node)
+		if (ggblist->tagged && (PURPLE_IS_META_CONTACT(node)
 				|| PURPLE_IS_GROUP(node))) {
 			add_custom_action(GNT_MENU(context), _("Place tagged"),
 					G_CALLBACK(finch_blist_place_tagged), node);
 		}
 
-		if (PURPLE_IS_BUDDY(node) || PURPLE_IS_CONTACT(node)) {
+		if (PURPLE_IS_BUDDY(node) || PURPLE_IS_META_CONTACT(node)) {
 			add_custom_action(GNT_MENU(context), _("Toggle Tag"),
 					G_CALLBACK(finch_blist_toggle_tag_buddy), node);
 		}
@@ -1753,7 +1753,7 @@ update_node_display(PurpleBlistNode *node, FinchBuddyList *ggblist)
 static void
 update_buddy_display(PurpleBuddy *buddy, FinchBuddyList *ggblist)
 {
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 
 	contact = purple_buddy_get_contact(buddy);
 
@@ -1761,7 +1761,7 @@ update_buddy_display(PurpleBuddy *buddy, FinchBuddyList *ggblist)
 	gnt_tree_change_text(GNT_TREE(ggblist->tree), contact, 0, get_display_name((PurpleBlistNode*)contact));
 
 	blist_update_row_flags(ggblist, (PurpleBlistNode *)buddy);
-	if (buddy == purple_contact_get_priority_buddy(contact))
+	if (buddy == purple_meta_contact_get_priority_buddy(contact))
 		blist_update_row_flags(ggblist, (PurpleBlistNode *)contact);
 
 	if (ggblist->tnode == (PurpleBlistNode *)buddy) {
@@ -2179,9 +2179,9 @@ blist_node_compare_text(PurpleBlistNode *n1, PurpleBlistNode *n2)
 		return purple_buddy_presence_compare(
 			PURPLE_BUDDY_PRESENCE(purple_buddy_get_presence(PURPLE_BUDDY(n1))),
 			PURPLE_BUDDY_PRESENCE(purple_buddy_get_presence(PURPLE_BUDDY(n2))));
-	} else if (PURPLE_IS_CONTACT(n1)) {
-		s1 = purple_contact_get_alias((PurpleContact*)n1);
-		s2 = purple_contact_get_alias((PurpleContact*)n2);
+	} else if (PURPLE_IS_META_CONTACT(n1)) {
+		s1 = purple_meta_contact_get_alias((PurpleMetaContact*)n1);
+		s2 = purple_meta_contact_get_alias((PurpleMetaContact*)n2);
 	} else {
 		return blist_node_compare_position(n1, n2);
 	}
@@ -2203,10 +2203,10 @@ blist_node_compare_status(PurpleBlistNode *n1, PurpleBlistNode *n2)
 	if (G_OBJECT_TYPE(n1) != G_OBJECT_TYPE(n2))
 		return blist_node_compare_position(n1, n2);
 
-	if (PURPLE_IS_CONTACT(n1))
-		n1 = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(n1)));
-	if (PURPLE_IS_CONTACT(n2))
-		n2 = PURPLE_BLIST_NODE(purple_contact_get_priority_buddy(PURPLE_CONTACT(n2)));
+	if (PURPLE_IS_META_CONTACT(n1))
+		n1 = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(n1)));
+	if (PURPLE_IS_META_CONTACT(n2))
+		n2 = PURPLE_BLIST_NODE(purple_meta_contact_get_priority_buddy(PURPLE_META_CONTACT(n2)));
 
 	if (PURPLE_IS_BUDDY(n1) && PURPLE_IS_BUDDY(n2)) {
 		ret = purple_buddy_presence_compare(
@@ -2313,7 +2313,7 @@ buddy_recent_signed_on_off(gpointer data)
 		node_remove(purple_blist_get_default(), node);
 	} else {
 		update_node_display(node, ggblist);
-		if (purple_blist_node_get_parent(node) && PURPLE_IS_CONTACT(purple_blist_node_get_parent(node)))
+		if (purple_blist_node_get_parent(node) && PURPLE_IS_META_CONTACT(purple_blist_node_get_parent(node)))
 			update_node_display(purple_blist_node_get_parent(node), ggblist);
 	}
 
@@ -2337,7 +2337,7 @@ buddy_signed_on_off_cb(gpointer data)
 	g_object_ref(node);
 	fnode->signed_timer = g_timeout_add_seconds(6, (GSourceFunc)buddy_recent_signed_on_off, data);
 	update_node_display(node, ggblist);
-	if (purple_blist_node_get_parent(node) && PURPLE_IS_CONTACT(purple_blist_node_get_parent(node)))
+	if (purple_blist_node_get_parent(node) && PURPLE_IS_META_CONTACT(purple_blist_node_get_parent(node)))
 		update_node_display(purple_blist_node_get_parent(node), ggblist);
 	return FALSE;
 }

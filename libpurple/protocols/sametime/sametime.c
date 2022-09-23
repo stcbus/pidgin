@@ -661,7 +661,7 @@ static void blist_export(PurpleConnection *gc, struct mwSametimeList *stlist) {
     for(cn = purple_blist_node_get_first_child(gn);
 			cn;
 			cn = purple_blist_node_get_sibling_next(cn)) {
-      if(! PURPLE_IS_CONTACT(cn)) continue;
+      if(! PURPLE_IS_META_CONTACT(cn)) continue;
 
       for(bn = purple_blist_node_get_first_child(cn);
 			  bn;
@@ -966,7 +966,7 @@ static void group_clear(PurpleGroup *group, PurpleAccount *acct, gboolean del) {
   for(cn = purple_blist_node_get_first_child(gn);
 		  cn;
 		  cn = purple_blist_node_get_sibling_next(cn)) {
-    if(! PURPLE_IS_CONTACT(cn)) continue;
+    if(! PURPLE_IS_META_CONTACT(cn)) continue;
 
     for(bn = purple_blist_node_get_first_child(cn);
 			bn;
@@ -1035,7 +1035,7 @@ static void group_prune(PurpleConnection *gc, PurpleGroup *group,
   for(cn = purple_blist_node_get_first_child(gn);
 		  cn;
 		  cn = purple_blist_node_get_sibling_next(cn)) {
-    if(! PURPLE_IS_CONTACT(cn)) continue;
+    if(! PURPLE_IS_META_CONTACT(cn)) continue;
 
     for(bn = purple_blist_node_get_first_child(cn);
 			bn;
@@ -1311,7 +1311,7 @@ static void blist_init(PurpleAccount *acct) {
     for(cnode = purple_blist_node_get_first_child(gnode);
 			cnode;
 			cnode = purple_blist_node_get_sibling_next(cnode)) {
-      if(! PURPLE_IS_CONTACT(cnode))
+      if(! PURPLE_IS_META_CONTACT(cnode))
 	continue;
       for(bnode = purple_blist_node_get_first_child(cnode);
 			  bnode;

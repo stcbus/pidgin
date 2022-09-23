@@ -196,7 +196,7 @@ find_im_with_contact(PurpleAccount *account, const char *name)
 {
 	PurpleBlistNode *node;
 	PurpleBuddy *buddy = purple_blist_find_buddy(account, name);
-	PurpleContact *contact;
+	PurpleMetaContact *contact;
 	PurpleConversation *im = NULL;
 
 	if(!PURPLE_IS_BUDDY(buddy)) {

@@ -502,7 +502,7 @@ purple_accounts_delete(PurpleAccount *account)
 		while(cnode) {
 			PurpleBlistNode *cnode_next = purple_blist_node_get_sibling_next(cnode);
 
-			if(PURPLE_IS_CONTACT(cnode)) {
+			if(PURPLE_IS_META_CONTACT(cnode)) {
 				bnode = purple_blist_node_get_first_child(cnode);
 				while(bnode) {
 					PurpleBlistNode *bnode_next = purple_blist_node_get_sibling_next(bnode);

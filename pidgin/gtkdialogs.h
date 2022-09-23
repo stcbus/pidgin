@@ -39,7 +39,7 @@ void pidgin_dialogs_alias_chat(PurpleChat *chat);
 void pidgin_dialogs_remove_buddy(PurpleBuddy *buddy);
 void pidgin_dialogs_remove_group(PurpleGroup *group);
 void pidgin_dialogs_remove_chat(PurpleChat *chat);
-void pidgin_dialogs_remove_contact(PurpleContact *contact);
+void pidgin_dialogs_remove_contact(PurpleMetaContact *contact);
 void pidgin_dialogs_merge_groups(PurpleGroup *group, const char *name);
 
 G_END_DECLS

@@ -1231,7 +1231,7 @@ blist_node_aliased_cb(PurpleBlistNode *node, const char *old_alias, PurpleChatCo
 	if (purple_protocol_get_options(protocol) & OPT_PROTO_UNIQUE_CHATNAME)
 		return;
 
-	if (PURPLE_IS_CONTACT(node))
+	if (PURPLE_IS_META_CONTACT(node))
 	{
 		PurpleBlistNode *bnode;
 
@@ -1588,7 +1588,7 @@ static PidginConversation *
 pidgin_conv_find_gtkconv(PurpleConversation * conv)
 {
 	PurpleBuddy *bud = purple_blist_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
-	PurpleContact *c;
+	PurpleMetaContact *c;
 	PurpleBlistNode *cn, *bn;
 
 	if (!bud)
@@ -2222,7 +2222,7 @@ show_formatting_toolbar_pref_cb(const char *name, PurplePrefType type,
 }
 
 static PidginConversation *
-get_gtkconv_with_contact(PurpleContact *contact)
+get_gtkconv_with_contact(PurpleMetaContact *contact)
 {
 	PurpleBlistNode *node;
 

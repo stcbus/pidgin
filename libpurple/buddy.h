@@ -220,7 +220,7 @@ void purple_buddy_set_protocol_data(PurpleBuddy *buddy, gpointer data);
  *
  * Returns: (transfer none): The buddy's contact.
  */
-PurpleContact *purple_buddy_get_contact(PurpleBuddy *buddy);
+PurpleMetaContact *purple_buddy_get_contact(PurpleBuddy *buddy);
 
 /**
  * purple_buddy_get_presence:
