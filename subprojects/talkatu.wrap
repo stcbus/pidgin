@@ -1,5 +1,4 @@
-[wrap-file]
-directory = talkatu-v0.1.0
-source_url = https://keep.imfreedom.org/talkatu/talkatu/archive/v0.1.0.tar.bz2
-source_filename = talkatu-0.1.0.tar.bz2
-source_hash = 6f189f7e70922253a662241c16f0ca546c8ff8a04c18ba99b40d792eebfa4f3c
+[wrap-hg]
+directory = talkatu
+url = https://keep.imfreedom.org/talkatu/talkatu
+revision = v0.1.0
