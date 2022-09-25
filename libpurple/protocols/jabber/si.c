@@ -1835,11 +1835,6 @@ jabber_si_xfer_finalize(GObject *obj) {
 		jabber_iq_remove_callback_by_id(js, jsx->iq_id);
 	}
 
-	if (purple_xfer_get_xfer_type(PURPLE_XFER(jsx)) == PURPLE_XFER_TYPE_SEND && purple_xfer_get_fd(PURPLE_XFER(jsx)) >= 0) {
-		purple_debug_info("jabber", "remove port mapping\n");
-		purple_network_remove_port_mapping(purple_xfer_get_fd(PURPLE_XFER(jsx)));
-	}
-
 	if (jsx->connect_timeout > 0) {
 		g_source_remove(jsx->connect_timeout);
 	}

@@ -505,6 +505,7 @@ version 3.0.0 (??/??/????):
 		* purple_network_listen_map_external
 		* purple_network_listen_range
 		* purple_network_listen_range_family
+		* purple_network_remove_port_mapping
 		* PurpleNotifyUiOps.notify_email
 		* PurpleNotifyUiOps.notify_emails
 		* purple_notify_email

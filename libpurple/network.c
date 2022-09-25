@@ -54,10 +54,6 @@ static gboolean force_online = FALSE;
 static gchar *stun_ip = NULL;
 static gchar *turn_ip = NULL;
 
-/* Keep track of port mappings done with UPnP and NAT-PMP */
-static GHashTable *upnp_port_mappings = NULL;
-static GHashTable *nat_pmp_port_mappings = NULL;
-
 void
 purple_network_set_public_ip(const char *ip)
 {
@@ -285,71 +281,6 @@ purple_network_get_turn_ip(void)
 	return turn_ip;
 }
 
-static void
-purple_network_upnp_mapping_remove_cb(gboolean success, gpointer data)
-{
-	purple_debug_info("network", "done removing UPnP port mapping\n");
-}
-
-/* the reason for these functions to have these signatures is to be able to
- use them for g_hash_table_foreach to clean remaining port mappings, which is
- not yet done */
-static void
-purple_network_upnp_mapping_remove(gpointer key, gpointer value,
-	gpointer user_data)
-{
-	gint port = GPOINTER_TO_INT(key);
-	gint protocol = GPOINTER_TO_INT(value);
-	purple_debug_info("network", "removing UPnP port mapping for port %d\n",
-		port);
-	purple_upnp_remove_port_mapping(port,
-		protocol == SOCK_STREAM ? "TCP" : "UDP",
-		purple_network_upnp_mapping_remove_cb, NULL);
-	g_hash_table_remove(upnp_port_mappings, GINT_TO_POINTER(port));
-}
-
-static void
-purple_network_nat_pmp_mapping_remove(gpointer key, gpointer value,
-	gpointer user_data)
-{
-	gint port = GPOINTER_TO_INT(key);
-	gint protocol = GPOINTER_TO_INT(value);
-	purple_debug_info("network", "removing NAT-PMP port mapping for port %d\n",
-		port);
-	purple_pmp_destroy_map(
-		protocol == SOCK_STREAM ? PURPLE_PMP_TYPE_TCP : PURPLE_PMP_TYPE_UDP,
-		port);
-	g_hash_table_remove(nat_pmp_port_mappings, GINT_TO_POINTER(port));
-}
-
-void
-purple_network_remove_port_mapping(gint fd)
-{
-	gint port, protocol;
-	struct sockaddr_in addr;
-	socklen_t len;
-
-	g_return_if_fail(fd >= 0);
-
-	len = sizeof(addr);
-	if (getsockname(fd, (struct sockaddr *) &addr, &len) == -1) {
-		purple_debug_warning("network", "getsockname: %s", g_strerror(errno));
-		port = 0;
-	} else {
-		port = g_ntohs(addr.sin_port);
-	}
-
-	protocol = GPOINTER_TO_INT(g_hash_table_lookup(upnp_port_mappings, GINT_TO_POINTER(port)));
-	if (protocol) {
-		purple_network_upnp_mapping_remove(GINT_TO_POINTER(port), GINT_TO_POINTER(protocol), NULL);
-	} else {
-		protocol = GPOINTER_TO_INT(g_hash_table_lookup(nat_pmp_port_mappings, GINT_TO_POINTER(port)));
-		if (protocol) {
-			purple_network_nat_pmp_mapping_remove(GINT_TO_POINTER(port), GINT_TO_POINTER(protocol), NULL);
-		}
-	}
-}
-
 gboolean
 _purple_network_set_common_socket_flags(int fd)
 {
@@ -404,9 +335,6 @@ purple_network_init(void)
 		purple_prefs_get_string("/purple/network/stun_server"));
 	purple_network_set_turn_server(
 		purple_prefs_get_string("/purple/network/turn_server"));
-
-	upnp_port_mappings = g_hash_table_new(g_direct_hash, g_direct_equal);
-	nat_pmp_port_mappings = g_hash_table_new(g_direct_hash, g_direct_equal);
 }
 
 void
@@ -414,9 +342,6 @@ purple_network_uninit(void)
 {
 	g_free(stun_ip);
 	g_free(turn_ip);
-
-	g_hash_table_destroy(upnp_port_mappings);
-	g_hash_table_destroy(nat_pmp_port_mappings);
 
 	/* TODO: clean up remaining port mappings, note calling
 	 purple_upnp_remove_port_mapping from here doesn't quite work... */
