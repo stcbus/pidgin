@@ -231,6 +231,21 @@ time_t purple_presence_get_idle_time(PurplePresence *presence);
  */
 time_t purple_presence_get_login_time(PurplePresence *presence);
 
+/**
+ * purple_presence_compare:
+ * @presence1: The first presence.
+ * @presence2: The second presence.
+ *
+ * Compares the presences for availability.
+ *
+ * Returns: -1 if @presence1 is more available than @presence2.
+ *           0 if @presence1 is equal to @presence2.
+ *           1 if @presence1 is less available than @presence2.
+ *
+ * Since: 3.0.0
+ */
+gint purple_presence_compare(PurplePresence *presence1, PurplePresence *presence2);
+
 G_END_DECLS
 
 #endif /* PURPLE_PRESENCE_H */
