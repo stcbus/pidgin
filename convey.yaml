@@ -20,9 +20,9 @@ tasks:
       - appimage-x86_64
       - clang
       - debian-bookworm-amd64
-      - fedora-35-amd64
+      - fedora-36-amd64
       - scanbuild
-      - ubuntu-jammy-amd64
+      - ubuntu-kinetic-amd64
 
   docs-clean:
     type: convey/clean
@@ -77,13 +77,6 @@ plans:
     stages:
       - tasks: [clean, docs-clean]
 
-  debian-bullseye-amd64:
-    environment: [TARGET=debian-bullseye-amd64]
-    stages:
-      - tasks: [import, build]
-      - tasks: [export]
-        run: always
-
   debian-bookworm-amd64:
     environment: [TARGET=debian-bookworm-amd64]
     stages:
@@ -95,8 +88,8 @@ plans:
     stages:
       - tasks: [docs-clean, import, docs-build, docs-export]
 
-  fedora-35-amd64:
-    environment: [TARGET=fedora-35-amd64]
+  fedora-36-amd64:
+    environment: [TARGET=fedora-36-amd64]
     stages:
       - tasks: [import, build]
       - tasks: [export]
@@ -109,8 +102,8 @@ plans:
       - tasks: [export]
         run: always
 
-  ubuntu-jammy-amd64:
-    environment: [TARGET=ubuntu-jammy-amd64]
+  ubuntu-kinetic-amd64:
+    environment: [TARGET=ubuntu-kinetic-amd64]
     stages:
       - tasks: [import, build]
       - tasks: [export]
