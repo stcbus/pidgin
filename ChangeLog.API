@@ -235,7 +235,11 @@ version 3.0.0 (??/??/????):
 		  purple_request_field_get_field_type
 		* PurpleRoomlist is now a GObject. Please see the documentation for
 		  details.
+		* purple_request_field_group_get_tab
+		* purple_request_field_group_set_tab
 		* purple_request_field_list_get_items now returns list of PurpleKeyValuePair
+		* purple_request_fields_get_tab_names
+		* purple_request_fields_set_tab_names
 		* purple_roomlist_room_get_type is now
 		  purple_roomlist_room_get_room_type
 		* purple_roomlist_field_get_type is now
