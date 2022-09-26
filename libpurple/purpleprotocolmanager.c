@@ -58,9 +58,10 @@ purple_protocol_manager_get_item(GListModel *list, guint position) {
 	PurpleProtocol *protocol = NULL;
 
 	if(position < manager->list->len) {
-		protocol = g_ptr_array_index(manager->list, position);
+		protocol = g_object_ref(g_ptr_array_index(manager->list, position));
 	}
-	return g_object_ref(protocol);
+
+	return protocol;
 }
 
 static void
