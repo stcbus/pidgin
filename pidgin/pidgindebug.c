@@ -32,12 +32,12 @@
 
 #include "gtkdialogs.h"
 #include "gtkutils.h"
+#include "pidginapplication.h"
 #include "pidgincore.h"
 #include "pidgindebug.h"
 
 #include <gdk/gdkkeysyms.h>
 
-#include "pidginresources.h"
 
 struct _PidginDebugWindow {
 	GtkWindow parent;
@@ -838,11 +838,21 @@ void
 pidgin_debug_window_show(void)
 {
 	if (debug_win == NULL) {
+		GApplication *application = NULL;
+		PidginApplication *pidgin_application = NULL;
+		GtkWindow *parent = NULL;
+
+		application = g_application_get_default();
+		pidgin_application = PIDGIN_APPLICATION(application);
+		parent = pidgin_application_get_active_window(pidgin_application);
+
 		debug_win = PIDGIN_DEBUG_WINDOW(
 				g_object_new(PIDGIN_TYPE_DEBUG_WINDOW, NULL));
+
+		gtk_window_set_transient_for(GTK_WINDOW(debug_win), parent);
 	}
 
-	gtk_widget_show(GTK_WIDGET(debug_win));
+	gtk_window_present_with_time(GTK_WINDOW(debug_win), GDK_CURRENT_TIME);
 
 	purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/debug/enabled", TRUE);
 }

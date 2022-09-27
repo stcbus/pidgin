@@ -73,6 +73,21 @@ GApplication *pidgin_application_new(void);
  */
 void pidgin_application_add_action_group(PidginApplication *application, const gchar *prefix, GActionGroup *action_group);
 
+/**
+ * pidgin_application_get_active_window:
+ * @application: The instance.
+ *
+ * Calls [method@Gtk.Application.get_active_window] to get the active window.
+ * If that returns %NULL, fallback to the first window of
+ * [method@Gtk.Application.get_windows], and if that fails, return %NULL.
+ *
+ * Returns: (transfer none) (nullable): The active window or %NULL if one could
+ *          not be found.
+ *
+ * Since: 3.0.0
+ */
+GtkWindow *pidgin_application_get_active_window(PidginApplication *application);
+
 G_END_DECLS
 
 #endif /* PIDGIN_APPLICATION_H */

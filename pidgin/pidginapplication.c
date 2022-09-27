@@ -95,33 +95,6 @@ G_DEFINE_TYPE(PidginApplication, pidgin_application, GTK_TYPE_APPLICATION)
  *****************************************************************************/
 
 /*
- * pidgin_application_get_active_window:
- *
- * Calls gtk_application_get_active_window to get the active window. If that
- * returns NULL, fallback to the first window of gtk_application_get_windows,
- * and if that fails, returns NULL.
- */
-static GtkWindow *
-pidgin_application_get_active_window(PidginApplication *application) {
-	GtkApplication *gtk_application = NULL;
-	GtkWindow *window = NULL;
-
-	gtk_application = GTK_APPLICATION(application);
-
-	window = gtk_application_get_active_window(gtk_application);
-	if(!GTK_IS_WINDOW(window)) {
-		GList *windows = NULL;
-
-		windows = gtk_application_get_windows(gtk_application);
-		if(windows != NULL) {
-			window = windows->data;
-		}
-	}
-
-	return window;
-}
-
-/*
  * pidgin_application_present_transient_window:
  * @application: The application instance.
  * @window: The [class@Gtk.Window] to present.
@@ -1051,4 +1024,26 @@ pidgin_application_add_action_group(PidginApplication *application,
 
 		windows = windows->next;
 	}
+}
+
+GtkWindow *
+pidgin_application_get_active_window(PidginApplication *application) {
+	GtkApplication *gtk_application = NULL;
+	GtkWindow *window = NULL;
+
+	g_return_val_if_fail(PIDGIN_IS_APPLICATION(application), NULL);
+
+	gtk_application = GTK_APPLICATION(application);
+
+	window = gtk_application_get_active_window(gtk_application);
+	if(!GTK_IS_WINDOW(window)) {
+		GList *windows = NULL;
+
+		windows = gtk_application_get_windows(gtk_application);
+		if(windows != NULL) {
+			window = windows->data;
+		}
+	}
+
+	return window;
 }
