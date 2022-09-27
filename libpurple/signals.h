@@ -333,32 +333,6 @@ void purple_marshal_VOID(
 		GCallback cb, va_list args, void *data, void **return_val);
 
 /**
- * purple_marshal_VOID__INT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with a single integer
- * argument.
- */
-void purple_marshal_VOID__INT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_VOID__INT_INT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with two integer
- * arguments.
- */
-void purple_marshal_VOID__INT_INT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
  * purple_marshal_VOID__POINTER:
  * @cb: (scope call): Callback this marshaller is designed to invoke
  * @args: va_list of arguments to be passed to the closure
@@ -541,45 +515,6 @@ void purple_marshal_VOID__POINTER_POINTER_POINTER_UINT_UINT(
 		GCallback cb, va_list args, void *data, void **return_val);
 
 /**
- * purple_marshal_INT__INT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with an integer argument
- * and returns an integer.
- */
-void purple_marshal_INT__INT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_INT__INT_INT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with two integer
- * arguments and returns an integer.
- */
-void purple_marshal_INT__INT_INT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_INT__POINTER_POINTER:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with two pointer
- * arguments and returns an integer.
- */
-void purple_marshal_INT__POINTER_POINTER(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
  * purple_marshal_INT__POINTER_POINTER_POINTER:
  * @cb: (scope call): Callback this marshaller is designed to invoke
  * @args: va_list of arguments to be passed to the closure
@@ -671,19 +606,6 @@ void purple_marshal_BOOLEAN__POINTER_POINTER_UINT(
 		GCallback cb, va_list args, void *data, void **return_val);
 
 /**
- * purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_UINT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with three pointer
- * and one unsigned integer arguments and returns a boolean.
- */
-void purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_UINT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
  * purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER:
  * @cb: (scope call): Callback this marshaller is designed to invoke
  * @args: va_list of arguments to be passed to the closure
@@ -710,19 +632,6 @@ void purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_POINTER(
 		GCallback cb, va_list args, void *data, void **return_val);
 
 /**
- * purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_UINT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with four pointer
- * and one unsigned integer arguments and returns a boolean.
- */
-void purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_UINT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
  * purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_POINTER_POINTER:
  * @cb: (scope call): Callback this marshaller is designed to invoke
  * @args: va_list of arguments to be passed to the closure
@@ -733,110 +642,6 @@ void purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_UINT(
  * arguments and returns a boolean.
  */
 void purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_POINTER_POINTER(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_BOOLEAN__INT_POINTER:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with an integer
- * and a pointer argument and returns a boolean.
- */
-void purple_marshal_BOOLEAN__INT_POINTER(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with a pointer
- * argument and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER_INT:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with a pointer and
- * an integer argument and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER_INT(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER_INT64:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with a pointer and
- * a 64-bit integer argument and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER_INT64(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER_INT_BOOLEAN:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with a pointer,
- * integer, and boolean argument and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER_INT_BOOLEAN(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER_INT64_BOOLEAN:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with a pointer,
- * 64-bit integer, and boolean argument and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER_INT64_BOOLEAN(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER_POINTER_BOOLEAN:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with two pointer
- * and one boolean arguments and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER_POINTER_BOOLEAN(
-		GCallback cb, va_list args, void *data, void **return_val);
-
-/**
- * purple_marshal_POINTER__POINTER_POINTER:
- * @cb: (scope call): Callback this marshaller is designed to invoke
- * @args: va_list of arguments to be passed to the closure
- * @data: (nullable): Data to be passed to the callback
- * @return_val: (nullable): Value to store the callback's return value
- *
- * A purple marshaller function for use with signals with two pointer
- * arguments and returns a pointer.
- */
-void purple_marshal_POINTER__POINTER_POINTER(
 		GCallback cb, va_list args, void *data, void **return_val);
 
 G_END_DECLS

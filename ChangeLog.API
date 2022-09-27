@@ -479,6 +479,21 @@ version 3.0.0 (??/??/????):
 		* purple_markup_extract_info_field
 		* purple_markup_get_css_property
 		* purple_markup_is_rtl
+		* purple_marshal_BOOLEAN__INT_POINTER
+		* purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_POINTER_UINT
+		* purple_marshal_BOOLEAN__POINTER_POINTER_POINTER_UINT
+		* purple_marshal_INT__INT
+		* purple_marshal_INT__INT_INT
+		* purple_marshal_INT__POINTER_POINTER
+		* purple_marshal_POINTER__POINTER
+		* purple_marshal_POINTER__POINTER_INT
+		* purple_marshal_POINTER__POINTER_INT64
+		* purple_marshal_POINTER__POINTER_INT_BOOLEAN
+		* purple_marshal_POINTER__POINTER_INT64_BOOLEAN
+		* purple_marshal_POINTER__POINTER_POINTER
+		* purple_marshal_POINTER__POINTER_POINTER_BOOLEAN
+		* purple_marshal_VOID__INT
+		* purple_marshal_VOID__INT_INT
 		* PurpleMimeDocument, PurpleMimePart,
 		  purple_mime_document_new, purple_mime_document_free,
 		  purple_mime_document_parse, purple_mime_document_parsen,
