@@ -23,8 +23,8 @@
 # error "only <purple.h> may be included directly"
 #endif
 
-#ifndef PURPLE_ACTION
-#define PURPLE_ACTION
+#ifndef PURPLE_ACTION_H
+#define PURPLE_ACTION_H
 
 #include <glib.h>
 #include <glib-object.h>
@@ -212,4 +212,4 @@ void purple_protocol_action_free(PurpleProtocolAction *action);
 
 G_END_DECLS
 
-#endif /* PURPLE_ACTION */
+#endif /* PURPLE_ACTION_H */

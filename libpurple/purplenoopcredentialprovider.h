@@ -58,4 +58,4 @@ PurpleCredentialProvider *purple_noop_credential_provider_new(void);
 
 G_END_DECLS
 
-#endif /* PURPLE_NOOP_CREDENTIAL_PROVIDER */
+#endif /* PURPLE_NOOP_CREDENTIAL_PROVIDER_H */

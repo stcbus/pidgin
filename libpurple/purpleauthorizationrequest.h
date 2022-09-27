@@ -189,4 +189,4 @@ void purple_authorization_request_deny(PurpleAuthorizationRequest *request, cons
 
 G_END_DECLS
 
-#endif /* PURPLE_AUTHORIZATION_REQUEST */
+#endif /* PURPLE_AUTHORIZATION_REQUEST_H */

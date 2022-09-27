@@ -275,4 +275,4 @@ gboolean purple_credential_provider_write_settings(PurpleCredentialProvider *pro
 
 G_END_DECLS
 
-#endif /* PURPLE_CREDENTIAL_PROVIDER */
+#endif /* PURPLE_CREDENTIAL_PROVIDER_H */

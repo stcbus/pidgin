@@ -308,4 +308,4 @@ void purple_notification_delete(PurpleNotification *notification);
 
 G_END_DECLS
 
-#endif /* PURPLE_NOTIFICATION */
+#endif /* PURPLE_NOTIFICATION_H */
