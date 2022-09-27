@@ -13,6 +13,7 @@ PROGS = [
     'menu',
     'notification',
     'notification_manager',
+    'person',
     'protocol_action',
     'protocol_xfer',
     'purplepath',
