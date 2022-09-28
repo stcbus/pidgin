@@ -385,7 +385,7 @@ Then rerun this Meson build
 endif
 
 
-DEFAULT_PRPLS = ['bonjour', 'demo', 'facebook', 'gg', 'irc', 'jabber',
+DEFAULT_PRPLS = ['bonjour', 'demo', 'facebook', 'gg', 'irc', 'ircv3', 'jabber',
                  'novell', 'null', 'sametime', 'silc', 'zephyr']
 ALL_PRPLS = DEFAULT_PRPLS + ['null']
 
@@ -417,6 +417,7 @@ DYNAMIC_DEMO = DYNAMIC_PRPLS.contains('demo')
 DYNAMIC_FACEBOOK = DYNAMIC_PRPLS.contains('facebook')
 DYNAMIC_GG  = DYNAMIC_PRPLS.contains('gg')
 DYNAMIC_IRC = DYNAMIC_PRPLS.contains('irc')
+DYNAMIC_IRCV3 = DYNAMIC_PRPLS.contains('ircv3')
 DYNAMIC_JABBER = DYNAMIC_PRPLS.contains('jabber')
 DYNAMIC_NOVELL = DYNAMIC_PRPLS.contains('novell')
 DYNAMIC_NULL = DYNAMIC_PRPLS.contains('null')
