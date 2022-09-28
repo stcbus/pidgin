@@ -433,7 +433,9 @@ check_loc_buddy(PurpleBuddy *buddy, zephyr_account *zephyr)
 		int one = 1;
 
 		ZGetLocations(&locations, &one);
-		serv_got_update(zgc, bname, 1, 0, 0, 0, 0);
+		purple_protocol_got_user_status(zephyr->account, bname, "available", 
+		                                NULL);
+		purple_protocol_got_user_idle(zephyr->account, bname, FALSE, 0);
 	}
 #else
 
