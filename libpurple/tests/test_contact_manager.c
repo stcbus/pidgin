@@ -198,10 +198,12 @@ test_purple_contact_manager_find_with_username(void) {
 
 	account = purple_account_new("test", "test");
 
-	contact1 = purple_contact_new(account, "user1");
+	contact1 = purple_contact_new(account, NULL);
+	purple_contact_set_username(contact1, "user1");
 	purple_contact_manager_add(manager, contact1);
 
-	contact2 = purple_contact_new(account, "user2");
+	contact2 = purple_contact_new(account, NULL);
+	purple_contact_set_username(contact2, "user2");
 	purple_contact_manager_add(manager, contact2);
 
 	found = purple_contact_manager_find_with_username(manager, account,
@@ -235,12 +237,10 @@ test_purple_contact_manager_find_with_id(void) {
 
 	account = purple_account_new("test", "test");
 
-	contact1 = g_object_new(PURPLE_TYPE_CONTACT, "account", account, "id",
-	                        "id-1", NULL);
+	contact1 = purple_contact_new(account, "id-1");
 	purple_contact_manager_add(manager, contact1);
 
-	contact2 = g_object_new(PURPLE_TYPE_CONTACT, "account", account, "id",
-	                        "id-2", NULL);
+	contact2 = purple_contact_new(account, "id-2");
 	purple_contact_manager_add(manager, contact2);
 
 	found = purple_contact_manager_find_with_id(manager, account, "id-1");

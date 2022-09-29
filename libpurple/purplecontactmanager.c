@@ -323,7 +323,8 @@ purple_contact_manager_find_with_username(PurpleContactManager *manager,
 		return NULL;
 	}
 
-	needle = purple_contact_new(account, username);
+	needle = purple_contact_new(account, NULL);
+	purple_contact_set_username(needle, username);
 	found = g_list_store_find_with_equal_func(contacts, needle,
 	                                          purple_contact_manager_find_with_username_helper,
 	                                          &position);
@@ -354,8 +355,7 @@ purple_contact_manager_find_with_id(PurpleContactManager *manager,
 		return NULL;
 	}
 
-	needle = g_object_new(PURPLE_TYPE_CONTACT, "account", account, "id", id,
-	                      NULL);
+	needle = purple_contact_new(account, id);
 	found = g_list_store_find_with_equal_func(contacts, needle,
 	                                          purple_contact_manager_find_with_id_helper,
 	                                          &position);

@@ -48,11 +48,17 @@ G_DECLARE_FINAL_TYPE(PurpleContact, purple_contact, PURPLE, CONTACT, GObject)
 /**
  * purple_contact_new:
  * @account: The [class@Purple.Account] this contact is from.
- * @username: The username of the contact.
+ * @id: (nullable): The id of the contact.
  *
  * Creates a new [class@Purple.Contact].
+ *
+ * If @id is %NULL, an ID will be randomly generated.
+ *
+ * Returns: (transfer full): The new instance.
+ *
+ * Since: 3.0.0
  */
-PurpleContact *purple_contact_new(PurpleAccount *account, const gchar *username);
+PurpleContact *purple_contact_new(PurpleAccount *account, const gchar *id);
 
 /**
  * purple_contact_get_account:

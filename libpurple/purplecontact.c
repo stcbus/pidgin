@@ -343,13 +343,12 @@ purple_contact_class_init(PurpleContactClass *klass) {
  * Public API
  *****************************************************************************/
 PurpleContact *
-purple_contact_new(PurpleAccount *account, const gchar *username) {
+purple_contact_new(PurpleAccount *account, const gchar *id) {
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
-	g_return_val_if_fail(username != NULL, NULL);
 
 	return g_object_new(PURPLE_TYPE_CONTACT,
 		"account", account,
-		"username", username,
+		"id", id,
 		NULL);
 }
 

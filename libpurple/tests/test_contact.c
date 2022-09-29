@@ -31,10 +31,10 @@ test_purple_contact_new(void) {
 	PurpleContact *contact = NULL;
 
 	account = purple_account_new("test", "test");
-	contact = purple_contact_new(account, "username");
+	contact = purple_contact_new(account, "id");
 
 	g_assert_true(purple_contact_get_account(contact) == account);
-	g_assert_cmpstr(purple_contact_get_username(contact), ==, "username");
+	g_assert_cmpstr(purple_contact_get_id(contact), ==, "id");
 
 	g_clear_object(&contact);
 	g_clear_object(&account);
@@ -69,6 +69,7 @@ test_purple_contact_properties(void) {
 	contact = g_object_new(
 		PURPLE_TYPE_CONTACT,
 		"account", account,
+		"id", "id1",
 		"username", "username",
 		"display-name", "display-name",
 		"alias", "alias",
@@ -91,7 +92,7 @@ test_purple_contact_properties(void) {
 		NULL);
 
 	/* Compare all the things. */
-	g_assert_nonnull(id);
+	g_assert_cmpstr(id, ==, "id1");
 	g_assert_true(account1 == account);
 	g_assert_cmpstr(username, ==, "username");
 	g_assert_cmpstr(display_name, ==, "display-name");
