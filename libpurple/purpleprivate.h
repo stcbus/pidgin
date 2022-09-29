@@ -200,6 +200,24 @@ void purple_account_manager_startup(void);
 void purple_account_manager_shutdown(void);
 
 /**
+ * purple_contact_manager_startup:
+ *
+ * Starts up the contact manager by creating the default instance.
+ *
+ * Since: 3.0.0
+ */
+void purple_contact_manager_startup(void);
+
+/**
+ * purple_contact_manager_shutdown:
+ *
+ * Shuts down the contact manager by destroying the default instance.
+ *
+ * Since: 3.0.0
+ */
+void purple_contact_manager_shutdown(void);
+
+/**
  * purple_conversation_manager_startup:
  *
  * Starts up the conversation manager by creating the default instance.

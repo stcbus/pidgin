@@ -4,6 +4,7 @@ PROGS = [
     'authorization_request',
     'circular_buffer',
     'contact',
+    'contact_manager',
     'credential_provider',
     'history_adapter',
     'history_manager',

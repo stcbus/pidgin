@@ -174,6 +174,7 @@ purple_core_init(PurpleUiInfo *ui_info) {
 
 	purple_account_manager_startup();
 	purple_accounts_init();
+	purple_contact_manager_startup();
 	purple_savedstatuses_init();
 	purple_notify_init();
 	purple_conversations_init();
@@ -255,6 +256,7 @@ purple_core_quit(void)
 	purple_plugins_uninit();
 
 	/* after plugins */
+	purple_contact_manager_shutdown();
 	purple_account_manager_shutdown();
 	purple_credential_manager_shutdown();
 	purple_protocol_manager_shutdown();
