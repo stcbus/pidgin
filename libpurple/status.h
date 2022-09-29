@@ -598,7 +598,7 @@ void purple_status_set_active_with_attrs(PurpleStatus *status, gboolean active,
 									   va_list args);
 
 /**
- * purple_status_set_active_with_attrs_dict:
+ * purple_status_set_active_with_attrs_dict: (rename-to purple_status_set_active_with_attrs)
  * @status: The status.
  * @active: The active state.
  * @attrs: (element-type utf8 gpointer): A hash table of attributes to set on

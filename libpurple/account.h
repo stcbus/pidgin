@@ -386,7 +386,7 @@ void purple_account_set_status(PurpleAccount *account, const char *status_id,
 
 
 /**
- * purple_account_set_status_attrs:
+ * purple_account_set_status_attrs: (rename-to purple_account_set_status):
  * @account: The account.
  * @status_id: The ID of the status.
  * @active: Whether @status_id is to be activated (%TRUE) or deactivated
