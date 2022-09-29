@@ -265,20 +265,19 @@ GType purple_status_type_get_type(void);
 
 /**
  * purple_status_type_new_full:
- * @primitive:     The primitive status type.
- * @id:            The ID of the status type, or %NULL to use the id of
- *                      the primitive status type.
- * @name:          The name presented to the user, or %NULL to use the
- *                      name of the primitive status type.
- * @saveable:      TRUE if the information set for this status by the
- *                      user can be saved for future sessions.
- * @user_settable: TRUE if this is a status the user can manually set.
- * @independent:   TRUE if this is an independent (non-exclusive)
- *                      status type.
+ * @primitive: The primitive status type.
+ * @id: The ID of the status type, or %NULL to use the id of the primitive
+ *      status type.
+ * @name: The name presented to the user, or %NULL to use the name of the
+ *        primitive status type.
+ * @saveable: %TRUE if the information set for this status by the user can be
+ *            saved for future sessions.
+ * @user_settable: %TRUE if this is a status the user can manually set.
+ * @independent: %TRUE if this is an independent (non-exclusive) status type.
  *
  * Creates a new status type.
  *
- * Returns: A new status type.
+ * Returns: (transfer full): A new status type.
  */
 PurpleStatusType *purple_status_type_new_full(PurpleStatusPrimitive primitive,
 										  const char *id, const char *name,
@@ -288,17 +287,17 @@ PurpleStatusType *purple_status_type_new_full(PurpleStatusPrimitive primitive,
 
 /**
  * purple_status_type_new:
- * @primitive:     The primitive status type.
- * @id:            The ID of the status type, or %NULL to use the id of
- *                      the primitive status type.
- * @name:          The name presented to the user, or %NULL to use the
- *                      name of the primitive status type.
- * @user_settable: TRUE if this is a status the user can manually set.
+ * @primitive: The primitive status type.
+ * @id: The ID of the status type, or %NULL to use the id of the primitive
+ *      status type.
+ * @name: The name presented to the user, or %NULL to use the name of the
+ *        primitive status type.
+ * @user_settable: %TRUE if this is a status the user can manually set.
  *
- * Creates a new status type with some default values (
- * saveable and not independent).
+ * Creates a new status type with some default values (saveable and not
+ * independent).
  *
- * Returns: A new status type.
+ * Returns: (transfer full): A new status type.
  */
 PurpleStatusType *purple_status_type_new(PurpleStatusPrimitive primitive,
 									 const char *id, const char *name,
@@ -306,24 +305,23 @@ PurpleStatusType *purple_status_type_new(PurpleStatusPrimitive primitive,
 
 /**
  * purple_status_type_new_with_attrs:
- * @primitive:     The primitive status type.
- * @id:            The ID of the status type, or %NULL to use the id of
- *                      the primitive status type.
- * @name:          The name presented to the user, or %NULL to use the
- *                      name of the primitive status type.
- * @saveable:      TRUE if the information set for this status by the
- *                      user can be saved for future sessions.
- * @user_settable: TRUE if this is a status the user can manually set.
- * @independent:   TRUE if this is an independent (non-exclusive)
- *                      status type.
- * @attr_id:       The ID of the first attribute.
- * @attr_name:     The name of the first attribute.
- * @attr_value:    The value type of the first attribute.
- * @...:           Additional attribute information.
+ * @primitive: The primitive status type.
+ * @id: The ID of the status type, or %NULL to use the id of the primitive
+ *      status type.
+ * @name: The name presented to the user, or %NULL to use the name of the
+ *        primitive status type.
+ * @saveable: %TRUE if the information set for this status by the user can be
+ *            saved for future sessions.
+ * @user_settable: %TRUE if this is a status the user can manually set.
+ * @independent: %TRUE if this is an independent (non-exclusive) status type.
+ * @attr_id: The ID of the first attribute.
+ * @attr_name: The name of the first attribute.
+ * @attr_value: The value type of the first attribute.
+ * @...: Additional attribute information.
  *
  * Creates a new status type with attributes.
  *
- * Returns: A new status type.
+ * Returns: (transfer full): A new status type.
  */
 PurpleStatusType *purple_status_type_new_with_attrs(PurpleStatusPrimitive primitive,
 												const char *id,
@@ -334,6 +332,39 @@ PurpleStatusType *purple_status_type_new_with_attrs(PurpleStatusPrimitive primit
 												const char *attr_id,
 												const char *attr_name,
 												GValue *attr_value, ...) G_GNUC_NULL_TERMINATED;
+
+/**
+ * purple_status_type_new_with_attrsv: (rename-to purple_status_type_new_with_attrs):
+ * @primitive: The primitive status type.
+ * @id: The ID of the status type, or %NULL to use the id of the primitive
+ *      status type.
+ * @name: The name presented to the user, or %NULL to use the name of the
+ *        primitive status type.
+ * @saveable: %TRUE if the information set for this status by the user can be
+ *            saved for future sessions.
+ * @user_settable: %TRUE if this is a status the user can manually set.
+ * @independent: %TRUE if this is an independent (non-exclusive) status type.
+ * @n_attributes: The number of attributes.
+ * @attr_id: (array length=n_attributes): The IDs of the attributes.
+ * @attr_name: (array length=n_attributes): The names of the attributes.
+ * @attr_value: (array length=n_attributes): The value types of the attributes.
+ *
+ * Creates a new status type with attributes.
+ *
+ * Returns: (transfer full): A new status type.
+ *
+ * Since: 3.0.0
+ */
+PurpleStatusType *purple_status_type_new_with_attrsv(PurpleStatusPrimitive primitive,
+                                                     const gchar *id,
+                                                     const gchar *name,
+                                                     gboolean saveable,
+                                                     gboolean user_settable,
+                                                     gboolean independent,
+                                                     guint n_attributes,
+                                                     const gchar *attr_id[],
+                                                     const gchar *attr_name[],
+                                                     GValue *attr_value[]);
 
 /**
  * purple_status_type_destroy:

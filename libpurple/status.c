@@ -301,6 +301,43 @@ purple_status_type_new_with_attrs(PurpleStatusPrimitive primitive,
 	return status_type;
 }
 
+PurpleStatusType *
+purple_status_type_new_with_attrsv(PurpleStatusPrimitive primitive,
+                                   const char *id, const char *name,
+                                   gboolean saveable, gboolean user_settable,
+                                   gboolean independent, guint n_attributes,
+                                   const char *attr_id[],
+                                   const char *attr_name[],
+                                   GValue *attr_value[])
+{
+	PurpleStatusType *status_type;
+
+	g_return_val_if_fail(primitive != PURPLE_STATUS_UNSET, NULL);
+	g_return_val_if_fail(attr_id != NULL, NULL);
+	g_return_val_if_fail(attr_name != NULL, NULL);
+	g_return_val_if_fail(attr_value != NULL, NULL);
+
+	status_type = purple_status_type_new_full(primitive, id, name, saveable,
+	                                          user_settable, independent);
+
+	for(guint i = 0; i < n_attributes; i++) {
+		if(attr_id[i] == NULL || attr_name[i] == NULL ||
+		   attr_value[i] == NULL)
+		{
+			purple_status_type_destroy(status_type);
+			g_return_val_if_fail(attr_id[i] != NULL, NULL);
+			g_return_val_if_fail(attr_name[i] != NULL, NULL);
+			g_return_val_if_fail(attr_value[i] != NULL, NULL);
+			return NULL;
+		}
+
+		status_type_add_attr(status_type, attr_id[i], attr_name[i],
+		                     attr_value[i]);
+	}
+
+	return status_type;
+}
+
 void
 purple_status_type_destroy(PurpleStatusType *status_type)
 {
