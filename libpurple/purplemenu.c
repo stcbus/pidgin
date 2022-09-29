@@ -126,6 +126,15 @@ purple_menu_walk(GMenuModel *model, PurpleMenuWalkFunc func, gpointer data) {
 }
 
 void
+purple_menu_populate_dynamic_targetsv(GMenu *menu, GHashTable *properties) {
+	g_return_if_fail(G_IS_MENU(menu));
+	g_return_if_fail(properties != NULL);
+
+	purple_menu_walk(G_MENU_MODEL(menu),
+	                 purple_menu_populate_dynamic_targets_func, properties);
+}
+
+void
 purple_menu_populate_dynamic_targets(GMenu *menu, const gchar *first_property,
                                      ...)
 {
@@ -156,8 +165,7 @@ purple_menu_populate_dynamic_targets(GMenu *menu, const gchar *first_property,
 
 	va_end(vargs);
 
-	purple_menu_walk(G_MENU_MODEL(menu),
-	                 purple_menu_populate_dynamic_targets_func, table);
+	purple_menu_populate_dynamic_targetsv(menu, table);
 
 	g_hash_table_unref(table);
 }

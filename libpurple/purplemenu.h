@@ -85,6 +85,27 @@ void purple_menu_walk(GMenuModel *model, PurpleMenuWalkFunc func, gpointer data)
 void purple_menu_populate_dynamic_targets(GMenu *menu, const gchar *first_property, ...) G_GNUC_NULL_TERMINATED;
 
 /**
+ * purple_menu_populate_dynamic_targetsv: (rename-to purple_menu_populate_dynamic_targets):
+ * @menu: The menu instance to modify.
+ * @properties: (element-type utf8 utf8): A hash table where the keys are the
+ *              names of the properties of dynamic targets to be replaced, and
+ *              the values are the replacements.
+ *
+ * Updates @menu by adding a target property when an item with an attribute
+ * named "dynamic-target" is found.
+ *
+ * The value for the target is set to the matching value from @properties.
+ *
+ * For example, if you need to set the target to an account, you would set the
+ * "dynamic-target" attribute of your menu item to "account" and then call
+ * [func@Purple.menu_populate_dynamic_targetsv] with a hash table containing
+ * the key `"account"` and value from [method@Account.get_id].
+ *
+ * Since: 3.0.0
+ */
+void purple_menu_populate_dynamic_targetsv(GMenu *menu, GHashTable *properties);
+
+/**
  * purple_menu_copy:
  * @model: The [class@Gio.MenuModel] instance to copy.
  *
