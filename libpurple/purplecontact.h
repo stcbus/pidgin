@@ -36,6 +36,8 @@ G_BEGIN_DECLS
 #define PURPLE_TYPE_CONTACT (purple_contact_get_type())
 G_DECLARE_FINAL_TYPE(PurpleContact, purple_contact, PURPLE, CONTACT, GObject)
 
+#include <libpurple/purpleperson.h>
+
 /**
  * PurpleContact:
  *
@@ -223,6 +225,30 @@ void purple_contact_set_presence(PurpleContact *contact, PurplePresence *presenc
  * Since: 3.0.0
  */
 PurpleTags *purple_contact_get_tags(PurpleContact *contact);
+
+/**
+ * purple_contact_set_person:
+ * @contact: The instance.
+ * @person: (nullable): The new [class@Purple.Person] or %NULL.
+ *
+ * Sets the person that @contact belongs to to @person.
+ *
+ * Since: 3.0.0
+ */
+void purple_contact_set_person(PurpleContact *contact, PurplePerson *person);
+
+/**
+ * purple_contact_get_person:
+ * @contact: The instance.
+ *
+ * Gets the [class@Purple.Person] that @contact belongs to.
+ *
+ * Returns: (transfer none) (nullable): The [class@Purple.Person] that @contact
+ *          belongs to, or %NULL.
+ *
+ * Since: 3.0.0
+ */
+PurplePerson *purple_contact_get_person(PurpleContact *contact);
 
 G_END_DECLS
 

@@ -28,13 +28,14 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include <libpurple/purplecontact.h>
 #include <libpurple/purpletags.h>
 
 G_BEGIN_DECLS
 
 #define PURPLE_TYPE_PERSON (purple_person_get_type())
 G_DECLARE_FINAL_TYPE(PurplePerson, purple_person, PURPLE, PERSON, GObject)
+
+#include <libpurple/purplecontact.h>
 
 /**
  * PurplePerson:

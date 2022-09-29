@@ -33,6 +33,8 @@ struct _PurpleContact {
 	PurplePresence *presence;
 
 	PurpleTags *tags;
+
+	PurplePerson *person;
 };
 
 enum {
@@ -45,6 +47,7 @@ enum {
 	PROP_AVATAR,
 	PROP_PRESENCE,
 	PROP_TAGS,
+	PROP_PERSON,
 	N_PROPERTIES
 };
 static GParamSpec *properties[N_PROPERTIES] = {NULL, };
@@ -113,6 +116,9 @@ purple_contact_get_property(GObject *obj, guint param_id, GValue *value,
 		case PROP_TAGS:
 			g_value_set_object(value, purple_contact_get_tags(contact));
 			break;
+		case PROP_PERSON:
+			g_value_set_object(value, purple_contact_get_person(contact));
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
 			break;
@@ -147,6 +153,9 @@ purple_contact_set_property(GObject *obj, guint param_id, const GValue *value,
 		case PROP_PRESENCE:
 			purple_contact_set_presence(contact, g_value_get_object(value));
 			break;
+		case PROP_PERSON:
+			purple_contact_set_person(contact, g_value_get_object(value));
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
 			break;
@@ -161,6 +170,7 @@ purple_contact_dispose(GObject *obj) {
 	g_clear_object(&contact->avatar);
 	g_clear_object(&contact->presence);
 	g_clear_object(&contact->tags);
+	g_clear_object(&contact->person);
 
 	G_OBJECT_CLASS(purple_contact_parent_class)->dispose(obj);
 }
@@ -313,6 +323,19 @@ purple_contact_class_init(PurpleContactClass *klass) {
 		PURPLE_TYPE_TAGS,
 		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
+	/**
+	 * PurpleContact:person:
+	 *
+	 * The [class@Purple.Person] that this contact belongs to.
+	 *
+	 * Since: 3.0.0
+	 */
+	properties[PROP_PERSON] = g_param_spec_object(
+		"person", "person",
+		"The person this contact belongs to.",
+		PURPLE_TYPE_PERSON,
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
 	g_object_class_install_properties(obj_class, N_PROPERTIES, properties);
 }
 
@@ -435,4 +458,20 @@ purple_contact_get_tags(PurpleContact *contact) {
 	g_return_val_if_fail(PURPLE_IS_CONTACT(contact), NULL);
 
 	return contact->tags;
+}
+
+void
+purple_contact_set_person(PurpleContact *contact, PurplePerson *person) {
+	g_return_if_fail(PURPLE_IS_CONTACT(contact));
+
+	if(g_set_object(&contact->person, person)) {
+		g_object_notify_by_pspec(G_OBJECT(contact), properties[PROP_PERSON]);
+	}
+}
+
+PurplePerson *
+purple_contact_get_person(PurpleContact *contact) {
+	g_return_val_if_fail(PURPLE_IS_CONTACT(contact), NULL);
+
+	return contact->person;
 }
