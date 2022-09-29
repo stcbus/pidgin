@@ -53,10 +53,10 @@ GType purple_account_option_get_type(void);
  * @text:      The text of the option.
  * @pref_name: The account preference name for the option.
  *
- * Creates a new account option.  If you know what @a type will be in advance,
- * consider using purple_account_option_bool_new(),
- * purple_account_option_int_new(), purple_account_option_string_new() or
- * purple_account_option_list_new() (as appropriate) instead.
+ * Creates a new account option. If you know what @type will be in advance,
+ * consider using [ctor@Purple.AccountOption.bool_new],
+ * [ctor@Purple.AccountOption.int_new], [ctor@Purple.AccountOption.string_new]
+ * or [ctor@Purple.AccountOption.list_new] (as appropriate) instead.
  *
  * Returns: The account option.
  */
@@ -238,8 +238,8 @@ const gchar *purple_account_option_get_text(const PurpleAccountOption *option);
  * purple_account_option_get_setting:
  * @option: The account option.
  *
- * Returns the name of an account option.  This corresponds to the @c pref_name
- * parameter supplied to purple_account_option_new() or one of the
+ * Returns the name of an account option. This corresponds to the %pref_name
+ * parameter supplied to [ctor@Purple.AccountOption.new] or one of the
  * type-specific constructors.
  *
  * Returns: The option's name.

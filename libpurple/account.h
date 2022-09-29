@@ -361,17 +361,25 @@ void purple_account_set_status_types(PurpleAccount *account, GList *status_types
 
 /**
  * purple_account_set_status:
- * @account:   The account.
+ * @account: The account.
  * @status_id: The ID of the status.
- * @active:    Whether @a status_id is to be activated (%TRUE) or
- *             deactivated (%FALSE).
- * @...:       A %NULL-terminated list of pairs of <type>const char *</type>
- *             attribute name followed by <type>const char *</type> attribute
- *             value for the status. (For example, one pair might be
- *             <literal>"message"</literal> followed by
- *             <literal>"hello, talk to me!"</literal>.)
+ * @active: Whether @status_id is to be activated (%TRUE) or deactivated
+ *          (%FALSE).
+ * @...: A %NULL-terminated list of pairs of `const char *` attribute name
+ *       followed by `const char *` attribute value for the status. (For
+ *       example, one pair might be `"message"` followed by `"hello, talk to
+ *       me!"`.)
  *
- * Variadic version of purple_account_set_status_attrs().
+ * Activates or deactivates a status.
+ *
+ * All changes to the statuses of an account go through this function or
+ * [method@Purple.Account.set_status_attrs].
+ *
+ * You can only deactivate an exclusive status by activating another exclusive
+ * status. So, if @status_id is an exclusive status and @active is %FALSE, this
+ * function does nothing.
+ *
+ * Variadic version of [method@Purple.Account.set_status_attrs].
  */
 void purple_account_set_status(PurpleAccount *account, const char *status_id,
 	gboolean active, ...) G_GNUC_NULL_TERMINATED;
@@ -379,22 +387,23 @@ void purple_account_set_status(PurpleAccount *account, const char *status_id,
 
 /**
  * purple_account_set_status_attrs:
- * @account:   The account.
+ * @account: The account.
  * @status_id: The ID of the status.
- * @active:    Whether @a status_id is to be activated (%TRUE) or
- *             deactivated (%FALSE).
- * @attrs:     (element-type utf8 gpointer): A hash table of
- *             <type>const char *</type> attribute names followed by
- *             <type>gpointer</type> attribute values for the status.
- *             (For example, one pair might be <literal>"message"</literal>
- *             followed by <literal>"hello, talk to me!"</literal>.)
+ * @active: Whether @status_id is to be activated (%TRUE) or deactivated
+ *          (%FALSE).
+ * @attrs: (element-type utf8 utf8): A hash table with keys of attribute
+ *         names and values of attributes for the status. (For example, one
+ *         pair might be a key of `"message"` with a value of `"hello, talk to
+ *         me!"`.)
  *
- * Activates or deactivates a status.  All changes to the statuses of
- * an account go through this function or purple_account_set_status().
+ * Activates or deactivates a status.
+ *
+ * All changes to the statuses of an account go through this function or
+ * [method@Purple.Account.set_status].
  *
  * You can only deactivate an exclusive status by activating another exclusive
- * status.  So, if @a status_id is an exclusive status and @a active is @c
- * FALSE, this function does nothing.
+ * status. So, if @status_id is an exclusive status and @active is %FALSE, this
+ * function does nothing.
  *
  * Since: 3.0.0
  */
@@ -622,7 +631,7 @@ gboolean purple_account_get_enabled(PurpleAccount *account);
  *
  * Returns the account's proxy information.
  *
- * Returns (transfer none): The proxy information.
+ * Returns: (transfer none): The proxy information.
  */
 PurpleProxyInfo *purple_account_get_proxy_info(PurpleAccount *account);
 
@@ -989,7 +998,7 @@ gboolean purple_account_supports_offline_message(PurpleAccount *account, PurpleB
  * Returns: (transfer none): The type of error and a human-readable description
  *          of the current error, or %NULL if there is no current error.  This
  *          pointer is guaranteed to remain valid until the @ref
- *          account-error-changed signal is emitted for @a account.
+ *          account-error-changed signal is emitted for @account.
  */
 const PurpleConnectionErrorInfo *purple_account_get_current_error(PurpleAccount *account);
 

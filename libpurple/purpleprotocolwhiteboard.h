@@ -82,7 +82,7 @@ G_BEGIN_DECLS
  *
  * Since: 3.0.0
  */
-PurpleWhiteboard *purple_protocol_whiteboard_create(PurpleProtocolWhiteboard *actions, PurpleAccount *account, const gchar *who, gint state);
+PurpleWhiteboard *purple_protocol_whiteboard_create(PurpleProtocolWhiteboard *whiteboard, PurpleAccount *account, const gchar *who, gint state);
 
 G_END_DECLS
 

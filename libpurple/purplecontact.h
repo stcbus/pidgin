@@ -191,8 +191,8 @@ void purple_contact_set_avatar(PurpleContact *contact, GdkPixbuf *avatar);
  *
  * Gets the [class@Purple.Presence] for @contact.
  *
- * Returns: (nullable): The presence for @contact if one is set, otherwise
- *          %NULL.
+ * Returns: (transfer none) (nullable): The presence for @contact if one is
+ *          set, otherwise %NULL.
  *
  * Since: 3.0.0
  */

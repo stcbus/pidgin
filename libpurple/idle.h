@@ -61,10 +61,9 @@ void purple_idle_set(time_t time);
 
 /**
  * purple_idle_set_ui:
- * @ui: An instance of [iface@IdleUi].
+ * @ui: (transfer full): An instance of [iface@IdleUi].
  *
- * Sets the user interface idle reporter. This function assumes ownership of
- * @ui.
+ * Sets the user interface idle reporter.
  *
  * Since: 3.0.0
  */

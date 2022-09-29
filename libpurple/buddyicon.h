@@ -155,10 +155,9 @@ void purple_buddy_icon_update(PurpleBuddyIcon *icon);
 /**
  * purple_buddy_icon_set_data:
  * @icon: The buddy icon.
- * @data: The buddy icon data, which the buddy icon code
- *             takes ownership of and will free.
- * @len:  The length of the data in @a data.
- * @checksum:  A protocol checksum from the protocol or %NULL.
+ * @data: (transfer full): The buddy icon data.
+ * @len: The length of the data in @data.
+ * @checksum: A protocol checksum from the protocol or %NULL.
  *
  * Sets the buddy icon's data.
  */
@@ -271,12 +270,11 @@ purple_buddy_icon_get_full_path(PurpleBuddyIcon *icon);
 
 /**
  * purple_buddy_icons_set_for_user:
- * @account:   The account the user is on.
- * @username:  The username of the user.
- * @icon_data: The buddy icon data, which the buddy icon code
- *                  takes ownership of and will free.
- * @icon_len:  The length of the icon data.
- * @checksum:  A protocol checksum from the protocol or %NULL.
+ * @account: The account the user is on.
+ * @username: The username of the user.
+ * @icon_data: (transfer full): The buddy icon data.
+ * @icon_len: The length of the icon data.
+ * @checksum: A protocol checksum from the protocol or %NULL.
  *
  * Sets a buddy icon for a user.
  */
