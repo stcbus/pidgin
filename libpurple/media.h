@@ -135,7 +135,7 @@ void purple_media_set_protocol_data(PurpleMedia *media, gpointer protocol_data);
  *
  * Signals an error in the media session.
  */
-void purple_media_error(PurpleMedia *media, const gchar *error, ...);
+void purple_media_error(PurpleMedia *media, const gchar *error, ...) G_GNUC_PRINTF(2, 3);
 
 /**
  * purple_media_end:
