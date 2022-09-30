@@ -83,12 +83,6 @@ purple_input_add(int source, PurpleInputCondition condition, PurpleInputFunction
 	return closure->result;
 }
 
-gboolean
-purple_input_remove(guint tag)
-{
-	return g_source_remove(tag);
-}
-
 int
 purple_input_pipe(int pipefd[2])
 {

@@ -473,6 +473,7 @@ version 3.0.0 (??/??/????):
 		* purple_idle_get_ui_ops
 		* purple_idle_set_ui_ops
 		* purple_idle_ui_ops_get_type
+		* purple_input_remove
 		* purple_ip_address_is_valid, purple_ipv4_address_is_valid, and
 		  purple_ipv6_address_is_valid. Use g_hostname_is_ip_address()
 		  or #GInetAddress instead.

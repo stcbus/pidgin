@@ -389,7 +389,7 @@ static void mw_session_io_close(struct mwSession *session) {
 
   if (pd->stream) {
     if (pd->inpa) {
-      purple_input_remove(pd->inpa);
+      g_source_remove(pd->inpa);
       pd->inpa = 0;
     }
 
@@ -3634,7 +3634,7 @@ static void mw_protocol_close(PurpleConnection *gc) {
 
   /* stop watching the socket */
   if(pd->inpa) {
-    purple_input_remove(pd->inpa);
+    g_source_remove(pd->inpa);
     pd->inpa = 0;
   }
 

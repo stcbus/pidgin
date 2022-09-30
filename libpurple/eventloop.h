@@ -79,16 +79,6 @@ guint purple_input_add(int fd, PurpleInputCondition cond,
                        PurpleInputFunction func, gpointer user_data);
 
 /**
- * purple_input_remove:
- * @handle: The handle of the input handler. Note that this is the return
- *          value from purple_input_add(), <emphasis>not</emphasis> the
- *          file descriptor.
- *
- * Removes an input handler.
- */
-gboolean purple_input_remove(guint handle);
-
-/**
  * purple_input_pipe:
  * @pipefd: Array used to return file descriptors for both ends of pipe.
  *

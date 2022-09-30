@@ -356,7 +356,7 @@ static void ggp_callback_recv(gpointer _gc, gint fd, PurpleInputCondition cond)
 			gg_debug_event(ev->type));
 	}
 
-	purple_input_remove(info->inpa);
+	g_source_remove(info->inpa);
 	info->inpa = purple_input_add(info->session->fd,
 		ggp_tcpsocket_inputcond_gg_to_purple(info->session->check),
 		ggp_callback_recv, gc);
@@ -504,7 +504,7 @@ void ggp_async_login_handler(gpointer _gc, gint fd, PurpleInputCondition cond)
 	purple_debug_info("gg", "login_handler: session: check = %d; state = %d;\n",
 			info->session->check, info->session->state);
 
-	purple_input_remove(info->inpa);
+	g_source_remove(info->inpa);
 	info->inpa = 0;
 
 	/** XXX I think that this shouldn't be done if ev->type is GG_EVENT_CONN_FAILED or GG_EVENT_CONN_SUCCESS -datallah */
@@ -526,7 +526,7 @@ void ggp_async_login_handler(gpointer _gc, gint fd, PurpleInputCondition cond)
 					info->session->connect_host);
 				ggp_servconn_add_server(info->session->
 					connect_host);
-				purple_input_remove(info->inpa);
+				g_source_remove(info->inpa);
 				info->inpa = purple_input_add(info->session->fd,
 					PURPLE_INPUT_READ,
 					ggp_callback_recv, gc);
@@ -539,7 +539,7 @@ void ggp_async_login_handler(gpointer _gc, gint fd, PurpleInputCondition cond)
 			break;
 		case GG_EVENT_CONN_FAILED:
 			if (info->inpa > 0) {
-				purple_input_remove(info->inpa);
+				g_source_remove(info->inpa);
 				info->inpa = 0;
 			}
 			purple_debug_info("gg", "Connection failure: %d\n",
@@ -934,7 +934,7 @@ static void ggp_close(PurpleConnection *gc)
 		ggp_edisc_cleanup(gc);
 
 		if (info->inpa > 0)
-			purple_input_remove(info->inpa);
+			g_source_remove(info->inpa);
 		g_free(info->imtoken);
 
 		if (info->http) {

@@ -203,7 +203,7 @@ silcpurple_scheduler(SilcSchedule schedule,
 	    silc_dlist_start(sg->tasks);
 	    while ((ptask = silc_dlist_get(sg->tasks)))
 	      if (ptask->fd == fd) {
-		purple_input_remove(ptask->tag);
+		g_source_remove(ptask->tag);
 		break;
 	      }
 
@@ -240,7 +240,7 @@ silcpurple_scheduler(SilcSchedule schedule,
 	    silc_dlist_start(sg->tasks);
 	    while ((ptask = silc_dlist_get(sg->tasks)))
 	      if (ptask->fd == fd) {
-		purple_input_remove(ptask->tag);
+		g_source_remove(ptask->tag);
 		silc_dlist_del(sg->tasks, ptask);
 		silc_free(ptask);
 		break;
@@ -736,7 +736,7 @@ silcpurple_close(PurpleConnection *gc)
 
 	silc_dlist_start(sg->tasks);
 	while ((task = silc_dlist_get(sg->tasks))) {
-	  purple_input_remove(task->tag);
+	  g_source_remove(task->tag);
 	  silc_free(task);
 	}
 	silc_dlist_uninit(sg->tasks);

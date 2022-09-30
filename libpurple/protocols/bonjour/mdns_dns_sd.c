@@ -91,7 +91,7 @@ _find_resolver_data(gconstpointer a, gconstpointer b) {
 static void
 _cleanup_resolver_data(Win32SvcResolverData *rd) {
 	if (rd->txt_query != NULL) {
-		purple_input_remove(rd->txt_query->input_handler);
+		g_source_remove(rd->txt_query->input_handler);
 		DNSServiceRefDeallocate(rd->txt_query->sdRef);
 		g_free(rd->txt_query);
 	}
@@ -157,7 +157,7 @@ _mdns_record_query_callback(DNSServiceRef DNSServiceRef, DNSServiceFlags flags,
 			bonjour_buddy_got_buddy_icon(bb, rdata, rdlen);
 
 			/* We've got what we need; stop listening */
-			purple_input_remove(idata->null_query->input_handler);
+			g_source_remove(idata->null_query->input_handler);
 			DNSServiceRefDeallocate(idata->null_query->sdRef);
 			g_free(idata->null_query);
 			idata->null_query = NULL;
@@ -176,7 +176,7 @@ _mdns_resolve_host_callback(DNSServiceRef sdRef, DNSServiceFlags flags,
 	gboolean delete_buddy = FALSE;
 	PurpleBuddy *pb = NULL;
 
-	purple_input_remove(args->resolver_query->input_handler);
+	g_source_remove(args->resolver_query->input_handler);
 	DNSServiceRefDeallocate(args->resolver_query->sdRef);
 	g_free(args->resolver_query);
 	args->resolver_query = NULL;
@@ -269,7 +269,7 @@ _mdns_service_resolve_callback(DNSServiceRef sdRef, DNSServiceFlags flags, uint3
 	Win32BuddyImplData *idata = args->bb->mdns_impl_data;
 
 	/* remove the input fd and destroy the service ref */
-	purple_input_remove(args->resolver_query->input_handler);
+	g_source_remove(args->resolver_query->input_handler);
 	DNSServiceRefDeallocate(args->resolver_query->sdRef);
 
 	if (errorCode != kDNSServiceErr_NoError)
@@ -578,13 +578,13 @@ dns_sd_mdns_stop(BonjourDnsSd *data)
 		return;
 
 	if (idata->presence_query != NULL) {
-		purple_input_remove(idata->presence_query->input_handler);
+		g_source_remove(idata->presence_query->input_handler);
 		DNSServiceRefDeallocate(idata->presence_query->sdRef);
 		g_free(idata->presence_query);
 	}
 
 	if (idata->browser_query != NULL) {
-		purple_input_remove(idata->browser_query->input_handler);
+		g_source_remove(idata->browser_query->input_handler);
 		DNSServiceRefDeallocate(idata->browser_query->sdRef);
 		g_free(idata->browser_query);
 	}
@@ -644,7 +644,7 @@ dns_sd_mdns_delete_buddy(BonjourBuddy *buddy)
 	}
 
 	if (idata->null_query != NULL) {
-		purple_input_remove(idata->null_query->input_handler);
+		g_source_remove(idata->null_query->input_handler);
 		DNSServiceRefDeallocate(idata->null_query->sdRef);
 		g_free(idata->null_query);
 	}
@@ -664,7 +664,7 @@ dns_sd_mdns_retrieve_buddy_icon(BonjourBuddy* buddy)
 
 	/* Cancel any existing query */
 	if (idata->null_query != NULL) {
-		purple_input_remove(idata->null_query->input_handler);
+		g_source_remove(idata->null_query->input_handler);
 		DNSServiceRefDeallocate(idata->null_query->sdRef);
 		g_free(idata->null_query);
 		idata->null_query = NULL;

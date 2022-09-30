@@ -173,7 +173,7 @@ static void ggp_libgaduw_http_handler(gpointer _req, gint fd,
 	}
 
 	if (req->h->state != GG_STATE_DONE) {
-		purple_input_remove(req->inpa);
+		g_source_remove(req->inpa);
 		req->inpa = ggp_purplew_http_input_add(req->h,
 			ggp_libgaduw_http_handler, req);
 		return;
@@ -206,7 +206,7 @@ static void ggp_libgaduw_http_finish(ggp_libgaduw_http_req *req,
 		ggp_purplew_request_processing_done(req->processing);
 		req->processing = NULL;
 	}
-	purple_input_remove(req->inpa);
+	g_source_remove(req->inpa);
 	req->cb(req->h, success, req->cancelled, req->user_data);
 	req->h->destroy(req->h);
 	g_free(req);

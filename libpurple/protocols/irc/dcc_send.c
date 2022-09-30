@@ -168,7 +168,7 @@ static void irc_dccsend_send_read(gpointer data, int source, PurpleInputConditio
 		return;
 	else if (len <= 0) {
 		/* XXX: Shouldn't this be canceling the transfer? */
-		purple_input_remove(xd->inpa);
+		g_source_remove(xd->inpa);
 		xd->inpa = 0;
 		return;
 	}
@@ -198,7 +198,7 @@ static void irc_dccsend_send_read(gpointer data, int source, PurpleInputConditio
 		}
 
 		if ((goffset)acked >= purple_xfer_get_size(xfer)) {
-			purple_input_remove(xd->inpa);
+			g_source_remove(xd->inpa);
 			xd->inpa = 0;
 			purple_xfer_set_completed(xfer, TRUE);
 			purple_xfer_end(xfer);
@@ -381,7 +381,7 @@ irc_xfer_finalize(GObject *obj) {
 	}
 	g_clear_object(&xfer->service);
 	if(xfer->inpa > 0) {
-		purple_input_remove(xfer->inpa);
+		g_source_remove(xfer->inpa);
 	}
 	g_clear_object(&xfer->conn);
 
