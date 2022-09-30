@@ -363,7 +363,6 @@ pidgin/pidginpluginsdialog.c
 pidgin/pidginpluginsmenu.c
 pidgin/pidginpresenceicon.c
 pidgin/pidginprotocolchooser.c
-pidgin/pidginproxyoptions.c
 pidgin/pidginstatusbox.c
 pidgin/pidginstatuseditor.c
 pidgin/pidginstatusmanager.c
@@ -423,7 +422,6 @@ pidgin/resources/Status/manager.ui
 pidgin/resources/Whiteboard/whiteboard.ui
 pidgin/resources/Xfer/xfer.ui
 pidgin/resources/gtk/menus.ui
-pidgin/resources/proxyoptions.ui
 pidgin/win32/gtkwin32dep.c
 pidgin/win32/winpidgin.c
 purple-history/purplehistorycore.c
