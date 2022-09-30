@@ -1454,31 +1454,6 @@ purple_prefs_init(void)
 	purple_prefs_add_bool("/purple/away/away_when_idle", TRUE);
 	purple_prefs_add_int("/purple/away/mins_before_away", 5);
 
-	/* Away -> Auto-Reply */
-	if (!purple_prefs_exists("/purple/away/auto_response/enabled") ||
-	    !purple_prefs_exists("/purple/away/auto_response/idle_only"))
-	{
-		purple_prefs_add_string("/purple/away/auto_reply", "awayidle");
-	}
-	else
-	{
-		if (!purple_prefs_get_bool("/purple/away/auto_response/enabled"))
-		{
-			purple_prefs_add_string("/purple/away/auto_reply", "never");
-		}
-		else
-		{
-			if (purple_prefs_get_bool("/purple/away/auto_response/idle_only"))
-			{
-				purple_prefs_add_string("/purple/away/auto_reply", "awayidle");
-			}
-			else
-			{
-				purple_prefs_add_string("/purple/away/auto_reply", "away");
-			}
-		}
-	}
-
 	/* Buddies */
 	purple_prefs_add_none("/purple/buddies");
 

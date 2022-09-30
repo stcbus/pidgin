@@ -86,30 +86,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="1">Away</property>
-        <child>
-          <object class="AdwComboRow" id="auto_reply">
-            <property name="title" translatable="1">_Auto-reply</property>
-            <property name="use-subtitle">1</property>
-            <property name="use-underline">1</property>
-            <property name="model">
-              <object class="GtkStringList">
-                <items>
-                  <item>never</item>
-                  <item>away</item>
-                  <item>awayidle</item>
-                </items>
-              </object>
-            </property>
-            <property name="expression">
-              <closure type="gchararray" function="auto_reply_expression_cb"/>
-            </property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="AdwPreferencesGroup">
         <property name="title" translatable="1">Status at Startup</property>
         <child>
           <object class="AdwActionRow">

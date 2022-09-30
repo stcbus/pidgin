@@ -44,9 +44,6 @@
 #include "util.h"
 #include "xfer.h"
 
-#define SECS_BEFORE_RESENDING_AUTORESPONSE 600
-#define SEX_BEFORE_RESENDING_AUTORESPONSE "Only after you're married"
-
 unsigned int
 purple_serv_send_typing(PurpleConnection *gc, const char *name, PurpleIMTypingState state)
 {
@@ -60,74 +57,13 @@ purple_serv_send_typing(PurpleConnection *gc, const char *name, PurpleIMTypingSt
 	return 0;
 }
 
-static GSList *last_auto_responses = NULL;
-struct last_auto_response {
-	PurpleConnection *gc;
-	char name[80];
-	time_t sent;
-};
-
-static gboolean
-expire_last_auto_responses(gpointer data)
-{
-	GSList *tmp, *cur;
-	struct last_auto_response *lar;
-
-	tmp = last_auto_responses;
-
-	while (tmp) {
-		cur = tmp;
-		tmp = tmp->next;
-		lar = (struct last_auto_response *)cur->data;
-
-		if ((time(NULL) - lar->sent) > SECS_BEFORE_RESENDING_AUTORESPONSE) {
-			last_auto_responses = g_slist_delete_link(last_auto_responses, cur);
-			g_free(lar);
-		}
-	}
-
-	return FALSE; /* do not run again */
-}
-
-static struct last_auto_response *
-get_last_auto_response(PurpleConnection *gc, const char *name)
-{
-	GSList *tmp;
-	struct last_auto_response *lar;
-
-	/* because we're modifying or creating a lar, schedule the
-	 * function to expire them as the pref dictates */
-	g_timeout_add_seconds((SECS_BEFORE_RESENDING_AUTORESPONSE + 1), expire_last_auto_responses, NULL);
-
-	tmp = last_auto_responses;
-
-	while (tmp) {
-		lar = (struct last_auto_response *)tmp->data;
-
-		if (gc == lar->gc && !strncmp(name, lar->name, sizeof(lar->name)))
-			return lar;
-
-		tmp = tmp->next;
-	}
-
-	lar = g_new0(struct last_auto_response, 1);
-	g_snprintf(lar->name, sizeof(lar->name), "%s", name);
-	lar->gc = gc;
-	lar->sent = 0;
-	last_auto_responses = g_slist_prepend(last_auto_responses, lar);
-
-	return lar;
-}
-
 int purple_serv_send_im(PurpleConnection *gc, PurpleMessage *msg)
 {
 	PurpleAccount *account = NULL;
 	PurpleConversation *im = NULL;
 	PurpleConversationManager *manager = NULL;
-	PurplePresence *presence = NULL;
 	PurpleProtocol *protocol = NULL;
 	int val = -EINVAL;
-	const gchar *auto_reply_pref = NULL;
 	const gchar *recipient;
 
 	g_return_val_if_fail(gc != NULL, val);
@@ -139,7 +75,6 @@ int purple_serv_send_im(PurpleConnection *gc, PurpleMessage *msg)
 	g_return_val_if_fail(PURPLE_IS_PROTOCOL_IM(protocol), val);
 
 	account  = purple_connection_get_account(gc);
-	presence = purple_account_get_presence(account);
 	recipient = purple_message_get_recipient(msg);
 
 	manager = purple_conversation_manager_get_default();
@@ -153,20 +88,6 @@ int purple_serv_send_im(PurpleConnection *gc, PurpleMessage *msg)
 		PurpleProtocolIM *pim = PURPLE_PROTOCOL_IM(protocol);
 
 		val = purple_protocol_im_send(pim, gc, msg);
-	}
-
-	/*
-	 * XXX - If "only auto-reply when away & idle" is set, then shouldn't
-	 * this only reset lar->sent if we're away AND idle?
-	 */
-	auto_reply_pref = purple_prefs_get_string("/purple/away/auto_reply");
-	if((purple_connection_get_flags(gc) & PURPLE_CONNECTION_FLAG_AUTO_RESP) &&
-			!purple_presence_is_available(presence) &&
-			!purple_strequal(auto_reply_pref, "never")) {
-
-		struct last_auto_response *lar;
-		lar = get_last_auto_response(gc, recipient);
-		lar->sent = time(NULL);
 	}
 
 	if(im && purple_im_conversation_get_send_typed_timeout(PURPLE_IM_CONVERSATION(im)))
@@ -560,85 +481,6 @@ void purple_serv_got_im(PurpleConnection *gc, const char *who, const char *msg,
 	purple_conversation_write_message(im, pmsg);
 	g_free(message);
 	g_object_unref(G_OBJECT(pmsg));
-
-	/*
-	 * Don't autorespond if:
-	 *
-	 *  - it's not supported on this connection
-	 *  - we are available
-	 *  - or it's disabled
-	 *  - or we're not idle and the 'only auto respond if idle' pref
-	 *    is set
-	 */
-	if (purple_connection_get_flags(gc) & PURPLE_CONNECTION_FLAG_AUTO_RESP)
-	{
-		PurplePresence *presence;
-		PurpleStatus *status;
-		PurpleStatusType *status_type;
-		PurpleStatusPrimitive primitive;
-		const gchar *auto_reply_pref;
-		const char *away_msg = NULL;
-		gboolean mobile = FALSE;
-
-		auto_reply_pref = purple_prefs_get_string("/purple/away/auto_reply");
-
-		presence = purple_account_get_presence(account);
-		status = purple_presence_get_active_status(presence);
-		status_type = purple_status_get_status_type(status);
-		primitive = purple_status_type_get_primitive(status_type);
-		mobile = purple_presence_is_status_primitive_active(presence, PURPLE_STATUS_MOBILE);
-		if ((primitive == PURPLE_STATUS_AVAILABLE) ||
-			(primitive == PURPLE_STATUS_INVISIBLE) ||
-			mobile ||
-		    purple_strequal(auto_reply_pref, "never") ||
-		    (!purple_presence_is_idle(presence) && purple_strequal(auto_reply_pref, "awayidle")))
-		{
-			g_free(name);
-			return;
-		}
-
-		away_msg = g_value_get_string(
-			purple_status_get_attr_value(status, "message"));
-
-		if ((away_msg != NULL) && (*away_msg != '\0')) {
-			struct last_auto_response *lar;
-			time_t now = time(NULL);
-
-			/*
-			 * This used to be based on the conversation window. But um, if
-			 * you went away, and someone sent you a message and got your
-			 * auto-response, and then you closed the window, and then they
-			 * sent you another one, they'd get the auto-response back too
-			 * soon. Besides that, we need to keep track of this even if we've
-			 * got a queue. So the rest of this block is just the auto-response,
-			 * if necessary.
-			 */
-			lar = get_last_auto_response(gc, name);
-			if ((now - lar->sent) >= SECS_BEFORE_RESENDING_AUTORESPONSE)
-			{
-				/*
-				 * We don't want to send an autoresponse in response to the other user's
-				 * autoresponse.  We do, however, not want to then send one in response to the
-				 * _next_ message, so we still set lar->sent to now.
-				 */
-				lar->sent = now;
-
-				if (!(flags & PURPLE_MESSAGE_AUTO_RESP))
-				{
-					PurpleMessage *msg;
-					const gchar *me = purple_account_get_name_for_display(account);
-
-					msg = purple_message_new_outgoing(me, name,
-						away_msg, PURPLE_MESSAGE_AUTO_RESP);
-
-					purple_serv_send_im(gc, msg);
-					purple_conversation_write_message(PURPLE_CONVERSATION(im), msg);
-
-					g_object_unref(G_OBJECT(msg));
-				}
-			}
-		}
-	}
 
 	g_free(name);
 }
