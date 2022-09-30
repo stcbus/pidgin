@@ -418,6 +418,8 @@ purple_person_add_contact(PurplePerson *person, PurpleContact *contact) {
 		                        person, 0);
 	}
 
+	purple_contact_set_person(contact, person);
+
 	purple_person_sort_contacts(person);
 }
 
@@ -449,6 +451,8 @@ purple_person_remove_contact(PurplePerson *person, PurpleContact *contact) {
 			                                     purple_person_presence_notify_cb,
 			                                     person);
 		}
+
+		purple_contact_set_person(contact, NULL);
 
 		purple_person_sort_contacts(person);
 	}

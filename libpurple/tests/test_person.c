@@ -112,6 +112,7 @@ test_purple_person_contacts_single(void) {
 	PurpleAccount *account = NULL;
 	PurpleContact *contact = NULL;
 	PurplePerson *person = NULL;
+	PurplePerson *person1 = NULL;
 	guint n_items = 0;
 	gboolean removed = FALSE;
 	gboolean changed = FALSE;
@@ -129,6 +130,9 @@ test_purple_person_contacts_single(void) {
 	g_assert_cmpuint(n_items, ==, 1);
 	g_assert_true(changed);
 
+	person1 = purple_contact_get_person(contact);
+	g_assert_true(person1 == person);
+
 	changed = FALSE;
 
 	removed = purple_person_remove_contact(person, contact);
@@ -137,8 +141,12 @@ test_purple_person_contacts_single(void) {
 	g_assert_cmpuint(n_items, ==, 0);
 	g_assert_true(changed);
 
+	person1 = purple_contact_get_person(contact);
+	g_assert_null(person1);
+
 	g_clear_object(&person);
 	g_clear_object(&account);
+	g_clear_object(&contact);
 }
 
 static void
