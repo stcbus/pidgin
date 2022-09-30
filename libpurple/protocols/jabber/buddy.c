@@ -66,6 +66,7 @@ jabber_buddy_resource_free(JabberBuddyResource *jbr)
 	g_free(jbr->client.name);
 	g_free(jbr->client.version);
 	g_free(jbr->client.os);
+	g_clear_pointer(&jbr->tz_off, g_time_zone_unref);
 	g_free(jbr);
 }
 
@@ -218,7 +219,6 @@ JabberBuddyResource *jabber_buddy_track_resource(JabberBuddy *jb, const char *re
 		jbr->jb = jb;
 		jbr->name = g_strdup(resource);
 		jbr->capabilities = JABBER_CAP_NONE;
-		jbr->tz_off = PURPLE_NO_TZ_OFF;
 	}
 	jbr->priority = priority;
 	jbr->state = state;
@@ -727,14 +727,11 @@ add_jbr_info(JabberBuddyInfo *jbi, const char *resource,
 		}
 	}
 
-	if (jbr && jbr->tz_off != PURPLE_NO_TZ_OFF) {
+	if (jbr && jbr->tz_off != NULL) {
 		GDateTime *dt = NULL;
-		GTimeZone *tz = NULL;
 		char *timestamp = NULL;
 
-		tz = g_time_zone_new_offset(jbr->tz_off);
-		dt = g_date_time_new_now(tz);
-		g_time_zone_unref(tz);
+		dt = g_date_time_new_now(jbr->tz_off);
 
 		timestamp = g_date_time_format(dt, "%X %:z");
 		g_date_time_unref(dt);
@@ -1395,15 +1392,20 @@ static void jabber_time_parse(JabberStream *js, const char *from,
 				char *c = tzo_data;
 				int hours, minutes;
 				if (tzo_data[0] == 'Z' && tzo_data[1] == '\0') {
-					jbr->tz_off = 0;
+					jbr->tz_off = g_time_zone_new_offset(0);
 				} else {
 					gboolean offset_positive = (tzo_data[0] == '+');
 					/* [+-]HH:MM */
 					if (((*c == '+' || *c == '-') && (c = c + 1)) &&
-							sscanf(c, "%02d:%02d", &hours, &minutes) == 2) {
-						jbr->tz_off = 60*60*hours + 60*minutes;
-						if (!offset_positive)
-							jbr->tz_off *= -1;
+							sscanf(c, "%02d:%02d", &hours, &minutes) == 2)
+					{
+						gint32 tz_off = 60*60*hours + 60*minutes;
+						if (!offset_positive) {
+							tz_off *= -1;
+						}
+
+						jbr->tz_off = g_time_zone_new_offset(tz_off);
+
 					} else {
 						purple_debug_info("jabber", "Ignoring malformed timezone %s",
 						                  tzo_data);
@@ -1504,7 +1506,7 @@ dispatch_queries_for_resource(JabberStream *js, JabberBuddyInfo *jbi,
 		jabber_iq_send(iq);
 	}
 
-	if (jbr->tz_off == PURPLE_NO_TZ_OFF &&
+	if (jbr->tz_off == NULL &&
 			(!jbr->caps.info ||
 			 	jabber_resource_has_capability(jbr, NS_ENTITY_TIME))) {
 		PurpleXmlNode *child;

@@ -77,8 +77,7 @@ typedef struct {
 		char *name;
 		char *os;
 	} client;
-	/* tz_off == PURPLE_NO_TZ_OFF when unset */
-	long tz_off;
+	GTimeZone *tz_off;
 	struct {
 		JabberCapsClientInfo *info;
 		GList *exts;

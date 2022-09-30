@@ -83,18 +83,6 @@ void purple_util_init(void);
 void purple_util_uninit(void);
 
 /**************************************************************************/
-/* Date/Time Functions                                                    */
-/**************************************************************************/
-
-/**
- * PURPLE_NO_TZ_OFF:
- *
- * Used by purple_str_to_time to indicate no timezone offset was
- * specified in the timestamp string.
- */
-#define PURPLE_NO_TZ_OFF -500000
-
-/**************************************************************************/
 /* Path/Filename Functions                                                */
 /**************************************************************************/
 
