@@ -1804,8 +1804,6 @@ static GdkPixbuf *pidgin_blist_get_buddy_icon(PurpleBlistNode *node,
 			gdk_pixbuf_saturate_and_pixelate(buf, buf, 0.25, FALSE);
 	}
 
-	/* I'd use the pidgin_buddy_icon_get_scale_size() thing, but it won't
-	 * tell me the original size, which I need for scaling purposes. */
 	scale_width = orig_width = gdk_pixbuf_get_width(buf);
 	scale_height = orig_height = gdk_pixbuf_get_height(buf);
 

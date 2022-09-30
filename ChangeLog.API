@@ -730,6 +730,7 @@ version 3.0.0 (??/??/????):
 		* purple_status_type_add_attrs_vargs
 		* purple_status_type_get_primary_attr
 		* purple_status_type_set_primary_attr
+		* purple_strcasestr
 		* purple_strlcat
 		* purple_strlcpy
 		* purple_str_binary_to_ascii
@@ -747,6 +748,9 @@ version 3.0.0 (??/??/????):
 		* purple_unescape_filename
 		* PurpleUPnPMappingAddRemove
 		* purple_upnp_cancel_port_mapping
+		* purple_uri_escape_for_open
+		* purple_uri_list_extract_filenames
+		* purple_uri_list_extract_uris
 		* purple_url_decode
 		* purple_user_dir
 		* purple_utf8_salvage.  Use g_utf8_make_valid instead.
@@ -924,7 +928,9 @@ version 3.0.0 (??/??/????):
 		* pidgin_blist_visibility_manager_remove
 		* PidginBlistLayout
 		* pidgin_buddy_icon_chooser_new
+		* pidgin_buddy_icon_get_scale_size
 		* PidginBuddyList.connection_errors
+		* PidginButtonOrientation
 		* PidginButtonStyle
 		* PidginCellRendererExpander
 		* PIDGIN_TYPE_CELL_RENDERER_EXPANDER
@@ -971,6 +977,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_conv_update_buttons_by_protocol
 		* pidgin_conversations_fill_menu
 		* pidgin_conversations_get_unseen_all
+		* pidgin_convert_buddy_icon
 		* pidgin_create_dialog, use pidgin_dialog_new instead.
 		* pidgin_create_icon_from_protocol
 		* pidgin_create_protocol_icon
@@ -1062,6 +1069,7 @@ version 3.0.0 (??/??/????):
 		* pidgin_scroll_book_new
 		* pidgin_scroll_book_get_notebook
 		* pidgin_separator
+		* pidgin_set_accessible_relations
 		* pidgin_set_cursor
 		* pidgin_set_custom_buddy_icon
 		* pidgin_set_sensitive_if_input

@@ -30,20 +30,6 @@
 
 #include <purple.h>
 
-typedef enum
-{
-	PIDGIN_BUTTON_HORIZONTAL,
-	PIDGIN_BUTTON_VERTICAL
-
-} PidginButtonOrientation;
-
-typedef enum
-{
-	PIDGIN_PROTOCOL_ICON_SMALL,
-	PIDGIN_PROTOCOL_ICON_MEDIUM,
-	PIDGIN_PROTOCOL_ICON_LARGE
-} PidginProtocolIconSize;
-
 typedef struct {
 	gboolean is_buddy;
 	PurpleBuddy *buddy;
@@ -122,34 +108,6 @@ void pidgin_retrieve_user_info_in_chat(PurpleConnection *conn, const char *name,
  * and label-for ATK relationships.
  */
 void pidgin_set_accessible_label(GtkWidget *w, GtkLabel *l);
-
-/**
- * pidgin_set_accessible_relations:
- * @w: The widget that we want to label.
- * @l: A GtkLabel that we want to use as the label for the widget.
- *
- * Sets the labelled-by and label-for ATK relationships.
- */
-void pidgin_set_accessible_relations(GtkWidget *w, GtkLabel *l);
-
-/**
- * pidgin_buddy_icon_get_scale_size:
- *
- * Convenience wrapper for purple_buddy_icon_spec_get_scaled_size
- */
-void pidgin_buddy_icon_get_scale_size(GdkPixbuf *buf, PurpleBuddyIconSpec *spec, PurpleBuddyIconScaleFlags rules, int *width, int *height);
-
-/**
- * pidgin_convert_buddy_icon:
- * @protocol:   The protocol to convert the icon
- * @path:       The path of a file to convert
- * @len:        If not %NULL, the length of the returned data will be set here.
- *
- * Converts a buddy icon to the required size and format
- *
- * Returns:           The converted image data, or %NULL if an error occurred.
- */
-gpointer pidgin_convert_buddy_icon(PurpleProtocol *protocol, const char *path, size_t *len);
 
 /**
  * pidgin_tree_view_search_equal_func:
