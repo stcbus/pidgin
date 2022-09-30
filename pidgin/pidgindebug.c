@@ -114,6 +114,8 @@ save_response_cb(GtkNativeDialog *self, gint response_id, gpointer data)
 		GFile *file = NULL;
 		GFileOutputStream *output = NULL;
 		GtkTextIter start, end;
+		GDateTime *date = NULL;
+		gchar *date_str = NULL;
 		gchar *tmp = NULL;
 		GError *error = NULL;
 
@@ -131,10 +133,14 @@ save_response_cb(GtkNativeDialog *self, gint response_id, gpointer data)
 			return;
 		}
 
-		tmp = g_strdup_printf("Pidgin Debug Log : %s\n", purple_date_format_full(NULL));
+		date = g_date_time_new_now_local();
+		date_str = g_date_time_format(date, "%c");
+
+		tmp = g_strdup_printf("Pidgin Debug Log : %s\n", date_str);
 		g_output_stream_write_all(G_OUTPUT_STREAM(output), tmp, strlen(tmp),
 		                          NULL, NULL, &error);
 		g_free(tmp);
+		g_free(date_str);
 
 		if(error != NULL) {
 			purple_debug_error("debug", "Unable to save debug log: %s",

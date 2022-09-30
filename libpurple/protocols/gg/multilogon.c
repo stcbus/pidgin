@@ -41,7 +41,7 @@ typedef struct
 	uint64_t id;
 	uint32_t remote_addr;
 	gchar *name;
-	time_t logon_time;
+	GDateTime *logon_time;
 } ggp_multilogon_session_info;
 
 struct _ggp_multilogon_session_data
@@ -82,8 +82,10 @@ ggp_multilogon_free_sessions(PurpleConnection *gc)
 	ggp_multilogon_session_data *mldata = ggp_multilogon_get_mldata(gc);
 	int i;
 
-	for (i = 0; i < mldata->session_count; i++)
+	for (i = 0; i < mldata->session_count; i++) {
 		g_free(mldata->sessions[i].name);
+		g_clear_pointer(&mldata->sessions[i].logon_time, g_date_time_unref);
+	}
 	g_free(mldata->sessions);
 
 	mldata->sessions = NULL;
@@ -137,16 +139,19 @@ ggp_multilogon_fill_sessions(PurpleRequestDatasheet *sheet,
 	for (i = 0; i < mldata->session_count; i++) {
 		ggp_multilogon_session_info *sess = &mldata->sessions[i];
 		PurpleRequestDatasheetRecord *rec;
+		gchar *tmp = NULL;
 
 		rec = purple_request_datasheet_record_add(sheet,
 			ggp_keymapper_to_key(km, sess->id));
 
 		purple_request_datasheet_record_set_string_data(rec, 0,
 			ggp_ipv4_to_str(sess->remote_addr));
-		purple_request_datasheet_record_set_string_data(rec, 1,
-			purple_date_format_full(localtime(&sess->logon_time)));
-		purple_request_datasheet_record_set_string_data(rec, 2,
-			sess->name);
+
+		tmp = g_date_time_format(sess->logon_time, "%c");
+		purple_request_datasheet_record_set_string_data(rec, 1, tmp);
+		g_free(tmp);
+
+		purple_request_datasheet_record_set_string_data(rec, 2, sess->name);
 	}
 
 	purple_request_datasheet_record_remove_marked(sheet);
@@ -171,7 +176,7 @@ ggp_multilogon_info(PurpleConnection *gc, struct gg_event_multilogon_info *info)
 		psess->id = ggp_multilogon_sid_from_libgadu(lsess->id);
 		psess->remote_addr = lsess->remote_addr;
 		psess->name = g_strdup(lsess->name);
-		psess->logon_time = lsess->logon_time;
+		psess->logon_time = g_date_time_new_from_unix_local(lsess->logon_time);
 	}
 
 	mldata->session_count = info->count;

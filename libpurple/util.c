@@ -48,39 +48,6 @@ purple_util_uninit(void) {
 }
 
 /**************************************************************************
- * Date/Time Functions
- **************************************************************************/
-const char *
-purple_date_format_full(const struct tm *tm)
-{
-	static char buf[128];
-	GDateTime *dt;
-	char *utf8;
-
-	if (tm == NULL)
-	{
-		dt = g_date_time_new_now_local();
-	} else {
-		dt = g_date_time_new_local(tm->tm_year + 1900, tm->tm_mon + 1,
-				tm->tm_mday, tm->tm_hour,
-				tm->tm_min, tm->tm_sec);
-	}
-
-	utf8 = g_date_time_format(dt, "%c");
-	g_date_time_unref(dt);
-
-	if (utf8 == NULL) {
-		purple_debug_error("util",
-				"purple_date_format_full(): Formatting failed\n");
-		return "";
-	}
-
-	g_strlcpy(buf, utf8, sizeof(buf));
-	g_free(utf8);
-	return buf;
-}
-
-/**************************************************************************
  * Path/Filename Functions
  **************************************************************************/
 static gboolean

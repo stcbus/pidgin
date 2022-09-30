@@ -230,16 +230,24 @@ static void
 file_save(GntFileSel *fs, const char *path, const char *file, GntTextView *tv)
 {
 	FILE *fp;
+	GDateTime *date = NULL;
+	gchar *date_str = NULL;
 
 	if ((fp = g_fopen(path, "w+")) == NULL) {
 		purple_notify_error(NULL, NULL, _("Unable to open file."), NULL, NULL);
 		return;
 	}
 
-	fprintf(fp, "Finch Debug Log : %s\n", purple_date_format_full(NULL));
+	date = g_date_time_new_now_local();
+	date_str = g_date_time_format(date, "%c");
+
+	fprintf(fp, "Finch Debug Log : %s\n", date_str);
 	fprintf(fp, "%s", gnt_text_view_get_text(tv));
 	fclose(fp);
 	gnt_widget_destroy(GNT_WIDGET(fs));
+
+	g_free(date_str);
+	g_date_time_unref(date);
 }
 
 static void

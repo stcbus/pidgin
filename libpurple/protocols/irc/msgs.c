@@ -450,11 +450,19 @@ void irc_msg_endwhois(struct irc_conn *irc, const char *name, const char *from, 
 		g_string_free(irc->whois.channels, TRUE);
 	}
 	if (irc->whois.idle) {
-		gchar *timex = purple_str_seconds_to_string(irc->whois.idle);
-		purple_notify_user_info_add_pair_plaintext(user_info, _("Idle for"), timex);
-		g_free(timex);
+		GDateTime *signon = NULL;
+
+		tmp = purple_str_seconds_to_string(irc->whois.idle);
+		purple_notify_user_info_add_pair_plaintext(user_info, _("Idle for"),
+		                                           tmp);
+		g_free(tmp);
+
+		signon = g_date_time_new_from_unix_local(irc->whois.signon);
+		tmp = g_date_time_format(signon, "%c");
 		purple_notify_user_info_add_pair_plaintext(user_info,
-														_("Online since"), purple_date_format_full(localtime(&irc->whois.signon)));
+		                                           _("Online since"), tmp);
+		g_free(tmp);
+		g_date_time_unref(signon);
 	}
 	if (purple_strequal(irc->whois.nick, "elb")) {
 		purple_notify_user_info_add_pair_plaintext(user_info,

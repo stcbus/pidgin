@@ -450,6 +450,7 @@ version 3.0.0 (??/??/????):
 		  or whatever is appropriate for your UI.
 		* purple_core_migrate
 		* Removed the general Purple DBus interface
+		* purple_date_format_full, use g_date_time_format instead.
 		* purple_date_format_long, use g_date_time_format instead.
 		* purple_date_format_short, use g_date_time_format instead.
 		* PurpleDebugUiOps

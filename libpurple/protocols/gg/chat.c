@@ -586,21 +586,21 @@ ggp_chat_roomlist_get_list(PurpleProtocolRoomlist *protocol_roomlist,
 		PurpleRoomlistRoom *room;
 		ggp_chat_local_info *chat = &sdata->chats[i];
 		const gchar *name;
-		time_t date;
+		GDateTime *date = NULL;
 		const gchar *status;
 		int count = chat->participants_count;
 
-		date = (uint32_t)(chat->id >> 32);
+		date = g_date_time_new_from_unix_local((uint32_t)(chat->id >> 32));
 
-		if (chat->conv)
+		if (chat->conv) {
 			status = _("Joined");
-		else if (chat->left)
+		} else if (chat->left) {
 			/* Translators: For Gadu-Gadu, this is one possible status for a
 			   chat room. It means you had previously joined the chat room but
 			   you have since left it. You cannot rejoin without another
 			   invitation. */
 			status = _("Chat left");
-		else {
+		} else {
 			status = _("Can join chat");
 			count--;
 		}
@@ -610,10 +610,11 @@ ggp_chat_roomlist_get_list(PurpleProtocolRoomlist *protocol_roomlist,
 		purple_roomlist_room_set_user_count(room, (guint)count);
 		purple_roomlist_room_add_field(room, "id", g_strdup(name));
 		purple_roomlist_room_add_field(room, "date",
-		                               g_strdup(purple_date_format_full(localtime(&date))));
+		                               g_date_time_format(date, "%c"));
 		purple_roomlist_room_add_field(room, "status", g_strdup(status));
 		purple_roomlist_room_add(roomlist, room);
 		g_object_unref(room);
+		g_date_time_unref(date);
 	}
 
 	/* TODO

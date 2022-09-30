@@ -1914,7 +1914,8 @@ _evt_conference_invite(NMUser * user, NMEvent * event)
 	const char *secondary = NULL;
 	const char *name = NULL;
 	char *primary = NULL;
-	time_t gmt;
+	GDateTime *gmt = NULL;
+	gchar *gmt_str = NULL;
 
 	ur = nm_find_user_record(user, nm_event_get_source(event));
 	if (ur)
@@ -1923,10 +1924,11 @@ _evt_conference_invite(NMUser * user, NMEvent * event)
 	if (name == NULL)
 		name = nm_event_get_source(event);
 
-	gmt = nm_event_get_gmt(event);
+	gmt = g_date_time_new_from_unix_local(nm_event_get_gmt(event));
+	gmt_str = g_date_time_format(gmt, "%c");
 	title = _("Invitation to Conversation");
 	primary = g_strdup_printf(_("Invitation from: %s\n\nSent: %s"),
-							  name, purple_date_format_full(localtime(&gmt)));
+	                          name, gmt_str);
 	secondary = _("Would you like to join the conversation?");
 
 	/* Set up params list for the callbacks
@@ -1947,6 +1949,8 @@ _evt_conference_invite(NMUser * user, NMEvent * event)
 						_("Yes"), G_CALLBACK(_join_conference_cb),
 						_("No"), G_CALLBACK(_reject_conference_cb));
 
+	g_free(gmt_str);
+	g_date_time_unref(gmt);
 	g_free(primary);
 }
 

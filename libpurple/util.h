@@ -87,20 +87,6 @@ void purple_util_uninit(void);
 /**************************************************************************/
 
 /**
- * purple_date_format_full:
- * @tm: The time to format, or %NULL to use the current local time
- *
- * Formats a time into the user's preferred full date and time format.
- *
- * The returned string is stored in a static buffer, so the result
- * should be g_strdup()'d if it's going to be kept.
- *
- * Returns: The date and time, formatted as per the user's settings.  In the
- *         USA this is something like "Mon Feb 18 15:26:44 2013"
- */
-const char *purple_date_format_full(const struct tm *tm);
-
-/**
  * PURPLE_NO_TZ_OFF:
  *
  * Used by purple_str_to_time to indicate no timezone offset was
