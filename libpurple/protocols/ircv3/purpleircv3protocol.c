@@ -20,9 +20,68 @@
 
 #include "purpleircv3protocol.h"
 
+#define IRCV3_DEFAULT_SERVER ("irc.libera.chat")
+#define IRCV3_DEFAULT_PORT (6697)
+
 typedef struct {
 	gboolean dummy;
 } PurpleIRCv3ProtocolPrivate;
+
+/******************************************************************************
+ * PurpleProtocol Implementation
+ *****************************************************************************/
+static GList *
+purple_ircv3_protocol_get_user_splits(G_GNUC_UNUSED PurpleProtocol *protocol) {
+	PurpleAccountUserSplit *split = NULL;
+	GList *splits = NULL;
+
+	split = purple_account_user_split_new(_("Server"), IRCV3_DEFAULT_SERVER,
+	                                      '@');
+	splits = g_list_append(splits, split);
+
+	return splits;
+}
+
+static GList *
+purple_ircv3_protocol_get_account_options(G_GNUC_UNUSED PurpleProtocol *protocol)
+{
+	PurpleAccountOption *option;
+	GList *options = NULL;
+
+	option = purple_account_option_int_new(_("Port"), "port",
+	                                       IRCV3_DEFAULT_PORT);
+	options = g_list_append(options, option);
+
+	option = purple_account_option_bool_new(_("Use TLS"), "use-tls", TRUE);
+	options = g_list_append(options, option);
+
+	option = purple_account_option_string_new(_("Ident name"), "ident", "");
+	options = g_list_append(options, option);
+
+	option = purple_account_option_string_new(_("Real name"), "real-name", "");
+	options = g_list_append(options, option);
+
+	option = purple_account_option_string_new(_("SASL login name"),
+	                                          "sasl-login-name", "");
+	options = g_list_append(options, option);
+
+	option = purple_account_option_bool_new(_("Allow plaintext SASL auth over "
+	                                          "unencrypted connection"),
+	                                        "plain-sasl-in-clear", FALSE);
+	options = g_list_append(options, option);
+
+	option = purple_account_option_int_new(_("Seconds between sending "
+	                                         "messages"),
+	                                       "rate-limit-interval", 2);
+	options = g_list_append(options, option);
+
+	option = purple_account_option_int_new(_("Maximum messages to send at "
+	                                         "once"),
+	                                       "rate-limit-burst", 5);
+	options = g_list_append(options, option);
+
+	return options;
+}
 
 /******************************************************************************
  * GObject Implementation
@@ -41,6 +100,11 @@ purple_ircv3_protocol_class_finalize(PurpleIRCv3ProtocolClass *klass) {
 
 static void
 purple_ircv3_protocol_class_init(PurpleIRCv3ProtocolClass *klass) {
+	PurpleProtocolClass *protocol_class = PURPLE_PROTOCOL_CLASS(klass);
+
+	protocol_class->get_user_splits = purple_ircv3_protocol_get_user_splits;
+	protocol_class->get_account_options =
+		purple_ircv3_protocol_get_account_options;
 }
 
 /******************************************************************************
