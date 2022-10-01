@@ -25,7 +25,6 @@
 #include <purple.h>
 
 #include <adwaita.h>
-#include <talkatu.h>
 
 #include "pidginconversationprefs.h"
 #include "pidgincore.h"
@@ -43,33 +42,10 @@ struct _PidginConversationPrefs {
 		GtkWidget *blink_im;
 	} win32;
 	GtkWidget *minimum_entry_lines;
-	GtkTextBuffer *format_buffer;
 };
 
 G_DEFINE_TYPE(PidginConversationPrefs, pidgin_conversation_prefs,
               ADW_TYPE_PREFERENCES_PAGE)
-
-/******************************************************************************
- * Helpers
- *****************************************************************************/
-static void
-formatting_toggle_cb(TalkatuActionGroup *ag, GAction *action, const gchar *name, gpointer data)
-{
-	gboolean activated = talkatu_action_group_get_action_activated(ag, name);
-	if(g_ascii_strcasecmp(TALKATU_ACTION_FORMAT_BOLD, name) != 0) {
-		purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/conversations/send_bold",
-		                      activated);
-	} else if(g_ascii_strcasecmp(TALKATU_ACTION_FORMAT_ITALIC, name) != 0) {
-		purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/conversations/send_italic",
-		                      activated);
-	} else if(g_ascii_strcasecmp(TALKATU_ACTION_FORMAT_UNDERLINE, name) != 0) {
-		purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/conversations/send_underline",
-		                      activated);
-	} else if(g_ascii_strcasecmp(TALKATU_ACTION_FORMAT_STRIKETHROUGH, name) != 0) {
-		purple_prefs_set_bool(PIDGIN_PREFS_ROOT "/conversations/send_strike",
-		                      activated);
-	}
-}
 
 /******************************************************************************
  * GObject Implementation
@@ -99,16 +75,11 @@ pidgin_conversation_prefs_class_init(PidginConversationPrefsClass *klass)
 	gtk_widget_class_bind_template_child(
 			widget_class, PidginConversationPrefs,
 			minimum_entry_lines);
-	gtk_widget_class_bind_template_child(
-			widget_class, PidginConversationPrefs,
-			format_buffer);
 }
 
 static void
 pidgin_conversation_prefs_init(PidginConversationPrefs *prefs)
 {
-	GSimpleActionGroup *ag = NULL;
-
 	gtk_widget_init_template(GTK_WIDGET(prefs));
 
 	pidgin_prefs_bind_switch(PIDGIN_PREFS_ROOT "/conversations/show_incoming_formatting",
@@ -127,10 +98,6 @@ pidgin_conversation_prefs_init(PidginConversationPrefs *prefs)
 	pidgin_prefs_bind_spin_button(
 		PIDGIN_PREFS_ROOT "/conversations/minimum_entry_lines",
 		prefs->minimum_entry_lines);
-
-	ag = talkatu_buffer_get_action_group(TALKATU_BUFFER(prefs->format_buffer));
-	g_signal_connect_after(G_OBJECT(ag), "action-activated",
-	                       G_CALLBACK(formatting_toggle_cb), NULL);
 }
 
 /******************************************************************************

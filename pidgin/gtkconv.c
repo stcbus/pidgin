@@ -2611,19 +2611,11 @@ pidgin_conversations_init(void)
 
 	/* Conversations */
 	purple_prefs_add_none(PIDGIN_PREFS_ROOT "/conversations");
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/conversations/send_bold", FALSE);
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/conversations/send_italic", FALSE);
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/conversations/send_underline", FALSE);
-	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/conversations/send_strike", FALSE);
 	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/conversations/show_incoming_formatting", TRUE);
 	purple_prefs_add_int(PIDGIN_PREFS_ROOT "/conversations/minimum_entry_lines", 2);
 
 	purple_prefs_add_bool(PIDGIN_PREFS_ROOT "/conversations/show_formatting_toolbar", TRUE);
 
-	purple_prefs_add_string(PIDGIN_PREFS_ROOT "/conversations/bgcolor", "");
-	purple_prefs_add_string(PIDGIN_PREFS_ROOT "/conversations/fgcolor", "");
-	purple_prefs_add_string(PIDGIN_PREFS_ROOT "/conversations/font_face", "");
-	purple_prefs_add_int(PIDGIN_PREFS_ROOT "/conversations/font_size", 3);
 	purple_prefs_add_int(PIDGIN_PREFS_ROOT "/conversations/scrollback_lines", 4000);
 
 	/* Conversations -> Chat */

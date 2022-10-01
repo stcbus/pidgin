@@ -24,10 +24,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
   <!-- interface-name Pidgin -->
   <!-- interface-description Internet Messenger -->
   <!-- interface-copyright Pidgin Developers <devel@pidgin.im> -->
-  <object class="TalkatuWholeBuffer" id="format_buffer">
-    <property name="text" translatable="1">This is how your outgoing message text will appear when you use protocols that support formatting.</property>
-    <property name="style">whole</property>
-  </object>
   <object class="GtkAdjustment" id="minimum_entry_lines.adjustment">
     <property name="lower">1</property>
     <property name="upper">8</property>
@@ -90,24 +86,6 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <property name="adjustment">minimum_entry_lines.adjustment</property>
                 <property name="numeric">1</property>
                 <property name="valign">center</property>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="AdwPreferencesGroup">
-        <property name="title" translatable="1">Default Formatting</property>
-        <child>
-          <object class="AdwPreferencesRow">
-            <child>
-              <object class="TalkatuEditor">
-                <property name="buffer">format_buffer</property>
-                <property name="focusable">1</property>
-                <property name="show-send-button">0</property>
-                <property name="show-toolbar">1</property>
-                <property name="width-request">450</property>
               </object>
             </child>
           </object>
