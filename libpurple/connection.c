@@ -30,6 +30,7 @@
 #include "proxy.h"
 #include "purpleenums.h"
 #include "purpleprivate.h"
+#include "purpleprotocolprivacy.h"
 #include "purpleprotocolserver.h"
 #include "request.h"
 #include "server.h"
@@ -161,10 +162,12 @@ purple_connection_set_state(PurpleConnection *gc, PurpleConnectionState state)
 	if(gc->state == PURPLE_CONNECTION_CONNECTED) {
 		PurpleAccount *account;
 		PurplePresence *presence;
+		PurpleProtocol *protocol;
 		gboolean emit_online = FALSE;
 		gpointer handle = NULL;
 
 		account = purple_connection_get_account(gc);
+		protocol = purple_connection_get_protocol(gc);
 		presence = purple_account_get_presence(account);
 		handle = purple_connections_get_handle();
 
@@ -180,7 +183,10 @@ purple_connection_set_state(PurpleConnection *gc, PurpleConnectionState state)
 		purple_signal_emit(handle, "signed-on", gc);
 		purple_signal_emit_return_1(handle, "autojoin", gc);
 
-		purple_serv_set_permit_deny(gc);
+		if(PURPLE_IS_PROTOCOL_PRIVACY(protocol)) {
+			purple_protocol_privacy_set_permit_deny(PURPLE_PROTOCOL_PRIVACY(protocol),
+			                                        gc);
+		}
 
 		update_keepalive(gc, TRUE);
 

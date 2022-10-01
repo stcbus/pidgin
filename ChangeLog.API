@@ -643,6 +643,11 @@ version 3.0.0 (??/??/????):
 		* purple_roomlist_get_protocol_data
 		* purple_roomlist_set_protocol_data
 		* purple_running_osx
+		* purple_serv_add_deny
+		* purple_serv_add_permit
+		* purple_serv_remove_deny
+		* purple_serv_remove_permit
+		* purple_serv_set_permit_deny
 		* PurpleSetPublicAliasFailureCallback
 		* PurpleSetPublicAliasSuccessCallback
 		* purple_smiley_get_type

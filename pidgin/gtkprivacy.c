@@ -162,10 +162,23 @@ type_changed_cb(GObject *obj, G_GNUC_UNUSED GParamSpec *pspec, gpointer data) {
 	PidginPrivacyDialog *dialog = data;
 	PurpleAccountPrivacyType new_type =
 		menu_entries[gtk_drop_down_get_selected(GTK_DROP_DOWN(obj))].type;
+	PurpleProtocol *protocol = NULL;
 	gboolean buttons_sensitive;
 
 	purple_account_set_privacy_type(dialog->account, new_type);
-	purple_serv_set_permit_deny(purple_account_get_connection(dialog->account));
+
+	protocol = purple_account_get_protocol(dialog->account);
+	if(PURPLE_IS_PROTOCOL_PRIVACY(protocol)) {
+		PurpleConnection *connection = NULL;
+
+		connection = purple_account_get_connection(dialog->account);
+		if(PURPLE_IS_CONNECTION(connection)) {
+			PurpleProtocolPrivacy *privacy = NULL;
+
+			privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
+			purple_protocol_privacy_set_permit_deny(privacy, connection);
+		}
+	}
 
 	gtk_widget_hide(dialog->allow_widget);
 	gtk_widget_hide(dialog->block_widget);

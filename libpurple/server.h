@@ -95,54 +95,6 @@ void purple_serv_get_info(PurpleConnection *gc, const char *name);
 void purple_serv_set_info(PurpleConnection *gc, const char *info);
 
 /******************************************************************************
- * Privacy interface
- *****************************************************************************/
-
-/**
- * purple_serv_add_permit:
- * @gc:     The connection over which to send the typing notification.
- * @name:   The name of the remote user.
- *
- * Add the buddy on the required authorized list.
- */
-void purple_serv_add_permit(PurpleConnection *gc, const char *name);
-
-/**
- * purple_serv_add_deny:
- * @gc:     The connection over which to send the typing notification.
- * @name:   The name of the remote user.
- *
- * Add the buddy on the required blocked list.
- */
-void purple_serv_add_deny(PurpleConnection *gc, const char *name);
-
-/**
- * purple_serv_remove_permit:
- * @gc:     The connection over which to send the typing notification.
- * @name:   The name of the remote user.
- *
- * Remove the buddy from the required authorized list.
- */
-void purple_serv_remove_permit(PurpleConnection *gc, const char *name);
-
-/**
- * purple_serv_remove_deny:
- * @gc:     The connection over which to send the typing notification.
- * @name:   The name of the remote user.
- *
- * Remove the buddy from the required blocked list.
- */
-void purple_serv_remove_deny(PurpleConnection *gc, const char *name);
-
-/**
- * purple_serv_set_permit_deny:
- * @gc:     The connection over which to send the typing notification.
- *
- * Update the server with the privacy information on the permit and deny lists.
- */
-void purple_serv_set_permit_deny(PurpleConnection *gc);
-
-/******************************************************************************
  * Chat Interface
  *****************************************************************************/
 

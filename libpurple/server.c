@@ -257,65 +257,6 @@ void purple_serv_move_buddy(PurpleBuddy *buddy, PurpleGroup *orig, PurpleGroup *
 	}
 }
 
-void purple_serv_add_permit(PurpleConnection *gc, const char *name)
-{
-	if (gc) {
-		PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
-
-		purple_protocol_privacy_add_permit(privacy, gc, name);
-	}
-}
-
-void purple_serv_add_deny(PurpleConnection *gc, const char *name)
-{
-	if (gc) {
-		PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
-
-		purple_protocol_privacy_add_deny(privacy, gc, name);
-	}
-}
-
-void purple_serv_remove_permit(PurpleConnection *gc, const char *name)
-{
-	if (gc) {
-		PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
-
-		purple_protocol_privacy_remove_permit(privacy, gc, name);
-	}
-}
-
-void purple_serv_remove_deny(PurpleConnection *gc, const char *name)
-{
-	if (gc) {
-		PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
-
-		purple_protocol_privacy_remove_deny(privacy, gc, name);
-	}
-}
-
-void
-purple_serv_set_permit_deny(PurpleConnection *gc) {
-	if(gc) {
-		PurpleProtocol *protocol = purple_connection_get_protocol(gc);
-
-		if(PURPLE_IS_PROTOCOL_PRIVACY(protocol)) {
-			PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
-
-			/*
-			 * this is called when either you import a buddy list, and make lots
-			 * of changes that way, or when the user toggles the permit/deny mode
-			 * in the prefs. In either case you should probably be resetting and
-			 * resending the permit/deny info when you get this.
-			 */
-			purple_protocol_privacy_set_permit_deny(privacy, gc);
-		}
-	}
-}
-
 void purple_serv_join_chat(PurpleConnection *gc, GHashTable *data)
 {
 	PurpleProtocol *protocol;

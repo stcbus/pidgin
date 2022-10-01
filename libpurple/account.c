@@ -37,6 +37,7 @@
 #include "purpleprivate.h"
 #include "purpleprotocolclient.h"
 #include "purpleprotocolmanager.h"
+#include "purpleprotocolprivacy.h"
 #include "purpleprotocolserver.h"
 #include "request.h"
 #include "server.h"
@@ -1764,8 +1765,13 @@ purple_account_privacy_permit_add(PurpleAccount *account, const char *who,
 
 	account->permit = g_slist_append(account->permit, name);
 
-	if (!local_only && purple_account_is_connected(account))
-		purple_serv_add_permit(purple_account_get_connection(account), who);
+	if (!local_only && purple_account_is_connected(account)) {
+		PurpleConnection *connection = purple_account_get_connection(account);
+		PurpleProtocol *protocol = purple_connection_get_protocol(connection);
+		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
+
+		purple_protocol_privacy_add_permit(privacy, connection, who);
+	}
 
 	if (ui_ops != NULL && ui_ops->permit_added != NULL)
 		ui_ops->permit_added(account, who);
@@ -1809,7 +1815,11 @@ purple_account_privacy_permit_remove(PurpleAccount *account, const char *who,
 	account->permit = g_slist_delete_link(account->permit, l);
 
 	if (!local_only && purple_account_is_connected(account)) {
-		purple_serv_remove_permit(purple_account_get_connection(account), who);
+		PurpleConnection *connection = purple_account_get_connection(account);
+		PurpleProtocol *protocol = purple_connection_get_protocol(connection);
+		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
+
+		purple_protocol_privacy_remove_permit(privacy, connection, who);
 	}
 
 	if (ui_ops != NULL && ui_ops->permit_removed != NULL) {
@@ -1850,8 +1860,13 @@ purple_account_privacy_deny_add(PurpleAccount *account, const char *who,
 
 	account->deny = g_slist_append(account->deny, name);
 
-	if (!local_only && purple_account_is_connected(account))
-		purple_serv_add_deny(purple_account_get_connection(account), who);
+	if (!local_only && purple_account_is_connected(account)) {
+		PurpleConnection *connection = purple_account_get_connection(account);
+		PurpleProtocol *protocol = purple_connection_get_protocol(connection);
+		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
+
+		purple_protocol_privacy_add_deny(privacy, connection, who);
+	}
 
 	if (ui_ops != NULL && ui_ops->deny_added != NULL)
 		ui_ops->deny_added(account, who);
@@ -1893,7 +1908,11 @@ purple_account_privacy_deny_remove(PurpleAccount *account, const char *who,
 	account->deny = g_slist_delete_link(account->deny, l);
 
 	if (!local_only && purple_account_is_connected(account)) {
-		purple_serv_remove_deny(purple_account_get_connection(account), name);
+		PurpleConnection *connection = purple_account_get_connection(account);
+		PurpleProtocol *protocol = purple_connection_get_protocol(connection);
+		PurpleProtocolPrivacy *privacy = PURPLE_PROTOCOL_PRIVACY(protocol);
+
+		purple_protocol_privacy_remove_deny(privacy, connection, name);
 	}
 
 	if (ui_ops != NULL && ui_ops->deny_removed != NULL) {
@@ -1953,8 +1972,18 @@ purple_account_privacy_allow(PurpleAccount *account, const char *who)
 	}
 
 	/* Notify the server if the privacy setting was changed */
-	if (type != purple_account_get_privacy_type(account) && purple_account_is_connected(account))
-		purple_serv_set_permit_deny(purple_account_get_connection(account));
+	if(type != purple_account_get_privacy_type(account) &&
+	   purple_account_is_connected(account))
+	{
+		PurpleProtocol *protocol = purple_account_get_protocol(account);
+
+		if(PURPLE_IS_PROTOCOL_PRIVACY(protocol)) {
+			PurpleConnection *connection = purple_account_get_connection(account);
+
+			purple_protocol_privacy_set_permit_deny(PURPLE_PROTOCOL_PRIVACY(protocol),
+			                                        connection);
+		}
+	}
 }
 
 void
@@ -1998,8 +2027,18 @@ purple_account_privacy_deny(PurpleAccount *account, const char *who)
 	}
 
 	/* Notify the server if the privacy setting was changed */
-	if (type != purple_account_get_privacy_type(account) && purple_account_is_connected(account))
-		purple_serv_set_permit_deny(purple_account_get_connection(account));
+	if(type != purple_account_get_privacy_type(account) &&
+	   purple_account_is_connected(account))
+	{
+		PurpleProtocol *protocol = purple_account_get_protocol(account);
+
+		if(PURPLE_IS_PROTOCOL_PRIVACY(protocol)) {
+			PurpleConnection *connection = purple_account_get_connection(account);
+
+			purple_protocol_privacy_set_permit_deny(PURPLE_PROTOCOL_PRIVACY(protocol),
+			                                        connection);
+		}
+	}
 }
 
 GSList *
