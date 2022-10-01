@@ -150,9 +150,6 @@ purple_contact_set_property(GObject *obj, guint param_id, const GValue *value,
 		case PROP_AVATAR:
 			purple_contact_set_avatar(contact, g_value_get_object(value));
 			break;
-		case PROP_PRESENCE:
-			purple_contact_set_presence(contact, g_value_get_object(value));
-			break;
 		case PROP_PERSON:
 			purple_contact_set_person(contact, g_value_get_object(value));
 			break;
@@ -202,6 +199,7 @@ purple_contact_constructed(GObject *obj) {
 static void
 purple_contact_init(PurpleContact *contact) {
 	contact->tags = purple_tags_new();
+	contact->presence = g_object_new(PURPLE_TYPE_PRESENCE, NULL);
 }
 
 static void
@@ -308,7 +306,7 @@ purple_contact_class_init(PurpleContactClass *klass) {
 		"presence", "presence",
 		"The presence of the contact",
 		PURPLE_TYPE_PRESENCE,
-		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PurpleContact:tags:
@@ -441,15 +439,6 @@ purple_contact_get_presence(PurpleContact *contact) {
 	g_return_val_if_fail(PURPLE_IS_CONTACT(contact), NULL);
 
 	return contact->presence;
-}
-
-void
-purple_contact_set_presence(PurpleContact *contact, PurplePresence *presence) {
-	g_return_if_fail(PURPLE_IS_CONTACT(contact));
-
-	if(g_set_object(&contact->presence, presence)) {
-		g_object_notify_by_pspec(G_OBJECT(contact), properties[PROP_PRESENCE]);
-	}
 }
 
 PurpleTags *

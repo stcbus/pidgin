@@ -113,18 +113,6 @@ purple_person_presence_notify_cb(G_GNUC_UNUSED GObject *obj,
 	purple_person_sort_contacts(data);
 }
 
-static void
-purple_person_contact_notify_cb(GObject *obj,
-                                G_GNUC_UNUSED GParamSpec *pspec,
-                                gpointer data)
-{
-	PurpleContact *contact = PURPLE_CONTACT(obj);
-
-	g_signal_connect_object(contact, "notify",
-	                        G_CALLBACK(purple_person_presence_notify_cb),
-	                        data, 0);
-}
-
 /******************************************************************************
  * GListModel Implementation
  *****************************************************************************/
@@ -407,16 +395,10 @@ purple_person_add_contact(PurplePerson *person, PurpleContact *contact) {
 
 	g_ptr_array_add(person->contacts, g_object_ref(contact));
 
-	g_signal_connect_object(contact, "notify::presence",
-	                        G_CALLBACK(purple_person_contact_notify_cb),
-	                        person, 0);
-
 	presence = purple_contact_get_presence(contact);
-	if(PURPLE_IS_PRESENCE(presence)) {
-		g_signal_connect_object(presence, "notify",
-		                        G_CALLBACK(purple_person_presence_notify_cb),
-		                        person, 0);
-	}
+	g_signal_connect_object(presence, "notify",
+	                        G_CALLBACK(purple_person_presence_notify_cb),
+	                        person, 0);
 
 	purple_contact_set_person(contact, person);
 
@@ -441,16 +423,9 @@ purple_person_remove_contact(PurplePerson *person, PurpleContact *contact) {
 	if(removed) {
 		PurplePresence *presence = purple_contact_get_presence(contact);
 
-		/* Disconnect our signal handlers. */
-		g_signal_handlers_disconnect_by_func(contact,
-		                                     purple_person_contact_notify_cb,
+		g_signal_handlers_disconnect_by_func(presence,
+		                                     purple_person_presence_notify_cb,
 		                                     person);
-
-		if(PURPLE_IS_PRESENCE(presence)) {
-			g_signal_handlers_disconnect_by_func(presence,
-			                                     purple_person_presence_notify_cb,
-			                                     person);
-		}
 
 		purple_contact_set_person(contact, NULL);
 

@@ -207,20 +207,6 @@ void purple_contact_set_avatar(PurpleContact *contact, GdkPixbuf *avatar);
 PurplePresence *purple_contact_get_presence(PurpleContact *contact);
 
 /**
- * purple_contact_set_presence:
- * @contact: The instance.
- * @presence: (nullable): The new [class@Purple.Presence] to set.
- *
- * Sets the presence for @contact to @presence. If @presence is %NULL, the
- * existing presence will be cleared.
- *
- * Typically this should only be called by the protocol plugin.
- *
- * Since: 3.0.0
- */
-void purple_contact_set_presence(PurpleContact *contact, PurplePresence *presence);
-
-/**
  * purple_contact_get_tags:
  * @contact: The instance.
  *

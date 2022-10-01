@@ -19,6 +19,8 @@
 #include <glib/gi18n-lib.h>
 
 #include "purplecontactmanager.h"
+
+#include "purplegdkpixbuf.h"
 #include "purpleprivate.h"
 #include "util.h"
 
@@ -66,6 +68,62 @@ purple_contact_manager_find_with_id_helper(gconstpointer a, gconstpointer b) {
 	id_b = purple_contact_get_id(contact_b);
 
 	return purple_strequal(id_a, id_b);
+}
+
+static gboolean
+purple_contact_manager_convert_icon_to_avatar(GBinding *binding,
+                                              const GValue *from_value,
+                                              GValue *to_value,
+                                              gpointer user_data)
+{
+	PurpleBuddyIcon *icon = g_value_get_pointer(from_value);
+	GdkPixbuf *avatar = NULL;
+	gconstpointer data = NULL;
+	size_t len;
+
+	if(icon == NULL) {
+		g_value_set_object(to_value, NULL);
+		return TRUE;
+	}
+
+	data = purple_buddy_icon_get_data(icon, &len);
+
+	avatar = purple_gdk_pixbuf_from_data(data, len);
+
+	g_value_take_object(to_value, avatar);
+
+	return TRUE;
+}
+
+static gboolean
+purple_contact_manager_convert_avatar_to_icon(GBinding *binding,
+                                              const GValue *from_value,
+                                              GValue *to_value,
+                                              gpointer user_data)
+{
+	PurpleBuddyIcon *icon = NULL;
+	GdkPixbuf *avatar = g_value_get_object(from_value);
+	gchar *buffer = NULL;
+	gsize len;
+	gboolean result = FALSE;
+
+	if(!GDK_IS_PIXBUF(avatar)) {
+		g_value_set_pointer(to_value, NULL);
+
+		return TRUE;
+	}
+
+	result = gdk_pixbuf_save_to_buffer(avatar, &buffer, &len, "png", NULL,
+	                                   "compression", "9", NULL);
+	if(!result) {
+		return FALSE;
+	}
+
+	purple_buddy_icon_set_data(icon, (guchar *)buffer, len, NULL);
+
+	g_free(buffer);
+
+	return TRUE;
 }
 
 /******************************************************************************
@@ -366,4 +424,61 @@ purple_contact_manager_find_with_id(PurpleContactManager *manager,
 	}
 
 	return NULL;
+}
+
+/******************************************************************************
+ * Migration API
+ *****************************************************************************/
+void
+purple_contact_manager_add_buddy(PurpleContactManager *manager,
+                                 PurpleBuddy *buddy)
+{
+	PurpleAccount *account = NULL;
+	PurpleContact *contact = NULL;
+	PurplePresence *buddy_presence = NULL;
+	PurplePresence *contact_presence = NULL;
+	const gchar *id = NULL;
+
+	g_return_if_fail(PURPLE_IS_CONTACT_MANAGER(manager));
+	g_return_if_fail(PURPLE_IS_BUDDY(buddy));
+
+	/* Create the new contact. */
+	account = purple_buddy_get_account(buddy);
+	id = purple_buddy_get_id(buddy);
+	contact = purple_contact_new(account, id);
+
+	/* Bind all of the properties. */
+	g_object_bind_property(buddy, "name", contact, "username",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+	g_object_bind_property(buddy, "local-alias", contact, "alias",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+	g_object_bind_property(buddy, "server-alias", contact, "display-name",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+
+	buddy_presence = purple_buddy_get_presence(buddy);
+	contact_presence = purple_contact_get_presence(contact);
+
+	g_object_bind_property(buddy_presence, "idle", contact_presence, "idle",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+	g_object_bind_property(buddy_presence, "idle-time", contact_presence,
+	                       "idle-time",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+	g_object_bind_property(buddy_presence, "login-time", contact_presence,
+	                       "login-time",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+	g_object_bind_property(buddy_presence, "active-status", contact_presence,
+	                       "active-status",
+	                       G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+
+	g_object_bind_property_full(buddy, "icon", contact, "avatar",
+	                            G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL,
+	                            purple_contact_manager_convert_icon_to_avatar,
+	                            purple_contact_manager_convert_avatar_to_icon,
+	                            NULL, NULL);
+
+	/* Finally add it to the manager. */
+	purple_contact_manager_add(manager, contact);
+
+	/* purple_contact_manager_add adds its own reference, so free our copy. */
+	g_clear_object(&contact);
 }

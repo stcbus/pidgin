@@ -260,6 +260,90 @@ test_purple_contact_manager_find_with_id(void) {
 	g_clear_object(&manager);
 }
 
+static void
+test_purple_contact_manager_add_buddy(void) {
+	PurpleAccount *account = NULL;
+	PurpleBuddy *buddy = NULL;
+	PurpleContact *contact = NULL;
+	PurpleContactManager *manager = NULL;
+	PurpleStatusType *type = NULL;
+	GList *statuses = NULL;
+	const gchar *id = NULL;
+	const gchar *source = NULL;
+	const gchar *destination = NULL;
+
+	manager = purple_contact_manager_get_default();
+
+	/* Create our account and add the statuses for testing. */
+	account = purple_account_new("test", "test");
+
+	type = purple_status_type_new(PURPLE_STATUS_OFFLINE, "offline",
+	                              "offline", TRUE);
+	statuses = g_list_append(statuses, type);
+
+	purple_account_set_status_types(account, statuses);
+
+	/* purple_buddy_new will call purple_contact_manager_add_buddy. */
+	buddy = purple_buddy_new(account, "buddy-name", "buddy-alias");
+
+	/* Verify that we can find the created contact via id. */
+	id = purple_buddy_get_id(buddy);
+	contact = purple_contact_manager_find_with_id(manager, account, id);
+	g_assert_nonnull(contact);
+	g_assert_true(PURPLE_IS_CONTACT(contact));
+
+	/* Verify that we can find the created contact via username. */
+	contact = purple_contact_manager_find_with_username(manager, account,
+	                                                    "buddy-name");
+	g_assert_nonnull(contact);
+	g_assert_true(PURPLE_IS_CONTACT(contact));
+
+	/* Now check the alias and display name to make sure they were synced as
+	 * well.
+	 */
+	source = purple_buddy_get_local_alias(buddy);
+	destination = purple_contact_get_alias(contact);
+	g_assert_cmpstr(destination, ==, source);
+
+	source = purple_buddy_get_server_alias(buddy);
+	destination = purple_contact_get_display_name(contact);
+	g_assert_cmpstr(destination, ==, source);
+
+	/* Now let's change the settings in the buddy and verify they made it to the
+	 * contact.
+	 */
+	/* We have to skip testing the name because we have to stand up a LOT more
+	 * of libpurple to be able to change the name.
+	purple_buddy_set_name(buddy, "guy-name");
+	g_assert_cmpstr(purple_contact_get_username(contact), ==, "guy-name");
+	*/
+
+	purple_buddy_set_local_alias(buddy, "guy-alias");
+	g_assert_cmpstr(purple_contact_get_alias(contact), ==, "guy-alias");
+
+	purple_buddy_set_server_alias(buddy, "server-guy");
+	g_assert_cmpstr(purple_contact_get_display_name(contact), ==,
+	                "server-guy");
+
+	purple_contact_set_alias(contact, "friend-alias");
+	g_assert_cmpstr(purple_buddy_get_local_alias(buddy), ==, "friend-alias");
+
+	purple_contact_set_display_name(contact, "server-friend");
+	g_assert_cmpstr(purple_buddy_get_server_alias(buddy), ==, "server-friend");
+
+	/* We can't verify the presences changes because PurpleBuddy has to be in
+	 * a PurpleMetaContact for that to not crash.
+	 */
+
+	/* Since we're working on the default contact manager, make sure we remove
+	 * any contacts for our test account.
+	 */
+	purple_contact_manager_remove_all(manager, account);
+
+	g_clear_object(&account);
+	g_clear_object(&buddy);
+	g_clear_object(&contact);
+}
 /******************************************************************************
  * Main
  *****************************************************************************/
@@ -285,6 +369,9 @@ main(gint argc, gchar *argv[]) {
 	                test_purple_contact_manager_find_with_username);
 	g_test_add_func("/contact-manager/find/with-id",
 	                test_purple_contact_manager_find_with_id);
+
+	g_test_add_func("/contact-manager/add-buddy",
+	                test_purple_contact_manager_add_buddy);
 
 	return g_test_run();
 }

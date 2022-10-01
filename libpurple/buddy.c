@@ -24,6 +24,7 @@
 
 #include "debug.h"
 #include "purplebuddypresence.h"
+#include "purplecontactmanager.h"
 #include "purpleconversationmanager.h"
 #include "purpleprotocolclient.h"
 #include "util.h"
@@ -292,15 +293,25 @@ static void purple_buddy_class_init(PurpleBuddyClass *klass) {
 PurpleBuddy *
 purple_buddy_new(PurpleAccount *account, const gchar *name, const gchar *alias)
 {
+	PurpleBuddy *buddy = NULL;
+	PurpleContactManager *manager = NULL;
+
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
 	g_return_val_if_fail(name != NULL, NULL);
 
-	return g_object_new(
+	buddy = g_object_new(
 		PURPLE_TYPE_BUDDY,
 		"account", account,
 		"name", name,
 		"local-alias", alias,
 		NULL);
+
+	manager = purple_contact_manager_get_default();
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	purple_contact_manager_add_buddy(manager, buddy);
+	G_GNUC_END_IGNORE_DEPRECATIONS
+
+	return buddy;
 }
 
 const gchar *
