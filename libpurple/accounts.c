@@ -309,6 +309,7 @@ parse_account(PurpleXmlNode *node)
 	char *name = NULL;
 	char *data;
 	gboolean enabled = FALSE;
+	gboolean require_password = FALSE;
 
 	child = purple_xmlnode_get_child(node, "id");
 	if(child != NULL) {
@@ -328,6 +329,11 @@ parse_account(PurpleXmlNode *node)
 		child = purple_xmlnode_get_child(node, "username");
 		if (child != NULL)
 			name = purple_xmlnode_get_data(child);
+	}
+
+	child = purple_xmlnode_get_child(node, "require_password");
+	if(child != NULL) {
+		require_password = atoi(purple_xmlnode_get_data(child));
 	}
 
 	child = purple_xmlnode_get_child(node, "enabled");
@@ -351,6 +357,7 @@ parse_account(PurpleXmlNode *node)
 		"username", name,
 		"protocol-id", protocol_id,
 		"enabled", enabled,
+		"require-password", require_password,
 		NULL);
 
 	g_free(id);

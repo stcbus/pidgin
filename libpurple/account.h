@@ -1010,6 +1010,31 @@ const PurpleConnectionErrorInfo *purple_account_get_current_error(PurpleAccount 
  */
 void purple_account_clear_current_error(PurpleAccount *account);
 
+/**
+ * purple_account_set_require_password:
+ * @account: The instance.
+ * @require_password: Whether or not this account should require a password.
+ *
+ * For protocols that have an optional password, this settings tells libpurple
+ * that it should look for a password in the [class@Purple.CredentialManager]
+ * or prompt the user if a password can not be found.
+ *
+ * Since: 3.0.0
+ */
+void purple_account_set_require_password(PurpleAccount *account, gboolean require_password);
+
+/**
+ * purple_account_get_require_password:
+ * @account: The instance.
+ *
+ * Gets whether or not @account requires a password.
+ *
+ * Returns: %TRUE if the account requires a password, %FALSE otherwise.
+ *
+ * Since: 3.0.0
+ */
+gboolean purple_account_get_require_password(PurpleAccount *account);
+
 G_END_DECLS
 
 #endif /* PURPLE_ACCOUNT_H */

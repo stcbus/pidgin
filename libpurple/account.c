@@ -51,6 +51,7 @@ struct _PurpleAccount
 	gchar *id;
 
 	char *username;             /* The username.                          */
+	gboolean require_password;
 	char *alias;                /* How you appear to yourself.            */
 	char *user_info;            /* User information.                      */
 
@@ -117,6 +118,7 @@ enum
 	PROP_0,
 	PROP_ID,
 	PROP_USERNAME,
+	PROP_REQUIRE_PASSWORD,
 	PROP_PRIVATE_ALIAS,
 	PROP_ENABLED,
 	PROP_CONNECTION,
@@ -645,6 +647,11 @@ _purple_account_to_xmlnode(PurpleAccount *account)
 	child = purple_xmlnode_new_child(node, "name");
 	purple_xmlnode_insert_data(child, purple_account_get_username(account), -1);
 
+	child = purple_xmlnode_new_child(node, "require_password");
+	data = g_strdup_printf("%d", account->require_password);
+	purple_xmlnode_insert_data(child, data, -1);
+	g_clear_pointer(&data, g_free);
+
 	child = purple_xmlnode_new_child(node, "enabled");
 	data = g_strdup_printf("%d", account->enabled);
 	purple_xmlnode_insert_data(child, data, -1);
@@ -708,6 +715,10 @@ purple_account_set_property(GObject *obj, guint param_id, const GValue *value,
 		case PROP_USERNAME:
 			purple_account_set_username(account, g_value_get_string(value));
 			break;
+		case PROP_REQUIRE_PASSWORD:
+			purple_account_set_require_password(account,
+			                                    g_value_get_boolean(value));
+			break;
 		case PROP_PRIVATE_ALIAS:
 			purple_account_set_private_alias(account, g_value_get_string(value));
 			break;
@@ -752,6 +763,10 @@ purple_account_get_property(GObject *obj, guint param_id, GValue *value,
 			break;
 		case PROP_USERNAME:
 			g_value_set_string(value, purple_account_get_username(account));
+			break;
+		case PROP_REQUIRE_PASSWORD:
+			g_value_set_boolean(value,
+			                    purple_account_get_require_password(account));
 			break;
 		case PROP_PRIVATE_ALIAS:
 			g_value_set_string(value, purple_account_get_private_alias(account));
@@ -938,6 +953,21 @@ purple_account_class_init(PurpleAccountClass *klass)
 	properties[PROP_USERNAME] = g_param_spec_string("username", "Username",
 				"The username for the account.", NULL,
 				G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * PurpleAccount:require-password:
+	 *
+	 * Whether or not this account should require a password. This is only used
+	 * if the [class@Purple.Protocol] that this account is for allows optional
+	 * passwords.
+	 *
+	 * Since: 3.0.0
+	 */
+	properties[PROP_REQUIRE_PASSWORD] = g_param_spec_boolean(
+		"require-password", "Require password",
+		"Whether or not to require a password for this account",
+		FALSE,
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	properties[PROP_PRIVATE_ALIAS] = g_param_spec_string("private-alias",
 				"Private Alias",
@@ -2368,4 +2398,28 @@ void
 purple_account_clear_current_error(PurpleAccount *account)
 {
 	_purple_account_set_current_error(account, NULL);
+}
+
+void
+purple_account_set_require_password(PurpleAccount *account,
+                                    gboolean require_password)
+{
+	gboolean old = FALSE;
+
+	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
+
+	old = account->require_password;
+	account->require_password = require_password;
+
+	if(old != require_password) {
+		g_object_notify_by_pspec(G_OBJECT(account),
+		                         properties[PROP_REQUIRE_PASSWORD]);
+	}
+}
+
+gboolean
+purple_account_get_require_password(PurpleAccount *account) {
+	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), FALSE);
+
+	return account->require_password;
 }
