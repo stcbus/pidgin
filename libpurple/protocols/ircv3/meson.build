@@ -1,5 +1,8 @@
 IRCV3_SOURCES = [
 	'purpleircv3core.c',
+	'purpleircv3core.h',
+	'purpleircv3parser.c',
+	'purpleircv3parser.h',
 	'purpleircv3protocol.c',
 	'purpleircv3protocol.h',
 ]
@@ -18,3 +21,5 @@ if DYNAMIC_IRCV3
 
 	devenv.append('PURPLE_PLUGIN_PATH', meson.current_build_dir())
 endif
+
+subdir('tests')

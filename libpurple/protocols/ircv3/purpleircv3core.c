@@ -24,13 +24,13 @@
 
 #include <purple.h>
 
+#include "purpleircv3core.h"
+
 #include "purpleircv3protocol.h"
 
 /******************************************************************************
  * Globals
  *****************************************************************************/
-#define PURPLE_IRCV3_DOMAIN (g_quark_from_static_string("ircv3-plugin"))
-
 static PurpleProtocol *ircv3_protocol = NULL;
 
 /******************************************************************************
