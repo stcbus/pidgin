@@ -313,8 +313,10 @@ purple_account_connect_got_password_cb(GObject *obj, GAsyncResult *res,
 	PurpleCredentialManager *manager = PURPLE_CREDENTIAL_MANAGER(obj);
 	PurpleAccount *account = PURPLE_ACCOUNT(data);
 	PurpleProtocol *protocol = NULL;
+	PurpleProtocolOptions options;
 	GError *error = NULL;
 	gchar *password = NULL;
+	gboolean require_password = TRUE;
 
 	password = purple_credential_manager_read_password_finish(manager, res,
 	                                                          &error);
@@ -327,11 +329,14 @@ purple_account_connect_got_password_cb(GObject *obj, GAsyncResult *res,
 	}
 
 	protocol = purple_account_get_protocol(account);
+	options = purple_protocol_get_options(protocol);
+	if(options & OPT_PROTO_PASSWORD_OPTIONAL) {
+		require_password = purple_account_get_require_password(account);
+	} else if(options & OPT_PROTO_NO_PASSWORD) {
+		require_password = FALSE;
+	}
 
-	if((password == NULL || *password == '\0') &&
-		!(purple_protocol_get_options(protocol) & OPT_PROTO_NO_PASSWORD) &&
-		!(purple_protocol_get_options(protocol) & OPT_PROTO_PASSWORD_OPTIONAL))
-	{
+	if((password == NULL || *password == '\0') && require_password) {
 		purple_account_request_password(account,
 			G_CALLBACK(request_password_ok_cb),
 			G_CALLBACK(request_password_cancel_cb), account);
@@ -1052,7 +1057,9 @@ purple_account_connect(PurpleAccount *account)
 {
 	PurpleCredentialManager *manager = NULL;
 	PurpleProtocol *protocol = NULL;
+	PurpleProtocolOptions options;
 	const char *username = NULL;
+	gboolean require_password = TRUE;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
@@ -1080,10 +1087,21 @@ purple_account_connect(PurpleAccount *account)
 
 	purple_debug_info("account", "Connecting to account %s.\n", username);
 
-	manager = purple_credential_manager_get_default();
-	purple_credential_manager_read_password_async(manager, account, NULL,
-	                                              purple_account_connect_got_password_cb,
-	                                              account);
+	options = purple_protocol_get_options(protocol);
+	if(options & OPT_PROTO_PASSWORD_OPTIONAL) {
+		require_password = purple_account_get_require_password(account);
+	} else if(options & OPT_PROTO_NO_PASSWORD) {
+		require_password = FALSE;
+	}
+
+	if(require_password) {
+		manager = purple_credential_manager_get_default();
+		purple_credential_manager_read_password_async(manager, account, NULL,
+		                                              purple_account_connect_got_password_cb,
+		                                              account);
+	} else {
+		_purple_connection_new(account, FALSE, NULL);
+	}
 }
 
 void
