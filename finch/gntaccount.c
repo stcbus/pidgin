@@ -48,6 +48,7 @@ typedef struct
 
 	GntWidget *protocol;
 	GntWidget *username;
+	GntWidget *require_password;
 	GntWidget *alias;
 
 	GntWidget *splits;
@@ -182,9 +183,11 @@ save_account_cb(AccountEditDialog *dialog)
 	value = gnt_entry_get_text(GNT_ENTRY(dialog->alias));
 	purple_account_set_private_alias(account, value);
 
-	/* Remember password and password */
+	/* Remember password and require password */
 	purple_account_set_remember_password(account,
 			gnt_check_box_get_checked(GNT_CHECK_BOX(dialog->remember)));
+	purple_account_set_require_password(account,
+			gnt_check_box_get_checked(GNT_CHECK_BOX(dialog->require_password)));
 
 	/* Protocol options */
 	if (protocol)
@@ -484,17 +487,42 @@ add_account_options(AccountEditDialog *dialog)
 static void
 update_user_options(AccountEditDialog *dialog)
 {
-	PurpleProtocol *protocol;
+	PurpleProtocol *protocol = NULL;
+	PurpleProtocolOptions options;
 
 	protocol = gnt_combo_box_get_selected_data(GNT_COMBO_BOX(dialog->protocol));
-	if (!protocol)
+	if(!protocol) {
 		return;
+	}
 
-	if (dialog->remember == NULL)
+	options = purple_protocol_get_options(protocol);
+
+	if(dialog->remember == NULL) {
 		dialog->remember = gnt_check_box_new(_("Remember password"));
-	if (dialog->account)
+	}
+
+	if(dialog->require_password == NULL) {
+		dialog->require_password = gnt_check_box_new(_("Require a password "
+		                                               "for this account"));
+	}
+
+	gnt_widget_set_visible(dialog->require_password,
+	                       options & OPT_PROTO_PASSWORD_OPTIONAL);
+
+	if (dialog->account) {
+		gboolean remember_password = FALSE;
+		gboolean require_password = FALSE;
+
+		remember_password =
+			purple_account_get_remember_password(dialog->account);
 		gnt_check_box_set_checked(GNT_CHECK_BOX(dialog->remember),
-				purple_account_get_remember_password(dialog->account));
+		                          remember_password);
+
+		require_password = purple_account_get_require_password(dialog->account);
+		gnt_check_box_set_checked(GNT_CHECK_BOX(dialog->require_password),
+		                          require_password);
+	}
+
 }
 
 static void
@@ -598,6 +626,7 @@ edit_account(PurpleAccount *account)
 	/* User options */
 	update_user_options(dialog);
 	gnt_box_add_widget(GNT_BOX(window), dialog->remember);
+	gnt_box_add_widget(GNT_BOX(window), dialog->require_password);
 
 	/* Register checkbox */
 	dialog->regserver = gnt_check_box_new(_("Create this account on the server"));
