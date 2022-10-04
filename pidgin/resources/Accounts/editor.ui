@@ -50,16 +50,38 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="activatable-widget">username</property>
-                    <property name="title" translatable="1">_Username</property>
-                    <property name="use-underline">1</property>
+                  <object class="AdwPreferencesRow">
                     <child>
-                      <object class="GtkEntry" id="username">
-                        <property name="hexpand">1</property>
+                      <object class="GtkListBox" id="user_splits">
+                        <child>
+                          <object class="AdwActionRow">
+                            <property name="activatable-widget">username</property>
+                            <property name="title" translatable="1">_Username</property>
+                            <property name="use-underline">1</property>
+                            <child>
+                              <object class="GtkEntry" id="username">
+                                <property name="hexpand">1</property>
+                                <property name="valign">center</property>
+                                <property name="truncate-multiline">1</property>
+                                <signal name="changed" handler="pidgin_account_editor_username_changed_cb" object="PidginAccountEditor" swapped="no"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow" id="require_password_row">
+                    <property name="activatable-widget">avatar</property>
+                    <property name="title" translatable="1">Require _password</property>
+                    <property name="subtitle" translatable="1">This account has an optional password, setting this will make it required</property>
+                    <property name="use-underline">1</property>
+                    <property name="visible">0</property>
+                    <child type="suffix">
+                      <object class="GtkSwitch" id="require_password">
                         <property name="valign">center</property>
-                        <property name="truncate-multiline">1</property>
-                        <signal name="changed" handler="pidgin_account_editor_username_changed_cb" object="PidginAccountEditor" swapped="no"/>
                       </object>
                     </child>
                   </object>

@@ -37,6 +37,9 @@ struct _PidginAccountEditor {
 	GtkWidget *login_options;
 	GtkWidget *protocol;
 	GtkWidget *username;
+	GtkWidget *user_splits;
+	GtkWidget *require_password_row;
+	GtkWidget *require_password;
 
 	GList *user_split_entries;
 	GList *user_split_rows;
@@ -73,7 +76,6 @@ enum {
 };
 static GParamSpec *properties[N_PROPERTIES] = {NULL, };
 
-
 /******************************************************************************
  * Prototypes
  *****************************************************************************/
@@ -95,8 +97,7 @@ pidgin_account_editor_add_user_split(gpointer data, gpointer user_data) {
 
 		row = adw_action_row_new();
 		editor->user_split_rows = g_list_append(editor->user_split_rows, row);
-		adw_preferences_group_add(ADW_PREFERENCES_GROUP(editor->login_options),
-		                          row);
+		gtk_list_box_append(GTK_LIST_BOX(editor->user_splits), row);
 
 		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(row),
 		                              purple_account_user_split_get_text(split));
@@ -116,10 +117,13 @@ static gboolean
 pidgin_account_editor_update_login_options(PidginAccountEditor *editor,
                                            PurpleProtocol *protocol)
 {
+	PurpleProtocolOptions options;
 	GList *user_splits = NULL;
 	GList *split_item = NULL;
 	GList *entry_item = NULL;
 	gchar *username = NULL;
+	gboolean require_password = FALSE;
+	gboolean ret = FALSE;
 
 	/* Clear out the old user splits from our list. */
 	g_clear_pointer(&editor->user_split_entries, g_list_free);
@@ -128,8 +132,8 @@ pidgin_account_editor_update_login_options(PidginAccountEditor *editor,
 	 * constant user split.
 	 */
 	while(editor->user_split_rows != NULL) {
-		adw_preferences_group_remove(ADW_PREFERENCES_GROUP(editor->login_options),
-		                             editor->user_split_rows->data);
+		gtk_list_box_remove(GTK_LIST_BOX(editor->user_splits),
+		                    editor->user_split_rows->data);
 
 		editor->user_split_rows = g_list_delete_link(editor->user_split_rows,
 		                                             editor->user_split_rows);
@@ -200,10 +204,18 @@ pidgin_account_editor_update_login_options(PidginAccountEditor *editor,
 	if(username != NULL) {
 		gtk_editable_set_text(GTK_EDITABLE(editor->username), username);
 		g_free(username);
-		return TRUE;
+		ret = TRUE;
 	}
 
-	return FALSE;
+	options = purple_protocol_get_options(protocol);
+	gtk_widget_set_visible(editor->require_password_row,
+	                       options & OPT_PROTO_PASSWORD_OPTIONAL);
+
+	require_password = purple_account_get_require_password(editor->account);
+	gtk_switch_set_active(GTK_SWITCH(editor->require_password),
+	                      require_password);
+
+	return ret;
 }
 
 static void
@@ -657,6 +669,8 @@ static void
 pidgin_account_editor_login_options_update_editable(PidginAccountEditor *editor)
 {
 	PurpleConnection *connection = NULL;
+	PurpleProtocol *protocol = NULL;
+	PurpleProtocolOptions options;
 	gboolean editable = TRUE;
 
 	if(PURPLE_IS_ACCOUNT(editor->account)) {
@@ -687,6 +701,11 @@ pidgin_account_editor_login_options_update_editable(PidginAccountEditor *editor)
 
 	}
 
+	protocol = purple_account_get_protocol(editor->account);
+	options = purple_protocol_get_options(protocol);
+	gtk_widget_set_visible(editor->require_password_row,
+	                       options & OPT_PROTO_PASSWORD_OPTIONAL);
+
 	gtk_widget_set_sensitive(editor->protocol, editable);
 	gtk_editable_set_editable(GTK_EDITABLE(editor->username), editable);
 	for(GList *l = editor->user_split_entries; l != NULL; l = l->next) {
@@ -694,6 +713,7 @@ pidgin_account_editor_login_options_update_editable(PidginAccountEditor *editor)
 
 		gtk_editable_set_editable(GTK_EDITABLE(widget), editable);
 	}
+	gtk_widget_set_sensitive(editor->require_password, editable);
 }
 
 static void
@@ -720,6 +740,7 @@ pidgin_account_editor_save_login_options(PidginAccountEditor *editor) {
 	GString *username = NULL;
 	const gchar *protocol_id = NULL;
 	gboolean new_account = FALSE;
+	gboolean require_password = FALSE;
 
 	protocol = pidgin_protocol_chooser_get_protocol(PIDGIN_PROTOCOL_CHOOSER(editor->protocol));
 	protocol_id = purple_protocol_get_id(protocol);
@@ -760,6 +781,9 @@ pidgin_account_editor_save_login_options(PidginAccountEditor *editor) {
 	}
 
 	g_string_free(username, TRUE);
+
+	require_password = gtk_switch_get_active(GTK_SWITCH(editor->require_password));
+	purple_account_set_require_password(editor->account, require_password);
 
 	return new_account;
 }
@@ -1210,6 +1234,12 @@ pidgin_account_editor_class_init(PidginAccountEditorClass *klass) {
 	                                     protocol);
 	gtk_widget_class_bind_template_child(widget_class, PidginAccountEditor,
 	                                     username);
+	gtk_widget_class_bind_template_child(widget_class, PidginAccountEditor,
+	                                     user_splits);
+	gtk_widget_class_bind_template_child(widget_class, PidginAccountEditor,
+	                                     require_password_row);
+	gtk_widget_class_bind_template_child(widget_class, PidginAccountEditor,
+	                                     require_password);
 
 	gtk_widget_class_bind_template_callback(widget_class,
 	                                        pidgin_account_editor_protocol_changed_cb);
