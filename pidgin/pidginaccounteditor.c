@@ -211,7 +211,9 @@ pidgin_account_editor_update_login_options(PidginAccountEditor *editor,
 	gtk_widget_set_visible(editor->require_password_row,
 	                       options & OPT_PROTO_PASSWORD_OPTIONAL);
 
-	require_password = purple_account_get_require_password(editor->account);
+	if(PURPLE_IS_ACCOUNT(editor->account)) {
+		require_password = purple_account_get_require_password(editor->account);
+	}
 	gtk_switch_set_active(GTK_SWITCH(editor->require_password),
 	                      require_password);
 
@@ -668,12 +670,16 @@ pidgin_account_editor_update(PidginAccountEditor *editor) {
 static void
 pidgin_account_editor_login_options_update_editable(PidginAccountEditor *editor)
 {
-	PurpleConnection *connection = NULL;
-	PurpleProtocol *protocol = NULL;
+	PidginProtocolChooser *chooser = NULL;
+	PurpleProtocol *selected_protocol = NULL;
 	PurpleProtocolOptions options;
 	gboolean editable = TRUE;
 
+	chooser = PIDGIN_PROTOCOL_CHOOSER(editor->protocol);
+	selected_protocol = pidgin_protocol_chooser_get_protocol(chooser);
+
 	if(PURPLE_IS_ACCOUNT(editor->account)) {
+		PurpleConnection *connection = NULL;
 
 		connection = purple_account_get_connection(editor->account);
 
@@ -681,9 +687,7 @@ pidgin_account_editor_login_options_update_editable(PidginAccountEditor *editor)
 		 * related to the protocol and username.
 		 */
 		if(PURPLE_IS_CONNECTION(connection)) {
-			PidginProtocolChooser *chooser = NULL;
 			PurpleProtocol *connected_protocol = NULL;
-			PurpleProtocol *selected_protocol = NULL;
 			editable = FALSE;
 
 			/* Check if the user changed the protocol. If they did, switch it
@@ -691,18 +695,15 @@ pidgin_account_editor_login_options_update_editable(PidginAccountEditor *editor)
 			 */
 			connected_protocol = purple_connection_get_protocol(connection);
 
-			chooser = PIDGIN_PROTOCOL_CHOOSER(editor->protocol);
-			selected_protocol = pidgin_protocol_chooser_get_protocol(chooser);
 			if(connected_protocol != selected_protocol) {
 				pidgin_protocol_chooser_set_protocol(chooser, connected_protocol);
 				pidgin_account_editor_update(editor);
+				selected_protocol = connected_protocol;
 			}
 		}
-
 	}
 
-	protocol = purple_account_get_protocol(editor->account);
-	options = purple_protocol_get_options(protocol);
+	options = purple_protocol_get_options(selected_protocol);
 	gtk_widget_set_visible(editor->require_password_row,
 	                       options & OPT_PROTO_PASSWORD_OPTIONAL);
 
