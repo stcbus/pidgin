@@ -781,8 +781,8 @@ ggp_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b,
 	}
 }
 
-static void ggp_login(PurpleAccount *account)
-{
+static void
+ggp_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc = purple_account_get_connection(account);
 	struct gg_login_params *glp;
 	GGPInfo *info;
@@ -905,8 +905,8 @@ static void ggp_login(PurpleAccount *account)
 	}
 }
 
-static void ggp_close(PurpleConnection *gc)
-{
+static void
+ggp_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection *gc) {
 	PurpleAccount *account;
 	GGPInfo *info;;
 

@@ -95,8 +95,7 @@ bonjour_removeallfromlocal(PurpleConnection *conn, PurpleGroup *bonjour_group)
 }
 
 static void
-bonjour_login(PurpleAccount *account)
-{
+bonjour_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc = purple_account_get_connection(account);
 	BonjourData *bd;
 	PurpleStatus *status;
@@ -162,7 +161,8 @@ bonjour_login(PurpleAccount *account)
 }
 
 static void
-bonjour_close(PurpleConnection *connection)
+bonjour_close(G_GNUC_UNUSED PurpleProtocol *protocol,
+              PurpleConnection *connection)
 {
 	PurpleGroup *bonjour_group;
 	BonjourData *bd = purple_connection_get_protocol_data(connection);
@@ -325,7 +325,8 @@ bonjour_remove_buddy(PurpleProtocolServer *protocol_server,
 }
 
 static GList *
-bonjour_status_types(PurpleAccount *account)
+bonjour_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                     PurpleAccount *account)
 {
 	GList *status_types = NULL;
 	PurpleStatusType *type;

@@ -3222,7 +3222,9 @@ mw_protocol_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b,
   }
 }
 
-static GList *mw_protocol_status_types(PurpleAccount *acct)
+static GList *
+mw_protocol_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                         PurpleAccount *acct)
 {
 	GList *types = NULL;
 	PurpleStatusType *type;
@@ -3520,10 +3522,10 @@ mw_protocol_chat_info_defaults(PurpleProtocolChat *protocol_chat,
 }
 
 
-static void mw_protocol_login(PurpleAccount *acct);
-
-
-static void mw_protocol_login(PurpleAccount *account) {
+static void
+mw_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
+                  PurpleAccount *account)
+{
   PurpleConnection *gc;
   struct mwPurpleProtocolData *pd;
 
@@ -3611,7 +3613,10 @@ static void mw_protocol_login(PurpleAccount *account) {
 }
 
 
-static void mw_protocol_close(PurpleConnection *gc) {
+static void
+mw_protocol_close(G_GNUC_UNUSED PurpleProtocol *protocol,
+                  PurpleConnection *gc)
+{
   struct mwPurpleProtocolData *pd;
 
   g_return_if_fail(gc != NULL);

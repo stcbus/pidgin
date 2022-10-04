@@ -369,9 +369,9 @@ void jabber_stream_restart_inactivity_timer(JabberStream *js);
 const char* jabber_list_emblem(PurpleProtocolClient *client, PurpleBuddy *b);
 char *jabber_status_text(PurpleProtocolClient *client, PurpleBuddy *b);
 void jabber_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b, PurpleNotifyUserInfo *user_info, gboolean full);
-GList *jabber_status_types(PurpleAccount *account);
-void jabber_login(PurpleAccount *account);
-void jabber_close(PurpleConnection *gc);
+GList *jabber_status_types(PurpleProtocol *protocol, PurpleAccount *account);
+void jabber_login(PurpleProtocol *protocol, PurpleAccount *account);
+void jabber_close(PurpleProtocol *protocol, PurpleConnection *gc);
 void jabber_idle_set(PurpleProtocolServer *protocol_server, PurpleConnection *gc, int idle);
 void jabber_blocklist_parse_push(JabberStream *js, const char *from,
                                  JabberIqType type, const char *id,

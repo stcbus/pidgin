@@ -141,11 +141,11 @@ struct _PurpleProtocolClass {
 	PurpleBuddyIconSpec *(*get_buddy_icon_spec)(PurpleProtocol *protocol);
 	PurpleWhiteboardOps *(*get_whiteboard_ops)(PurpleProtocol *protocol);
 
-	void (*login)(PurpleAccount *account);
+	void (*login)(PurpleProtocol *protocol, PurpleAccount *account);
 
-	void (*close)(PurpleConnection *connection);
+	void (*close)(PurpleProtocol *protocol, PurpleConnection *connection);
 
-	GList *(*status_types)(PurpleAccount *account);
+	GList *(*status_types)(PurpleProtocol *protocol, PurpleAccount *account);
 
 	/*< private >*/
 	gpointer reserved[4];

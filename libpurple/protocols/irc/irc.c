@@ -40,11 +40,11 @@ struct _IRCProtocol {
 
 static void irc_ison_buddy_init(char *name, struct irc_buddy *ib, GList **list);
 
-static GList *irc_status_types(PurpleAccount *account);
+static GList *irc_status_types(PurpleProtocol *protocol, PurpleAccount *account);
 /* static GList *irc_chat_info(PurpleConnection *gc); */
-static void irc_login(PurpleAccount *account);
+static void irc_login(PurpleProtocol *protocol, PurpleAccount *account);
 static void irc_login_cb(GObject *source, GAsyncResult *res, gpointer user_data);
-static void irc_close(PurpleConnection *gc);
+static void irc_close(PurpleProtocol *protocol, PurpleConnection *gc);
 static int irc_im_send(PurpleProtocolIM *im, PurpleConnection *gc, PurpleMessage *msg);
 static int irc_chat_send(PurpleProtocolChat *protocol_chat, PurpleConnection *gc, int id, PurpleMessage *msg);
 static void irc_chat_join(PurpleProtocolChat *protocol_chat, PurpleConnection *gc, GHashTable *data);
@@ -424,7 +424,9 @@ irc_protocol_get_user_splits(PurpleProtocol *protocol) {
 	return g_list_append(NULL, split);
 }
 
-static GList *irc_status_types(PurpleAccount *account)
+static GList *
+irc_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                 PurpleAccount *account)
 {
 	PurpleStatusType *type;
 	GList *types = NULL;
@@ -522,8 +524,8 @@ irc_chat_info_defaults(PurpleProtocolChat *protocol_chat, PurpleConnection *gc,
 	return defaults;
 }
 
-static void irc_login(PurpleAccount *account)
-{
+static void
+irc_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc;
 	struct irc_conn *irc;
 	char **userparts;
@@ -672,8 +674,8 @@ irc_login_cb(GObject *source, GAsyncResult *res, gpointer user_data)
 	}
 }
 
-static void irc_close(PurpleConnection *gc)
-{
+static void
+irc_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection *gc) {
 	struct irc_conn *irc = purple_connection_get_protocol_data(gc);
 
 	if (irc == NULL)

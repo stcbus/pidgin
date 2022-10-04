@@ -672,8 +672,8 @@ get_zephyr_realm(PurpleAccount *account, const gchar *local_realm)
 	return g_strdup(realm);
 }
 
-static void zephyr_login(PurpleAccount * account)
-{
+static void
+zephyr_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount * account) {
 	PurpleConnection *gc;
 	zephyr_account *zephyr;
 	ZephyrLoginFunc login;
@@ -850,8 +850,8 @@ static void write_anyone(zephyr_account *zephyr)
 	g_free(fname);
 }
 
-static void zephyr_close(PurpleConnection * gc)
-{
+static void
+zephyr_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection * gc) {
 	zephyr_account *zephyr = purple_connection_get_protocol_data(gc);
 
 	g_list_free_full(zephyr->pending_zloc_names, g_free);
@@ -1060,7 +1060,9 @@ zephyr_set_status(PurpleProtocolServer *protocol_server,
 	}
 }
 
-static GList *zephyr_status_types(PurpleAccount *account)
+static GList *
+zephyr_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                    PurpleAccount *account)
 {
 	PurpleStatusType *type;
 	GList *types = NULL;

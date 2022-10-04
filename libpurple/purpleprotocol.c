@@ -531,7 +531,7 @@ purple_protocol_login(PurpleProtocol *protocol, PurpleAccount *account) {
 
 	klass = PURPLE_PROTOCOL_GET_CLASS(protocol);
 	if(klass != NULL && klass->login != NULL) {
-		klass->login(account);
+		klass->login(protocol, account);
 	}
 }
 
@@ -544,7 +544,7 @@ purple_protocol_close(PurpleProtocol *protocol, PurpleConnection *gc) {
 
 	klass = PURPLE_PROTOCOL_GET_CLASS(protocol);
 	if(klass != NULL && klass->close != NULL) {
-		klass->close(gc);
+		klass->close(protocol, gc);
 	}
 }
 
@@ -559,7 +559,7 @@ purple_protocol_get_status_types(PurpleProtocol *protocol,
 
 	klass = PURPLE_PROTOCOL_GET_CLASS(protocol);
 	if(klass != NULL && klass->status_types != NULL) {
-		return klass->status_types(account);
+		return klass->status_types(protocol, account);
 	}
 
 	return NULL;

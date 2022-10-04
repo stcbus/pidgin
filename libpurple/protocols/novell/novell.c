@@ -2185,8 +2185,7 @@ _event_callback(NMUser * user, NMEvent * event)
  ******************************************************************************/
 
 static void
-novell_login(PurpleAccount * account)
-{
+novell_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount * account) {
 	PurpleConnection *gc;
 	NMUser *user = NULL;
 	const char *server;
@@ -2241,8 +2240,7 @@ novell_login(PurpleAccount * account)
 }
 
 static void
-novell_close(PurpleConnection * gc)
-{
+novell_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection * gc) {
 	NMUser *user;
 	NMConn *conn;
 
@@ -3009,7 +3007,8 @@ novell_status_text(PurpleProtocolClient *client, PurpleBuddy * buddy)
 }
 
 static GList *
-novell_status_types(PurpleAccount *account)
+novell_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                    PurpleAccount *account)
 {
 	GList *status_types = NULL;
 	PurpleStatusType *type;

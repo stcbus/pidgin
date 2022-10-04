@@ -38,7 +38,7 @@ typedef struct _ggp_status_session_data ggp_status_session_data;
 void ggp_status_setup(PurpleConnection *gc);
 void ggp_status_cleanup(PurpleConnection *gc);
 
-GList * ggp_status_types(PurpleAccount *account);
+GList *ggp_status_types(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account);
 int ggp_status_from_purplestatus(PurpleStatus *status, gchar **message);
 const gchar * ggp_status_to_purplestatus(int status);
 const gchar * ggp_status_get_name(const gchar *purple_status);

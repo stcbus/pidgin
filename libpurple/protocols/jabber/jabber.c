@@ -998,8 +998,7 @@ jabber_stream_connect(JabberStream *js)
 }
 
 void
-jabber_login(PurpleAccount *account)
-{
+jabber_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc = purple_account_get_connection(account);
 	JabberStream *js;
 	PurpleImage *image;
@@ -1496,12 +1495,15 @@ jabber_unregister_account(PurpleProtocolServer *protocol_server,
 	JabberStream *js;
 
 	if (purple_connection_get_state(gc) != PURPLE_CONNECTION_CONNECTED) {
-		if (purple_connection_get_state(gc) != PURPLE_CONNECTION_CONNECTING)
-			jabber_login(account);
+		if (purple_connection_get_state(gc) != PURPLE_CONNECTION_CONNECTING) {
+			jabber_login(PURPLE_PROTOCOL(protocol_server), account);
+		}
+
 		js = purple_connection_get_protocol_data(gc);
 		js->unregistration = TRUE;
 		js->unregistration_cb = cb;
 		js->unregistration_user_data = user_data;
+
 		return;
 	}
 
@@ -1524,8 +1526,8 @@ jabber_unregister_account(PurpleProtocolServer *protocol_server,
  * termination before destroying everything. That seems like it would require
  * changing the semantics of protocol's close(), so it's a good idea for 3.0.0.
  */
-void jabber_close(PurpleConnection *gc)
-{
+void
+jabber_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection *gc) {
 	JabberStream *js = purple_connection_get_protocol_data(gc);
 
 	/* Close all of the open Jingle sessions on this stream */
@@ -2222,7 +2224,9 @@ jabber_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b,
 	}
 }
 
-GList *jabber_status_types(PurpleAccount *account)
+GList *
+jabber_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                    PurpleAccount *account)
 {
 	PurpleStatusType *type;
 	GList *types = NULL;

@@ -36,7 +36,9 @@ struct _PurpleDemoProtocol {
  * PurpleProtocol Implementation
  *****************************************************************************/
 static void
-purple_demo_protocol_login(PurpleAccount *account) {
+purple_demo_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
+                           PurpleAccount *account)
+{
 	PurpleConnection *connection = NULL;
 
 	connection = purple_account_get_connection(account);
@@ -46,7 +48,9 @@ purple_demo_protocol_login(PurpleAccount *account) {
 }
 
 static GList *
-purple_demo_protocol_status_types(PurpleAccount *account) {
+purple_demo_protocol_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                                  PurpleAccount *account)
+{
 	PurpleStatusType *type = NULL;
 	GList *status_types = NULL;
 

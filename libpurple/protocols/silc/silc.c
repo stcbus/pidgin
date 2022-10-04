@@ -65,7 +65,8 @@ silcpurple_free(SilcPurple sg)
 }
 
 static GList *
-silcpurple_away_states(PurpleAccount *account)
+silcpurple_away_states(G_GNUC_UNUSED PurpleProtocol *protocol,
+                       PurpleAccount *account)
 {
 	PurpleStatusType *type;
 	GList *types = NULL;
@@ -575,7 +576,8 @@ static void silcpurple_running(SilcClient client, void *context)
 }
 
 static void
-silcpurple_login(PurpleAccount *account)
+silcpurple_login(G_GNUC_UNUSED PurpleProtocol *protocol,
+                 PurpleAccount *account)
 {
 	SilcClient client;
 	PurpleConnection *gc;
@@ -712,7 +714,7 @@ silcpurple_get_quit_message(void)
 }
 
 static void
-silcpurple_close(PurpleConnection *gc)
+silcpurple_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection *gc)
 {
 	SilcPurple sg = purple_connection_get_protocol_data(gc);
 	SilcPurpleTask task;

@@ -1008,8 +1008,7 @@ fb_get_account_options(PurpleProtocol *protocol) {
 }
 
 static void
-fb_login(PurpleAccount *acct)
-{
+fb_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *acct) {
 	const gchar *pass;
 	const gchar *user;
 	FbApi *api;
@@ -1113,8 +1112,7 @@ fb_login(PurpleAccount *acct)
 }
 
 static void
-fb_close(PurpleConnection *gc)
-{
+fb_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection *gc) {
 	FbApi *api;
 	FbData *fata;
 
@@ -1130,8 +1128,7 @@ fb_close(PurpleConnection *gc)
 }
 
 static GList *
-fb_status_types(PurpleAccount *acct)
-{
+fb_status_types(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *acct) {
 	PurpleStatusType *type;
 	GList *types = NULL;
 

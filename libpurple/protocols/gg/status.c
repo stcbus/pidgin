@@ -81,7 +81,9 @@ static gchar * ggp_status_validate_description(const gchar* msg)
 	return ggp_utf8_strndup(msg, GG_STATUS_DESCR_MAXSIZE);
 }
 
-GList * ggp_status_types(PurpleAccount *account)
+GList *
+ggp_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                 PurpleAccount *account)
 {
 	GList *types = NULL;
 
