@@ -99,6 +99,7 @@ pidgin_account_editor_add_user_split(gpointer data, gpointer user_data) {
 		editor->user_split_rows = g_list_append(editor->user_split_rows, row);
 		gtk_list_box_append(GTK_LIST_BOX(editor->user_splits), row);
 
+		gtk_widget_set_focusable(row, FALSE);
 		adw_preferences_row_set_title(ADW_PREFERENCES_ROW(row),
 		                              purple_account_user_split_get_text(split));
 
@@ -303,6 +304,7 @@ pidgin_account_editor_add_advanced_boolean(PidginAccountEditor *editor,
 	row = adw_action_row_new();
 	g_object_bind_property(editor->advanced_toggle, "active", row, "visible",
 	                       G_BINDING_SYNC_CREATE);
+	gtk_widget_set_focusable(row, FALSE);
 	adw_preferences_row_set_use_underline(ADW_PREFERENCES_ROW(row), TRUE);
 	title = g_strdup_printf("_%s", purple_account_option_get_text(option));
 	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(row), title);
@@ -347,6 +349,7 @@ pidgin_account_editor_add_advanced_int(PidginAccountEditor *editor,
 	row = adw_action_row_new();
 	g_object_bind_property(editor->advanced_toggle, "active", row, "visible",
 	                       G_BINDING_SYNC_CREATE);
+	gtk_widget_set_focusable(row, FALSE);
 	adw_preferences_row_set_use_underline(ADW_PREFERENCES_ROW(row), TRUE);
 	title = g_strdup_printf("_%s", purple_account_option_get_text(option));
 	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(row), title);
@@ -397,6 +400,7 @@ pidgin_account_editor_add_advanced_string(PidginAccountEditor *editor,
 	row = adw_action_row_new();
 	g_object_bind_property(editor->advanced_toggle, "active", row, "visible",
 	                       G_BINDING_SYNC_CREATE);
+	gtk_widget_set_focusable(row, FALSE);
 	adw_preferences_row_set_use_underline(ADW_PREFERENCES_ROW(row), TRUE);
 	title = g_strdup_printf("_%s", purple_account_option_get_text(option));
 	adw_preferences_row_set_title(ADW_PREFERENCES_ROW(row), title);

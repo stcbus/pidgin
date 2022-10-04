@@ -51,11 +51,14 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </child>
                 <child>
                   <object class="AdwPreferencesRow">
+                    <property name="focusable">0</property>
                     <child>
                       <object class="GtkListBox" id="user_splits">
+                        <property name="focusable">0</property>
                         <child>
                           <object class="AdwActionRow">
                             <property name="activatable-widget">username</property>
+                            <property name="focusable">0</property>
                             <property name="title" translatable="1">_Username</property>
                             <property name="use-underline">1</property>
                             <child>
@@ -75,6 +78,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <child>
                   <object class="AdwActionRow" id="require_password_row">
                     <property name="activatable-widget">avatar</property>
+                    <property name="focusable">0</property>
                     <property name="title" translatable="1">Require _password</property>
                     <property name="subtitle" translatable="1">This account has an optional password, setting this will make it required</property>
                     <property name="use-underline">1</property>
@@ -94,6 +98,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <child>
                   <object class="AdwActionRow">
                     <property name="activatable-widget">alias</property>
+                    <property name="focusable">0</property>
                     <property name="title" translatable="1">_Local alias</property>
                     <property name="use-underline">1</property>
                     <child>
@@ -108,6 +113,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 <child>
                   <object class="AdwActionRow" id="avatar_row">
                     <property name="activatable-widget">avatar</property>
+                    <property name="focusable">0</property>
                     <property name="title" translatable="1">Use custom _avatar</property>
                     <property name="use-underline">1</property>
                     <property name="visible">0</property>
@@ -189,12 +195,15 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                 </child>
                 <child>
                   <object class="AdwPreferencesRow" id="proxy_options">
+                    <property name="focusable">0</property>
                     <property name="visible">0</property>
                     <child>
                       <object class="GtkListBox">
+                        <property name="focusable">0</property>
                         <child>
                           <object class="AdwActionRow">
                             <property name="activatable-widget">proxy_host</property>
+                            <property name="focusable">0</property>
                             <property name="title" translatable="1">_Host</property>
                             <property name="use-underline">1</property>
                             <child>
@@ -208,6 +217,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <child>
                           <object class="AdwActionRow">
                             <property name="activatable-widget">proxy_port</property>
+                            <property name="focusable">0</property>
                             <property name="title" translatable="1">P_ort</property>
                             <property name="use-underline">1</property>
                             <child>
@@ -230,6 +240,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <child>
                           <object class="AdwActionRow">
                             <property name="activatable-widget">proxy_username</property>
+                            <property name="focusable">0</property>
                             <property name="title" translatable="1">User_name</property>
                             <property name="use-underline">1</property>
                             <child>
@@ -243,6 +254,7 @@ along with this program; if not, see <https://www.gnu.org/licenses/>.
                         <child>
                           <object class="AdwActionRow">
                             <property name="activatable-widget">proxy_password</property>
+                            <property name="focusable">0</property>
                             <property name="title" translatable="1">Pa_ssword</property>
                             <property name="use-underline">1</property>
                             <child>
