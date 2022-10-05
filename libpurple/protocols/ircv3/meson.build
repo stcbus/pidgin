@@ -1,4 +1,6 @@
 IRCV3_SOURCES = [
+	'purpleircv3connection.c',
+	'purpleircv3connection.h',
 	'purpleircv3core.c',
 	'purpleircv3core.h',
 	'purpleircv3parser.c',

@@ -21,6 +21,12 @@
 
 #include <glib.h>
 
+#define PURPLE_IRCV3_DEFAULT_SERVER "irc.libera.chat"
+#define PURPLE_IRCV3_DEFAULT_PLAIN_PORT 6667
+#define PURPLE_IRCV3_DEFAULT_TLS_PORT 6697
+
 #define PURPLE_IRCV3_DOMAIN (g_quark_from_static_string("ircv3-plugin"))
+
+#define PURPLE_IRCV3_CONNECTION_KEY "ircv3-connection"
 
 #endif /* PURPLE_IRCV3_CORE_H */

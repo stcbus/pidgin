@@ -20,8 +20,8 @@
 
 #include "purpleircv3protocol.h"
 
-#define IRCV3_DEFAULT_SERVER ("irc.libera.chat")
-#define IRCV3_DEFAULT_PORT (6697)
+#include "purpleircv3connection.h"
+#include "purpleircv3core.h"
 
 typedef struct {
 	gboolean dummy;
@@ -35,7 +35,8 @@ purple_ircv3_protocol_get_user_splits(G_GNUC_UNUSED PurpleProtocol *protocol) {
 	PurpleAccountUserSplit *split = NULL;
 	GList *splits = NULL;
 
-	split = purple_account_user_split_new(_("Server"), IRCV3_DEFAULT_SERVER,
+	split = purple_account_user_split_new(_("Server"),
+	                                      PURPLE_IRCV3_DEFAULT_SERVER,
 	                                      '@');
 	splits = g_list_append(splits, split);
 
@@ -49,7 +50,7 @@ purple_ircv3_protocol_get_account_options(G_GNUC_UNUSED PurpleProtocol *protocol
 	GList *options = NULL;
 
 	option = purple_account_option_int_new(_("Port"), "port",
-	                                       IRCV3_DEFAULT_PORT);
+	                                       PURPLE_IRCV3_DEFAULT_TLS_PORT);
 	options = g_list_append(options, option);
 
 	option = purple_account_option_bool_new(_("Use TLS"), "use-tls", TRUE);
@@ -83,6 +84,68 @@ purple_ircv3_protocol_get_account_options(G_GNUC_UNUSED PurpleProtocol *protocol
 	return options;
 }
 
+static void
+purple_ircv3_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
+                            PurpleAccount *account)
+{
+	PurpleIRCv3Connection *connection = NULL;
+	PurpleConnection *purple_connection = NULL;
+	GError *error = NULL;
+
+	purple_connection = purple_account_get_connection(account);
+
+	connection = purple_ircv3_connection_new(account);
+	if(!purple_ircv3_connection_valid(connection, &error)) {
+		purple_connection_take_error(purple_connection, error);
+
+		return;
+	}
+
+	g_object_set_data_full(G_OBJECT(purple_connection),
+	                       PURPLE_IRCV3_CONNECTION_KEY,
+	                       connection, g_object_unref);
+
+	purple_ircv3_connection_connect(connection);
+}
+
+static void
+purple_ircv3_protocol_close(G_GNUC_UNUSED PurpleProtocol *protocol,
+                            PurpleConnection *purple_connection)
+{
+	PurpleIRCv3Connection *connection = NULL;
+
+	connection = g_object_get_data(G_OBJECT(purple_connection),
+	                               PURPLE_IRCV3_CONNECTION_KEY);
+
+	purple_ircv3_connection_close(connection);
+
+	/* Set our connection data to NULL which will remove the last reference. */
+	g_object_set_data(G_OBJECT(purple_connection), PURPLE_IRCV3_CONNECTION_KEY,
+	                  NULL);
+}
+
+static GList *
+purple_ircv3_protocol_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
+                                   PurpleAccount *account)
+{
+	PurpleStatusType *type = NULL;
+	GList *types = NULL;
+
+	type = purple_status_type_new(PURPLE_STATUS_AVAILABLE, NULL, NULL, TRUE);
+	types = g_list_append(types, type);
+
+	type = purple_status_type_new_with_attrs(
+		PURPLE_STATUS_AWAY, NULL, NULL, TRUE, TRUE, FALSE,
+		"message", _("Message"), purple_value_new(G_TYPE_STRING),
+		NULL);
+	types = g_list_append(types, type);
+
+	type = purple_status_type_new(PURPLE_STATUS_OFFLINE, NULL, NULL, TRUE);
+	types = g_list_append(types, type);
+
+	return types;
+}
+
 /******************************************************************************
  * GObject Implementation
  *****************************************************************************/
@@ -105,6 +168,9 @@ purple_ircv3_protocol_class_init(PurpleIRCv3ProtocolClass *klass) {
 	protocol_class->get_user_splits = purple_ircv3_protocol_get_user_splits;
 	protocol_class->get_account_options =
 		purple_ircv3_protocol_get_account_options;
+	protocol_class->login = purple_ircv3_protocol_login;
+	protocol_class->close = purple_ircv3_protocol_close;
+	protocol_class->status_types = purple_ircv3_protocol_status_types;
 }
 
 /******************************************************************************
