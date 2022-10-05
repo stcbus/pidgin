@@ -931,15 +931,6 @@ purple_escape_filename(const char *str)
 	return buf;
 }
 
-static void
-set_status_with_attrs(PurpleStatus *status, ...)
-{
-	va_list args;
-	va_start(args, status);
-	purple_status_set_active_with_attrs(status, TRUE, args);
-	va_end(args);
-}
-
 void purple_util_set_current_song(const char *title, const char *artist, const char *album)
 {
 	PurpleAccountManager *manager = purple_account_manager_get_default();
@@ -956,11 +947,18 @@ void purple_util_set_current_song(const char *title, const char *artist, const c
 		if (!tune)
 			continue;
 		if (title) {
-			set_status_with_attrs(tune,
-					PURPLE_TUNE_TITLE, title,
-					PURPLE_TUNE_ARTIST, artist,
-					PURPLE_TUNE_ALBUM, album,
-					NULL);
+			GHashTable *attributes = g_hash_table_new(g_str_hash, g_str_equal);
+
+			g_hash_table_insert(attributes, PURPLE_TUNE_TITLE,
+			                    (gpointer)title);
+			g_hash_table_insert(attributes, PURPLE_TUNE_ARTIST,
+			                    (gpointer)artist);
+			g_hash_table_insert(attributes, PURPLE_TUNE_TITLE,
+			                    (gpointer)album);
+
+			purple_status_set_active_with_attributes(tune, TRUE, attributes);
+
+			g_hash_table_destroy(attributes);
 		} else {
 			purple_status_set_active(tune, FALSE);
 		}

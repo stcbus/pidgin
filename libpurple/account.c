@@ -1536,8 +1536,9 @@ purple_account_set_status_attrs(PurpleAccount *account, const char *status_id,
 		return;
 	}
 
-	if (active || purple_status_is_independent(status))
-		purple_status_set_active_with_attrs_dict(status, active, attrs);
+	if (active || purple_status_is_independent(status)) {
+		purple_status_set_active_with_attributes(status, active, attrs);
+	}
 
 	/*
 	 * Our current statuses are saved to accounts.xml (so that when we

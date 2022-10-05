@@ -257,8 +257,9 @@ version 3.0.0 (??/??/????):
 		* PurpleStatus is now a GObject. Please see the documentation for
 		  details.
 		* purple_status_attr_* functions are now purple_status_attribute_*
-		* purple_status_set_active_with_attrs_list renamed to
-		  purple_status_set_active_with_attrs_dict
+		* purple_status_set_active_with_attrs renamed to
+		  purple_status_set_active_with_attributes and now takes a
+		  GHashTable
 		* PurpleStatusAttr renamed to PurpleStatusAttribute
 		* PurplePresence is now an abstract type, and is a GObject. Please see
 		  the documentation for details.
@@ -727,6 +728,7 @@ version 3.0.0 (??/??/????):
 		* purple_ssl_strerror
 		* purple_ssl_uninit
 		* purple_ssl_write
+		* purple_status_set_active_with_attrs_list
 		* purple_status_set_attr_boolean
 		* purple_status_set_attr_int
 		* purple_status_set_attr_string

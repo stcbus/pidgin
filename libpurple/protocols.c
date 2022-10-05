@@ -116,7 +116,7 @@ purple_protocol_got_account_status_with_attributes(PurpleAccount *account,
 
 	g_return_if_fail(status != NULL);
 
-	purple_status_set_active_with_attrs_dict(status, TRUE, attributes);
+	purple_status_set_active_with_attributes(status, TRUE, attributes);
 }
 
 void
@@ -234,7 +234,7 @@ purple_protocol_got_user_status_with_attributes(PurpleAccount *account,
 
 		old_status = purple_presence_get_active_status(presence);
 
-		purple_status_set_active_with_attrs_dict(status, TRUE, attributes);
+		purple_status_set_active_with_attributes(status, TRUE, attributes);
 
 		purple_buddy_update_status(buddy, old_status);
 	}

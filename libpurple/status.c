@@ -646,27 +646,12 @@ status_set_attr_string(PurpleStatus *status, const char *id,
 void
 purple_status_set_active(PurpleStatus *status, gboolean active)
 {
-	purple_status_set_active_with_attrs_dict(status, active, NULL);
-}
-
-/*
- * This used to parse the va_list directly, but now it creates a GList
- * and passes it to purple_status_set_active_with_attrs_list().  That
- * function was created because account.c needs to pass a GList of
- * attributes to the status API.
- */
-void
-purple_status_set_active_with_attrs(PurpleStatus *status, gboolean active, va_list args)
-{
-	GHashTable *attrs = purple_attrs_from_vargs(args);
-
-	purple_status_set_active_with_attrs_dict(status, active, attrs);
-	g_hash_table_destroy(attrs);
+	purple_status_set_active_with_attributes(status, active, NULL);
 }
 
 void
-purple_status_set_active_with_attrs_dict(PurpleStatus *status, gboolean active,
-									     GHashTable *attrs)
+purple_status_set_active_with_attributes(PurpleStatus *status, gboolean active,
+                                         GHashTable *attrs)
 {
 	gboolean changed = FALSE;
 	GList *l;
