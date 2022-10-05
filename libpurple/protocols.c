@@ -100,24 +100,39 @@ purple_protocol_got_account_login_time(PurpleAccount *account, time_t login_time
 }
 
 void
-purple_protocol_got_account_status(PurpleAccount *account, const char *status_id, ...)
+purple_protocol_got_account_status_with_attributes(PurpleAccount *account,
+                                                   const gchar *status_id,
+                                                   GHashTable *attributes)
 {
 	PurplePresence *presence;
 	PurpleStatus *status;
-	va_list args;
 
-	g_return_if_fail(account   != NULL);
+	g_return_if_fail(account != NULL);
 	g_return_if_fail(status_id != NULL);
 	g_return_if_fail(purple_account_is_connected(account));
 
 	presence = purple_account_get_presence(account);
-	status   = purple_presence_get_status(presence, status_id);
+	status = purple_presence_get_status(presence, status_id);
 
 	g_return_if_fail(status != NULL);
 
+	purple_status_set_active_with_attrs_dict(status, TRUE, attributes);
+}
+
+void
+purple_protocol_got_account_status(PurpleAccount *account, const char *status_id, ...)
+{
+	GHashTable *attributes = NULL;
+	va_list args;
+
 	va_start(args, status_id);
-	purple_status_set_active_with_attrs(status, TRUE, args);
+	attributes = purple_attrs_from_vargs(args);
 	va_end(args);
+
+	purple_protocol_got_account_status_with_attributes(account, status_id,
+	                                                   attributes);
+
+	g_hash_table_destroy(attributes);
 }
 
 void
@@ -183,42 +198,43 @@ purple_protocol_got_user_login_time(PurpleAccount *account, const char *name,
 }
 
 void
-purple_protocol_got_user_status(PurpleAccount *account, const char *name,
-		const char *status_id, ...)
+purple_protocol_got_user_status_with_attributes(PurpleAccount *account,
+                                                const gchar *name,
+                                                const gchar *status_id,
+                                                GHashTable *attributes)
 {
 	GSList *list, *l;
 	PurpleBuddy *buddy;
 	PurplePresence *presence;
 	PurpleStatus *status;
 	PurpleStatus *old_status;
-	va_list args;
 
 	g_return_if_fail(account   != NULL);
 	g_return_if_fail(name      != NULL);
 	g_return_if_fail(status_id != NULL);
 	g_return_if_fail(purple_account_is_connected(account) || purple_account_is_connecting(account));
 
-	if((list = purple_blist_find_buddies(account, name)) == NULL)
+	if((list = purple_blist_find_buddies(account, name)) == NULL) {
 		return;
+	}
 
 	for(l = list; l != NULL; l = l->next) {
 		buddy = l->data;
 
 		presence = purple_buddy_get_presence(buddy);
-		status   = purple_presence_get_status(presence, status_id);
+		status = purple_presence_get_status(presence, status_id);
 
-		if(NULL == status)
+		if(NULL == status) {
 			/*
 			 * TODO: This should never happen, right?  We should call
 			 *       g_warning() or something.
 			 */
 			continue;
+		}
 
 		old_status = purple_presence_get_active_status(presence);
 
-		va_start(args, status_id);
-		purple_status_set_active_with_attrs(status, TRUE, args);
-		va_end(args);
+		purple_status_set_active_with_attrs_dict(status, TRUE, attributes);
 
 		purple_buddy_update_status(buddy, old_status);
 	}
@@ -231,6 +247,23 @@ purple_protocol_got_user_status(PurpleAccount *account, const char *name,
 		purple_serv_got_typing_stopped(purple_account_get_connection(account), name);
 		purple_protocol_got_media_caps(account, name);
 	}
+}
+
+void
+purple_protocol_got_user_status(PurpleAccount *account, const gchar *name,
+                                const gchar *status_id, ...)
+{
+	GHashTable *attributes = NULL;
+	va_list args;
+
+	va_start(args, status_id);
+	attributes = purple_attrs_from_vargs(args);
+	va_end(args);
+
+	purple_protocol_got_user_status_with_attributes(account, name, status_id,
+	                                                attributes);
+
+	g_hash_table_destroy(attributes);
 }
 
 void purple_protocol_got_user_status_deactive(PurpleAccount *account, const char *name,
