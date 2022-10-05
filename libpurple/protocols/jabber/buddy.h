@@ -78,10 +78,7 @@ typedef struct {
 		char *os;
 	} client;
 	GTimeZone *tz_off;
-	struct {
-		JabberCapsClientInfo *info;
-		GList *exts;
-	} caps;
+	JabberCapsClientInfo *caps;
 	GList *commands;
 	gboolean commands_fetched;
 } JabberBuddyResource;

@@ -888,7 +888,7 @@ int jabber_message_send_im(PurpleProtocolIM *pim, PurpleConnection *gc,
 	 * For backward compatibility with user expectations or for those not on
 	 * the user's roster, allow sending XHTML-IM markup.
 	 */
-	if (!jbr || !jbr->caps.info ||
+	if (jbr == NULL || jbr->caps == NULL ||
 			jabber_resource_has_capability(jbr, NS_XHTML_IM)) {
 		if (!jabber_xhtml_plain_equal(xhtml, jm->body))
 			/* Wrap the message in <p/> for great interoperability justice. */

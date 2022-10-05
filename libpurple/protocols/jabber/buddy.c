@@ -59,7 +59,6 @@ jabber_buddy_resource_free(JabberBuddyResource *jbr)
 	g_return_if_fail(jbr != NULL);
 
 	g_list_free_full(jbr->commands, (GDestroyNotify)jabber_adhoc_commands_free);
-	g_list_free_full(jbr->caps.exts, g_free);
 	g_free(jbr->name);
 	g_free(jbr->status);
 	g_free(jbr->thread_id);
@@ -1507,8 +1506,8 @@ dispatch_queries_for_resource(JabberStream *js, JabberBuddyInfo *jbi,
 	}
 
 	if (jbr->tz_off == NULL &&
-			(!jbr->caps.info ||
-			 	jabber_resource_has_capability(jbr, NS_ENTITY_TIME))) {
+			(jbr->caps == NULL ||
+				jabber_resource_has_capability(jbr, NS_ENTITY_TIME))) {
 		PurpleXmlNode *child;
 		iq = jabber_iq_new(js, JABBER_IQ_GET);
 		purple_xmlnode_set_attrib(iq->node, "to", to);
@@ -2218,34 +2217,21 @@ void jabber_user_search_begin(PurpleProtocolAction *action)
 gboolean
 jabber_resource_know_capabilities(const JabberBuddyResource *jbr)
 {
-	return jbr->caps.info != NULL;
+	return jbr->caps != NULL;
 }
 
 gboolean
 jabber_resource_has_capability(const JabberBuddyResource *jbr, const gchar *cap)
 {
 	const GList *node = NULL;
-	const JabberCapsNodeExts *exts;
 
-	if (!jbr->caps.info) {
+	if (jbr->caps == NULL) {
 		purple_debug_info("jabber",
 			"Unable to find caps: nothing known about buddy\n");
 		return FALSE;
 	}
 
-	node = g_list_find_custom(jbr->caps.info->features, cap, (GCompareFunc)strcmp);
-	if (!node && jbr->caps.exts && jbr->caps.info->exts) {
-		const GList *ext;
-		exts = jbr->caps.info->exts;
-		/* Walk through all the enabled caps, checking each list for the cap.
-		 * Don't check it twice, though. */
-		for (ext = jbr->caps.exts; ext && !node; ext = ext->next) {
-			GList *features = g_hash_table_lookup(exts->exts, ext->data);
-			if (features)
-				node = g_list_find_custom(features, cap, (GCompareFunc)strcmp);
-		}
-	}
-
+	node = g_list_find_custom(jbr->caps->features, cap, (GCompareFunc)strcmp);
 	return (node != NULL);
 }
 
@@ -2269,8 +2255,8 @@ jabber_resource_get_identity_category_type(const JabberBuddyResource *jbr,
 {
 	const GList *iter = NULL;
 
-	if (jbr->caps.info) {
-		for (iter = jbr->caps.info->identities ; iter ; iter = g_list_next(iter)) {
+	if (jbr->caps != NULL) {
+		for (iter = jbr->caps->identities ; iter ; iter = g_list_next(iter)) {
 			const JabberIdentity *identity =
 				(JabberIdentity *) iter->data;
 
