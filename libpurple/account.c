@@ -381,6 +381,15 @@ change_password_cb(PurpleAccount *account, PurpleRequestFields *fields)
 	purple_account_change_password(account, orig_pass, new_pass_1);
 }
 
+static gboolean
+no_password_cb(gpointer data) {
+	PurpleAccount *account = data;
+
+	_purple_connection_new(account, FALSE, NULL);
+
+	return G_SOURCE_REMOVE;
+}
+
 static void
 set_user_info_cb(PurpleAccount *account, const char *user_info)
 {
@@ -1100,7 +1109,7 @@ purple_account_connect(PurpleAccount *account)
 		                                              purple_account_connect_got_password_cb,
 		                                              account);
 	} else {
-		_purple_connection_new(account, FALSE, NULL);
+		g_timeout_add_seconds(0, no_password_cb, account);
 	}
 }
 
