@@ -1392,8 +1392,8 @@ static void irc_msg_handle_privmsg(struct irc_conn *irc, const char *name, const
 			purple_serv_got_chat_in(gc, purple_chat_conversation_get_id(PURPLE_CHAT_CONVERSATION(chat)),
 				nick, PURPLE_MESSAGE_RECV, msg, time(NULL));
 		} else
-			purple_debug_error("irc", "Got a %s on %s, which does not exist\n",
-			                   notice ? "NOTICE" : "PRIVMSG", to);
+			purple_debug_info("irc", "Got a %s on %s, which does not exist\n",
+			                  notice ? "NOTICE" : "PRIVMSG", to);
 	}
 	g_free(msg);
 	g_free(nick);
