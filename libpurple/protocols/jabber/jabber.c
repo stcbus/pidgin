@@ -46,6 +46,7 @@
 #include "presence.h"
 #include "jabber.h"
 #include "roster.h"
+#include "oob.h"
 #include "ping.h"
 #include "si.h"
 #include "usermood.h"
@@ -4099,6 +4100,7 @@ jabber_load(GPluginPlugin *plugin, GError **error)
 
 	xmpp_protocol_register(plugin);
 
+	jabber_oob_xfer_register(G_TYPE_MODULE(plugin));
 	jabber_si_xfer_register(G_TYPE_MODULE(plugin));
 
 	xmpp_protocol = xmpp_protocol_new();
