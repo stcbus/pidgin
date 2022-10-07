@@ -84,10 +84,6 @@ void jabber_data_associate_local(JabberData *data, const gchar *alt);
 void jabber_data_associate_remote(JabberStream *js, const gchar *who,
     JabberData *data);
 
-/* handles iq requests */
-void jabber_data_parse(JabberStream *js, const char *who, JabberIqType type,
-                       const char *id, PurpleXmlNode *data_node);
-
 void jabber_data_init(void);
 void jabber_data_uninit(void);
 

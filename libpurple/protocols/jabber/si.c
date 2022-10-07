@@ -1702,8 +1702,9 @@ jabber_si_thumbnail_cb(JabberData *data, gchar *alt, gpointer userdata)
 }
 #endif
 
-void jabber_si_parse(JabberStream *js, const char *from, JabberIqType type,
-                     const char *id, PurpleXmlNode *si)
+static void
+jabber_si_parse(JabberStream *js, const char *from, JabberIqType type,
+                const char *id, PurpleXmlNode *si)
 {
 	JabberSIXfer *jsx;
 	PurpleXmlNode *file, *feature, *x, *field, *option, *value;

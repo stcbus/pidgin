@@ -32,6 +32,8 @@
 static GHashTable *jabber_ibb_sessions = NULL;
 static GList *open_handlers = NULL;
 
+static JabberStream *jabber_ibb_session_get_js(JabberIBBSession *sess);
+
 JabberIBBSession *
 jabber_ibb_session_create(JabberStream *js, const gchar *sid, const gchar *who,
 	gpointer user_data)
@@ -107,31 +109,31 @@ jabber_ibb_session_destroy(JabberIBBSession *sess)
 	g_free(sess);
 }
 
-const gchar *
+static const gchar *
 jabber_ibb_session_get_sid(const JabberIBBSession *sess)
 {
 	return sess->sid;
 }
 
-JabberStream *
+static JabberStream *
 jabber_ibb_session_get_js(JabberIBBSession *sess)
 {
 	return sess->js;
 }
 
-const gchar *
+static const gchar *
 jabber_ibb_session_get_who(const JabberIBBSession *sess)
 {
 	return sess->who;
 }
 
-guint16
+static guint16
 jabber_ibb_session_get_send_seq(const JabberIBBSession *sess)
 {
 	return sess->send_seq;
 }
 
-guint16
+static guint16
 jabber_ibb_session_get_recv_seq(const JabberIBBSession *sess)
 {
 	return sess->recv_seq;
@@ -147,17 +149,6 @@ gsize
 jabber_ibb_session_get_block_size(const JabberIBBSession *sess)
 {
 	return sess->block_size;
-}
-
-void
-jabber_ibb_session_set_block_size(JabberIBBSession *sess, gsize size)
-{
-	if (jabber_ibb_session_get_state(sess) == JABBER_IBB_SESSION_NOT_OPENED) {
-		sess->block_size = size;
-	} else {
-		purple_debug_error("jabber",
-			"Can't set block size on an open IBB session\n");
-	}
 }
 
 gsize
@@ -273,18 +264,6 @@ jabber_ibb_session_close(JabberIBBSession *sess)
 	}
 }
 
-void
-jabber_ibb_session_accept(JabberIBBSession *sess)
-{
-	JabberIq *result = jabber_iq_new(jabber_ibb_session_get_js(sess),
-		JABBER_IQ_RESULT);
-
-	purple_xmlnode_set_attrib(result->node, "to", jabber_ibb_session_get_who(sess));
-	jabber_iq_set_id(result, sess->id);
-	jabber_iq_send(result);
-	sess->state = JABBER_IBB_SESSION_OPENED;
-}
-
 static void
 jabber_ibb_session_send_acknowledge_cb(JabberStream *js, const char *from,
                                        JabberIqType type, const char *id,
@@ -379,7 +358,8 @@ jabber_ibb_send_error_response(JabberStream *js, const char *to, const char *id)
 	jabber_iq_send(result);
 }
 
-void
+/* Handle incoming packet. */
+static void
 jabber_ibb_parse(JabberStream *js, const char *who, JabberIqType type,
                  const char *id, PurpleXmlNode *child)
 {

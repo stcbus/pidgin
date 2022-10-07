@@ -94,31 +94,18 @@ void jabber_ibb_session_set_error_callback(JabberIBBSession *sess,
 
 void jabber_ibb_session_open(JabberIBBSession *sess);
 void jabber_ibb_session_close(JabberIBBSession *sess);
-void jabber_ibb_session_accept(JabberIBBSession *sess);
 void jabber_ibb_session_send_data(JabberIBBSession *sess, gconstpointer data,
 	gsize size);
-
-const gchar *jabber_ibb_session_get_sid(const JabberIBBSession *sess);
-JabberStream *jabber_ibb_session_get_js(JabberIBBSession *sess);
-const gchar *jabber_ibb_session_get_who(const JabberIBBSession *sess);
-
-guint16 jabber_ibb_session_get_send_seq(const JabberIBBSession *sess);
-guint16 jabber_ibb_session_get_recv_seq(const JabberIBBSession *sess);
 
 JabberIBBSessionState jabber_ibb_session_get_state(const JabberIBBSession *sess);
 
 gsize jabber_ibb_session_get_block_size(const JabberIBBSession *sess);
-void jabber_ibb_session_set_block_size(JabberIBBSession *sess, gsize size);
 
 /* get maximum size data block to send (in bytes)
  (before encoded to BASE64) */
 gsize jabber_ibb_session_get_max_data_size(const JabberIBBSession *sess);
 
 gpointer jabber_ibb_session_get_user_data(JabberIBBSession *sess);
-
-/* handle incoming packet */
-void jabber_ibb_parse(JabberStream *js, const char *who, JabberIqType type,
-                      const char *id, PurpleXmlNode *child);
 
 /* add a handler for open session */
 void jabber_ibb_register_open_handler(JabberIBBOpenHandler *cb);

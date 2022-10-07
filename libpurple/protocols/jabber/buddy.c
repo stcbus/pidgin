@@ -2183,7 +2183,8 @@ static void user_search_fields_result_cb(JabberStream *js, const char *from,
 	}
 }
 
-void jabber_user_search(JabberStream *js, const char *directory)
+static void
+jabber_user_search(JabberStream *js, const char *directory)
 {
 	JabberIq *iq;
 
@@ -2268,20 +2269,6 @@ jabber_resource_has_capability(const JabberBuddyResource *jbr, const gchar *cap)
 
 	node = g_list_find_custom(jbr->caps->features, cap, (GCompareFunc)strcmp);
 	return (node != NULL);
-}
-
-gboolean
-jabber_buddy_has_capability(const JabberBuddy *jb, const gchar *cap)
-{
-	JabberBuddyResource *jbr = jabber_buddy_find_resource((JabberBuddy*)jb, NULL);
-
-	if (!jbr) {
-		purple_debug_info("jabber",
-			"Unable to find caps: buddy might be offline\n");
-		return FALSE;
-	}
-
-	return jabber_resource_has_capability(jbr, cap);
 }
 
 const gchar *

@@ -54,19 +54,14 @@ gboolean jabber_id_equal(const JabberID *jid1, const JabberID *jid2);
 
 void jabber_id_free(JabberID *jid);
 
-char *jabber_get_domain(const char *jid);
 char *jabber_get_resource(const char *jid);
 char *jabber_get_bare_jid(const char *jid);
 char *jabber_id_get_bare_jid(const JabberID *jid);
 char *jabber_id_get_full_jid(const JabberID *jid);
-JabberID *jabber_id_to_bare_jid(const JabberID *jid);
 
 gboolean jabber_jid_is_domain(const char *jid);
 
 const char *jabber_normalize(const PurpleAccount *account, const char *in);
-
-/* Returns true if JID is the bare JID of our server. */
-gboolean jabber_is_own_server(JabberStream *js, const char *jid);
 
 /* Returns true if JID is the bare JID of our account. */
 gboolean jabber_is_own_account(JabberStream *js, const char *jid);

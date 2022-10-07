@@ -50,6 +50,10 @@ static const struct {
 	/* { NULL, JABBER_PRESENCE_AVAILABLE } the default */
 };
 
+typedef void (JabberPresenceHandler)(JabberStream *js,
+                                     JabberPresence *presence,
+                                     PurpleXmlNode *child);
+
 static JabberPresenceType
 str_to_presence_type(const char *type)
 {
@@ -1238,8 +1242,9 @@ parse_muc_user(JabberStream *js, JabberPresence *presence, PurpleXmlNode *x)
 	presence->chat_info.item = purple_xmlnode_get_child(x, "item");
 }
 
-void jabber_presence_register_handler(const char *node, const char *xmlns,
-                                      JabberPresenceHandler *handler)
+static void
+jabber_presence_register_handler(const char *node, const char *xmlns,
+                                 JabberPresenceHandler *handler)
 {
 	/*
 	 * This is valid because nodes nor namespaces cannot have spaces in them

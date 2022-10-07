@@ -78,6 +78,10 @@ static GHashTable *jabber_cmds = NULL; /* PurpleProtocol * => GSList of ids */
 static gint plugin_ref = 0;
 
 static void jabber_unregister_account_cb(JabberStream *js);
+static void jabber_send_raw(PurpleProtocolServer *protocol_server, JabberStream *js, const gchar *data, gint len);
+static void jabber_remove_feature(const gchar *namespace);
+static gboolean jabber_initiate_media(PurpleProtocolMedia *media, PurpleAccount *account, const char *who, PurpleMediaSessionType type);
+static PurpleMediaCaps jabber_get_media_caps(PurpleProtocolMedia *media, PurpleAccount *account, const char *who);
 
 static void jabber_stream_init(JabberStream *js)
 {
@@ -403,7 +407,7 @@ static gboolean do_jabber_send_raw(JabberStream *js, const char *data, int len)
 	return success;
 }
 
-void
+static void
 jabber_send_raw(PurpleProtocolServer *protocol_server, JabberStream *js,
                 const gchar *data, gint len)
 {
@@ -509,7 +513,7 @@ jabber_send_raw(PurpleProtocolServer *protocol_server, JabberStream *js,
 		do_jabber_send_raw(js, data, len);
 }
 
-gint
+static gint
 jabber_protocol_send_raw(PurpleProtocolServer *protocol_server,
                          PurpleConnection *gc, const gchar *buf, gint len)
 {
@@ -525,8 +529,9 @@ jabber_protocol_send_raw(PurpleProtocolServer *protocol_server,
 	return (len < 0 ? (int)strlen(buf) : len);
 }
 
-void jabber_send_signal_cb(PurpleConnection *pc, PurpleXmlNode **packet,
-                           gpointer unused)
+static void
+jabber_send_signal_cb(PurpleConnection *pc, PurpleXmlNode **packet,
+                      G_GNUC_UNUSED gpointer unused)
 {
 	JabberStream *js;
 	char *txt;
@@ -566,7 +571,7 @@ static gboolean jabber_keepalive_timeout(PurpleConnection *gc)
 	return FALSE;
 }
 
-void
+static void
 jabber_keepalive(PurpleProtocolServer *protocol_server, PurpleConnection *gc) {
 	JabberStream *js = purple_connection_get_protocol_data(gc);
 
@@ -998,7 +1003,7 @@ jabber_stream_connect(JabberStream *js)
 	}
 }
 
-void
+static void
 jabber_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc = purple_account_get_connection(account);
 	JabberStream *js;
@@ -1423,15 +1428,7 @@ void jabber_register_start(JabberStream *js)
 	jabber_iq_send(iq);
 }
 
-void jabber_register_gateway(JabberStream *js, const char *gateway) {
-	JabberIq *iq;
-
-	iq = jabber_iq_new_query(js, JABBER_IQ_GET, "jabber:iq:register");
-	purple_xmlnode_set_attrib(iq->node, "to", gateway);
-	jabber_iq_send(iq);
-}
-
-void
+static void
 jabber_register_account(PurpleProtocolServer *protocol_server,
                         PurpleAccount *account)
 {
@@ -1487,7 +1484,7 @@ static void jabber_unregister_account_cb(JabberStream *js) {
 	jabber_iq_send(iq);
 }
 
-void
+static void
 jabber_unregister_account(PurpleProtocolServer *protocol_server,
                           PurpleAccount *account,
                           PurpleAccountUnregistrationCb cb, gpointer user_data)
@@ -1527,7 +1524,7 @@ jabber_unregister_account(PurpleProtocolServer *protocol_server,
  * termination before destroying everything. That seems like it would require
  * changing the semantics of protocol's close(), so it's a good idea for 3.0.0.
  */
-void
+static void
 jabber_close(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleConnection *gc) {
 	JabberStream *js = purple_connection_get_protocol_data(gc);
 
@@ -1650,7 +1647,7 @@ char *jabber_get_next_id(JabberStream *js)
 }
 
 
-void
+static void
 jabber_idle_set(PurpleProtocolServer *protocol_server, PurpleConnection *gc,
                 gint idle)
 {
@@ -1779,8 +1776,9 @@ void jabber_request_block_list(JabberStream *js)
 	jabber_iq_send(iq);
 }
 
-void jabber_add_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc,
-                     const char *who)
+static void
+jabber_add_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc,
+                const char *who)
 {
 	JabberStream *js;
 	JabberIq *iq;
@@ -1811,8 +1809,9 @@ void jabber_add_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc,
 	jabber_iq_send(iq);
 }
 
-void jabber_remove_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc,
-                        const char *who)
+static void
+jabber_remove_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc,
+                   const char *who)
 {
 	JabberStream *js;
 	JabberIq *iq;
@@ -1860,7 +1859,8 @@ static void jabber_feature_free(JabberFeature *feature) {
 	g_free(feature);
 }
 
-void jabber_remove_feature(const char *namespace) {
+static void
+jabber_remove_feature(const char *namespace) {
 	GList *feature;
 	for(feature = jabber_features; feature; feature = feature->next) {
 		JabberFeature *feat = (JabberFeature*)feature->data;
@@ -1918,8 +1918,23 @@ void jabber_identity_free(JabberIdentity *id)
 	g_free(id);
 }
 
-void jabber_add_identity(const gchar *category, const gchar *type,
-                         const gchar *lang, const gchar *name)
+/*
+ * jabber_add_identity:
+ * @category: The category of the identity.
+ * @type: The type of the identity.
+ * @language: (nullable): The language localization of the name.
+ * @name: The name of the identity.
+ *
+ * Adds an identity to this jabber library instance. For list of valid values
+ * visit the website of the XMPP Registrar
+ * (http://xmpp.org/registrar/disco-categories.html#client)
+ *
+ * Like with jabber_add_feature, if you call this while accounts are connected,
+ * Bad Things will happen.
+ */
+static void
+jabber_add_identity(const gchar *category, const gchar *type,
+                    const gchar *lang, const gchar *name)
 {
 	GList *identity;
 	JabberIdentity *ident;
@@ -1990,7 +2005,7 @@ void jabber_stream_restart_inactivity_timer(JabberStream *js)
 		                           inactivity_cb, js);
 }
 
-const char *
+static const char *
 jabber_list_emblem(PurpleProtocolClient *client, PurpleBuddy *b) {
 	JabberStream *js;
 	JabberBuddy *jb = NULL;
@@ -2033,7 +2048,7 @@ jabber_list_emblem(PurpleProtocolClient *client, PurpleBuddy *b) {
 	return NULL;
 }
 
-char *
+static char *
 jabber_status_text(PurpleProtocolClient *client, PurpleBuddy *b) {
 	char *ret = NULL;
 	JabberBuddy *jb = NULL;
@@ -2111,7 +2126,7 @@ jabber_tooltip_add_resource_text(JabberBuddyResource *jbr,
 	g_free(res);
 }
 
-void
+static void
 jabber_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b,
                     PurpleNotifyUserInfo *user_info, gboolean full)
 {
@@ -2225,7 +2240,7 @@ jabber_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b,
 	}
 }
 
-GList *
+static GList *
 jabber_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
                     PurpleAccount *account)
 {
@@ -2543,7 +2558,7 @@ xmpp_protocol_actions_get_menu(PurpleProtocolActions *actions) {
 	return menu;
 }
 
-PurpleChat *
+static PurpleChat *
 jabber_find_blist_chat(PurpleProtocolClient *client, PurpleAccount *account,
                        const char *name)
 {
@@ -2585,7 +2600,7 @@ jabber_find_blist_chat(PurpleProtocolClient *client, PurpleAccount *account,
 	return NULL;
 }
 
-void
+static void
 jabber_convo_closed(PurpleProtocolClient *client, PurpleConnection *gc,
                     const char *who)
 {
@@ -3079,12 +3094,12 @@ static PurpleCmdRet jabber_cmd_ping(PurpleConversation *conv,
 	return PURPLE_CMD_RET_OK;
 }
 
-gboolean
+static gboolean
 jabber_offline_message(PurpleProtocolClient *client, PurpleBuddy *buddy) {
 	return TRUE;
 }
 
-gboolean
+static gboolean
 jabber_audio_enabled(JabberStream *js, const char *namespace)
 {
 	PurpleMediaManager *manager = purple_media_manager_get();
@@ -3093,7 +3108,7 @@ jabber_audio_enabled(JabberStream *js, const char *namespace)
 	return (caps & (PURPLE_MEDIA_CAPS_AUDIO | PURPLE_MEDIA_CAPS_AUDIO_SINGLE_DIRECTION));
 }
 
-gboolean
+static gboolean
 jabber_video_enabled(JabberStream *js, const char *namespace)
 {
 	PurpleMediaManager *manager = purple_media_manager_get();
@@ -3132,7 +3147,7 @@ jabber_media_ok_cb(JabberMediaRequest *request, PurpleRequestFields *fields)
 	g_free(request);
 }
 
-gboolean
+static gboolean
 jabber_initiate_media(PurpleProtocolMedia *media, PurpleAccount *account,
                       const gchar *who, PurpleMediaSessionType type)
 {
@@ -3273,7 +3288,7 @@ jabber_initiate_media(PurpleProtocolMedia *media, PurpleAccount *account,
 	return FALSE;
 }
 
-PurpleMediaCaps
+static PurpleMediaCaps
 jabber_get_media_caps(PurpleProtocolMedia *media, PurpleAccount *account,
                       const gchar *who)
 {
@@ -3356,7 +3371,9 @@ jabber_get_media_caps(PurpleProtocolMedia *media, PurpleAccount *account,
 	return total;
 }
 
-gboolean jabber_can_receive_file(PurpleProtocolXfer *prplxfer, PurpleConnection *gc, const char *who)
+static gboolean
+jabber_can_receive_file(PurpleProtocolXfer *prplxfer, PurpleConnection *gc,
+                        const char *who)
 {
 	JabberStream *js = purple_connection_get_protocol_data(gc);
 

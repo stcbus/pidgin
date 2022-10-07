@@ -400,20 +400,6 @@ jabber_id_equal(const JabberID *jid1, const JabberID *jid2)
 			purple_strequal(jid1->resource, jid2->resource);
 }
 
-char *jabber_get_domain(const char *in)
-{
-	JabberID *jid = jabber_id_new(in);
-	char *out;
-
-	if (!jid)
-		return NULL;
-
-	out = g_strdup(jid->domain);
-	jabber_id_free(jid);
-
-	return out;
-}
-
 char *jabber_get_resource(const char *in)
 {
 	JabberID *jid = jabber_id_new(in);
@@ -426,17 +412,6 @@ char *jabber_get_resource(const char *in)
 	jabber_id_free(jid);
 
 	return out;
-}
-
-JabberID *
-jabber_id_to_bare_jid(const JabberID *jid)
-{
-	JabberID *result = g_new0(JabberID, 1);
-
-	result->node = g_strdup(jid->node);
-	result->domain = g_strdup(jid->domain);
-
-	return result;
 }
 
 char *
@@ -525,28 +500,6 @@ const char *jabber_normalize(const PurpleAccount *account, const char *in)
 	jabber_id_free(jid);
 
 	return buf;
-}
-
-gboolean
-jabber_is_own_server(JabberStream *js, const char *str)
-{
-	JabberID *jid;
-	gboolean equal;
-
-	if (str == NULL)
-		return FALSE;
-
-	g_return_val_if_fail(*str != '\0', FALSE);
-
-	jid = jabber_id_new(str);
-	if (!jid)
-		return FALSE;
-
-	equal = (jid->node == NULL &&
-	         purple_strequal(jid->domain, js->user->domain) &&
-	         jid->resource == NULL);
-	jabber_id_free(jid);
-	return equal;
 }
 
 gboolean

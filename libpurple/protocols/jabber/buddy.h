@@ -99,7 +99,6 @@ void jabber_set_info(PurpleProtocolServer *protocol_server, PurpleConnection *gc
 void jabber_setup_set_info(GSimpleAction *action, GVariant *parameter, gpointer data);
 void jabber_set_buddy_icon(PurpleProtocolServer *protocol_server, PurpleConnection *gc, PurpleImage *img);
 
-void jabber_user_search(JabberStream *js, const char *directory);
 void jabber_user_search_begin(GSimpleAction *action, GVariant *parameter, gpointer data);
 
 void jabber_buddy_remove_all_pending_buddy_info_requests(JabberStream *js);
@@ -109,7 +108,6 @@ void jabber_vcard_fetch_mine(JabberStream *js);
 gboolean jabber_resource_know_capabilities(const JabberBuddyResource *jbr);
 gboolean jabber_resource_has_capability(const JabberBuddyResource *jbr,
 										const gchar *cap);
-gboolean jabber_buddy_has_capability(const JabberBuddy *jb, const gchar *cap);
 
 const gchar *
 jabber_resource_get_identity_category_type(const JabberBuddyResource *jbr,

@@ -497,14 +497,9 @@ static gint compare_mech(gconstpointer a, gconstpointer b)
 	return 0;
 }
 
-void jabber_auth_add_mech(JabberSaslMech *mech)
-{
+static void
+jabber_auth_add_mech(JabberSaslMech *mech) {
 	auth_mechs = g_slist_insert_sorted(auth_mechs, mech, compare_mech);
-}
-
-void jabber_auth_remove_mech(JabberSaslMech *mech)
-{
-	auth_mechs = g_slist_remove(auth_mechs, mech);
 }
 
 void jabber_auth_init(void)

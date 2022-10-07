@@ -30,6 +30,8 @@
 #include "xdata.h"
 #include "iq.h"
 
+static void jabber_adhoc_execute(JabberStream *js, JabberAdHocCommands *cmd);
+
 void
 jabber_adhoc_commands_free(JabberAdHocCommands *cmd)
 {
@@ -299,7 +301,8 @@ void jabber_adhoc_server_get_list(JabberStream *js) {
 	jabber_iq_send(iq);
 }
 
-void jabber_adhoc_execute(JabberStream *js, JabberAdHocCommands *cmd) {
+static void
+jabber_adhoc_execute(JabberStream *js, JabberAdHocCommands *cmd) {
 	JabberIq *iq = jabber_iq_new(js, JABBER_IQ_SET);
 	PurpleXmlNode *command = purple_xmlnode_new_child(iq->node,"command");
 	purple_xmlnode_set_attrib(iq->node,"to",cmd->jid);

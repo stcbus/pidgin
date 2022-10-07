@@ -30,6 +30,8 @@
 
 #include <string.h>
 
+static const gchar *jabber_roster_group_get_global_name(PurpleGroup *group);
+
 /* Take a list of strings and join them with a ", " separator */
 static gchar *roster_groups_join(GSList *list)
 {
@@ -498,7 +500,7 @@ jabber_roster_remove_buddy(PurpleProtocolServer *protocol_server,
 	}
 }
 
-const gchar *
+static const gchar *
 jabber_roster_group_get_global_name(PurpleGroup *group)
 {
 	const gchar *name = NULL;

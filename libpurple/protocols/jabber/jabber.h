@@ -294,9 +294,6 @@ extern GList *jabber_identities;
 void jabber_stream_features_parse(JabberStream *js, PurpleXmlNode *packet);
 void jabber_process_packet(JabberStream *js, PurpleXmlNode **packet);
 void jabber_send(JabberStream *js, PurpleXmlNode *data);
-void jabber_send_raw(PurpleProtocolServer *protocol_server, JabberStream *js, const char *data, int len);
-void jabber_send_signal_cb(PurpleConnection *pc, PurpleXmlNode **packet,
-                           gpointer unused);
 
 void jabber_stream_set_state(JabberStream *js, JabberStreamState state);
 
@@ -325,21 +322,6 @@ char *jabber_parse_error(JabberStream *js, PurpleXmlNode *packet, PurpleConnecti
  *                  will advertised; may be NULL.
  */
 void jabber_add_feature(const gchar *namespace, JabberFeatureEnabled cb);
-void jabber_remove_feature(const gchar *namespace);
-
-/** Adds an identity to this jabber library instance. For list of valid values
- * visit the website of the XMPP Registrar
- * (http://xmpp.org/registrar/disco-categories.html#client)
- *
- * Like with jabber_add_feature, if you call this while accounts are connected,
- * Bad Things will happen.
- *
- *  @param category the category of the identity.
- *  @param type the type of the identity.
- *  @param language the language localization of the name. Can be NULL.
- *  @param name the name of the identity.
- */
-void jabber_add_identity(const gchar *category, const gchar *type, const gchar *lang, const gchar *name);
 
 JabberIdentity *jabber_identity_new(const gchar *category, const gchar *type, const gchar *lang, const gchar *name);
 void jabber_identity_free(JabberIdentity *id);
@@ -366,33 +348,9 @@ gboolean jabber_stream_is_ssl(JabberStream *js);
 void jabber_stream_restart_inactivity_timer(JabberStream *js);
 
 /** Protocol functions */
-const char* jabber_list_emblem(PurpleProtocolClient *client, PurpleBuddy *b);
-char *jabber_status_text(PurpleProtocolClient *client, PurpleBuddy *b);
-void jabber_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b, PurpleNotifyUserInfo *user_info, gboolean full);
-GList *jabber_status_types(PurpleProtocol *protocol, PurpleAccount *account);
-void jabber_login(PurpleProtocol *protocol, PurpleAccount *account);
-void jabber_close(PurpleProtocol *protocol, PurpleConnection *gc);
-void jabber_idle_set(PurpleProtocolServer *protocol_server, PurpleConnection *gc, int idle);
 void jabber_blocklist_parse_push(JabberStream *js, const char *from,
                                  JabberIqType type, const char *id,
                                  PurpleXmlNode *child);
 void jabber_request_block_list(JabberStream *js);
-void jabber_add_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc, const char *who);
-void jabber_remove_deny(PurpleProtocolPrivacy *privacy, PurpleConnection *gc, const char *who);
-void jabber_keepalive(PurpleProtocolServer *protocol_server, PurpleConnection *gc);
-void jabber_register_gateway(JabberStream *js, const char *gateway);
-void jabber_register_account(PurpleProtocolServer *protocol_server, PurpleAccount *account);
-void jabber_unregister_account(PurpleProtocolServer *protocol_server, PurpleAccount *account, PurpleAccountUnregistrationCb cb, void *user_data);
-void jabber_convo_closed(PurpleProtocolClient *client, PurpleConnection *gc, const char *who);
-PurpleChat *jabber_find_blist_chat(PurpleProtocolClient *client, PurpleAccount *account, const char *name);
-gboolean jabber_offline_message(PurpleProtocolClient *client, PurpleBuddy *buddy);
-int jabber_protocol_send_raw(PurpleProtocolServer *protocol_server, PurpleConnection *gc, const char *buf, int len);
-GList *jabber_get_actions(PurpleProtocolClient *client, PurpleConnection *gc);
-
-gboolean jabber_audio_enabled(JabberStream *js, const char *unused);
-gboolean jabber_video_enabled(JabberStream *js, const char *unused);
-gboolean jabber_initiate_media(PurpleProtocolMedia *media, PurpleAccount *account, const char *who, PurpleMediaSessionType type);
-PurpleMediaCaps jabber_get_media_caps(PurpleProtocolMedia *media, PurpleAccount *account, const char *who);
-gboolean jabber_can_receive_file(PurpleProtocolXfer *xfer, PurpleConnection *gc, const gchar *who);
 
 #endif /* PURPLE_JABBER_JABBER_H */

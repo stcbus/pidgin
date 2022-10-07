@@ -56,20 +56,6 @@ GList *jabber_chat_info(PurpleProtocolChat *protocol_chat, PurpleConnection *con
 GHashTable *jabber_chat_info_defaults(PurpleConnection *gc, const char *chat_name);
 char *jabber_get_chat_name(PurpleProtocolChat *protocol_chat, GHashTable *data);
 
-/**
- * in-protocol function for joining a chat room. Doesn't require sticking goop
- * into a hash table.
- *
- * @param room     The room to join. This MUST be normalized already.
- * @param server   The server the room is on. This MUST be normalized already.
- * @param password The password (if required) to join the room. May be NULL.
- * @param data     The chat hash table.  May be NULL (it will be generated
- *                 for current core<>protocol API interface.)
- */
-JabberChat *jabber_join_chat(JabberStream *js, const char *room,
-                             const char *server, const char *handle,
-                             const char *password, GHashTable *data);
-
 void jabber_chat_join(PurpleConnection *gc, GHashTable *data);
 JabberChat *jabber_chat_find(JabberStream *js, const char *room,
 		const char *server);
@@ -106,9 +92,5 @@ void jabber_roomlist_cancel(PurpleProtocolRoomlist *protocol_roomlist, PurpleRoo
 char *jabber_roomlist_room_serialize(PurpleProtocolRoomlist *protocol_roomlist, PurpleRoomlistRoom *room);
 
 void jabber_chat_disco_traffic(JabberChat *chat);
-
-gboolean jabber_chat_all_participants_have_capability(const JabberChat *chat,
-	const gchar *cap);
-guint jabber_chat_get_num_participants(const JabberChat *chat);
 
 #endif /* PURPLE_JABBER_CHAT_H */

@@ -46,7 +46,4 @@ void jabber_roster_group_rename(PurpleProtocolServer *protocol_server, PurpleCon
 void jabber_roster_remove_buddy(PurpleProtocolServer *protocol_server, PurpleConnection *gc, PurpleBuddy *buddy,
 		PurpleGroup *group);
 
-const gchar *
-jabber_roster_group_get_global_name(PurpleGroup *group);
-
 #endif /* PURPLE_JABBER_ROSTER_H */

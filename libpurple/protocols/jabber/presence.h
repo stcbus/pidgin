@@ -76,11 +76,6 @@ struct _JabberPresence {
 	gboolean adjust_idle_for_delay;
 };
 
-typedef void (JabberPresenceHandler)(JabberStream *js, JabberPresence *presence,
-                                     PurpleXmlNode *child);
-void jabber_presence_register_handler(const char *node, const char *xmlns,
-                                      JabberPresenceHandler *handler);
-
 void jabber_presence_init(void);
 void jabber_presence_uninit(void);
 

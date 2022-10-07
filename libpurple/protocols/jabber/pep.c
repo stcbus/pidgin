@@ -142,25 +142,6 @@ void jabber_handle_event(JabberMessage *jm) {
 	g_free(jid);
 }
 
-void jabber_pep_delete_node(JabberStream *js, const gchar *node)
-{
-	JabberIq *iq;
-	PurpleXmlNode *pubsub, *del;
-
-	g_return_if_fail(node != NULL);
-	g_return_if_fail(js->pep);
-
-	iq = jabber_iq_new(js, JABBER_IQ_SET);
-
-	pubsub = purple_xmlnode_new_child(iq->node, "pubsub");
-	purple_xmlnode_set_namespace(pubsub, "http://jabber.org/protocol/pubsub#owner");
-
-	del = purple_xmlnode_new_child(pubsub, "delete");
-	purple_xmlnode_set_attrib(del, "node", node);
-
-	jabber_iq_send(iq);
-}
-
 void jabber_pep_publish(JabberStream *js, PurpleXmlNode *publish) {
 	JabberIq *iq;
 	PurpleXmlNode *pubsub;

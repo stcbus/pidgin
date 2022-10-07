@@ -412,7 +412,8 @@ jabber_data_associate_remote(JabberStream *js, const gchar *who, JabberData *dat
 	g_hash_table_insert(remote_data_by_cid, cid, data);
 }
 
-void
+/* Handles iq requests. */
+static void
 jabber_data_parse(JabberStream *js, const char *who, JabberIqType type,
                   const char *id, PurpleXmlNode *data_node)
 {
