@@ -1,51 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/im/pidgin/Pidgin3/">
-    <file>logo.png</file>
-    <file compressed="true">About/about.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">About/about.ui</file>
     <file compressed="true">About/about.md</file>
-    <file compressed="true">About/credits.json</file>
-    <file compressed="true">Accounts/chooser.ui</file>
-    <file compressed="true">Accounts/editor.ui</file>
+    <file compressed="true" preprocess="json-stripblanks">About/credits.json</file>
+    <file compressed="true" preprocess="xml-stripblanks">Accounts/chooser.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Accounts/editor.ui</file>
     <file compressed="true">Accounts/entry.css</file>
-    <file compressed="true">Accounts/manager.ui</file>
-    <file compressed="true">Avatar/avatar.ui</file>
-    <file compressed="true">Avatar/menu.ui</file>
-    <file compressed="true">BuddyList/window.ui</file>
-    <file compressed="true">Conversations/infopane.ui</file>
-    <file compressed="true">Conversations/invite_dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Accounts/manager.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Avatar/avatar.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Avatar/menu.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">BuddyList/window.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Conversations/infopane.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Conversations/invite_dialog.ui</file>
     <file compressed="true">Conversations/tab-label.css</file>
-    <file compressed="true">Debug/debug.ui</file>
-    <file compressed="true">Dialogs/addbuddy.ui</file>
-    <file compressed="true">Dialogs/addchat.ui</file>
-    <file compressed="true">Display/window.ui</file>
-    <file compressed="true">Keypad/keypad.ui</file>
-    <file compressed="true">Media/window.ui</file>
-    <file compressed="true">Notifications/addcontact.ui</file>
-    <file compressed="true">Notifications/authorizationrequest.ui</file>
-    <file compressed="true">Notifications/connectionerror.ui</file>
-    <file compressed="true">Notifications/list.ui</file>
-    <file compressed="true">Plugins/dialog.ui</file>
-    <file compressed="true">Prefs/away.ui</file>
-    <file compressed="true">Prefs/conversation.ui</file>
-    <file compressed="true">Prefs/credentials.ui</file>
-    <file compressed="true">Prefs/credentialprovider.ui</file>
-    <file compressed="true">Prefs/network.ui</file>
-    <file compressed="true">Prefs/prefs.ui</file>
-    <file compressed="true">Prefs/proxy.ui</file>
-    <file compressed="true">Prefs/vv.ui</file>
-    <file compressed="true">Privacy/dialog.ui</file>
-    <file compressed="true">Protocols/chooser.ui</file>
-    <file compressed="true">Protocols/detailed-view.ui</file>
-    <file compressed="true">Roomlist/roomlist.ui</file>
-    <file compressed="true">Status/box.ui</file>
-    <file compressed="true">Status/editor.ui</file>
-    <file compressed="true">Status/manager.ui</file>
-    <file compressed="true">Whiteboard/whiteboard.ui</file>
-    <file compressed="true">Xfer/xfer.ui</file>
-    <file compressed="true">gtk/menus.ui</file>
-    <file compressed="true">presenceicon.ui</file>
-    <file compressed="true">statusprimitivechooser.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Debug/debug.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Dialogs/addbuddy.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Dialogs/addchat.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Display/window.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Keypad/keypad.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Media/window.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Notifications/addcontact.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Notifications/authorizationrequest.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Notifications/connectionerror.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Notifications/list.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Plugins/dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/away.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/conversation.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/credentials.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/credentialprovider.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/network.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/prefs.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/proxy.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Prefs/vv.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Privacy/dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Protocols/chooser.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Protocols/detailed-view.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Roomlist/roomlist.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Status/box.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Status/editor.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Status/manager.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Whiteboard/whiteboard.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">Xfer/xfer.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">gtk/menus.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">presenceicon.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">statusprimitivechooser.ui</file>
     <file>icons/16x16/status/pidgin-user-available.png</file>
     <file>icons/16x16/status/pidgin-user-away.png</file>
     <file>icons/16x16/status/pidgin-user-busy.png</file>
@@ -58,5 +57,6 @@
     <file>icons/16x16/emblems/pidgin-status-ignored.png</file>
     <file>icons/16x16/emblems/pidgin-status-operator.png</file>
     <file>icons/16x16/emblems/pidgin-status-voice.png</file>
+    <file>logo.png</file>
   </gresource>
 </gresources>
