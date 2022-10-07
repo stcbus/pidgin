@@ -27,9 +27,13 @@
 #define PURPLE_CONNECTION_H
 
 #include <glib.h>
+#include <glib-object.h>
+
+G_BEGIN_DECLS
 
 #define PURPLE_TYPE_CONNECTION  purple_connection_get_type()
-typedef struct _PurpleConnection PurpleConnection;
+G_DECLARE_DERIVABLE_TYPE(PurpleConnection, purple_connection, PURPLE,
+                         CONNECTION, GObject)
 
 #define PURPLE_TYPE_CONNECTION_UI_OPS  (purple_connection_ui_ops_get_type())
 typedef struct _PurpleConnectionUiOps PurpleConnectionUiOps;
@@ -106,6 +110,14 @@ typedef enum
 #include "purpleprotocol.h"
 #include "status.h"
 
+struct _PurpleConnectionClass {
+	/*< private >*/
+	GObjectClass parent;
+
+	/*< private >*/
+	gpointer reserved[8];
+};
+
 /**
  * PurpleConnectionUiOps:
  * @connected: Called when a connection is established (just before the
@@ -155,8 +167,6 @@ struct _PurpleConnectionUiOps
 	void (*_purple_reserved4)(void);
 };
 
-G_BEGIN_DECLS
-
 /******************************************************************************
  * To be deleted in the future
  *****************************************************************************/
@@ -167,13 +177,6 @@ _purple_assert_connection_is_valid(PurpleConnection *gc,
 /**************************************************************************/
 /* Connection API                                                         */
 /**************************************************************************/
-
-/**
- * purple_connection_get_type:
- *
- * Returns: The #GType for the Connection object.
- */
-G_DECLARE_FINAL_TYPE(PurpleConnection, purple_connection, PURPLE, CONNECTION, GObject)
 
 /**
  * purple_connection_set_state:
