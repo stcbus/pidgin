@@ -185,7 +185,7 @@ PurpleProtocol *
 purple_ircv3_protocol_new(void) {
 	return g_object_new(
 		PURPLE_IRCV3_TYPE_PROTOCOL,
-		"id", "prpl-irv3",
+		"id", "prpl-ircv3",
 		"name", "IRCv3",
 		"description", _("Version 3 of Internet Relay Chat (IRC)."),
 		"icon-name", "im-ircv3",
