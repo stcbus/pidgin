@@ -54,9 +54,15 @@ void jabber_pep_uninit(void) {
 	pep_handlers = NULL;
 }
 
-void jabber_pep_init_actions(GList **m) {
+void
+jabber_pep_add_action_entries(GSimpleActionGroup *group) {
+	jabber_nick_add_action_entries(group);
+}
+
+void
+jabber_pep_append_menu(GMenu *menu) {
 	/* register the PEP-specific actions */
-	jabber_nick_init_action(m);
+	jabber_nick_append_menu(menu);
 }
 
 void jabber_pep_register_handler(const char *xmlns, JabberPEPHandler handlerfunc) {

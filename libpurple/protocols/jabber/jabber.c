@@ -2409,14 +2409,29 @@ static void jabber_password_change_cb(JabberStream *js,
 	jabber_iq_send(iq);
 }
 
-static void jabber_password_change(PurpleProtocolAction *action)
+static void
+jabber_password_change(G_GNUC_UNUSED GSimpleAction *action, GVariant *parameter,
+                       G_GNUC_UNUSED gpointer data)
 {
-
-	PurpleConnection *gc = (PurpleConnection *) action->connection;
-	JabberStream *js = purple_connection_get_protocol_data(gc);
+	const char *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	JabberStream *js = NULL;
 	PurpleRequestFields *fields;
 	PurpleRequestFieldGroup *group;
 	PurpleRequestField *field;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("XMPP Change Password action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+	js = purple_connection_get_protocol_data(connection);
 
 	fields = purple_request_fields_new();
 	group = purple_request_field_group_new(NULL);
@@ -2434,42 +2449,97 @@ static void jabber_password_change(PurpleProtocolAction *action)
 	purple_request_field_set_required(field, TRUE);
 	purple_request_field_group_add_field(group, field);
 
-	purple_request_fields(js->gc, _("Change XMPP Password"),
-			_("Change XMPP Password"), _("Please enter your new password"),
-			fields, _("OK"), G_CALLBACK(jabber_password_change_cb),
-			_("Cancel"), NULL,
-			purple_request_cpar_from_connection(gc), js);
+	purple_request_fields(connection, _("Change XMPP Password"),
+	                      _("Change XMPP Password"),
+	                      _("Please enter your new password"),
+	                      fields,
+	                      _("OK"), G_CALLBACK(jabber_password_change_cb),
+	                      _("Cancel"), NULL,
+	                      purple_request_cpar_from_connection(connection), js);
 }
 
-GList *
-jabber_get_actions(PurpleProtocolClient *client, PurpleConnection *gc) {
-	JabberStream *js = purple_connection_get_protocol_data(gc);
-	GList *m = NULL;
-	PurpleProtocolAction *act;
+static const gchar *
+xmpp_protocol_actions_get_prefix(PurpleProtocolActions *actions) {
+	return "prpl-xmpp";
+}
 
-	act = purple_protocol_action_new(_("Set User Info..."),
-	                             jabber_setup_set_info);
-	m = g_list_append(m, act);
+static GActionGroup *
+xmpp_protocol_actions_get_action_group(PurpleProtocolActions *actions,
+                                      PurpleConnection *connection)
+{
+	JabberStream *js = purple_connection_get_protocol_data(connection);
+	GSimpleActionGroup *group = NULL;
+	GActionEntry entries[] = {
+		{
+			.name = "set-user-info",
+			.activate = jabber_setup_set_info,
+			.parameter_type = "s",
+		},
+		{
+			.name = "change-password",
+			.activate = jabber_password_change,
+			.parameter_type = "s",
+		},
+		{
+			.name = "search-users",
+			.activate = jabber_user_search_begin,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
 
-	/* if (js->account_options & CHANGE_PASSWORD) { */
-		act = purple_protocol_action_new(_("Change Password..."),
-		                             jabber_password_change);
-		m = g_list_append(m, act);
-	/* } */
+	group = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
 
-	act = purple_protocol_action_new(_("Search for Users..."),
-	                             jabber_user_search_begin);
-	m = g_list_append(m, act);
+	if(js->pep) {
+		jabber_pep_add_action_entries(group);
+	}
 
-	purple_debug_info("jabber", "jabber_get_actions: have pep: %s\n", js->pep ? "YES" : "NO");
+#if 0
+	if(js->commands) {
+		jabber_adhoc_add_server_action_entries(js, group);
+	}
+#endif
 
-	if(js->pep)
-		jabber_pep_init_actions(&m);
+	return G_ACTION_GROUP(group);
+}
 
-	if(js->commands)
-		jabber_adhoc_init_server_commands(js, &m);
+static GMenu *
+xmpp_protocol_actions_get_menu(PurpleProtocolActions *actions) {
+	GMenu *menu = NULL;
+	GMenuItem *item = NULL;
 
-	return m;
+	menu = g_menu_new();
+
+	item = g_menu_item_new(_("Set User Info..."), "prpl-xmpp.set-user-info");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Change Password..."),
+	                       "prpl-xmpp.change-password");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	item = g_menu_item_new(_("Search for Users..."), "prpl-xmpp.search-users");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
+
+	jabber_pep_append_menu(menu);
+
+#if 0
+	if(js->commands) {
+		jabber_adhoc_append_server_menu(js, menu);
+	}
+#endif
+
+	return menu;
 }
 
 PurpleChat *
@@ -3847,6 +3917,14 @@ jabber_protocol_class_finalize(G_GNUC_UNUSED JabberProtocolClass *klass)
 }
 
 static void
+xmpp_protocol_actions_iface_init(PurpleProtocolActionsInterface *iface)
+{
+	iface->get_prefix = xmpp_protocol_actions_get_prefix;
+	iface->get_action_group = xmpp_protocol_actions_get_action_group;
+	iface->get_menu = xmpp_protocol_actions_get_menu;
+}
+
+static void
 jabber_protocol_client_iface_init(PurpleProtocolClientInterface *client_iface)
 {
 	client_iface->list_emblem     = jabber_list_emblem;
@@ -3957,6 +4035,9 @@ jabber_protocol_xfer_iface_init(PurpleProtocolXferInterface *xfer_iface)
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(
         JabberProtocol, jabber_protocol, PURPLE_TYPE_PROTOCOL,
         G_TYPE_FLAG_ABSTRACT,
+
+        G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_ACTIONS,
+                                      xmpp_protocol_actions_iface_init)
 
         G_IMPLEMENT_INTERFACE_DYNAMIC(PURPLE_TYPE_PROTOCOL_CLIENT,
                                       jabber_protocol_client_iface_init)

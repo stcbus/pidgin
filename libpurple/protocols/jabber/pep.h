@@ -31,7 +31,8 @@
 void jabber_pep_init(void);
 void jabber_pep_uninit(void);
 
-void jabber_pep_init_actions(GList **m);
+void jabber_pep_add_action_entries(GSimpleActionGroup *group);
+void jabber_pep_append_menu(GMenu *menu);
 
 /*
  * Callback for receiving PEP events.

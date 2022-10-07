@@ -29,6 +29,7 @@
 /* Implementation of XEP-0172 */
 
 void jabber_nick_init(void);
-void jabber_nick_init_action(GList **m);
+void jabber_nick_append_menu(GMenu *menu);
+void jabber_nick_add_action_entries(GSimpleActionGroup *group);
 
 #endif /* PURPLE_JABBER_USERNICK_H */

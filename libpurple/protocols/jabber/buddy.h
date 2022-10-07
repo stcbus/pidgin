@@ -96,11 +96,11 @@ void jabber_buddy_get_info(PurpleProtocolServer *protocol_server, PurpleConnecti
 GList *jabber_blist_node_menu(PurpleProtocolClient *client, PurpleBlistNode *node);
 
 void jabber_set_info(PurpleProtocolServer *protocol_server, PurpleConnection *gc, const char *info);
-void jabber_setup_set_info(PurpleProtocolAction *action);
+void jabber_setup_set_info(GSimpleAction *action, GVariant *parameter, gpointer data);
 void jabber_set_buddy_icon(PurpleProtocolServer *protocol_server, PurpleConnection *gc, PurpleImage *img);
 
 void jabber_user_search(JabberStream *js, const char *directory);
-void jabber_user_search_begin(PurpleProtocolAction *);
+void jabber_user_search_begin(GSimpleAction *action, GVariant *parameter, gpointer data);
 
 void jabber_buddy_remove_all_pending_buddy_info_requests(JabberStream *js);
 

@@ -600,15 +600,20 @@ jabber_format_info(PurpleConnection *gc, PurpleRequestFields *fields)
 }
 
 /*
- * This gets executed by the proto action
+ * This gets executed as the protocol action.
  *
  * Creates a new PurpleRequestFields struct, gets the XML-formatted user_info
  * string (if any) into GSLists for the (multi-entry) edit dialog and
  * calls the set_vcard dialog.
  */
-void jabber_setup_set_info(PurpleProtocolAction *action)
+void
+jabber_setup_set_info(G_GNUC_UNUSED GSimpleAction *action, GVariant *parameter,
+                      G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = (PurpleConnection *) action->connection;
+	const char *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
 	PurpleRequestFields *fields;
 	PurpleRequestFieldGroup *group;
 	PurpleRequestField *field;
@@ -617,6 +622,16 @@ void jabber_setup_set_info(PurpleProtocolAction *action)
 	char *cdata = NULL;
 	PurpleXmlNode *x_vc_data = NULL;
 
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("XMPP Set Info action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
 	fields = purple_request_fields_new();
 	group = purple_request_field_group_new(NULL);
 	purple_request_fields_add_group(fields, group);
@@ -624,8 +639,9 @@ void jabber_setup_set_info(PurpleProtocolAction *action)
 	/*
 	 * Get existing, XML-formatted, user info
 	 */
-	if((user_info = purple_account_get_user_info(purple_connection_get_account(gc))) != NULL)
+	if((user_info = purple_account_get_user_info(account)) != NULL) {
 		x_vc_data = purple_xmlnode_from_str(user_info, -1);
+	}
 
 	/*
 	 * Set up GSLists for edit with labels from "template," data from user info
@@ -666,15 +682,15 @@ void jabber_setup_set_info(PurpleProtocolAction *action)
 	if(x_vc_data != NULL)
 		purple_xmlnode_free(x_vc_data);
 
-	purple_request_fields(gc, _("Edit XMPP vCard"),
-						_("Edit XMPP vCard"),
-						_("All items below are optional. Enter only the "
-						  "information with which you feel comfortable."),
-						fields,
-						_("Save"), G_CALLBACK(jabber_format_info),
-						_("Cancel"), NULL,
-						purple_request_cpar_from_connection(gc),
-						gc);
+	purple_request_fields(connection, _("Edit XMPP vCard"),
+	                      _("Edit XMPP vCard"),
+	                      _("All items below are optional. Enter only the "
+	                        "information with which you feel comfortable."),
+	                      fields,
+	                      _("Save"), G_CALLBACK(jabber_format_info),
+	                      _("Cancel"), NULL,
+	                      purple_request_cpar_from_connection(connection),
+	                      connection);
 }
 
 /*---------------------------------------*/
@@ -2197,21 +2213,40 @@ void jabber_user_search(JabberStream *js, const char *directory)
 	jabber_iq_send(iq);
 }
 
-void jabber_user_search_begin(PurpleProtocolAction *action)
+void
+jabber_user_search_begin(G_GNUC_UNUSED GSimpleAction *action,
+                         GVariant *parameter, G_GNUC_UNUSED gpointer data)
 {
-	PurpleConnection *gc = (PurpleConnection *) action->connection;
-	JabberStream *js = purple_connection_get_protocol_data(gc);
-	const char *def_val = purple_account_get_string(purple_connection_get_account(js->gc), "user_directory", "");
-	if(!*def_val && js->user_directories)
-		def_val = js->user_directories->data;
+	const char *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	JabberStream *js = NULL;
+	const char *def_val = NULL;
 
-	purple_request_input(gc, _("Enter a User Directory"), _("Enter a User Directory"),
-			_("Select a user directory to search"),
-			def_val,
-			FALSE, FALSE, NULL,
-			_("Search Directory"), G_CALLBACK(jabber_user_search),
-			_("Cancel"), NULL,
-			NULL, js);
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("XMPP User Search action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+
+	js = purple_connection_get_protocol_data(connection);
+	def_val = purple_account_get_string(account, "user_directory", "");
+	if(*def_val == '\0' && js->user_directories) {
+		def_val = js->user_directories->data;
+	}
+
+	purple_request_input(connection, _("Enter a User Directory"),
+	                     _("Enter a User Directory"),
+	                     _("Select a user directory to search"),
+	                     def_val, FALSE, FALSE, NULL,
+	                     _("Search Directory"), G_CALLBACK(jabber_user_search),
+	                     _("Cancel"), NULL,
+	                     NULL, js);
 }
 
 gboolean

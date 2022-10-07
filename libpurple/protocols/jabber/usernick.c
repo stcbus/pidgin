@@ -84,9 +84,26 @@ static void do_nick_got_own_nick_cb(JabberStream *js, const char *from, PurpleXm
 	g_free(oldnickname);
 }
 
-static void do_nick_set_nick(PurpleProtocolAction *action) {
-	PurpleConnection *gc = action->connection;
-	JabberStream *js = purple_connection_get_protocol_data(gc);
+static void
+do_nick_set_nick(G_GNUC_UNUSED GSimpleAction *action, GVariant *parameter,
+                 G_GNUC_UNUSED gpointer data)
+{
+	const char *account_id = NULL;
+	PurpleAccountManager *manager = NULL;
+	PurpleAccount *account = NULL;
+	PurpleConnection *connection = NULL;
+	JabberStream *js = NULL;
+
+	if(!g_variant_is_of_type(parameter, G_VARIANT_TYPE_STRING)) {
+		g_critical("XMPP Set Nickname action parameter is of incorrect type %s",
+		           g_variant_get_type_string(parameter));
+	}
+
+	account_id = g_variant_get_string(parameter, NULL);
+	manager = purple_account_manager_get_default();
+	account = purple_account_manager_find_by_id(manager, account_id);
+	connection = purple_account_get_connection(account);
+	js = purple_connection_get_protocol_data(connection);
 
 	/* since the nickname might have been changed by another resource of this account, we always have to request the old one
 		from the server to present as the default for the new one */
@@ -98,7 +115,28 @@ void jabber_nick_init(void) {
 	jabber_pep_register_handler("http://jabber.org/protocol/nick", jabber_nick_cb);
 }
 
-void jabber_nick_init_action(GList **m) {
-	PurpleProtocolAction *act = purple_protocol_action_new(_("Set Nickname..."), do_nick_set_nick);
-	*m = g_list_append(*m, act);
+void
+jabber_nick_add_action_entries(GSimpleActionGroup *group) {
+	GActionEntry entries[] = {
+		{
+			.name = "set-nickname",
+			.activate = do_nick_set_nick,
+			.parameter_type = "s",
+		},
+	};
+	gsize nentries = G_N_ELEMENTS(entries);
+
+	g_action_map_add_action_entries(G_ACTION_MAP(group), entries, nentries,
+	                                NULL);
+}
+
+void
+jabber_nick_append_menu(GMenu *menu) {
+	GMenuItem *item = NULL;
+
+	item = g_menu_item_new(_("Set Nickname..."), "prpl-xmpp.set-nickname");
+	g_menu_item_set_attribute(item, PURPLE_MENU_ATTRIBUTE_DYNAMIC_TARGET, "s",
+	                          "account");
+	g_menu_append_item(menu, item);
+	g_object_unref(item);
 }
