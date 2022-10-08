@@ -63,6 +63,44 @@ purple_ircv3_connection_set_account(PurpleIRCv3Connection *connection,
 	}
 }
 
+static void
+purple_ircv3_connection_send_user_command(PurpleIRCv3Connection *connection) {
+	PurpleConnection *purple_connection = NULL;
+	const char *identname = NULL;
+	const char *nickname = NULL;
+	const char *realname = NULL;
+
+	purple_connection = purple_account_get_connection(connection->account);
+	nickname = purple_connection_get_display_name(purple_connection);
+
+	/* The stored value could be an empty string, so pass a default of empty
+	 * string and then if it was empty, set our correct fallback.
+	 */
+	identname = purple_account_get_string(connection->account, "ident", "");
+	if(identname == NULL || *identname == '\0') {
+		identname = nickname;
+	}
+
+	realname = purple_account_get_string(connection->account, "real-name", "");
+	if(realname == NULL || *realname == '\0') {
+		realname = nickname;
+	}
+
+	purple_ircv3_connection_writef(connection, "USER %s 0 * :%s", identname,
+	                               realname);
+}
+
+static void
+purple_ircv3_connection_send_nick_command(PurpleIRCv3Connection *connection) {
+	PurpleConnection *purple_connection = NULL;
+	const char *nickname = NULL;
+
+	purple_connection = purple_account_get_connection(connection->account);
+	nickname = purple_connection_get_display_name(purple_connection);
+
+	purple_ircv3_connection_writef(connection, "NICK %s", nickname);
+}
+
 /******************************************************************************
  * Callbacks
  *****************************************************************************/
@@ -98,6 +136,33 @@ purple_ircv3_connection_read_cb(GObject *source, GAsyncResult *result,
 	g_message("received line: %s", line);
 
 	g_free(line);
+}
+
+static void
+purple_ircv3_connection_write_cb(GObject *source, GAsyncResult *result,
+                                 gpointer data)
+{
+	PurpleIRCv3Connection *connection = data;
+	PurpleQueuedOutputStream *stream = PURPLE_QUEUED_OUTPUT_STREAM(source);
+	GError *error = NULL;
+	gboolean success = FALSE;
+
+	success = purple_queued_output_stream_push_bytes_finish(stream, result,
+	                                                        &error);
+
+	if(!success) {
+		PurpleConnection *purple_connection = NULL;
+
+		purple_connection = purple_account_get_connection(connection->account);
+
+		purple_queued_output_stream_clear_queue(stream);
+
+		g_prefix_error(&error, "%s", _("Lost connection with server: "));
+
+		purple_connection_take_error(purple_connection, error);
+
+		return;
+	}
 }
 
 static void
@@ -144,7 +209,9 @@ purple_ircv3_connection_connected_cb(GObject *source, GAsyncResult *result,
 	                                    purple_ircv3_connection_read_cb,
 	                                    purple_connection);
 
-	/* TODO: start login procedure. */
+	/* Send our registration commands. */
+	purple_ircv3_connection_send_user_command(connection);
+	purple_ircv3_connection_send_nick_command(connection);
 }
 
 /******************************************************************************
@@ -403,4 +470,38 @@ purple_ircv3_connection_close(PurpleIRCv3Connection *connection) {
 	g_clear_object(&connection->input);
 	g_clear_object(&connection->output);
 	g_clear_object(&connection->connection);
+}
+
+void
+purple_ircv3_connection_writef(PurpleIRCv3Connection *connection,
+                               const char *format, ...)
+{
+	GBytes *bytes = NULL;
+	GString *msg = NULL;
+	va_list vargs;
+
+	g_return_if_fail(PURPLE_IRCV3_IS_CONNECTION(connection));
+	g_return_if_fail(format != NULL);
+
+	/* Create our string and append our format to it. */
+	msg = g_string_new("");
+
+	va_start(vargs, format);
+	g_string_vprintf(msg, format, vargs);
+	va_end(vargs);
+
+	/* Next add the trailing carriage return line feed. */
+	g_string_append(msg, "\r\n");
+
+	/* Finally turn the string into bytes and send it! */
+	bytes = g_bytes_new_take(msg->str, msg->len);
+	g_string_free(msg, FALSE);
+
+	purple_queued_output_stream_push_bytes_async(connection->output, bytes,
+	                                             G_PRIORITY_DEFAULT,
+	                                             connection->cancellable,
+	                                             purple_ircv3_connection_write_cb,
+	                                             connection);
+
+	g_bytes_unref(bytes);
 }

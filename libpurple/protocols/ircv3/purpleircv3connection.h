@@ -47,6 +47,8 @@ G_GNUC_INTERNAL void purple_ircv3_connection_connect(PurpleIRCv3Connection *conn
 
 G_GNUC_INTERNAL void purple_ircv3_connection_close(PurpleIRCv3Connection *connection);
 
+G_GNUC_INTERNAL void purple_ircv3_connection_writef(PurpleIRCv3Connection *connection, const char *format, ...) G_GNUC_PRINTF(2, 3);
+
 G_END_DECLS
 
 #endif /* PURPLE_IRCV3_CONNECTION_H */
