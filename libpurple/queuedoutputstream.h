@@ -1,10 +1,6 @@
 /*
- *
- * purple
- *
- * Purple is the legal property of its developers, whose names are too numerous
- * to list here.  Please refer to the COPYRIGHT file distributed with this
- * source distribution.
+ * Purple - Internet Messaging Library
+ * Copyright (C) Pidgin Developers <devel@pidgin.im>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #if !defined(PURPLE_GLOBAL_HEADER_INSIDE) && !defined(PURPLE_COMPILATION)
@@ -50,68 +45,73 @@ G_BEGIN_DECLS
  * queued with [method@QueuedOutputStream.clear_queue] to avoid excessive
  * errors returned in [method@QueuedOutputStream.push_bytes_async]'s async
  * callback.
+ *
+ * Since: 3.0.0
  */
-G_DECLARE_FINAL_TYPE(PurpleQueuedOutputStream,
-		purple_queued_output_stream, PURPLE,
-		QUEUED_OUTPUT_STREAM, GFilterOutputStream)
+G_DECLARE_FINAL_TYPE(PurpleQueuedOutputStream, purple_queued_output_stream,
+                     PURPLE, QUEUED_OUTPUT_STREAM, GFilterOutputStream)
 
-/*
- * purple_queued_output_stream_new
+/**
+ * purple_queued_output_stream_new:
  * @base_stream: Base output stream to wrap with the queued stream
  *
  * Creates a new queued output stream for a base stream.
- */
-PurpleQueuedOutputStream *purple_queued_output_stream_new(
-		GOutputStream *base_stream);
-
-/*
- * purple_queued_output_stream_push_bytes_async
- * @stream: #PurpleQueuedOutputStream to push bytes to
- * @bytes: Bytes to queue
- * @priority: IO priority of the request
- * @cancellable: (allow-none): Optional #GCancellable object, NULL to ignore
- * @callback: (scope async): Callback to call when the request is finished
- * @user_data: (closure): Data to pass to the callback function
  *
- * Asynchronously queues and then writes data to the output stream.
- * Once the data has been written, or an error occurs, the callback
- * will be called.
+ * Returns: (transfer full): The new stream.
+ *
+ * Since: 3.0.0
+ */
+PurpleQueuedOutputStream *purple_queued_output_stream_new(GOutputStream *base_stream);
+
+/**
+ * purple_queued_output_stream_push_bytes_async:
+ * @stream: The instance.
+ * @bytes: The bytes to queue.
+ * @priority: IO priority of the request.
+ * @cancellable: (nullable): A [class@Gio.Cancellable] or %NULL.
+ * @callback: (scope async): Callback to call when the request is finished.
+ * @data: (closure): Data to pass to @callback.
+ *
+ * Asynchronously queues and then writes data to @stream. Once the data has
+ * been written, or an error occurs, @callback will be called.
  *
  * Be careful such that if there's a fatal stream error, all remaining queued
  * operations will likely return this error. Use
- * #purple_queued_output_stream_clear_queue() to clear the queue on such
+ * [method@Purple.QueuedOutputStream.clear_queue] to clear the queue on such
  * an error to only report it a single time.
+ *
+ * Since: 3.0.0
  */
-void purple_queued_output_stream_push_bytes_async(
-		PurpleQueuedOutputStream *stream, GBytes *bytes,
-		int io_priority, GCancellable *cancellable,
-		GAsyncReadyCallback callback, gpointer user_data);
+void purple_queued_output_stream_push_bytes_async(PurpleQueuedOutputStream *stream, GBytes *bytes, int priority, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer data);
 
-/*
- * purple_queued_output_stream_push_bytes_finish
- * @stream: #PurpleQueuedOutputStream bytes were pushed to
- * @result: The #GAsyncResult of this operation
- * @error: A GError location to store the error, or NULL to ignore
+/**
+ * purple_queued_output_stream_push_bytes_finish:
+ * @stream: The instance.
+ * @result: The [iface@Gio.AsyncResult] of this operation.
+ * @error: (nullable) (optional): A [type@Glib.Error] location to store the
+ *         error, or NULL to ignore
  *
  * Finishes pushing bytes asynchronously.
  *
  * Returns: %TRUE on success, %FALSE if there was an error
+ *
+ * Since: 3.0.0
  */
-gboolean purple_queued_output_stream_push_bytes_finish(
-		PurpleQueuedOutputStream *stream,
-		GAsyncResult *result, GError **error);
+gboolean purple_queued_output_stream_push_bytes_finish(PurpleQueuedOutputStream *stream, GAsyncResult *result, GError **error);
 
-/*
- * purple_queued_output_stream_clear_queue
- * @stream: #PurpleQueuedOutputStream to clear
+/**
+ * purple_queued_output_stream_clear_queue:
+ * @stream: The instance.
  *
- * Clears the queue of any pending bytes. However, any bytes that are
- * in the process of being sent will finish their operation.
+ * Clears the queue of any pending bytes. However, any bytes that are in the
+ * process of being sent will finish their operation.
  *
- * This function is useful for clearing the queue in case of an IO error.
- * Call this in the async callback in order to clear the queue and avoid
- * having all #purple_queue_output_stream_push_bytes_async() calls on
- * this queue return errors if there's a fatal stream error.
+ * This function is useful for clearing the queue in case of an IO error. Call
+ * this in the async callback in order to clear the queue and avoid having all
+ * [method@Purple.QueuedOutputStream.push_bytes_async] calls on @stream return
+ * errors if there's a fatal stream error.
+ *
+ * Since: 3.0.0
  */
 void purple_queued_output_stream_clear_queue(PurpleQueuedOutputStream *stream);
 
