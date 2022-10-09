@@ -79,16 +79,6 @@ purple_conversations_init(void)
 		purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE, 2,
 		PURPLE_TYPE_IM_CONVERSATION, PURPLE_TYPE_MESSAGE);
 
-	purple_signal_register(handle, "sent-attention",
-						 purple_marshal_VOID__POINTER_POINTER_POINTER_UINT,
-						 G_TYPE_NONE, 4, PURPLE_TYPE_ACCOUNT, G_TYPE_STRING,
-						 PURPLE_TYPE_CONVERSATION, G_TYPE_UINT);
-
-	purple_signal_register(handle, "got-attention",
-						 purple_marshal_VOID__POINTER_POINTER_POINTER_UINT,
-						 G_TYPE_NONE, 4, PURPLE_TYPE_ACCOUNT, G_TYPE_STRING,
-						 PURPLE_TYPE_CONVERSATION, G_TYPE_UINT);
-
 	purple_signal_register(handle, "sending-im-msg",
 		purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE,
 		2, PURPLE_TYPE_ACCOUNT, PURPLE_TYPE_MESSAGE);

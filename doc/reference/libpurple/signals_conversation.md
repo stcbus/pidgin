@@ -38,8 +38,6 @@ Slug: conversation-signals
 * [chat-topic-changed](#chat-topic-changed)
 * [cleared-message-history](#cleared-message-history)
 * [conversation-extended-menu](#conversation-extended-menu)
-* [sent-attention](#sent-attention)
-* [got-attention](#got-attention)
 
 ### Signal Details
 
@@ -999,68 +997,6 @@ Emitted when the conversation history is cleared.
 
 **conv**
 : The conversation.
-
-**user_data**
-: user data set when the signal handler was connected.
-
-----
-
-#### sent-attention
-
-```c
-void user_function(PurpleAccount *account,
-                   const gchar *who,
-                   PurpleConversation *conv,
-                   guint type,
-                   gpointer user_data);
-```
-
-Emitted when receiving an attention message (buzz, nudge, etc.).
-
-**Parameters:**
-
-**account**
-: The account.
-
-**who**
-: The name of the person receiving the attention.
-
-**conv**
-: The conversation.
-
-**type**
-: The attention type (an index starting at 0).
-
-**user_data**
-: user data set when the signal handler was connected.
-
-----
-
-#### got-attention
-
-```c
-void user_function(PurpleAccount *account,
-                   const gchar *who,
-                   PurpleConversation *conv,
-                   guint type,
-                   gpointer user_data);
-```
-
-Emitted when receiving an attention message (buzz, nudge, etc.).
-
-**Parameters:**
-
-**account**
-: The account.
-
-**who**
-: The name of the person sending the attention.
-
-**conv**
-: The conversation.
-
-**type**
-: The attention type (an index starting at 0).
 
 **user_data**
 : user data set when the signal handler was connected.
