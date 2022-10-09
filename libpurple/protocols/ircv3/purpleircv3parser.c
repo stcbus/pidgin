@@ -19,6 +19,7 @@
 #include "purpleircv3parser.h"
 
 #include "purpleircv3core.h"
+#include "purpleircv3messagehandlers.h"
 
 struct _PurpleIRCv3Parser {
 	GObject parent;
@@ -164,6 +165,18 @@ purple_ircv3_parser_build_params(PurpleIRCv3Parser *parser,
 	g_strv_builder_unref(builder);
 
 	return result;
+}
+
+static void
+purple_ircv3_parser_add_handler(PurpleIRCv3Parser *parser,
+                                const gchar *command,
+                                PurpleIRCv3MessageHandler handler)
+{
+	g_return_if_fail(PURPLE_IRCV3_IS_PARSER(parser));
+	g_return_if_fail(command != NULL);
+	g_return_if_fail(handler != NULL);
+
+	g_hash_table_insert(parser->handlers, g_strdup(command), handler);
 }
 
 /******************************************************************************
@@ -332,4 +345,15 @@ purple_ircv3_parser_parse(PurpleIRCv3Parser *parser, const gchar *buffer,
 	g_match_info_unref(info);
 
 	return result;
+}
+
+void
+purple_ircv3_parser_add_default_handlers(PurpleIRCv3Parser *parser) {
+	g_return_if_fail(PURPLE_IRCV3_IS_PARSER(parser));
+
+	purple_ircv3_parser_set_fallback_handler(parser,
+	                                         purple_ircv3_messager_handler_fallback);
+
+	purple_ircv3_parser_add_handler(parser, "PING",
+	                                purple_ircv3_messager_handler_ping);
 }

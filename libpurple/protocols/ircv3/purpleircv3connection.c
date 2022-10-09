@@ -21,6 +21,7 @@
 #include "purpleircv3connection.h"
 
 #include "purpleircv3core.h"
+#include "purpleircv3parser.h"
 
 enum {
 	PROP_0,
@@ -43,6 +44,8 @@ struct _PurpleIRCv3Connection {
 
 	GDataInputStream *input;
 	PurpleQueuedOutputStream *output;
+
+	PurpleIRCv3Parser *parser;
 };
 
 G_DEFINE_DYNAMIC_TYPE(PurpleIRCv3Connection, purple_ircv3_connection,
@@ -108,6 +111,7 @@ static void
 purple_ircv3_connection_read_cb(GObject *source, GAsyncResult *result,
                                 gpointer data)
 {
+	PurpleIRCv3Connection *connection = NULL;
 	PurpleConnection *purple_connection = data;
 	GDataInputStream *istream = G_DATA_INPUT_STREAM(source);
 	GError *error = NULL;
@@ -133,9 +137,18 @@ purple_ircv3_connection_read_cb(GObject *source, GAsyncResult *result,
 		return;
 	}
 
-	g_message("received line: %s", line);
+	connection = g_object_get_data(G_OBJECT(purple_connection),
+	                               PURPLE_IRCV3_CONNECTION_KEY);
+	purple_ircv3_parser_parse(connection->parser, line, &error, connection);
 
 	g_free(line);
+
+	/* Call read_line_async again to continue reading lines. */
+	g_data_input_stream_read_line_async(connection->input,
+	                                    G_PRIORITY_DEFAULT,
+	                                    connection->cancellable,
+	                                    purple_ircv3_connection_read_cb,
+	                                    purple_connection);
 }
 
 static void
@@ -191,16 +204,25 @@ purple_ircv3_connection_connected_cb(GObject *source, GAsyncResult *result,
 	connection = g_object_get_data(G_OBJECT(purple_connection),
 	                               PURPLE_IRCV3_CONNECTION_KEY);
 
+	purple_connection_set_state(purple_connection,
+	                            PURPLE_CONNECTION_CONNECTED);
+
 	g_message("Successfully connected to %s", connection->server_name);
 
 	/* Save our connection and setup our input and outputs. */
 	connection->connection = conn;
+
+	/* Create our parser. */
+	connection->parser = purple_ircv3_parser_new();
+	purple_ircv3_parser_add_default_handlers(connection->parser);
 
 	ostream = g_io_stream_get_output_stream(G_IO_STREAM(conn));
 	connection->output = purple_queued_output_stream_new(ostream);
 
 	istream = g_io_stream_get_input_stream(G_IO_STREAM(conn));
 	connection->input = g_data_input_stream_new(istream);
+	g_data_input_stream_set_newline_type(G_DATA_INPUT_STREAM(connection->input),
+	                                     G_DATA_STREAM_NEWLINE_TYPE_CR_LF);
 
 	/* Add our read callback. */
 	g_data_input_stream_read_line_async(connection->input,
@@ -265,6 +287,8 @@ purple_ircv3_connection_dispose(GObject *obj) {
 	g_clear_object(&connection->input);
 	g_clear_object(&connection->output);
 	g_clear_object(&connection->connection);
+
+	g_clear_object(&connection->parser);
 
 	G_OBJECT_CLASS(purple_ircv3_connection_parent_class)->dispose(obj);
 }

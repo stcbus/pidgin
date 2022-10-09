@@ -24,15 +24,9 @@
 
 #include <purple.h>
 
-G_BEGIN_DECLS
+#include "purpleircv3messagehandlers.h"
 
-typedef gboolean (*PurpleIRCv3MessageHandler)(GHashTable *tags,
-                                              const gchar *source,
-                                              const gchar *command,
-                                              guint n_params,
-                                              GStrv params,
-                                              GError **error,
-                                              gpointer data);
+G_BEGIN_DECLS
 
 #define PURPLE_IRCV3_TYPE_PARSER (purple_ircv3_parser_get_type())
 G_DECLARE_FINAL_TYPE(PurpleIRCv3Parser, purple_ircv3_parser, PURPLE_IRCV3,
@@ -73,6 +67,16 @@ G_GNUC_INTERNAL void purple_ircv3_parser_set_fallback_handler(PurpleIRCv3Parser 
  * Since: 3.0.0
  */
 G_GNUC_INTERNAL gboolean purple_ircv3_parser_parse(PurpleIRCv3Parser *parser, const gchar *buffer, GError **error, gpointer data);
+
+/**
+ * purple_ircv3_parser_add_default_handlers:
+ * @parser: The instance.
+ *
+ * Adds all of the default handlers to @parser.
+ *
+ * Since: 3.0.0
+ */
+G_GNUC_INTERNAL void purple_ircv3_parser_add_default_handlers(PurpleIRCv3Parser *parser);
 
 G_END_DECLS
 

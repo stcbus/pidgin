@@ -3,6 +3,8 @@ IRCV3_SOURCES = [
 	'purpleircv3connection.h',
 	'purpleircv3core.c',
 	'purpleircv3core.h',
+	'purpleircv3messagehandlers.c',
+	'purpleircv3messagehandlers.h',
 	'purpleircv3parser.c',
 	'purpleircv3parser.h',
 	'purpleircv3protocol.c',
