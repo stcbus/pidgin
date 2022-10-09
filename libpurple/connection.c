@@ -892,8 +892,6 @@ void
 _purple_connection_new(PurpleAccount *account, gboolean is_registration,
                        const gchar *password)
 {
-	PurpleConnection *connection = NULL;
-	PurpleConnectionPrivate *priv = NULL;
 	PurpleProtocol *protocol = NULL;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
@@ -934,32 +932,7 @@ _purple_connection_new(PurpleAccount *account, gboolean is_registration,
 		}
 	}
 
-	connection = g_object_new(
-		PURPLE_TYPE_CONNECTION,
-		"protocol", protocol,
-		"account", account,
-		"password", password,
-		NULL);
-
-	g_return_if_fail(connection != NULL);
-
-	priv = purple_connection_get_instance_private(connection);
-
-	if(is_registration) {
-		purple_debug_info("connection", "Registering.  connection = %p",
-		                  connection);
-
-		/* set this so we don't auto-reconnect after registering */
-		priv->wants_to_die = TRUE;
-
-		purple_protocol_server_register_user(PURPLE_PROTOCOL_SERVER(protocol),
-		                                     account);
-	} else {
-		purple_debug_info("connection", "Connecting. connection = %p",
-		                  connection);
-
-		purple_protocol_login(protocol, account);
-	}
+	purple_protocol_login(protocol, account, password);
 }
 
 void
@@ -1015,6 +988,21 @@ _purple_connection_new_unregister(PurpleAccount *account, const char *password,
 
 	purple_protocol_server_unregister_user(PURPLE_PROTOCOL_SERVER(protocol),
 	                                       account, cb, user_data);
+}
+
+PurpleConnection *
+purple_connection_new(PurpleProtocol *protocol, PurpleAccount *account,
+                      const char *password)
+{
+	g_return_val_if_fail(PURPLE_IS_PROTOCOL(protocol), NULL);
+	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
+
+	return g_object_new(
+		PURPLE_TYPE_CONNECTION,
+		"protocol", protocol,
+		"account", account,
+		"password", password,
+		NULL);
 }
 
 /**************************************************************************

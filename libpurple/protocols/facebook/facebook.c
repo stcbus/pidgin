@@ -1007,8 +1007,8 @@ fb_get_account_options(PurpleProtocol *protocol) {
 	return g_list_reverse(opts);
 }
 
-static void
-fb_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *acct) {
+static PurpleConnection *
+fb_login(PurpleProtocol *protocol, PurpleAccount *acct, const char *password) {
 	const gchar *pass;
 	const gchar *user;
 	FbApi *api;
@@ -1018,14 +1018,14 @@ fb_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *acct) {
 	GProxyResolver *resolver;
 	GError *error = NULL;
 
-	gc = purple_account_get_connection(acct);
+	gc = purple_connection_new(protocol, acct, password);
 
 	resolver = purple_proxy_get_proxy_resolver(acct, &error);
 	if (resolver == NULL) {
 		fb_util_debug_error("Unable to get account proxy resolver: %s",
 		                    error->message);
 		purple_connection_take_error(gc, error);
-		return;
+		return gc;
 	}
 
 	fata = fb_data_new(gc, resolver);
@@ -1105,10 +1105,12 @@ fb_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *acct) {
 		user = purple_account_get_username(acct);
 		pass = purple_connection_get_password(gc);
 		fb_api_auth(api, user, pass);
-		return;
+		return gc;
 	}
 
 	fb_api_contacts(api);
+
+	return gc;
 }
 
 static void

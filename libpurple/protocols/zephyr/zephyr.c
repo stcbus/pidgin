@@ -672,15 +672,17 @@ get_zephyr_realm(PurpleAccount *account, const gchar *local_realm)
 	return g_strdup(realm);
 }
 
-static void
-zephyr_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount * account) {
+static PurpleConnection *
+zephyr_login(PurpleProtocol *protocol, PurpleAccount *account,
+             const char *password)
+{
 	PurpleConnection *gc;
 	zephyr_account *zephyr;
 	ZephyrLoginFunc login;
 	GSourceFunc check_notify;
 	ZSubscription_t sub;
 
-	gc = purple_account_get_connection(account);
+	gc = purple_connection_new(protocol, account, password);
 
 #ifdef WIN32
 	username = purple_account_get_username(account);
@@ -719,7 +721,7 @@ zephyr_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount * account) {
 	zephyr->encoding = (char *)purple_account_get_string(account, "encoding", ZEPHYR_FALLBACK_CHARSET);
 
 	if (!login(zephyr)) {
-		return;
+		return gc;
 	}
 	purple_debug_info("zephyr","does it get here\n");
 	purple_debug_info("zephyr"," realm: %s username:%s\n", zephyr->realm, zephyr->username);
@@ -739,7 +741,7 @@ zephyr_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount * account) {
 		purple_notify_error(gc, NULL,
 			"Unable to subscribe to messages", "Unable to subscribe to initial messages",
 			purple_request_cpar_from_connection(gc));
-		return;
+		return gc;
 	}
 
 	purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
@@ -753,6 +755,8 @@ zephyr_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount * account) {
 
 	zephyr->nottimer = g_timeout_add(100, check_notify, gc);
 	zephyr->loctimer = g_timeout_add_seconds(20, check_loc, zephyr);
+
+	return gc;
 }
 
 static void write_zsubs(zephyr_account *zephyr)

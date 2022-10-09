@@ -141,7 +141,7 @@ struct _PurpleProtocolClass {
 	PurpleBuddyIconSpec *(*get_buddy_icon_spec)(PurpleProtocol *protocol);
 	PurpleWhiteboardOps *(*get_whiteboard_ops)(PurpleProtocol *protocol);
 
-	void (*login)(PurpleProtocol *protocol, PurpleAccount *account);
+	PurpleConnection *(*login)(PurpleProtocol *protocol, PurpleAccount *account, const char *password);
 
 	void (*close)(PurpleProtocol *protocol, PurpleConnection *connection);
 
@@ -268,14 +268,20 @@ PurpleWhiteboardOps *purple_protocol_get_whiteboard_ops(PurpleProtocol *protocol
 
 /**
  * purple_protocol_login:
- * @protocol: The #PurpleProtocol instance.
- * @account: The #PurpleAccount to login.
+ * @protocol: The instance.
+ * @account: The [class@Purple.Account] to login.
+ * @password: The password for this connection.
  *
- * Logs @account in using @protocol.
+ * Logs @account in to @protocol using @password.
+ *
+ * In simple cases, you can just pass the values to
+ * [ctor@Purple.Connection.new] and return that value.
+ *
+ * Returns: (transfer full): The new connection.
  *
  * Since: 3.0.0
  */
-void purple_protocol_login(PurpleProtocol *protocol, PurpleAccount *account);
+PurpleConnection *purple_protocol_login(PurpleProtocol *protocol, PurpleAccount *account, const char *password);
 
 /**
  * purple_protocol_close:

@@ -781,15 +781,19 @@ ggp_tooltip_text(PurpleProtocolClient *client, PurpleBuddy *b,
 	}
 }
 
-static void
-ggp_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
-	PurpleConnection *gc = purple_account_get_connection(account);
+static PurpleConnection *
+ggp_login(PurpleProtocol *protocol, PurpleAccount *account,
+          const char *password)
+{
+	PurpleConnection *gc = NULL;
 	struct gg_login_params *glp;
 	GGPInfo *info;
 	const char *address;
 	const gchar *encryption_type, *protocol_version;
 	GProxyResolver *resolver;
 	GError *error = NULL;
+
+	gc = purple_connection_new(protocol, account, password);
 
 	purple_connection_set_flags(gc,
 		PURPLE_CONNECTION_FLAG_HTML |
@@ -800,7 +804,7 @@ ggp_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 		purple_debug_error("gg", "Unable to get account proxy resolver: %s",
 		                   error->message);
 		purple_connection_take_error(gc, error);
-		return;
+		return gc;
 	}
 
 	glp = g_new0(struct gg_login_params, 1);
@@ -833,7 +837,7 @@ ggp_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 			_("The username specified is invalid."));
 		purple_str_wipe(glp->password);
 		g_free(glp);
-		return;
+		return gc;
 	}
 
 	glp->image_size = 255;
@@ -864,7 +868,7 @@ ggp_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 				_("SSL support unavailable"));
 			purple_str_wipe(glp->password);
 			g_free(glp);
-			return;
+			return gc;
 		}
 	}
 	else /* encryption_type == "none" */
@@ -896,13 +900,15 @@ ggp_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 		purple_connection_error (gc,
 			PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
 			_("Connection failed"));
-		return;
+		return gc;
 	}
 
 	if (info->session->fd > 0) {
 		info->inpa = purple_input_add(info->session->fd,
 			PURPLE_INPUT_READ, ggp_async_login_handler, gc);
 	}
+
+	return gc;
 }
 
 static void

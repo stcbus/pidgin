@@ -3523,8 +3523,8 @@ mw_protocol_chat_info_defaults(PurpleProtocolChat *protocol_chat,
 
 
 static void
-mw_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
-                  PurpleAccount *account)
+mw_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
+                  const char *password)
 {
   PurpleConnection *gc;
   struct mwPurpleProtocolData *pd;
@@ -3534,7 +3534,7 @@ mw_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
 
   GError *error = NULL;
 
-  gc = purple_account_get_connection(account);
+  gc = purple_connection_new(protocol, account, password);
   pd = mwPurpleProtocolData_new(gc);
 
   /* while we do support images, the default is to not offer it */
@@ -3561,7 +3561,7 @@ mw_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
     purple_connection_error(gc,
             PURPLE_CONNECTION_ERROR_INVALID_SETTINGS,
             _("A server is required to connect this account"));
-    return;
+    return gc;
   }
 
   pass = g_strdup(purple_connection_get_password(gc));
@@ -3603,13 +3603,15 @@ mw_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
   pd->client = purple_gio_socket_client_new(account, &error);
   if (pd->client == NULL) {
     purple_connection_take_error(gc, error);
-    return;
+    return gc;
   }
 
   g_socket_client_connect_to_host_async(
           pd->client, host,
           port, pd->cancellable,
           connect_cb, pd);
+
+  return gc;
 }
 
 

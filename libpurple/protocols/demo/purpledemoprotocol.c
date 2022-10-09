@@ -35,16 +35,19 @@ struct _PurpleDemoProtocol {
 /******************************************************************************
  * PurpleProtocol Implementation
  *****************************************************************************/
-static void
-purple_demo_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
-                           PurpleAccount *account)
+static PurpleConnection *
+purple_demo_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
+                           const char *password)
 {
 	PurpleConnection *connection = NULL;
 
-	connection = purple_account_get_connection(account);
+	connection = purple_connection_new(protocol, account, password);
+
 	purple_connection_set_state(connection, PURPLE_CONNECTION_CONNECTED);
 
 	purple_demo_contacts_load(account);
+
+	return connection;
 }
 
 static GList *

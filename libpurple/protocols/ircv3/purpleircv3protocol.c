@@ -84,21 +84,21 @@ purple_ircv3_protocol_get_account_options(G_GNUC_UNUSED PurpleProtocol *protocol
 	return options;
 }
 
-static void
-purple_ircv3_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
-                            PurpleAccount *account)
+static PurpleConnection *
+purple_ircv3_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
+                            const char *password)
 {
 	PurpleIRCv3Connection *connection = NULL;
 	PurpleConnection *purple_connection = NULL;
 	GError *error = NULL;
 
-	purple_connection = purple_account_get_connection(account);
+	purple_connection = purple_connection_new(protocol, account, password);
 
 	connection = purple_ircv3_connection_new(account);
 	if(!purple_ircv3_connection_valid(connection, &error)) {
 		purple_connection_take_error(purple_connection, error);
 
-		return;
+		return purple_connection;
 	}
 
 	g_object_set_data_full(G_OBJECT(purple_connection),
@@ -106,6 +106,8 @@ purple_ircv3_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
 	                       connection, g_object_unref);
 
 	purple_ircv3_connection_connect(connection);
+
+	return purple_connection;
 }
 
 static void

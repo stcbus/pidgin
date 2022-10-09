@@ -253,6 +253,20 @@ PurpleConnectionFlags purple_connection_get_flags(PurpleConnection *gc);
 	(purple_connection_get_state(gc) == PURPLE_CONNECTION_CONNECTED)
 
 /**
+ * purple_connection_new:
+ * @protocol: The [class@Purple.Protocol] to use to create the connection.
+ * @account: The [class@Purple.Account] to create a connection for.
+ * @password: (nullable): The password for this account.
+ *
+ * Creates a new [class@Purple.Connection] for @account.
+ *
+ * Returns: (transfer full): The new connection.
+ *
+ * Since: 3.0.0
+ */
+PurpleConnection *purple_connection_new(PurpleProtocol *protocol, PurpleAccount *account, const char *password);
+
+/**
  * purple_connection_is_disconnecting:
  * @gc: The connection.
  *
