@@ -1372,14 +1372,11 @@ purple_account_set_private_alias(PurpleAccount *account, const char *alias)
 	if ((!alias && account->alias) || (alias && !account->alias) ||
 			g_utf8_collate(account->alias, alias))
 	{
-		char *old = account->alias;
-
+		g_free(account->alias);
 		account->alias = g_strdup(alias);
+
 		g_object_notify_by_pspec(G_OBJECT(account),
 						 properties[PROP_PRIVATE_ALIAS]);
-		purple_signal_emit(purple_accounts_get_handle(), "account-alias-changed",
-						 account, old);
-		g_free(old);
 
 		purple_accounts_schedule_save();
 	}

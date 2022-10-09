@@ -958,8 +958,6 @@ _purple_connection_new(PurpleAccount *account, gboolean is_registration,
 		purple_debug_info("connection", "Connecting. connection = %p",
 		                  connection);
 
-		purple_signal_emit(purple_accounts_get_handle(), "account-connecting",
-		                   account);
 		purple_protocol_login(protocol, account);
 	}
 }

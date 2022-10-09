@@ -105,8 +105,6 @@ version 3.0.0 (??/??/????):
 		  protocol interfaces) and protocols.h (protocols subsystem)
 		* status.h has been split into status.h (Status API) and presence.h
 		  (Presence API)
-		* account-authorization-requested signal merged with
-		  account-authorization-requested-with-message signal
 		* purple_account_add_buddy now takes an invite message as the last
 		  parameter
 		* purple_account_add_buddies now takes an invite message as the last
@@ -326,7 +324,17 @@ version 3.0.0 (??/??/????):
 		* _PurpleSoundEventID
 		* _PurpleSslConnection
 		* _XMLNodeType
-		* account-authorization-requested-with-message signal
+		* account-added signal. Use PurpleAccountManager::added
+		  instead.
+		* account-alias-changed signal
+		* account-authorization-denied, account-authorization-granted,
+		  account-authorization-requested,
+		  account-authorization-requested-with-message signals
+		* account-connecting signal
+		* account-connection-error signal
+		* account-removed signal. Use PurpleAccountManager::removed
+		  instead.
+		* account-setting-info, account-set-info signals
 		* file-recv-accept, file-recv-cancel, file-recv-complete,
 		  file-recv-start, file-send-accept, file-send-cancel,
 		  file-send-complete, file-send-start signals. Use

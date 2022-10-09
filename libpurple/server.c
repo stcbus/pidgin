@@ -110,22 +110,13 @@ void purple_serv_get_info(PurpleConnection *gc, const char *name)
 void purple_serv_set_info(PurpleConnection *gc, const char *info)
 {
 	PurpleProtocol *protocol;
-	PurpleAccount *account;
 
 	if (gc) {
 		protocol = purple_connection_get_protocol(gc);
 
 		if (PURPLE_PROTOCOL_IMPLEMENTS(protocol, SERVER, set_info)) {
-			account = purple_connection_get_account(gc);
-
-			purple_signal_emit(purple_accounts_get_handle(),
-					"account-setting-info", account, info);
-
 			purple_protocol_server_set_info(PURPLE_PROTOCOL_SERVER(protocol),
 			                                gc, info);
-
-			purple_signal_emit(purple_accounts_get_handle(),
-					"account-set-info", account, info);
 		}
 	}
 }

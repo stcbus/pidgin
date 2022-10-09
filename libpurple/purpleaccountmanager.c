@@ -153,9 +153,6 @@ purple_account_manager_add(PurpleAccountManager *manager,
 	purple_accounts_schedule_save();
 
 	g_signal_emit(manager, signals[SIG_ADDED], 0, account);
-
-	/* Finally emit the old purple signal that will eventually be removed. */
-	purple_signal_emit(purple_accounts_get_handle(), "account-added", account);
 }
 
 void
@@ -175,10 +172,6 @@ purple_account_manager_remove(PurpleAccountManager *manager,
 	purple_account_clear_current_error(account);
 
 	g_signal_emit(manager, signals[SIG_REMOVED], 0, account);
-
-	/* Finally emit the old purple signal that will eventually be removed. */
-	purple_signal_emit(purple_accounts_get_handle(), "account-removed",
-	                   account);
 }
 
 GList *

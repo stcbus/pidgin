@@ -671,9 +671,6 @@ connection_error_cb(PurpleConnection *gc,
 
 	err = purple_connection_error_info_new(type, description);
 	_purple_account_set_current_error(account, err);
-
-	purple_signal_emit(purple_accounts_get_handle(), "account-connection-error",
-	                   account, type, description);
 }
 
 void
@@ -681,10 +678,6 @@ purple_accounts_init(void)
 {
 	void *handle = purple_accounts_get_handle();
 	void *conn_handle = purple_connections_get_handle();
-
-	purple_signal_register(handle, "account-connecting",
-						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
-						 PURPLE_TYPE_ACCOUNT);
 
 	purple_signal_register(handle, "account-disabled",
 						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
@@ -694,27 +687,11 @@ purple_accounts_init(void)
 						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
 						 PURPLE_TYPE_ACCOUNT);
 
-	purple_signal_register(handle, "account-setting-info",
-						 purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE, 2,
-						 PURPLE_TYPE_ACCOUNT, G_TYPE_STRING);
-
-	purple_signal_register(handle, "account-set-info",
-						 purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE, 2,
-						 PURPLE_TYPE_ACCOUNT, G_TYPE_STRING);
-
 	purple_signal_register(handle, "account-created",
 						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
 						 PURPLE_TYPE_ACCOUNT);
 
 	purple_signal_register(handle, "account-destroying",
-						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
-						 PURPLE_TYPE_ACCOUNT);
-
-	purple_signal_register(handle, "account-added",
-						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
-						 PURPLE_TYPE_ACCOUNT);
-
-	purple_signal_register(handle, "account-removed",
 						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
 						 PURPLE_TYPE_ACCOUNT);
 
@@ -732,23 +709,6 @@ purple_accounts_init(void)
 						 purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
 						 PURPLE_TYPE_ACCOUNT);
 
-	purple_signal_register(handle, "account-alias-changed",
-						 purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE, 2,
-						 PURPLE_TYPE_ACCOUNT, G_TYPE_STRING);
-
-	purple_signal_register(handle, "account-authorization-requested",
-						purple_marshal_INT__POINTER_POINTER_POINTER,
-						G_TYPE_INT, 4, PURPLE_TYPE_ACCOUNT, G_TYPE_STRING,
-						G_TYPE_STRING, G_TYPE_STRING);
-
-	purple_signal_register(handle, "account-authorization-denied",
-						purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE, 3,
-						PURPLE_TYPE_ACCOUNT, G_TYPE_STRING, G_TYPE_STRING);
-
-	purple_signal_register(handle, "account-authorization-granted",
-						purple_marshal_VOID__POINTER_POINTER, G_TYPE_NONE, 3,
-						PURPLE_TYPE_ACCOUNT, G_TYPE_STRING, G_TYPE_STRING);
-
 	purple_signal_register(handle, "account-error-changed",
 	                       purple_marshal_VOID__POINTER_POINTER_POINTER,
 	                       G_TYPE_NONE, 3, PURPLE_TYPE_ACCOUNT,
@@ -762,11 +722,6 @@ purple_accounts_init(void)
 	purple_signal_register(handle, "account-signed-off",
 	                       purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
 	                       PURPLE_TYPE_ACCOUNT);
-
-	purple_signal_register(handle, "account-connection-error",
-	                       purple_marshal_VOID__POINTER_INT_POINTER,
-	                       G_TYPE_NONE, 3, PURPLE_TYPE_ACCOUNT,
-	                       PURPLE_TYPE_CONNECTION_ERROR, G_TYPE_STRING);
 
 	purple_signal_connect(conn_handle, "signed-on", handle,
 	                      G_CALLBACK(signed_on_cb), NULL);
