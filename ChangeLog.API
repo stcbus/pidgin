@@ -339,6 +339,10 @@ version 3.0.0 (??/??/????):
 		  file-recv-start, file-send-accept, file-send-cancel,
 		  file-send-complete, file-send-start signals. Use
 		  notify::status on #PurpleXfer objects instead.
+		* displaying-email-notification,
+		  displaying-emails-notification, displaying-emails-clear
+		  signals
+		* displaying-userinfo signal
 		* got-attention, sent-attention signals
 		* network-configuration-changed signal
 		* PurpleAccount->ui_data

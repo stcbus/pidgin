@@ -47,7 +47,6 @@ content_files = [
 	"signals_conversation.md",
 	"signals_core.md",
 	"signals_jabber.md",
-	"signals_notify.md",
 	"signals_savedstatus.md",
 	"signals_xfer.md",
 	"tut_c_plugins.md",

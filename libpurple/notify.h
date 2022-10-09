@@ -867,15 +867,6 @@ PurpleNotifyUiOps *purple_notify_get_ui_ops(void);
 /**************************************************************************/
 
 /**
- * purple_notify_get_handle:
- *
- * Returns the notify subsystem handle.
- *
- * Returns: The notify subsystem handle.
- */
-void *purple_notify_get_handle(void);
-
-/**
  * purple_notify_init:
  *
  * Initializes the notify subsystem.
