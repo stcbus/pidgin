@@ -179,7 +179,8 @@ pidgin_connections_get_ui_ops(void)
 }
 
 static void
-account_removed_cb(PurpleAccount *account, gpointer user_data)
+account_removed_cb(G_GNUC_UNUSED PurpleAccountManager *manager,
+                   PurpleAccount *account, G_GNUC_UNUSED gpointer data)
 {
 	g_hash_table_remove(auto_reconns, account);
 }
@@ -189,30 +190,25 @@ account_removed_cb(PurpleAccount *account, gpointer user_data)
 * GTK connection glue
 **************************************************************************/
 
-void *
-pidgin_connection_get_handle(void)
-{
-	static int handle;
-
-	return &handle;
-}
-
 void
 pidgin_connection_init(void)
 {
+	PurpleAccountManager *manager = purple_account_manager_get_default();
+
 	auto_reconns = g_hash_table_new_full(
 							g_direct_hash, g_direct_equal,
 							NULL, free_auto_recon);
 
-	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
-						pidgin_connection_get_handle(),
-						G_CALLBACK(account_removed_cb), NULL);
+	g_signal_connect(manager, "removed", G_CALLBACK(account_removed_cb), NULL);
 }
 
 void
 pidgin_connection_uninit(void)
 {
-	purple_signals_disconnect_by_handle(pidgin_connection_get_handle());
+	PurpleAccountManager *manager = purple_account_manager_get_default();
+
+	g_signal_handlers_disconnect_by_func(manager,
+	                                     G_CALLBACK(account_removed_cb), NULL);
 
 	g_hash_table_destroy(auto_reconns);
 }

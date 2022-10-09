@@ -79,16 +79,6 @@ pidgin_account_store_add_account_helper(PurpleAccount *account, gpointer data) {
 }
 
 static void
-pidgin_account_store_add_accounts(PidginAccountStore *store) {
-	PurpleAccountManager *manager = NULL;
-
-	manager = purple_account_manager_get_default();
-	purple_account_manager_foreach(manager,
-	                               pidgin_account_store_add_account_helper,
-	                               store);
-}
-
-static void
 pidgin_account_store_remove_account(PidginAccountStore *store,
                                     PurpleAccount *account)
 {
@@ -126,14 +116,16 @@ pidgin_account_store_remove_account(PidginAccountStore *store,
  * Callbacks
  *****************************************************************************/
 static void
-pidgin_account_store_account_added_cb(PurpleAccount *account,
+pidgin_account_store_account_added_cb(G_GNUC_UNUSED PurpleAccountManager *manager,
+                                      PurpleAccount *account,
                                       gpointer data)
 {
 	pidgin_account_store_add_account(PIDGIN_ACCOUNT_STORE(data), account);
 }
 
 static void
-pidgin_account_store_account_removed_cb(PurpleAccount *account,
+pidgin_account_store_account_removed_cb(G_GNUC_UNUSED PurpleAccountManager *manager,
+                                        PurpleAccount *account,
                                         gpointer data)
 {
 	pidgin_account_store_remove_account(PIDGIN_ACCOUNT_STORE(data), account);
@@ -146,7 +138,7 @@ G_DEFINE_TYPE(PidginAccountStore, pidgin_account_store, GTK_TYPE_LIST_STORE)
 
 static void
 pidgin_account_store_init(PidginAccountStore *store) {
-	gpointer accounts_handle = NULL;
+	PurpleAccountManager *manager = NULL;
 	GType types[PIDGIN_ACCOUNT_STORE_N_COLUMNS] = {
 		PURPLE_TYPE_ACCOUNT,
 		G_TYPE_STRING,
@@ -160,16 +152,18 @@ pidgin_account_store_init(PidginAccountStore *store) {
 	);
 
 	/* add the known accounts */
-	pidgin_account_store_add_accounts(store);
+	manager = purple_account_manager_get_default();
+	purple_account_manager_foreach(manager,
+	                               pidgin_account_store_add_account_helper,
+	                               store);
 
 	/* add the signal handlers to dynamically add/remove accounts */
-	accounts_handle = purple_accounts_get_handle();
-	purple_signal_connect(accounts_handle, "account-added", store,
-	                      G_CALLBACK(pidgin_account_store_account_added_cb),
-	                      store);
-	purple_signal_connect(accounts_handle, "account-removed", store,
-	                      G_CALLBACK(pidgin_account_store_account_removed_cb),
-	                      store);
+	g_signal_connect_object(manager, "added",
+	                        G_CALLBACK(pidgin_account_store_account_added_cb),
+	                        store, 0);
+	g_signal_connect_object(manager, "removed",
+	                        G_CALLBACK(pidgin_account_store_account_removed_cb),
+	                        store, 0);
 }
 
 static void

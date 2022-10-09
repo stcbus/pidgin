@@ -108,17 +108,10 @@ finch_connection_report_disconnect(PurpleConnection *gc, PurpleConnectionError r
 }
 
 static void
-account_removed_cb(PurpleAccount *account, gpointer user_data)
+account_removed_cb(G_GNUC_UNUSED PurpleAccountManager *manager,
+                   PurpleAccount *account, G_GNUC_UNUSED gpointer data)
 {
 	g_hash_table_remove(hash, account);
-}
-
-static void *
-finch_connection_get_handle(void)
-{
-	static int handle;
-
-	return &handle;
 }
 
 static PurpleConnectionUiOps ops = {
@@ -132,17 +125,21 @@ PurpleConnectionUiOps *finch_connections_get_ui_ops()
 
 void finch_connections_init()
 {
+	PurpleAccountManager *manager = purple_account_manager_get_default();
+
 	hash = g_hash_table_new_full(
 							g_direct_hash, g_direct_equal,
 							NULL, free_auto_recon);
 
-	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
-						finch_connection_get_handle(),
-						G_CALLBACK(account_removed_cb), NULL);
+	g_signal_connect(manager, "removed", G_CALLBACK(account_removed_cb), NULL);
 }
 
 void finch_connections_uninit()
 {
-	purple_signals_disconnect_by_handle(finch_connection_get_handle());
+	PurpleAccountManager *manager = purple_account_manager_get_default();
+
+	g_signal_handlers_disconnect_by_func(manager,
+	                                     G_CALLBACK(account_removed_cb), NULL);
+
 	g_hash_table_destroy(hash);
 }

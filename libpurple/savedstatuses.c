@@ -683,8 +683,9 @@ purple_savedstatus_unset_substatus(PurpleSavedStatus *saved_status,
  * exist for this account.
  */
 static void
-purple_savedstatus_unset_all_substatuses(PurpleAccount *account,
-                                         gpointer user_data)
+purple_savedstatus_unset_all_substatuses(G_GNUC_UNUSED PurpleAccountManager *manager,
+                                         PurpleAccount *account,
+                                         G_GNUC_UNUSED gpointer data)
 {
 	g_return_if_fail(account != NULL);
 
@@ -1204,6 +1205,7 @@ purple_savedstatuses_get_handle(void)
 void
 purple_savedstatuses_init(void)
 {
+	PurpleAccountManager *manager = purple_account_manager_get_default();
 	void *handle = purple_savedstatuses_get_handle();
 
 	creation_times = g_hash_table_new(g_direct_hash, g_direct_equal);
@@ -1240,15 +1242,15 @@ purple_savedstatuses_init(void)
 		purple_marshal_VOID__POINTER, G_TYPE_NONE, 1,
 		PURPLE_TYPE_SAVEDSTATUS);
 
-	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
-			handle,
-			G_CALLBACK(purple_savedstatus_unset_all_substatuses),
-			NULL);
+	g_signal_connect(manager, "removed",
+	                 G_CALLBACK(purple_savedstatus_unset_all_substatuses),
+	                 NULL);
 }
 
 void
 purple_savedstatuses_uninit(void)
 {
+	PurpleAccountManager *manager = purple_account_manager_get_default();
 	gpointer handle = purple_savedstatuses_get_handle();
 
 	remove_old_transient_statuses();
@@ -1266,6 +1268,9 @@ purple_savedstatuses_uninit(void)
 	g_hash_table_destroy(creation_times);
 	creation_times = NULL;
 
+	g_signal_handlers_disconnect_by_func(manager,
+	                                     G_CALLBACK(purple_savedstatus_unset_all_substatuses),
+	                                     NULL);
 	purple_signals_unregister_by_instance(handle);
 	purple_signals_disconnect_by_handle(handle);
 }

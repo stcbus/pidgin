@@ -255,9 +255,9 @@ save_account_cb(AccountEditDialog *dialog)
 		}
 	}
 
-	/* In case of a new account, the 'Accounts' window is updated from the account-added
-	 * callback. In case of changes in an existing account, we need to explicitly do it
-	 * here.
+	/* In case of a new account, the 'Accounts' window is updated from the
+	 * 'added' callback. In case of changes in an existing account, we need to
+	 * explicitly do it here.
 	 */
 	if (dialog->account != NULL && accounts.window) {
 		gnt_tree_change_text(GNT_TREE(accounts.tree), dialog->account,
@@ -861,7 +861,8 @@ finch_accounts_get_handle(void)
 }
 
 static void
-account_added_callback(PurpleAccount *account)
+account_added_callback(G_GNUC_UNUSED PurpleAccountManager *manager,
+                       PurpleAccount *account, G_GNUC_UNUSED gpointer data)
 {
 	if (accounts.window == NULL)
 		return;
@@ -870,7 +871,8 @@ account_added_callback(PurpleAccount *account)
 }
 
 static void
-account_removed_callback(PurpleAccount *account)
+account_removed_callback(G_GNUC_UNUSED PurpleAccountManager *manager,
+                         PurpleAccount *account, G_GNUC_UNUSED gpointer data)
 {
 	if (accounts.window == NULL)
 		return;
@@ -890,22 +892,23 @@ account_abled_cb(PurpleAccount *account, gpointer user_data)
 void finch_accounts_init()
 {
 	PurpleAccountManager *manager = NULL;
+	gpointer account_handle = NULL;
 	GList *iter;
 
-	purple_signal_connect(purple_accounts_get_handle(), "account-added",
-			finch_accounts_get_handle(), G_CALLBACK(account_added_callback),
-			NULL);
-	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
-			finch_accounts_get_handle(), G_CALLBACK(account_removed_callback),
-			NULL);
-	purple_signal_connect(purple_accounts_get_handle(), "account-disabled",
+	manager = purple_account_manager_get_default();
+	account_handle = purple_accounts_get_handle();
+
+	g_signal_connect(manager, "added", G_CALLBACK(account_added_callback),
+	                 NULL);
+	g_signal_connect(manager, "removed", G_CALLBACK(account_removed_callback),
+	                 NULL);
+	purple_signal_connect(account_handle, "account-disabled",
 			finch_accounts_get_handle(),
 			G_CALLBACK(account_abled_cb), GINT_TO_POINTER(FALSE));
-	purple_signal_connect(purple_accounts_get_handle(), "account-enabled",
+	purple_signal_connect(account_handle, "account-enabled",
 			finch_accounts_get_handle(),
 			G_CALLBACK(account_abled_cb), GINT_TO_POINTER(TRUE));
 
-	manager = purple_account_manager_get_default();
 	iter = purple_account_manager_get_all(manager);
 	if (iter) {
 		for (; iter; iter = iter->next) {

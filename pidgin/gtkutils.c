@@ -364,16 +364,40 @@ add_completion_list(PidginCompletionData *data)
 }
 
 static void
-buddyname_autocomplete_destroyed_cb(GtkWidget *widget, gpointer data)
-{
-	g_free(data);
-	purple_signals_disconnect_by_handle(widget);
-}
-
-static void
 repopulate_autocomplete(gpointer something, gpointer data)
 {
 	add_completion_list(data);
+}
+
+static void
+autocomplete_account_added_cb(G_GNUC_UNUSED PurpleAccountManager *manager,
+                              G_GNUC_UNUSED PurpleAccount *account,
+                              gpointer data)
+{
+	add_completion_list(data);
+}
+
+static void
+autocomplete_account_removed_cb(G_GNUC_UNUSED PurpleAccountManager *manager,
+                                G_GNUC_UNUSED PurpleAccount *account,
+                                gpointer data)
+{
+	add_completion_list(data);
+}
+
+static void
+buddyname_autocomplete_destroyed_cb(GtkWidget *widget, gpointer data)
+{
+	PurpleAccountManager *manager = purple_account_manager_get_default();
+
+	purple_signals_disconnect_by_handle(widget);
+
+	g_signal_handlers_disconnect_by_func(manager,
+	                 G_CALLBACK(autocomplete_account_added_cb), data);
+	g_signal_handlers_disconnect_by_func(manager,
+	                 G_CALLBACK(autocomplete_account_removed_cb), data);
+
+	g_free(data);
 }
 
 void
@@ -382,6 +406,7 @@ pidgin_setup_screenname_autocomplete(
         PidginFilterBuddyCompletionEntryFunc filter_func, gpointer user_data)
 {
 	PidginCompletionData *data;
+	PurpleAccountManager *manager = NULL;
 
 	/*
 	 * Store the displayed completion value, the buddy name, the UTF-8
@@ -434,10 +459,11 @@ pidgin_setup_screenname_autocomplete(
 	purple_signal_connect(purple_connections_get_handle(), "signed-off", entry,
 						G_CALLBACK(repopulate_autocomplete), data);
 
-	purple_signal_connect(purple_accounts_get_handle(), "account-added", entry,
-						G_CALLBACK(repopulate_autocomplete), data);
-	purple_signal_connect(purple_accounts_get_handle(), "account-removed", entry,
-						G_CALLBACK(repopulate_autocomplete), data);
+	manager = purple_account_manager_get_default();
+	g_signal_connect(manager, "added",
+	                 G_CALLBACK(autocomplete_account_added_cb), data);
+	g_signal_connect(manager, "removed",
+	                 G_CALLBACK(autocomplete_account_removed_cb), data);
 
 	g_signal_connect(G_OBJECT(entry), "destroy", G_CALLBACK(buddyname_autocomplete_destroyed_cb), data);
 }
