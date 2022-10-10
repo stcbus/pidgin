@@ -26,6 +26,9 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 
+#define G_SETTINGS_ENABLE_BACKEND
+#include <gio/gsettingsbackend.h>
+
 #include <signal.h>
 #include <string.h>
 #ifdef _WIN32
@@ -61,8 +64,14 @@ test_ui_init(void)
 	purple_conversations_set_ui_ops(&test_conv_uiops);
 }
 
+static gpointer
+test_ui_get_settings_backend(void) {
+	return g_memory_settings_backend_new();
+}
+
 static PurpleCoreUiOps test_core_uiops = {
-	.ui_init = test_ui_init
+	.ui_init = test_ui_init,
+	.get_settings_backend = test_ui_get_settings_backend,
 };
 
 static gboolean

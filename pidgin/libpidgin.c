@@ -30,6 +30,9 @@
 #include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 
+#define G_SETTINGS_ENABLE_BACKEND
+#include <gio/gsettingsbackend.h>
+
 #include <locale.h>
 
 #include <purple.h>
@@ -300,10 +303,24 @@ pidgin_quit(void)
 	g_application_quit(g_application_get_default());
 }
 
+static gpointer
+pidgin_get_settings_backend(void) {
+	GSettingsBackend *backend = NULL;
+	char *config = NULL;
+
+	config = g_build_filename(purple_config_dir(), "pidgin3.ini", NULL);
+	backend = g_keyfile_settings_backend_new(config, "/", NULL);
+
+	g_free(config);
+
+	return backend;
+}
+
 static PurpleCoreUiOps core_ops = {
 	.ui_prefs_init = pidgin_prefs_init,
 	.ui_init = pidgin_ui_init,
 	.quit = pidgin_quit,
+	.get_settings_backend = pidgin_get_settings_backend,
 };
 
 PurpleCoreUiOps *

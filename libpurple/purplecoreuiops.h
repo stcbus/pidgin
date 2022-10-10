@@ -42,16 +42,21 @@ G_BEGIN_DECLS
  *                 should use this hook to set all other necessary
  *                 <link linkend="chapter-ui-ops"><literal>UiOps structures</literal></link>.
  * @quit:          Called after most of libpurple has been uninitialized.
+ * @get_settings_backend: Called to get the [class@Gio.SettingsBackend] that
+ *                        the UI is using.
  *
  * Callbacks that fire at different points of the initialization and teardown
  * of libpurple, along with a hook to return descriptive information about the
  * UI.
  */
 struct _PurpleCoreUiOps {
+	/*< public >*/
 	void (*ui_prefs_init)(void);
 	void (*ui_init)(void);
 
 	void (*quit)(void);
+
+	gpointer (*get_settings_backend)(void);
 
 	/*< private >*/
 	gpointer reserved[4];

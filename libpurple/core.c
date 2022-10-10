@@ -96,8 +96,6 @@ gboolean
 purple_core_init(PurpleUiInfo *ui_info) {
 	PurpleCoreUiOps *ops;
 	PurpleCore *core;
-	gchar *config_file = NULL;
-	gchar *config = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_UI_INFO(ui_info), FALSE);
 	g_return_val_if_fail(purple_get_core() == NULL, FALSE);
@@ -136,11 +134,7 @@ purple_core_init(PurpleUiInfo *ui_info) {
 	/* The prefs subsystem needs to be initialized before static protocols
 	 * for protocol prefs to work. */
 	purple_prefs_init();
-	config_file = g_strdup_printf("%s.ini", purple_ui_info_get_id(ui_info));
-	config = g_build_filename(purple_config_dir(), config_file, NULL);
-	settings_backend = g_keyfile_settings_backend_new(config, "/", NULL);
-	g_free(config_file);
-	g_free(config);
+	settings_backend = ops->get_settings_backend();
 
 	purple_debug_init();
 

@@ -26,6 +26,9 @@
 #include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 
+#define G_SETTINGS_ENABLE_BACKEND
+#include <gio/gsettingsbackend.h>
+
 #include <locale.h>
 
 #include <purple.h>
@@ -45,10 +48,24 @@ finch_quit(void)
 	finch_ui_uninit();
 }
 
+static gpointer
+finch_get_settings_backend(void) {
+	GSettingsBackend *backend = NULL;
+	char *config = NULL;
+
+	config = g_build_filename(purple_config_dir(), "finch3.ini", NULL);
+	backend = g_keyfile_settings_backend_new(config, "/", NULL);
+
+	g_free(config);
+
+	return backend;
+}
+
 static PurpleCoreUiOps core_ops = {
 	.ui_prefs_init = finch_prefs_init,
 	.ui_init = finch_ui_init,
 	.quit = finch_quit,
+	.get_settings_backend = finch_get_settings_backend,
 };
 
 static PurpleCoreUiOps *
