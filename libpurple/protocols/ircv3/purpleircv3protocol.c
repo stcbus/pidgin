@@ -88,42 +88,33 @@ static PurpleConnection *
 purple_ircv3_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
                             const char *password)
 {
-	PurpleIRCv3Connection *connection = NULL;
-	PurpleConnection *purple_connection = NULL;
+	PurpleConnection *connection = NULL;
 	GError *error = NULL;
+	gboolean valid = FALSE;
 
-	purple_connection = purple_connection_new(protocol, account, password);
+	connection = g_object_new(
+		PURPLE_IRCV3_TYPE_CONNECTION,
+		"protocol", protocol,
+		"account", account,
+		"password", password);
 
-	connection = purple_ircv3_connection_new(account);
-	if(!purple_ircv3_connection_valid(connection, &error)) {
-		purple_connection_take_error(purple_connection, error);
-
-		return purple_connection;
+	valid = purple_ircv3_connection_valid(PURPLE_IRCV3_CONNECTION(connection),
+	                                      &error);
+	if(!valid) {
+		purple_connection_take_error(connection, error);
+	} else {
+		purple_ircv3_connection_connect(PURPLE_IRCV3_CONNECTION(connection));
 	}
 
-	g_object_set_data_full(G_OBJECT(purple_connection),
-	                       PURPLE_IRCV3_CONNECTION_KEY,
-	                       connection, g_object_unref);
 
-	purple_ircv3_connection_connect(connection);
-
-	return purple_connection;
+	return connection;
 }
 
 static void
 purple_ircv3_protocol_close(G_GNUC_UNUSED PurpleProtocol *protocol,
-                            PurpleConnection *purple_connection)
+                            PurpleConnection *connection)
 {
-	PurpleIRCv3Connection *connection = NULL;
-
-	connection = g_object_get_data(G_OBJECT(purple_connection),
-	                               PURPLE_IRCV3_CONNECTION_KEY);
-
-	purple_ircv3_connection_close(connection);
-
-	/* Set our connection data to NULL which will remove the last reference. */
-	g_object_set_data(G_OBJECT(purple_connection), PURPLE_IRCV3_CONNECTION_KEY,
-	                  NULL);
+	purple_ircv3_connection_close(PURPLE_IRCV3_CONNECTION(connection));
 }
 
 static GList *
