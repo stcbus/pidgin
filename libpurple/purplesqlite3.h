@@ -40,6 +40,22 @@ G_BEGIN_DECLS
 #define PURPLE_SQLITE3_DOMAIN (g_quark_from_static_string("sqlite3"))
 
 /**
+ * PurpleSqlite3:
+ *
+ * A sqlite3 connection.
+ *
+ * This type alias exists for introspection purposes, and is no different from
+ * the `sqlite3` type.
+ *
+ * Since: 3.0.0
+ */
+#ifdef __GI_SCANNER__
+typedef gpointer PurpleSqlite3;
+#else
+typedef sqlite3 PurpleSqlite3;
+#endif
+
+/**
  * purple_sqlite3_get_schema_version:
  * @db: The sqlite3 connection.
  * @error: (nullable): A return address for a [type@GLib.Error].
@@ -51,7 +67,7 @@ G_BEGIN_DECLS
  *
  * Since: 3.0.0
  */
-int purple_sqlite3_get_schema_version(sqlite3 *db, GError **error);
+int purple_sqlite3_get_schema_version(PurpleSqlite3 *db, GError **error);
 
 /**
  * purple_sqlite3_run_migrations_from_strings:
@@ -92,7 +108,7 @@ int purple_sqlite3_get_schema_version(sqlite3 *db, GError **error);
  *
  * Since: 3.0.0
  */
-gboolean purple_sqlite3_run_migrations_from_strings(sqlite3 *db, const char *migrations[], GError **error);
+gboolean purple_sqlite3_run_migrations_from_strings(PurpleSqlite3 *db, const char *migrations[], GError **error);
 
 /**
  * purple_sqlite3_run_migrations_from_resources:
@@ -118,7 +134,7 @@ gboolean purple_sqlite3_run_migrations_from_strings(sqlite3 *db, const char *mig
  *
  * Since: 3.0.0
  */
-gboolean purple_sqlite3_run_migrations_from_resources(sqlite3 *db, const char *path, const char *migrations[], GError **error);
+gboolean purple_sqlite3_run_migrations_from_resources(PurpleSqlite3 *db, const char *path, const char *migrations[], GError **error);
 
 G_END_DECLS
 

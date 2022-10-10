@@ -88,8 +88,8 @@ void purple_queued_output_stream_push_bytes_async(PurpleQueuedOutputStream *stre
  * purple_queued_output_stream_push_bytes_finish:
  * @stream: The instance.
  * @result: The [iface@Gio.AsyncResult] of this operation.
- * @error: (nullable) (optional): A [type@Glib.Error] location to store the
- *         error, or NULL to ignore
+ * @error: (nullable): A [type@Glib.Error] location to store the error, or
+ *         %NULL to ignore.
  *
  * Finishes pushing bytes asynchronously.
  *
