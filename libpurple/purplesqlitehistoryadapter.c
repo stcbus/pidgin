@@ -18,13 +18,13 @@
 
 #include <glib/gi18n-lib.h>
 
+#include <sqlite3.h>
+
 #include "purplesqlitehistoryadapter.h"
 
 #include "account.h"
 #include "purpleprivate.h"
-#include "purpleresources.h"
-
-#include <sqlite3.h>
+#include "purplesqlite3.h"
 
 struct _PurpleSqliteHistoryAdapter {
 	PurpleHistoryAdapter parent;
@@ -60,34 +60,14 @@ static gboolean
 purple_sqlite_history_adapter_run_migrations(PurpleSqliteHistoryAdapter *adapter,
                                              GError **error)
 {
-	GBytes *bytes = NULL;
-	GResource *resource = NULL;
-	gchar *error_msg = NULL;
-	const gchar *script = NULL;
+	const char *path = "/im/pidgin/libpurple/sqlitehistoryadapter";
+	const char *migrations[] = {
+		"01-schema.sql",
+		NULL
+	};
 
-	resource = purple_get_resource();
-
-	bytes = g_resource_lookup_data(resource,
-	                               "/im/pidgin/libpurple/sqlitehistoryadapter/01-schema.sql",
-	                               G_RESOURCE_LOOKUP_FLAGS_NONE, error);
-	if(bytes == NULL) {
-		return FALSE;
-	}
-
-	script = (const gchar *)g_bytes_get_data(bytes, NULL);
-	sqlite3_exec(adapter->db, script, NULL, NULL, &error_msg);
-	g_bytes_unref(bytes);
-
-	if(error_msg != NULL) {
-		g_set_error(error, PURPLE_HISTORY_ADAPTER_DOMAIN, 0,
-		            "failed to run migrations: %s", error_msg);
-
-		sqlite3_free(error_msg);
-
-		return FALSE;
-	}
-
-	return TRUE;
+	return purple_sqlite3_run_migrations_from_resources(adapter->db, path,
+	                                                    migrations, error);
 }
 
 static gchar *

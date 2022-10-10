@@ -60,3 +60,5 @@ e = executable('test_credential_manager', 'test_credential_manager.c',
                link_with: test_ui,
 )
 test('credential_manager', e, env: testenv, is_parallel : false)
+
+subdir('sqlite3')
