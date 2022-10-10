@@ -3522,7 +3522,7 @@ mw_protocol_chat_info_defaults(PurpleProtocolChat *protocol_chat,
 }
 
 
-static void
+static PurpleConnection *
 mw_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
                   const char *password)
 {
