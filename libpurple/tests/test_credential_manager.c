@@ -205,7 +205,7 @@ test_purple_credential_manager_registration(void) {
 	GError *error = NULL;
 	gboolean r = FALSE;
 
-	manager = purple_credential_manager_get_default();
+	manager = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 	g_assert_true(PURPLE_IS_CREDENTIAL_MANAGER(manager));
 
 	provider = test_purple_credential_provider_new();
@@ -234,6 +234,7 @@ test_purple_credential_manager_registration(void) {
 
 	/* Final clean ups. */
 	g_clear_object(&provider);
+	g_clear_object(&manager);
 }
 
 /******************************************************************************
@@ -245,13 +246,14 @@ test_purple_credential_manager_set_active_null(void) {
 	GError *error = NULL;
 	gboolean ret = FALSE;
 
-	manager = purple_credential_manager_get_default();
+	manager = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	ret = purple_credential_manager_set_active(manager, NULL, &error);
 
 	g_assert_no_error(error);
 	g_assert_true(ret);
 
+	g_clear_object(&manager);
 }
 
 static void
@@ -260,13 +262,15 @@ test_purple_credential_manager_set_active_non_existent(void) {
 	GError *error = NULL;
 	gboolean ret = FALSE;
 
-	manager = purple_credential_manager_get_default();
+	manager = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	ret = purple_credential_manager_set_active(manager, "foo", &error);
 
 	g_assert_false(ret);
 	g_assert_error(error, PURPLE_CREDENTIAL_MANAGER_DOMAIN, 0);
 	g_clear_error(&error);
+
+	g_clear_object(&manager);
 }
 
 static void
@@ -276,7 +280,7 @@ test_purple_credential_manager_set_active_normal(void) {
 	GError *error = NULL;
 	gboolean r = FALSE;
 
-	manager = purple_credential_manager_get_default();
+	manager = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	/* Create the provider and register it in the manager. */
 	provider = test_purple_credential_provider_new();
@@ -308,6 +312,7 @@ test_purple_credential_manager_set_active_normal(void) {
 
 	/* And our final cleanup. */
 	g_clear_object(&provider);
+	g_clear_object(&manager);
 }
 
 /******************************************************************************
@@ -350,12 +355,16 @@ test_purple_credential_manager_no_provider_read_password_idle(gpointer data) {
 
 static void
 test_purple_credential_manager_no_provider_read_password_async(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
+	PurpleCredentialManager *m = NULL;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	g_idle_add(test_purple_credential_manager_no_provider_read_password_idle, m);
 	g_timeout_add_seconds(10, test_purple_credential_manager_timeout_cb, loop);
 
 	g_main_loop_run(loop);
+
+	g_clear_object(&m);
 }
 
 static void
@@ -394,13 +403,17 @@ test_purple_credential_manager_no_provider_write_password_idle(gpointer data) {
 
 static void
 test_purple_credential_manager_no_provider_write_password_async(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
+	PurpleCredentialManager *m = NULL;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	g_idle_add(test_purple_credential_manager_no_provider_write_password_idle,
 	           m);
 	g_timeout_add_seconds(10, test_purple_credential_manager_timeout_cb, loop);
 
 	g_main_loop_run(loop);
+
+	g_clear_object(&m);
 }
 
 static void
@@ -439,13 +452,17 @@ test_purple_credential_manager_no_provider_clear_password_idle(gpointer data) {
 
 static void
 test_purple_credential_manager_no_provider_clear_password_async(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
+	PurpleCredentialManager *m = NULL;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	g_idle_add(test_purple_credential_manager_no_provider_clear_password_idle,
 	           m);
 	g_timeout_add_seconds(10, test_purple_credential_manager_timeout_cb, loop);
 
 	g_main_loop_run(loop);
+
+	g_clear_object(&m);
 }
 
 static void
@@ -454,7 +471,7 @@ test_purple_credential_manager_no_provider_read_settings(void) {
 	PurpleRequestFields *fields = NULL;
 	GError *error = NULL;
 
-	manager = purple_credential_manager_get_default();
+	manager = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	fields = purple_credential_manager_read_settings(manager, &error);
 
@@ -462,6 +479,8 @@ test_purple_credential_manager_no_provider_read_settings(void) {
 	g_clear_error(&error);
 
 	g_assert_null(fields);
+
+	g_clear_object(&manager);
 }
 
 static void
@@ -469,13 +488,14 @@ test_purple_credential_manager_no_provider_write_settings(void) {
 	PurpleCredentialManager *manager = NULL;
 	GError *error = NULL;
 
-	manager = purple_credential_manager_get_default();
+	manager = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
 
 	purple_credential_manager_write_settings(manager, NULL, &error);
 
 	g_assert_error(error, PURPLE_CREDENTIAL_MANAGER_DOMAIN, 0);
 	g_clear_error(&error);
 
+	g_clear_object(&manager);
 }
 
 /******************************************************************************
@@ -518,10 +538,13 @@ test_purple_credential_manager_read_password_idle(gpointer data) {
 
 static void
 test_purple_credential_manager_read_password_async(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
-	PurpleCredentialProvider *p = test_purple_credential_provider_new();
+	PurpleCredentialManager *m = NULL;
+	PurpleCredentialProvider *p = NULL;
 	GError *e = NULL;
 	gboolean r = FALSE;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
+	p = test_purple_credential_provider_new();
 
 	r = purple_credential_manager_register(m, p, &e);
 	g_assert_no_error(e);
@@ -545,6 +568,7 @@ test_purple_credential_manager_read_password_async(void) {
 	g_assert_true(r);
 
 	g_clear_object(&p);
+	g_clear_object(&m);
 }
 
 static void
@@ -582,10 +606,13 @@ test_purple_credential_manager_write_password_idle(gpointer data) {
 
 static void
 test_purple_credential_manager_write_password_async(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
-	PurpleCredentialProvider *p = test_purple_credential_provider_new();
+	PurpleCredentialManager *m = NULL;
+	PurpleCredentialProvider *p = NULL;
 	GError *e = NULL;
 	gboolean r = FALSE;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
+	p = test_purple_credential_provider_new();
 
 	r = purple_credential_manager_register(m, p, &e);
 	g_assert_no_error(e);
@@ -609,6 +636,7 @@ test_purple_credential_manager_write_password_async(void) {
 	g_assert_true(r);
 
 	g_clear_object(&p);
+	g_clear_object(&m);
 }
 
 static void
@@ -646,10 +674,13 @@ test_purple_credential_manager_clear_password_idle(gpointer data) {
 
 static void
 test_purple_credential_manager_clear_password_async(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
-	PurpleCredentialProvider *p = test_purple_credential_provider_new();
+	PurpleCredentialManager *m = NULL;
+	PurpleCredentialProvider *p = NULL;
 	GError *e = NULL;
 	gboolean r = FALSE;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
+	p = test_purple_credential_provider_new();
 
 	r = purple_credential_manager_register(m, p, &e);
 	g_assert_no_error(e);
@@ -673,16 +704,21 @@ test_purple_credential_manager_clear_password_async(void) {
 	g_assert_true(r);
 
 	g_clear_object(&p);
+	g_clear_object(&m);
 }
 
 static void
 test_purple_credential_manager_settings(void) {
-	PurpleCredentialManager *m = purple_credential_manager_get_default();
-	PurpleCredentialProvider *p = test_purple_credential_provider_new();
-	TestPurpleCredentialProvider *tp = TEST_PURPLE_CREDENTIAL_PROVIDER(p);
+	PurpleCredentialManager *m = NULL;
+	PurpleCredentialProvider *p = NULL;
+	TestPurpleCredentialProvider *tp = NULL;
 	PurpleRequestFields *fields = NULL;
 	GError *e = NULL;
 	gboolean r = FALSE;
+
+	m = g_object_new(PURPLE_TYPE_CREDENTIAL_MANAGER, NULL);
+	p = test_purple_credential_provider_new();
+	tp = TEST_PURPLE_CREDENTIAL_PROVIDER(p);
 
 	r = purple_credential_manager_register(m, p, &e);
 	g_assert_no_error(e);
@@ -714,6 +750,7 @@ test_purple_credential_manager_settings(void) {
 	g_assert_true(r);
 
 	g_clear_object(&p);
+	g_clear_object(&m);
 }
 
 /******************************************************************************
