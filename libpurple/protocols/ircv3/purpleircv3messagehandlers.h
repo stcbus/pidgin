@@ -55,6 +55,8 @@ G_GNUC_INTERNAL gboolean purple_ircv3_messager_handler_fallback(GHashTable *tags
 
 G_GNUC_INTERNAL gboolean purple_ircv3_messager_handler_ping(GHashTable *tags, const char *source, const char *command, guint n_params, GStrv params, GError **error, gpointer data);
 
+G_GNUC_INTERNAL gboolean purple_ircv3_messager_handler_cap(GHashTable *tags, const char *source, const char *command, guint n_params, GStrv params, GError **error, gpointer data);
+
 G_END_DECLS
 
 #endif /* PURPLE_IRCV3_MESSAGE_HANDLERS_H */

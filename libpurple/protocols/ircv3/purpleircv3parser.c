@@ -356,4 +356,6 @@ purple_ircv3_parser_add_default_handlers(PurpleIRCv3Parser *parser) {
 
 	purple_ircv3_parser_add_handler(parser, "PING",
 	                                purple_ircv3_messager_handler_ping);
+	purple_ircv3_parser_add_handler(parser, "CAP",
+	                                purple_ircv3_messager_handler_cap);
 }

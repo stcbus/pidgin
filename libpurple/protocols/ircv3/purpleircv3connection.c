@@ -26,6 +26,7 @@
 enum {
 	PROP_0,
 	PROP_CANCELLABLE,
+	PROP_CAPABILITIES,
 	N_PROPERTIES,
 };
 static GParamSpec *properties[N_PROPERTIES] = {NULL, };
@@ -44,6 +45,8 @@ struct _PurpleIRCv3Connection {
 	PurpleQueuedOutputStream *output;
 
 	PurpleIRCv3Parser *parser;
+
+	char *capabilities;
 };
 
 G_DEFINE_DYNAMIC_TYPE(PurpleIRCv3Connection, purple_ircv3_connection,
@@ -205,6 +208,8 @@ purple_ircv3_connection_connected_cb(GObject *source, GAsyncResult *result,
 	                                    connection);
 
 	/* Send our registration commands. */
+	purple_ircv3_connection_writef(connection, "CAP LS %s",
+	                               PURPLE_IRCV3_CONNECTION_CAP_VERSION);
 	purple_ircv3_connection_send_user_command(connection);
 	purple_ircv3_connection_send_nick_command(connection);
 }
@@ -222,6 +227,10 @@ purple_ircv3_connection_get_property(GObject *obj, guint param_id,
 		case PROP_CANCELLABLE:
 			g_value_set_object(value,
 			                   purple_ircv3_connection_get_cancellable(connection));
+			break;
+		case PROP_CAPABILITIES:
+			g_value_set_string(value,
+			                   purple_ircv3_connection_get_capabilities(connection));
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
@@ -261,6 +270,8 @@ purple_ircv3_connection_finalize(GObject *obj) {
 
 	g_clear_error(&connection->validate_error);
 	g_clear_pointer(&connection->server_name, g_free);
+
+	g_clear_pointer(&connection->capabilities, g_free);
 
 	G_OBJECT_CLASS(purple_ircv3_connection_parent_class)->finalize(obj);
 }
@@ -329,6 +340,22 @@ purple_ircv3_connection_class_init(PurpleIRCv3ConnectionClass *klass) {
 		"cancellable", "cancellable",
 		"The cancellable for this connection",
 		G_TYPE_CANCELLABLE,
+		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * PurpleIRCv3Connection:capabilities:
+	 *
+	 * The capabilities that the server supports.
+	 *
+	 * This is created during registration of the connection and is useful for
+	 * troubleshooting or just reporting them to end users.
+	 *
+	 * Since: 3.0.0
+	 */
+	properties[PROP_CAPABILITIES] = g_param_spec_string(
+		"capabilities", "capabilities",
+		"The capabilities that the server supports",
+		NULL,
 		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties(obj_class, N_PROPERTIES, properties);
@@ -462,4 +489,34 @@ purple_ircv3_connection_writef(PurpleIRCv3Connection *connection,
 	                                             connection);
 
 	g_bytes_unref(bytes);
+}
+
+const char *
+purple_ircv3_connection_get_capabilities(PurpleIRCv3Connection *connection) {
+	g_return_val_if_fail(PURPLE_IRCV3_IS_CONNECTION(connection), NULL);
+
+	return connection->capabilities;
+}
+
+void
+purple_ircv3_connection_append_capabilities(PurpleIRCv3Connection *connection,
+                                            const char *capabilities)
+{
+	g_return_if_fail(PURPLE_IRCV3_IS_CONNECTION(connection));
+	g_return_if_fail(capabilities != NULL);
+
+	if(connection->capabilities == NULL) {
+		connection->capabilities = g_strdup(capabilities);
+	} else {
+		char *tmp = connection->capabilities;
+
+		connection->capabilities = g_strdup_printf("%s %s",
+		                                           connection->capabilities,
+		                                           capabilities);
+
+		g_free(tmp);
+	}
+
+	g_object_notify_by_pspec(G_OBJECT(connection),
+	                         properties[PROP_CAPABILITIES]);
 }

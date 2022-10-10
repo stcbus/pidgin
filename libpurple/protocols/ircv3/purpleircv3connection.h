@@ -45,6 +45,18 @@ G_GNUC_INTERNAL void purple_ircv3_connection_close(PurpleIRCv3Connection *connec
 
 G_GNUC_INTERNAL void purple_ircv3_connection_writef(PurpleIRCv3Connection *connection, const char *format, ...) G_GNUC_PRINTF(2, 3);
 
+/**
+ * purple_ircv3_connection_get_capabilities:
+ * @connection: The instance.
+ *
+ * Gets the list of capabilities that the server supplied during registration.
+ *
+ * Returns: The list of capabilities that the server supports.
+ */
+const char *purple_ircv3_connection_get_capabilities(PurpleIRCv3Connection *connection);
+
+G_GNUC_INTERNAL void purple_ircv3_connection_append_capabilities(PurpleIRCv3Connection *connection, const char *capabilities);
+
 G_END_DECLS
 
 #endif /* PURPLE_IRCV3_CONNECTION_H */
