@@ -119,6 +119,11 @@ gboolean purple_credential_manager_unregister(PurpleCredentialManager *manager, 
  * Changes the active #PurpleCredentialProvider of @manager to provider with an
  * id of @id.
  *
+ * If @id is %NULL, it is assumed that the process is shutting down and that
+ * the active provider setting will be left intact. If you want to disable the
+ * active provider and keep running, you should set the active provider to
+ * [class@Purple.NoopCredentialProvider].
+ *
  * Returns: %TRUE on success or %FALSE with @error set on failure.
  *
  * Since: 3.0.0
