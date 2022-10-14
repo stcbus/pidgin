@@ -1480,7 +1480,7 @@ static void mw_session_stateChange(struct mwSession *session,
   case mwSession_STARTED:
     session_started(pd);
 
-    purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
+    purple_connection_set_state(gc, PURPLE_CONNECTION_STATE_CONNECTED);
     break;
 
   case mwSession_STOPPING:

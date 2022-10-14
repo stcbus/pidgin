@@ -1627,8 +1627,9 @@ void purple_blist_remove_group(PurpleGroup *group)
 	{
 		PurpleConnection *gc = (PurpleConnection *)l->data;
 
-		if (purple_connection_get_state(gc) == PURPLE_CONNECTION_CONNECTED)
+		if(purple_connection_get_state(gc) == PURPLE_CONNECTION_STATE_CONNECTED) {
 			purple_account_remove_group(purple_connection_get_account(gc), group);
+		}
 	}
 
 	/* Delete the node */

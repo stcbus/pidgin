@@ -531,7 +531,7 @@ void ggp_async_login_handler(gpointer _gc, gint fd, PurpleInputCondition cond)
 					PURPLE_INPUT_READ,
 					ggp_callback_recv, gc);
 
-				purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
+				purple_connection_set_state(gc, PURPLE_CONNECTION_STATE_CONNECTED);
 
 				ggp_buddylist_send(gc);
 				ggp_roster_request_update(gc);

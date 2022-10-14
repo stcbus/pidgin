@@ -93,7 +93,7 @@ static void irc_connected(struct irc_conn *irc, const char *nick)
 		return;
 
 	purple_connection_set_display_name(gc, nick);
-	purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
+	purple_connection_set_state(gc, PURPLE_CONNECTION_STATE_CONNECTED);
 	account = purple_connection_get_account(gc);
 
 	/* If we're away then set our away message */
@@ -1186,7 +1186,7 @@ void irc_msg_nick(struct irc_conn *irc, const char *name, const char *from, char
 void irc_msg_badnick(struct irc_conn *irc, const char *name, const char *from, char **args)
 {
 	PurpleConnection *gc = purple_account_get_connection(irc->account);
-	if (purple_connection_get_state(gc) == PURPLE_CONNECTION_CONNECTED) {
+	if (purple_connection_get_state(gc) == PURPLE_CONNECTION_STATE_CONNECTED) {
 		purple_notify_error(gc, _("Invalid nickname"), _("Invalid "
 			"nickname"), _("Your selected nickname was rejected by "
 			"the server.  It probably contains invalid characters."),
@@ -1205,7 +1205,7 @@ void irc_msg_nickused(struct irc_conn *irc, const char *name, const char *from, 
 	char *newnick, *buf, *end;
 	PurpleConnection *gc = purple_account_get_connection(irc->account);
 
-	if (gc && purple_connection_get_state(gc) == PURPLE_CONNECTION_CONNECTED) {
+	if (gc && purple_connection_get_state(gc) == PURPLE_CONNECTION_STATE_CONNECTED) {
 		/* We only want to do the following dance if the connection
 		   has not been successfully completed.  If it has, just
 		   notify the user that their /nick command didn't go. */

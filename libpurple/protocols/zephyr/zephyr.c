@@ -744,7 +744,7 @@ zephyr_login(PurpleProtocol *protocol, PurpleAccount *account,
 		return gc;
 	}
 
-	purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
+	purple_connection_set_state(gc, PURPLE_CONNECTION_STATE_CONNECTED);
 
 	if (purple_account_get_bool(account, "read_anyone", TRUE)) {
 		process_anyone(zephyr);

@@ -1293,7 +1293,7 @@ void jabber_register_parse(JabberStream *js, const char *from, JabberIqType type
 
 	if(js->registration) {
 		/* get rid of the login thingy */
-		purple_connection_set_state(js->gc, PURPLE_CONNECTION_CONNECTED);
+		purple_connection_set_state(js->gc, PURPLE_CONNECTION_STATE_CONNECTED);
 	}
 
 	if(purple_xmlnode_get_child(query, "registered")) {
@@ -1498,7 +1498,7 @@ jabber_unregister_account(PurpleProtocolServer *protocol_server,
 	PurpleConnection *gc = purple_account_get_connection(account);
 	JabberStream *js;
 
-	if (purple_connection_get_state(gc) != PURPLE_CONNECTION_CONNECTED) {
+	if (purple_connection_get_state(gc) != PURPLE_CONNECTION_STATE_CONNECTED) {
 		#warning fix registration and unregistration
 		#if 0
 		if (purple_connection_get_state(gc) != PURPLE_CONNECTION_CONNECTING) {
@@ -1646,7 +1646,7 @@ void jabber_stream_set_state(JabberStream *js, JabberStreamState state)
 		/* Start up the inactivity timer */
 		jabber_stream_restart_inactivity_timer(js);
 
-		purple_connection_set_state(js->gc, PURPLE_CONNECTION_CONNECTED);
+		purple_connection_set_state(js->gc, PURPLE_CONNECTION_STATE_CONNECTED);
 	}
 }
 

@@ -416,11 +416,13 @@ purple_account_get_state(PurpleAccount *account)
 {
 	PurpleConnection *gc;
 
-	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), PURPLE_CONNECTION_DISCONNECTED);
+	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account),
+	                     PURPLE_CONNECTION_STATE_DISCONNECTED);
 
 	gc = purple_account_get_connection(account);
-	if (!gc)
-		return PURPLE_CONNECTION_DISCONNECTED;
+	if(!gc) {
+		return PURPLE_CONNECTION_STATE_DISCONNECTED;
+	}
 
 	return purple_connection_get_state(gc);
 }
@@ -1645,19 +1647,19 @@ purple_account_set_bool(PurpleAccount *account, const char *name, gboolean value
 gboolean
 purple_account_is_connected(PurpleAccount *account)
 {
-	return (purple_account_get_state(account) == PURPLE_CONNECTION_CONNECTED);
+	return (purple_account_get_state(account) == PURPLE_CONNECTION_STATE_CONNECTED);
 }
 
 gboolean
 purple_account_is_connecting(PurpleAccount *account)
 {
-	return (purple_account_get_state(account) == PURPLE_CONNECTION_CONNECTING);
+	return (purple_account_get_state(account) == PURPLE_CONNECTION_STATE_CONNECTING);
 }
 
 gboolean
 purple_account_is_disconnected(PurpleAccount *account)
 {
-	return (purple_account_get_state(account) == PURPLE_CONNECTION_DISCONNECTED);
+	return (purple_account_get_state(account) == PURPLE_CONNECTION_STATE_DISCONNECTED);
 }
 
 const char *

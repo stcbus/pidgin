@@ -180,7 +180,7 @@ purple_ircv3_connection_connected_cb(GObject *source, GAsyncResult *result,
 	}
 
 	purple_connection_set_state(PURPLE_CONNECTION(connection),
-	                            PURPLE_CONNECTION_CONNECTED);
+	                            PURPLE_CONNECTION_STATE_CONNECTED);
 
 	g_message("Successfully connected to %s", connection->server_name);
 

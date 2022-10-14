@@ -114,7 +114,7 @@ _login_resp_cb(NMUser * user, NMERR_T ret_code,
 		}
 
 		/* Tell Purple that we are connected */
-		purple_connection_set_state(gc, PURPLE_CONNECTION_CONNECTED);
+		purple_connection_set_state(gc, PURPLE_CONNECTION_STATE_CONNECTED);
 
 		_sync_contact_list(user);
 

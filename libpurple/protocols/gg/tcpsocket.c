@@ -139,7 +139,6 @@ ggp_tcpsocket_connect(void *_gc, const char *host, int port, int is_tls,
 	GError *error = NULL;
 
 	PURPLE_ASSERT_CONNECTION_IS_VALID(gc);
-	g_return_val_if_fail(!purple_connection_is_disconnecting(gc), NULL);
 
 	g_return_val_if_fail(host != NULL, NULL);
 	g_return_val_if_fail(is_async, NULL);

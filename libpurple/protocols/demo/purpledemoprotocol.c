@@ -43,7 +43,7 @@ purple_demo_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
 
 	connection = purple_connection_new(protocol, account, password);
 
-	purple_connection_set_state(connection, PURPLE_CONNECTION_CONNECTED);
+	purple_connection_set_state(connection, PURPLE_CONNECTION_STATE_CONNECTED);
 
 	purple_demo_contacts_load(account);
 

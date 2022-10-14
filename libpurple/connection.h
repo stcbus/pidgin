@@ -82,15 +82,18 @@ typedef enum /*< flags >*/
 
 /**
  * PurpleConnectionState:
- * @PURPLE_CONNECTION_DISCONNECTED: Disconnected.
- * @PURPLE_CONNECTION_CONNECTED:    Connected.
- * @PURPLE_CONNECTION_CONNECTING:   Connecting.
+ * @PURPLE_CONNECTION_STATE_DISCONNECTED: Disconnected
+ * @PURPLE_CONNECTION_STATE_DISCONNECTING: Disconnecting
+ * @PURPLE_CONNECTION_STATE_CONNECTED: Connected
+ * @PURPLE_CONNECTION_STATE_CONNECTING: Connecting
+ *
+ * A representation of the state of a [class@Purple.Connection].
  */
-typedef enum
-{
-	PURPLE_CONNECTION_DISCONNECTED = 0,
-	PURPLE_CONNECTION_CONNECTED,
-	PURPLE_CONNECTION_CONNECTING
+typedef enum {
+	PURPLE_CONNECTION_STATE_DISCONNECTED = 0,
+	PURPLE_CONNECTION_STATE_DISCONNECTING,
+	PURPLE_CONNECTION_STATE_CONNECTED,
+	PURPLE_CONNECTION_STATE_CONNECTING
 } PurpleConnectionState;
 
 /**
@@ -250,7 +253,7 @@ PurpleConnectionFlags purple_connection_get_flags(PurpleConnection *gc);
  * Returns: TRUE if the account is connected, otherwise returns FALSE.
  */
 #define PURPLE_CONNECTION_IS_CONNECTED(gc) \
-	(purple_connection_get_state(gc) == PURPLE_CONNECTION_CONNECTED)
+	(purple_connection_get_state(gc) == PURPLE_CONNECTION_STATE_CONNECTED)
 
 /**
  * purple_connection_new:
@@ -265,17 +268,6 @@ PurpleConnectionFlags purple_connection_get_flags(PurpleConnection *gc);
  * Since: 3.0.0
  */
 PurpleConnection *purple_connection_new(PurpleProtocol *protocol, PurpleAccount *account, const char *password);
-
-/**
- * purple_connection_is_disconnecting:
- * @gc: The connection.
- *
- * Checks, if connection is in disconnecting state.
- *
- * Returns: %TRUE, if the account is disconnecting.
- */
-gboolean
-purple_connection_is_disconnecting(PurpleConnection *gc);
 
 /**
  * purple_connection_get_id:

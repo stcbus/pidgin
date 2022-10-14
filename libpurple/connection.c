@@ -179,7 +179,7 @@ purple_connection_set_state(PurpleConnection *connection,
 
 	ops = purple_connections_get_ui_ops();
 
-	if(priv->state == PURPLE_CONNECTION_CONNECTED) {
+	if(priv->state == PURPLE_CONNECTION_STATE_CONNECTED) {
 		PurplePresence *presence;
 		gboolean emit_online = FALSE;
 		gpointer handle = NULL;
@@ -221,7 +221,7 @@ purple_connection_set_state(PurpleConnection *connection,
 		if(emit_online) {
 			purple_signal_emit(handle, "online");
 		}
-	} else if(priv->state == PURPLE_CONNECTION_DISCONNECTED) {
+	} else if(priv->state == PURPLE_CONNECTION_STATE_DISCONNECTED) {
 		if(ops != NULL && ops->disconnected != NULL) {
 			ops->disconnected(connection);
 		}
@@ -280,7 +280,7 @@ purple_connection_get_state(PurpleConnection *connection) {
 	PurpleConnectionPrivate *priv = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_CONNECTION(connection),
-	                     PURPLE_CONNECTION_DISCONNECTED);
+	                     PURPLE_CONNECTION_STATE_DISCONNECTED);
 
 	priv = purple_connection_get_instance_private(connection);
 
@@ -296,17 +296,6 @@ purple_connection_get_flags(PurpleConnection *connection) {
 	priv = purple_connection_get_instance_private(connection);
 
 	return priv->flags;
-}
-
-gboolean
-purple_connection_is_disconnecting(PurpleConnection *connection) {
-	PurpleConnectionPrivate *priv = NULL;
-
-	g_return_val_if_fail(PURPLE_IS_CONNECTION(connection), TRUE);
-
-	priv = purple_connection_get_instance_private(connection);
-
-	return priv->is_finalizing;
 }
 
 PurpleAccount *
@@ -737,7 +726,7 @@ purple_connection_get_property(GObject *obj, guint param_id, GValue *value,
 
 static void
 purple_connection_init(PurpleConnection *connection) {
-	purple_connection_set_state(connection, PURPLE_CONNECTION_CONNECTING);
+	purple_connection_set_state(connection, PURPLE_CONNECTION_STATE_CONNECTING);
 	connections = g_list_append(connections, connection);
 }
 
@@ -780,7 +769,7 @@ purple_connection_finalize(GObject *object) {
 
 	purple_debug_info("connection", "Disconnecting connection %p", connection);
 
-	if(priv->state != PURPLE_CONNECTION_CONNECTING) {
+	if(priv->state != PURPLE_CONNECTION_STATE_CONNECTING) {
 		remove = TRUE;
 	}
 
@@ -803,7 +792,7 @@ purple_connection_finalize(GObject *object) {
 
 	connections = g_list_remove(connections, connection);
 
-	purple_connection_set_state(connection, PURPLE_CONNECTION_DISCONNECTED);
+	purple_connection_set_state(connection, PURPLE_CONNECTION_STATE_DISCONNECTED);
 
 	if(remove) {
 		purple_blist_remove_account(priv->account);
@@ -867,7 +856,7 @@ purple_connection_class_init(PurpleConnectionClass *klass) {
 	properties[PROP_STATE] = g_param_spec_enum(
 		"state", "Connection state",
 		"The current state of the connection.",
-		PURPLE_TYPE_CONNECTION_STATE, PURPLE_CONNECTION_DISCONNECTED,
+		PURPLE_TYPE_CONNECTION_STATE, PURPLE_CONNECTION_STATE_DISCONNECTED,
 		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	properties[PROP_ACCOUNT] = g_param_spec_object(
