@@ -96,7 +96,8 @@ purple_ircv3_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
 		PURPLE_IRCV3_TYPE_CONNECTION,
 		"protocol", protocol,
 		"account", account,
-		"password", password);
+		"password", password,
+		NULL);
 
 	valid = purple_ircv3_connection_valid(PURPLE_IRCV3_CONNECTION(connection),
 	                                      &error);

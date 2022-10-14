@@ -179,7 +179,6 @@ purple_ircv3_connection_connected_cb(GObject *source, GAsyncResult *result,
 		return;
 	}
 
-	/* Grab our protocol specific connection data. */
 	purple_connection_set_state(PURPLE_CONNECTION(connection),
 	                            PURPLE_CONNECTION_CONNECTED);
 
