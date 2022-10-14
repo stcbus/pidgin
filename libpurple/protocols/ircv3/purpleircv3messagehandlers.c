@@ -132,3 +132,72 @@ purple_ircv3_messager_handler_cap(GHashTable *tags, const char *source,
 
 	return FALSE;
 }
+
+gboolean
+purple_ircv3_message_handler_privmsg(G_GNUC_UNUSED GHashTable *tags,
+                                     const char *source,
+                                     const char *command,
+                                     guint n_params,
+                                     GStrv params,
+                                     G_GNUC_UNUSED GError **error,
+                                     gpointer data)
+{
+	PurpleIRCv3Connection *connection = data;
+	PurpleAccount *account = NULL;
+	PurpleContact *contact = NULL;
+	PurpleContactManager *contact_manager = NULL;
+	PurpleConversation *conversation = NULL;
+	PurpleConversationManager *conversation_manager = NULL;
+	PurpleMessage *message = NULL;
+	PurpleMessageFlags flags = PURPLE_MESSAGE_RECV;
+	const char *target = NULL;
+
+	if(n_params != 2) {
+		char *body = g_strjoinv(" ", params);
+		g_warning("unknown privmsg message format: '%s'", body);
+		g_free(body);
+
+		return FALSE;
+	}
+
+	account = purple_connection_get_account(PURPLE_CONNECTION(connection));
+
+	contact_manager = purple_contact_manager_get_default();
+	contact = purple_contact_manager_find_with_username(contact_manager,
+	                                                    account,
+	                                                    source);
+	if(!PURPLE_IS_CONTACT(contact)) {
+		contact = purple_contact_new(account, NULL);
+		purple_contact_set_username(contact, source);
+		purple_contact_manager_add(contact_manager, contact);
+	}
+
+	target = params[0];
+	conversation_manager = purple_conversation_manager_get_default();
+	conversation = purple_conversation_manager_find(conversation_manager,
+	                                                account, target);
+	if(!PURPLE_IS_CONVERSATION(conversation)) {
+		if(target[0] == '#') {
+			conversation = purple_chat_conversation_new(account, target);
+		} else {
+			conversation = purple_im_conversation_new(account, target);
+		}
+
+		purple_conversation_manager_register(conversation_manager,
+		                                     conversation);
+	}
+
+	if(purple_strequal(command, "NOTICE")) {
+		flags |= PURPLE_MESSAGE_NOTIFY;
+	}
+
+	message = purple_message_new_incoming(source, params[1],
+	                                      PURPLE_MESSAGE_RECV, 0);
+
+	purple_conversation_write_message(conversation, message);
+
+	g_clear_object(&message);
+	g_clear_object(&conversation);
+
+	return TRUE;
+}
