@@ -1003,21 +1003,17 @@ jabber_stream_connect(JabberStream *js)
 	}
 }
 
-static PurpleConnection *
-jabber_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account,
-             const char *password)
-{
-	PurpleConnection *gc = NULL;
+static void
+jabber_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
+	PurpleConnection *gc = purple_account_get_connection(account);
 	JabberStream *js;
 	PurpleImage *image;
-
-	gc = purple_connection_new(protocol, account, password);
 
 	purple_connection_set_flags(gc, PURPLE_CONNECTION_FLAG_HTML |
 		PURPLE_CONNECTION_FLAG_NO_IMAGES);
 	js = jabber_stream_new(account);
 	if (js == NULL)
-		return gc;
+		return;
 
 	/* replace old default proxies with the new default: NULL
 	 * TODO: these can eventually be removed */
@@ -1041,8 +1037,6 @@ jabber_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account,
 	}
 
 	jabber_stream_connect(js);
-
-	return gc;
 }
 
 
@@ -1499,12 +1493,9 @@ jabber_unregister_account(PurpleProtocolServer *protocol_server,
 	JabberStream *js;
 
 	if (purple_connection_get_state(gc) != PURPLE_CONNECTION_STATE_CONNECTED) {
-		#warning fix registration and unregistration
-		#if 0
-		if (purple_connection_get_state(gc) != PURPLE_CONNECTION_CONNECTING) {
+		if (purple_connection_get_state(gc) != PURPLE_CONNECTION_STATE_CONNECTING) {
 			jabber_login(PURPLE_PROTOCOL(protocol_server), account);
 		}
-		#endif
 
 		js = purple_connection_get_protocol_data(gc);
 		js->unregistration = TRUE;

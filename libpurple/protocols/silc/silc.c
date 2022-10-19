@@ -575,9 +575,9 @@ static void silcpurple_running(SilcClient client, void *context)
 	silcpurple_continue_running(sg);
 }
 
-static PurpleConnection *
-silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
-                 const char *password)
+static void
+silcpurple_login(G_GNUC_UNUSED PurpleProtocol *protocol,
+                 PurpleAccount *account)
 {
 	SilcClient client;
 	PurpleConnection *gc;
@@ -587,7 +587,10 @@ silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
 	char *username, *hostname, *realname, **up;
 	int i;
 
-	gc = purple_connection_new(protocol, account, password);
+	gc = purple_account_get_connection(account);
+	if (!gc)
+		return;
+
 	purple_connection_set_protocol_data(gc, NULL);
 
 	memset(&params, 0, sizeof(params));
@@ -598,7 +601,7 @@ silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
 	if (!client) {
 		purple_connection_error(gc, PURPLE_CONNECTION_ERROR_OTHER_ERROR,
 		                             _("Out of memory"));
-		return gc;
+		return;
 	}
 
 	/* Get username, real name and local hostname for SILC library */
@@ -638,7 +641,7 @@ silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
 
 	sg = silc_calloc(1, sizeof(*sg));
 	if (!sg)
-		return gc;
+		return;
 	sg->cancellable = g_cancellable_new();
 	sg->client = client;
 	sg->gc = gc;
@@ -654,7 +657,7 @@ silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
 		silcpurple_free(sg);
 		silc_free(hostname);
 		g_free(username);
-		return gc;
+		return;
 	}
 	silc_free(hostname);
 	g_free(username);
@@ -665,7 +668,7 @@ silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
 		                             _("Error loading SILC key pair"));
 		purple_connection_set_protocol_data(gc, NULL);
 		silcpurple_free(sg);
-		return gc;
+		return;
 	}
 
 	/* Run SILC scheduler */
@@ -673,8 +676,6 @@ silcpurple_login(PurpleProtocol *protocol, PurpleAccount *account,
 	silc_schedule_set_notify(client->schedule, silcpurple_scheduler,
 				 client);
 	silc_client_run_one(client);
-
-	return gc;
 }
 
 static int

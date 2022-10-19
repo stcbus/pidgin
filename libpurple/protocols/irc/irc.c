@@ -42,7 +42,7 @@ static void irc_ison_buddy_init(char *name, struct irc_buddy *ib, GList **list);
 
 static GList *irc_status_types(PurpleProtocol *protocol, PurpleAccount *account);
 /* static GList *irc_chat_info(PurpleConnection *gc); */
-static PurpleConnection *irc_login(PurpleProtocol *protocol, PurpleAccount *account, const char *password);
+static void irc_login(PurpleProtocol *protocol, PurpleAccount *account);
 static void irc_login_cb(GObject *source, GAsyncResult *res, gpointer user_data);
 static void irc_close(PurpleProtocol *protocol, PurpleConnection *gc);
 static int irc_im_send(PurpleProtocolIM *im, PurpleConnection *gc, PurpleMessage *msg);
@@ -524,10 +524,8 @@ irc_chat_info_defaults(PurpleProtocolChat *protocol_chat, PurpleConnection *gc,
 	return defaults;
 }
 
-static PurpleConnection *
-irc_login(PurpleProtocol *protocol, PurpleAccount *account,
-          const char *password)
-{
+static void
+irc_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc;
 	struct irc_conn *irc;
 	char **userparts;
@@ -535,7 +533,7 @@ irc_login(PurpleProtocol *protocol, PurpleAccount *account,
 	GSocketClient *client;
 	GError *error = NULL;
 
-	gc = purple_connection_new(protocol, account, password);
+	gc = purple_account_get_connection(account);
 	purple_connection_set_flags(gc, PURPLE_CONNECTION_FLAG_NO_NEWLINES |
 		PURPLE_CONNECTION_FLAG_NO_IMAGES);
 
@@ -544,7 +542,7 @@ irc_login(PurpleProtocol *protocol, PurpleAccount *account,
 			PURPLE_CONNECTION_ERROR,
 			PURPLE_CONNECTION_ERROR_INVALID_SETTINGS,
 			_("IRC nick and server may not contain whitespace")));
-		return gc;
+		return;
 	}
 
 	irc = g_new0(struct irc_conn, 1);
@@ -568,7 +566,7 @@ irc_login(PurpleProtocol *protocol, PurpleAccount *account,
 
 	if (client == NULL) {
 		purple_connection_take_error(gc, error);
-		return gc;
+		return;
 	}
 
 	/* Optionally use TLS if it's set in the account settings */
@@ -582,8 +580,6 @@ irc_login(PurpleProtocol *protocol, PurpleAccount *account,
 							IRC_DEFAULT_PORT),
 			irc->cancellable, irc_login_cb, gc);
 	g_object_unref(client);
-
-	return gc;
 }
 
 static gboolean do_login(PurpleConnection *gc) {

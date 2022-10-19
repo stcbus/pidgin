@@ -522,21 +522,17 @@ purple_protocol_get_whiteboard_ops(PurpleProtocol *protocol) {
 	return NULL;
 }
 
-PurpleConnection *
-purple_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
-                      const char *password)
-{
+void
+purple_protocol_login(PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleProtocolClass *klass = NULL;
 
-	g_return_val_if_fail(PURPLE_IS_PROTOCOL(protocol), NULL);
-	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
+	g_return_if_fail(PURPLE_IS_PROTOCOL(protocol));
+	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
 	klass = PURPLE_PROTOCOL_GET_CLASS(protocol);
 	if(klass != NULL && klass->login != NULL) {
-		return klass->login(protocol, account, password);
+		klass->login(protocol, account);
 	}
-
-	return NULL;
 }
 
 void

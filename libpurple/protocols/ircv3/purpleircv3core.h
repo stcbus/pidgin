@@ -27,6 +27,8 @@
 
 #define PURPLE_IRCV3_DOMAIN (g_quark_from_static_string("ircv3-plugin"))
 
+#define PURPLE_IRCV3_CONNECTION_KEY "ircv3-connection"
+
 #define PURPLE_IRCV3_CONNECTION_CAP_VERSION "302"
 
 #endif /* PURPLE_IRCV3_CORE_H */

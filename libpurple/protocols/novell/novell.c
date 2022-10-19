@@ -2184,10 +2184,8 @@ _event_callback(NMUser * user, NMEvent * event)
  * Protocol Ops
  ******************************************************************************/
 
-static PurpleConnection *
-novell_login(PurpleProtocol *protocol, PurpleAccount *account,
-             const char *password)
-{
+static void
+novell_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
 	PurpleConnection *gc;
 	NMUser *user = NULL;
 	const char *server;
@@ -2195,7 +2193,12 @@ novell_login(PurpleProtocol *protocol, PurpleAccount *account,
 	int port;
 	GError *error = NULL;
 
-	gc = purple_connection_new(protocol, account, password);
+	if (account == NULL)
+		return;
+
+	gc = purple_account_get_connection(account);
+	if (gc == NULL)
+		return;
 
 	purple_connection_set_flags(gc, PURPLE_CONNECTION_FLAG_NO_IMAGES);
 
@@ -2211,7 +2214,7 @@ novell_login(PurpleProtocol *protocol, PurpleAccount *account,
 			PURPLE_CONNECTION_ERROR_INVALID_SETTINGS,
 			_("Unable to connect to server. Please enter the "
 			  "address of the server to which you wish to connect."));
-		return gc;
+		return;
 	}
 
 	port = purple_account_get_int(account, "port", DEFAULT_PORT);
@@ -2226,7 +2229,7 @@ novell_login(PurpleProtocol *protocol, PurpleAccount *account,
 		user->conn->client = purple_gio_socket_client_new(account, &error);
 		if (user->conn->client == NULL) {
 			purple_connection_take_error(gc, error);
-			return gc;
+			return;
 		}
 
 		g_socket_client_set_tls(user->conn->client, TRUE);
@@ -2234,8 +2237,6 @@ novell_login(PurpleProtocol *protocol, PurpleAccount *account,
 		        user->conn->client, user->conn->addr, user->conn->port,
 		        user->cancellable, novell_login_callback, gc);
 	}
-
-	return gc;
 }
 
 static void

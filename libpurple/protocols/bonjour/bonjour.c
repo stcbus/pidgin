@@ -94,23 +94,19 @@ bonjour_removeallfromlocal(PurpleConnection *conn, PurpleGroup *bonjour_group)
 
 }
 
-static PurpleConnection *
-bonjour_login(PurpleProtocol *protocol, PurpleAccount *account,
-              const char *password)
-{
-	PurpleConnection *gc = NULL;
+static void
+bonjour_login(G_GNUC_UNUSED PurpleProtocol *protocol, PurpleAccount *account) {
+	PurpleConnection *gc = purple_account_get_connection(account);
 	BonjourData *bd;
 	PurpleStatus *status;
 	PurplePresence *presence;
-
-	gc = purple_connection_new(protocol, account, password);
 
 	if (!mdns_available()) {
 		purple_connection_error(gc,
 				PURPLE_CONNECTION_ERROR_OTHER_ERROR,
 				_("Unable to find Apple's \"Bonjour for Windows\" toolkit, see "
 				  "https://developer.pidgin.im/BonjourWindows for more information."));
-		return gc;
+		return;
 	}
 
 	purple_connection_set_flags(gc, PURPLE_CONNECTION_FLAG_HTML |
@@ -128,7 +124,7 @@ bonjour_login(PurpleProtocol *protocol, PurpleAccount *account,
 		purple_connection_error (gc,
 				PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
 				_("Unable to listen for incoming IM connections"));
-		return gc;
+		return;
 	}
 
 	/* Connect to the mDNS daemon looking for buddies in the LAN */
@@ -155,15 +151,13 @@ bonjour_login(PurpleProtocol *protocol, PurpleAccount *account,
 		purple_connection_error (gc,
 			PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
 			_("Unable to establish connection with the local mDNS server.  Is it running?"));
-		return gc;
+		return;
 	}
 
 	bonjour_dns_sd_update_buddy_icon(bd->dns_sd_data);
 
 	/* Show the buddy list by telling Purple we have already connected */
 	purple_connection_set_state(gc, PURPLE_CONNECTION_STATE_CONNECTED);
-
-	return gc;
 }
 
 static void

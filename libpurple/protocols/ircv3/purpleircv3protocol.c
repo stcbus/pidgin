@@ -84,38 +84,44 @@ purple_ircv3_protocol_get_account_options(G_GNUC_UNUSED PurpleProtocol *protocol
 	return options;
 }
 
-static PurpleConnection *
-purple_ircv3_protocol_login(PurpleProtocol *protocol, PurpleAccount *account,
-                            const char *password)
+static void
+purple_ircv3_protocol_login(G_GNUC_UNUSED PurpleProtocol *protocol,
+                            PurpleAccount *account)
 {
-	PurpleConnection *connection = NULL;
+	PurpleIRCv3Connection *connection = NULL;
+	PurpleConnection *purple_connection = NULL;
 	GError *error = NULL;
-	gboolean valid = FALSE;
 
-	connection = g_object_new(
-		PURPLE_IRCV3_TYPE_CONNECTION,
-		"protocol", protocol,
-		"account", account,
-		"password", password,
-		NULL);
+	purple_connection = purple_account_get_connection(account);
 
-	valid = purple_ircv3_connection_valid(PURPLE_IRCV3_CONNECTION(connection),
-	                                      &error);
-	if(!valid) {
-		purple_connection_take_error(connection, error);
-	} else {
-		purple_ircv3_connection_connect(PURPLE_IRCV3_CONNECTION(connection));
+	connection = purple_ircv3_connection_new(account);
+	if(!purple_ircv3_connection_valid(connection, &error)) {
+		purple_connection_take_error(purple_connection, error);
+
+		return;
 	}
 
+	g_object_set_data_full(G_OBJECT(purple_connection),
+	                       PURPLE_IRCV3_CONNECTION_KEY,
+	                       connection, g_object_unref);
 
-	return connection;
+	purple_ircv3_connection_connect(connection);
 }
 
 static void
 purple_ircv3_protocol_close(G_GNUC_UNUSED PurpleProtocol *protocol,
-                            PurpleConnection *connection)
+                            PurpleConnection *purple_connection)
 {
-	purple_ircv3_connection_close(PURPLE_IRCV3_CONNECTION(connection));
+	PurpleIRCv3Connection *connection = NULL;
+
+	connection = g_object_get_data(G_OBJECT(purple_connection),
+	                               PURPLE_IRCV3_CONNECTION_KEY);
+
+	purple_ircv3_connection_close(connection);
+
+	/* Set our connection data to NULL which will remove the last reference. */
+	g_object_set_data(G_OBJECT(purple_connection), PURPLE_IRCV3_CONNECTION_KEY,
+	                  NULL);
 }
 
 static GList *
