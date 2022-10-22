@@ -160,7 +160,7 @@ purple_ircv3_message_handler_privmsg(G_GNUC_UNUSED GHashTable *tags,
 		return FALSE;
 	}
 
-	account = purple_connection_get_account(PURPLE_CONNECTION(connection));
+	account = purple_ircv3_connection_get_account(connection);
 
 	contact_manager = purple_contact_manager_get_default();
 	contact = purple_contact_manager_find_with_username(contact_manager,
