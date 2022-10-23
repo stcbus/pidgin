@@ -110,6 +110,21 @@ PurpleNotification *purple_notification_new_from_add_contact_request(PurpleAddCo
 PurpleNotification *purple_notification_new_from_authorization_request(PurpleAuthorizationRequest *authorization_request);
 
 /**
+ * purple_notification_new_from_connection_error:
+ * @account: The [class@Purple.Account] that had the connection error.
+ * @error_info: The [struct@Purple.ConnectionErrorInfo] for the error.
+ *
+ * Creates a new [class@Purple.Notification] for @account with the @error_info
+ * for the connection. This helper will automatically fill out the notification
+ * according to the given parameters.
+ *
+ * Returns: (transfer full): The new notification.
+ *
+ * Since: 3.0.0
+ */
+PurpleNotification *purple_notification_new_from_connection_error(PurpleAccount *account, PurpleConnectionErrorInfo *info);
+
+/**
  * purple_notification_get_id:
  * @notification: The instance.
  *

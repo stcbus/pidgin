@@ -508,6 +508,44 @@ purple_notification_new_from_authorization_request(PurpleAuthorizationRequest *a
 	return notification;
 }
 
+PurpleNotification *
+purple_notification_new_from_connection_error(PurpleAccount *account,
+                                              PurpleConnectionErrorInfo *info)
+{
+	PurpleNotification *notification = NULL;
+	PurpleProtocol *protocol = NULL;
+	char *title = NULL;
+	const char *username = NULL;
+
+	g_return_val_if_fail(PURPLE_IS_ACCOUNT(account), NULL);
+	g_return_val_if_fail(info != NULL, NULL);
+
+	notification = purple_notification_new(PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR,
+	                                       account, info, NULL);
+
+	/* Set the title of the notification. */
+	username = purple_account_get_username(account);
+	if(purple_account_get_enabled(account)) {
+		title = g_strdup_printf(_("%s disconnected"), username);
+	} else {
+		title = g_strdup_printf(_("%s disabled"), username);
+	}
+	purple_notification_set_title(notification, title);
+	g_free(title);
+
+	/* Add the protocol's icon as the notification's icon. */
+	protocol = purple_account_get_protocol(account);
+	if(PURPLE_IS_PROTOCOL(protocol)) {
+		const char *icon_name = purple_protocol_get_icon_name(protocol);
+
+		if(icon_name != NULL) {
+			purple_notification_set_icon_name(notification, icon_name);
+		}
+	}
+
+	return notification;
+}
+
 const gchar *
 purple_notification_get_id(PurpleNotification *notification) {
 	g_return_val_if_fail(PURPLE_IS_NOTIFICATION(notification), NULL);

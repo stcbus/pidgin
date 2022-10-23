@@ -486,31 +486,8 @@ _purple_account_set_current_error(PurpleAccount *account,
 	}
 
 	if(new_err != NULL) {
-		PurpleProtocol *protocol = NULL;
-		gchar *title = NULL;
-
 		account->error_notification =
-			purple_notification_new(PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR,
-			                        account, new_err, NULL);
-
-		if(account->enabled) {
-			title = g_strdup_printf(_("%s disconnected"), account->username);
-		} else {
-			title = g_strdup_printf(_("%s disabled"), account->username);
-		}
-
-		purple_notification_set_title(account->error_notification, title);
-		g_free(title);
-
-		protocol = purple_account_get_protocol(account);
-		if(PURPLE_IS_PROTOCOL(protocol)) {
-			const gchar *icon_name = purple_protocol_get_icon_name(protocol);
-
-			if(icon_name != NULL) {
-				purple_notification_set_icon_name(account->error_notification,
-				                                  icon_name);
-			}
-		}
+			purple_notification_new_from_connection_error(account, new_err);
 
 		purple_notification_manager_add(manager, account->error_notification);
 	}
