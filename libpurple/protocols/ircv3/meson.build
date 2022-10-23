@@ -24,6 +24,6 @@ if DYNAMIC_IRCV3
 	    install : true, install_dir : PURPLE_PLUGINDIR)
 
 	devenv.append('PURPLE_PLUGIN_PATH', meson.current_build_dir())
-endif
 
-subdir('tests')
+	subdir('tests')
+endif
