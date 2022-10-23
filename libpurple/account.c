@@ -1222,7 +1222,7 @@ purple_account_request_close_with_account(PurpleAccount *account) {
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
 	manager = purple_notification_manager_get_default();
-	purple_notification_manager_remove_with_account(manager, account);
+	purple_notification_manager_remove_with_account(manager, account, FALSE);
 }
 
 void

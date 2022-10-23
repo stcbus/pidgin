@@ -394,7 +394,8 @@ if have_same
 */
 void
 purple_notification_manager_remove_with_account(PurpleNotificationManager *manager,
-                                                PurpleAccount *account)
+                                                PurpleAccount *account,
+                                                gboolean all)
 {
 	guint pos = 0, len = 0;
 	guint start = 0, count = 0;
@@ -407,13 +408,25 @@ purple_notification_manager_remove_with_account(PurpleNotificationManager *manag
 	for(pos = 0; pos < len; pos++) {
 		PurpleAccount *account2 = NULL;
 		PurpleNotification *notification = NULL;
+		PurpleNotificationType type;
+		gboolean can_remove = TRUE;
 
 		notification = g_list_model_get_item(G_LIST_MODEL(manager->notifications),
 		                                     pos);
 
+		/* If the notification's type is connection error, set can_remove to
+		 * the value of the all parameter.
+		 */
+		type = purple_notification_get_notification_type(notification);
+		if(type == PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR) {
+			can_remove = all;
+		}
+
 		account2 = purple_notification_get_account(notification);
-		if(account == account2) {
-			/* If this is the first item with the right account store its position. */
+		if(account == account2 && can_remove) {
+			/* If this is the first item with the right account store its
+			 * position.
+			 */
 			if(!have_same) {
 				count = 0;
 				start = pos;

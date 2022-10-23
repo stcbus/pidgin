@@ -210,6 +210,7 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 {
 	PidginAccountManager *manager = PIDGIN_ACCOUNT_MANAGER(dialog);
 	PurpleAccount *account = NULL;
+	PurpleNotificationManager *notification_manager = NULL;
 	GtkWidget *editor = NULL;
 
 	switch(response_id) {
@@ -232,6 +233,9 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
 		case RESPONSE_REMOVE:
 			account = pidgin_account_manager_get_selected_account(manager);
 
+			notification_manager = purple_notification_manager_get_default();
+			purple_notification_manager_remove_with_account(notification_manager,
+			                                                account, TRUE);
 			purple_accounts_delete(account);
 
 			g_clear_object(&account);

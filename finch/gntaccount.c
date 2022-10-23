@@ -693,7 +693,7 @@ really_delete_account(PurpleAccount *account)
 	}
 
 	manager = purple_notification_manager_get_default();
-	purple_notification_manager_remove_with_account(manager, account);
+	purple_notification_manager_remove_with_account(manager, account, TRUE);
 
 	purple_accounts_delete(account);
 }

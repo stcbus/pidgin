@@ -81,12 +81,18 @@ void purple_notification_manager_remove(PurpleNotificationManager *manager, Purp
  * purple_notification_manager_remove_with_account:
  * @manager: The instance.
  * @account: The [class@Account] whose notifications to remove.
+ * @all: Whether or not to clear connection error notifications as well.
  *
  * Removes all notifications with @account from @manager.
  *
+ * If @all is set to %TRUE, notifications of type
+ * PURPLE_NOTIFICATION_TYPE_CONNECTION_ERROR will be removed as well. These are
+ * treated differently from other notifications tied to accounts, as those are
+ * transient and depend on the account being connected to be valid.
+ *
  * Since: 3.0.0
  */
-void purple_notification_manager_remove_with_account(PurpleNotificationManager *manager, PurpleAccount *account);
+void purple_notification_manager_remove_with_account(PurpleNotificationManager *manager, PurpleAccount *account, gboolean all);
 
 /**
  * purple_notification_manager_get_unread_count:
