@@ -579,8 +579,11 @@ static void
 pidgin_account_editor_update_proxy_options(PidginAccountEditor *editor) {
 	PurpleProxyInfo *info = NULL;
 	GListModel *model = NULL;
-	const gchar *svalue = NULL;
-	gint ivalue = 0;
+	const char *type = "global";
+	const char *hostname = NULL;
+	const char *username = NULL;
+	const char *password = NULL;
+	int port = 8080;
 	guint position = 0;
 
 	if(!PURPLE_IS_ACCOUNT(editor->account)) {
@@ -588,62 +591,64 @@ pidgin_account_editor_update_proxy_options(PidginAccountEditor *editor) {
 	}
 
 	info = purple_account_get_proxy_info(editor->account);
+	if(PURPLE_IS_PROXY_INFO(info)) {
+		switch(purple_proxy_info_get_proxy_type(info)) {
+			case PURPLE_PROXY_TYPE_USE_GLOBAL:
+				type = "global";
+				break;
+			case PURPLE_PROXY_TYPE_NONE:
+				type = "none";
+				break;
+			case PURPLE_PROXY_TYPE_SOCKS4:
+				type = "socks4";
+				break;
+			case PURPLE_PROXY_TYPE_SOCKS5:
+				type = "socks5";
+				break;
+			case PURPLE_PROXY_TYPE_TOR:
+				type = "tor";
+				break;
+			case PURPLE_PROXY_TYPE_HTTP:
+				type = "http";
+				break;
+			case PURPLE_PROXY_TYPE_USE_ENVVAR:
+				type = "envvar";
+				break;
+		}
 
-	switch(purple_proxy_info_get_proxy_type(info)) {
-		case PURPLE_PROXY_TYPE_USE_GLOBAL:
-			svalue = "global";
-			break;
-		case PURPLE_PROXY_TYPE_NONE:
-			svalue = "none";
-			break;
-		case PURPLE_PROXY_TYPE_SOCKS4:
-			svalue = "socks4";
-			break;
-		case PURPLE_PROXY_TYPE_SOCKS5:
-			svalue = "socks5";
-			break;
-		case PURPLE_PROXY_TYPE_TOR:
-			svalue = "tor";
-			break;
-		case PURPLE_PROXY_TYPE_HTTP:
-			svalue = "http";
-			break;
-		case PURPLE_PROXY_TYPE_USE_ENVVAR:
-			svalue = "envvar";
-			break;
+		hostname = purple_proxy_info_get_hostname(info);
+		port = purple_proxy_info_get_port(info);
+		username = purple_proxy_info_get_username(info);
+		password = purple_proxy_info_get_password(info);
 	}
 
 	model = adw_combo_row_get_model(ADW_COMBO_ROW(editor->proxy_type));
 	for(guint i = 0; i < g_list_model_get_n_items(model); i++) {
 		GtkStringObject *obj = g_list_model_get_item(model, i);
-		if(purple_strequal(svalue, gtk_string_object_get_string(obj))) {
+		if(purple_strequal(type, gtk_string_object_get_string(obj))) {
 			position = i;
 			break;
 		}
 	}
 	adw_combo_row_set_selected(ADW_COMBO_ROW(editor->proxy_type), position);
 
-	svalue = purple_proxy_info_get_hostname(info);
-	if(svalue == NULL) {
-		svalue = "";
+	if(hostname == NULL) {
+		hostname = "";
 	}
-	gtk_editable_set_text(GTK_EDITABLE(editor->proxy_host), svalue);
+	gtk_editable_set_text(GTK_EDITABLE(editor->proxy_host), hostname);
 
-	ivalue = purple_proxy_info_get_port(info);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(editor->proxy_port),
-	                          (gdouble)ivalue);
+	                          (gdouble)port);
 
-	svalue = purple_proxy_info_get_username(info);
-	if(svalue == NULL) {
-		svalue = "";
+	if(username == NULL) {
+		username = "";
 	}
-	gtk_editable_set_text(GTK_EDITABLE(editor->proxy_username), svalue);
+	gtk_editable_set_text(GTK_EDITABLE(editor->proxy_username), username);
 
-	svalue = purple_proxy_info_get_password(info);
-	if(svalue == NULL) {
-		svalue = "";
+	if(password == NULL) {
+		password = "";
 	}
-	gtk_editable_set_text(GTK_EDITABLE(editor->proxy_password), svalue);
+	gtk_editable_set_text(GTK_EDITABLE(editor->proxy_password), password);
 }
 
 static void
@@ -872,11 +877,16 @@ pidgin_account_editor_save_proxy(PidginAccountEditor *editor,
 	gint ivalue = 0;
 
 	/* Build the ProxyInfo object */
-	if(new_account) {
+	if(!new_account) {
+		info = purple_account_get_proxy_info(editor->account);
+	}
+
+	/* If this is a new account, or the account's proxy info is null, create a
+	 * new instance, and set it on the account.
+	 */
+	if(new_account || !PURPLE_IS_PROXY_INFO(info)) {
 		info = purple_proxy_info_new();
 		purple_account_set_proxy_info(editor->account, info);
-	} else {
-		info = purple_account_get_proxy_info(editor->account);
 	}
 
 	item = adw_combo_row_get_selected_item(ADW_COMBO_ROW(editor->proxy_type));
