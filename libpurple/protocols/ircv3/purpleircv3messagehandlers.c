@@ -25,10 +25,10 @@
  * Fallback
  *****************************************************************************/
 gboolean
-purple_ircv3_messager_handler_fallback(GHashTable *tags, const char *source,
-                                       const char *command, guint n_params,
-                                       GStrv params, GError **error,
-                                       gpointer data)
+purple_ircv3_message_handler_fallback(GHashTable *tags, const char *source,
+                                      const char *command, guint n_params,
+                                      GStrv params, GError **error,
+                                      gpointer data)
 {
 	gchar *joined = g_strjoinv(" ", params);
 
@@ -44,31 +44,11 @@ purple_ircv3_messager_handler_fallback(GHashTable *tags, const char *source,
 }
 
 /******************************************************************************
- * Ping
- *****************************************************************************/
-gboolean
-purple_ircv3_messager_handler_ping(GHashTable *tags, const char *source,
-                                   const char *command, guint n_params,
-                                   GStrv params, GError **error,
-                                   gpointer data)
-{
-	PurpleIRCv3Connection *connection = data;
-
-	if(n_params == 1) {
-		purple_ircv3_connection_writef(connection, "PONG %s", params[0]);
-	} else {
-		purple_ircv3_connection_writef(connection, "PONG");
-	}
-
-	return TRUE;
-}
-
-/******************************************************************************
  * Capabilities
  *****************************************************************************/
 static gboolean
-purple_ircv3_messager_handler_cap_list(guint n_params, GStrv params,
-                                       GError **error, gpointer data)
+purple_ircv3_message_handler_cap_list(guint n_params, GStrv params,
+                                      GError **error, gpointer data)
 {
 	PurpleIRCv3Connection *connection = data;
 
@@ -88,9 +68,9 @@ purple_ircv3_messager_handler_cap_list(guint n_params, GStrv params,
 }
 
 gboolean
-purple_ircv3_messager_handler_cap(GHashTable *tags, const char *source,
-                                  const char *command, guint n_params,
-                                  GStrv params, GError **error, gpointer data)
+purple_ircv3_message_handler_cap(GHashTable *tags, const char *source,
+                                 const char *command, guint n_params,
+                                 GStrv params, GError **error, gpointer data)
 {
 	const char *subcommand = NULL;
 	guint n_subparams = 0;
@@ -123,14 +103,34 @@ purple_ircv3_messager_handler_cap(GHashTable *tags, const char *source,
 	if(purple_strequal(subcommand, "LS") ||
 	   purple_strequal(subcommand, "LIST"))
 	{
-		return purple_ircv3_messager_handler_cap_list(n_subparams, subparams,
-		                                              error, data);
+		return purple_ircv3_message_handler_cap_list(n_subparams, subparams,
+		                                             error, data);
 	}
 
 	g_set_error(error, PURPLE_IRCV3_DOMAIN, 0,
 	            "No handler for CAP subcommand %s", subcommand);
 
 	return FALSE;
+}
+
+/******************************************************************************
+ * General Commands
+ *****************************************************************************/
+gboolean
+purple_ircv3_message_handler_ping(GHashTable *tags, const char *source,
+                                  const char *command, guint n_params,
+                                  GStrv params, GError **error,
+                                  gpointer data)
+{
+	PurpleIRCv3Connection *connection = data;
+
+	if(n_params == 1) {
+		purple_ircv3_connection_writef(connection, "PONG %s", params[0]);
+	} else {
+		purple_ircv3_connection_writef(connection, "PONG");
+	}
+
+	return TRUE;
 }
 
 gboolean
