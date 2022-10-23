@@ -190,6 +190,47 @@ pidgin_account_manager_populate(PidginAccountManager *manager) {
 	                               manager);
 }
 
+static void
+pidgin_account_manager_create_account(PidginAccountManager *manager) {
+	GtkWidget *editor = pidgin_account_editor_new(NULL);
+	gtk_window_set_transient_for(GTK_WINDOW(editor),
+	                             GTK_WINDOW(manager));
+	gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
+}
+
+static void
+pidgin_account_manager_edit_selected_account(PidginAccountManager *manager) {
+	PurpleAccount *account = NULL;
+	GtkWidget *editor = NULL;
+
+	account = pidgin_account_manager_get_selected_account(manager);
+
+	editor = pidgin_account_editor_new(account);
+	gtk_window_set_transient_for(GTK_WINDOW(editor),
+	                             GTK_WINDOW(manager));
+	gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
+
+	g_clear_object(&account);
+}
+
+static void
+pidgin_account_manager_remove_selected_account(PidginAccountManager *manager) {
+	PurpleAccount *account = NULL;
+	PurpleNotificationManager *notification_manager = NULL;
+
+	account = pidgin_account_manager_get_selected_account(manager);
+
+	/* Remove all notifications including connection errors for the account. */
+	notification_manager = purple_notification_manager_get_default();
+	purple_notification_manager_remove_with_account(notification_manager,
+	                                                account, TRUE);
+
+	/* Delete the account. */
+	purple_accounts_delete(account);
+
+	g_clear_object(&account);
+}
+
 /******************************************************************************
  * Callbacks
  *****************************************************************************/
@@ -209,37 +250,16 @@ pidgin_account_manager_response_cb(GtkDialog *dialog, gint response_id,
                                    G_GNUC_UNUSED gpointer data)
 {
 	PidginAccountManager *manager = PIDGIN_ACCOUNT_MANAGER(dialog);
-	PurpleAccount *account = NULL;
-	PurpleNotificationManager *notification_manager = NULL;
-	GtkWidget *editor = NULL;
 
 	switch(response_id) {
 		case RESPONSE_ADD:
-			editor = pidgin_account_editor_new(NULL);
-			gtk_window_set_transient_for(GTK_WINDOW(editor),
-			                             GTK_WINDOW(dialog));
-			gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
+			pidgin_account_manager_create_account(manager);
 			break;
 		case RESPONSE_MODIFY:
-			account = pidgin_account_manager_get_selected_account(manager);
-
-			editor = pidgin_account_editor_new(account);
-			gtk_window_set_transient_for(GTK_WINDOW(editor),
-			                             GTK_WINDOW(dialog));
-			gtk_window_present_with_time(GTK_WINDOW(editor), GDK_CURRENT_TIME);
-
-			g_clear_object(&account);
+			pidgin_account_manager_edit_selected_account(manager);
 			break;
 		case RESPONSE_REMOVE:
-			account = pidgin_account_manager_get_selected_account(manager);
-
-			notification_manager = purple_notification_manager_get_default();
-			purple_notification_manager_remove_with_account(notification_manager,
-			                                                account, TRUE);
-			purple_accounts_delete(account);
-
-			g_clear_object(&account);
-
+			pidgin_account_manager_remove_selected_account(manager);
 			break;
 		case GTK_RESPONSE_CLOSE:
 		case GTK_RESPONSE_DELETE_EVENT:
