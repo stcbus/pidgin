@@ -225,9 +225,6 @@ if ENABLE_GTK
 		talkatu_dep,
 		libpurple_dep,
 	]
-	if x11.found()
-		_libpidgin_dependencies += x11
-	endif
 
 	libpidgin_built_sources = [
 		libpidgin_enums_c,

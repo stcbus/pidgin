@@ -1,6 +1,11 @@
+notify_plugin_deps = [libpurple_dep, libpidgin_dep, glib]
+if x11.found()
+  notify_plugin_deps += x11
+endif
+
 notify = library('notify', 'notify.c',
     c_args : ['-DG_LOG_USE_STRUCTURED', '-DG_LOG_DOMAIN="PidginPlugin-Notify"'],
-    dependencies : [libpurple_dep, libpidgin_dep, glib],
+    dependencies : notify_plugin_deps,
     name_prefix : '',
     build_by_default: false,
     install : false, install_dir : PIDGIN_PLUGINDIR)
