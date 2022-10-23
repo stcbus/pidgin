@@ -170,11 +170,24 @@ purple_buddy_constructed(GObject *object) {
 	G_OBJECT_CLASS(purple_buddy_parent_class)->constructed(object);
 
 	if(priv->id == NULL) {
-		gchar *id = g_uuid_string_random();
+		/* If there is no id for the user, generate a SHA256 based on the
+		 * account_id and the username.
+		 */
+		GChecksum *sum = g_checksum_new(G_CHECKSUM_SHA256);
+		const guchar *data = NULL;
 
-		purple_buddy_set_id(buddy, id);
+		data = (const guchar *)purple_account_get_protocol_id(priv->account);
+		g_checksum_update(sum, data, -1);
 
-		g_free(id);
+		data = (const guchar *)purple_account_get_username(priv->account);
+		g_checksum_update(sum, data, -1);
+
+		data = (const guchar *)priv->name;
+		g_checksum_update(sum, data, -1);
+
+		purple_buddy_set_id(buddy, g_checksum_get_string(sum));
+
+		g_checksum_free(sum);
 	}
 
 	priv->presence = PURPLE_PRESENCE(purple_buddy_presence_new(buddy));
@@ -247,7 +260,7 @@ static void purple_buddy_class_init(PurpleBuddyClass *klass) {
 		"name", "Name",
 		"The name of the buddy.",
 		NULL,
-		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	properties[PROP_LOCAL_ALIAS] = g_param_spec_string(
 		"local-alias", "Local alias",
