@@ -25,7 +25,6 @@
 #include <purple.h>
 
 #include <adwaita.h>
-#include <nice.h>
 
 #include "pidginnetworkprefs.h"
 #include "pidginprefsinternal.h"
@@ -123,13 +122,7 @@ auto_ip_button_clicked_cb(G_GNUC_UNUSED GObject *obj,
 				/* Attempt to get the IP from a NAT device using NAT-PMP */
 				ip = purple_pmp_get_public_ip();
 				if (ip == NULL) {
-					/* Just fetch the first IP of the local system */
-					list = nice_interfaces_get_local_ips(FALSE);
-					if (list) {
-						ip = list->data;
-					} else {
-						ip = "0.0.0.0";
-					}
+					ip = "0.0.0.0";
 				}
 			}
 		}

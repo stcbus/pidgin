@@ -24,8 +24,6 @@
 
 #include <sys/types.h>
 
-#include <nice.h>
-
 #include <purple.h>
 
 #include "bonjour.h"
@@ -938,7 +936,8 @@ bonjour_bytestreams_init(PurpleXfer *xfer)
 
 	purple_xfer_set_local_port(xfer, port);
 
-	local_ips = nice_interfaces_get_local_ips(FALSE);
+	# warning Need to figure out how to get the local ip addresses
+	local_ips = NULL;
 
 	port_str = g_strdup_printf("%hu", port);
 	while(local_ips) {

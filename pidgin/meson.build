@@ -220,7 +220,6 @@ if ENABLE_GTK
 		json,
 		libadwaita,
 		math,
-		nice,
 		libsoup,
 		talkatu_dep,
 		libpurple_dep,
