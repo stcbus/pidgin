@@ -547,8 +547,7 @@ sasl = dependency('libsasl2', version : '>= 2.0')
 # Check for external libzephyr
 #######################################################################
 ext_zephyr = dependency('zephyr', required : get_option('zephyr'))
-EXTERNAL_LIBZEPHYR = ext_zephyr.found()
-conf.set('LIBZEPHYR_EXT', EXTERNAL_LIBZEPHYR)
+conf.set('LIBZEPHYR_EXT', ext_zephyr.found())
 
 #######################################################################
 # Check for Kerberos (for Zephyr)
@@ -668,6 +667,8 @@ summary({
     'datadir': get_option('datadir'),
 }, section : 'Directories')
 
+# TODO: Remove `.found()` once https://github.com/mesonbuild/meson/pull/10949
+# is merged and in a release that we require.
 summary({
     'GTK': get_option('gtkui'),
     'console': enable_consoleui,
@@ -676,11 +677,13 @@ summary({
 
 summary({
     'Dynamic protocols': DYNAMIC_PRPLS,
-    'Cyrus SASL support (IRC and XMPP)': sasl.found(),
-    'External libzephyr': EXTERNAL_LIBZEPHYR,
+    'Cyrus SASL support (IRC and XMPP)': sasl,
+    'External libzephyr': ext_zephyr,
     'Use kerberos 4 with zephyr': kerberos,
 }, section: 'Protocol Support', bool_yn: true, list_sep: ', ')
 
+# TODO: Remove `.found()` once https://github.com/mesonbuild/meson/pull/10949
+# is merged and in a release that we require.
 summary({
     'KWallet credential provider': kwallet.found(),
     'libsecret credential provider': libsecret.found(),

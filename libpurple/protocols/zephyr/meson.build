@@ -63,7 +63,7 @@ ZEPHYR_SOURCES = [
 ]
 
 extdep = krb4
-if EXTERNAL_LIBZEPHYR
+if ext_zephyr.found()
 	extdep = ext_zephyr
 else
 	ZEPHYR_SOURCES += ZEPHYR_INTERNAL_SOURCES

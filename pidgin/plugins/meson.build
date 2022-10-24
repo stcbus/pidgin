@@ -5,7 +5,5 @@ subdir('iconaway')
 subdir('notify')
 subdir('spellchk')
 subdir('transparency')
-if enable_unity
-	subdir('unity')
-endif
+subdir('unity', if_found : UNITY)
 subdir('xmppconsole')
