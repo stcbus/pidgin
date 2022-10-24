@@ -116,14 +116,10 @@ auto_ip_button_clicked_cb(G_GNUC_UNUSED GObject *obj,
 		if ((stun != NULL) && (stun->status == PURPLE_STUN_STATUS_DISCOVERED)) {
 			ip = stun->publicip;
 		} else {
-			/* Attempt to get the IP from a NAT device using UPnP */
-			ip = purple_upnp_get_public_ip();
+			/* Attempt to get the IP from a NAT device using NAT-PMP */
+			ip = purple_pmp_get_public_ip();
 			if (ip == NULL) {
-				/* Attempt to get the IP from a NAT device using NAT-PMP */
-				ip = purple_pmp_get_public_ip();
-				if (ip == NULL) {
-					ip = "0.0.0.0";
-				}
+				ip = "0.0.0.0";
 			}
 		}
 	} else {

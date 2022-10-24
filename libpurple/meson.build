@@ -101,7 +101,6 @@ purple_coresources = [
 	'signals.c',
 	'status.c',
 	'stun.c',
-	'upnp.c',
 	'util.c',
 	'version.c',
 	'xfer.c',
@@ -210,7 +209,6 @@ purple_coreheaders = [
 	'status.h',
 	'stun.h',
 	'tests.h',
-	'upnp.h',
 	'util.h',
 	'xfer.h',
 	'xmlnode.h',
@@ -323,9 +321,9 @@ libpurple = library('purple',
                     install : true,
                     version : PURPLE_LIB_VERSION,
                     dependencies : # static_link_libs
-                        [dnsapi, ws2_32, glib, gio, gplugin_dep, gupnp,
-                         gupnp_igd, libsoup, libxml, gdk_pixbuf, gstreamer,
-                         gstreamer_app, json, sqlite3, math])
+                        [dnsapi, ws2_32, glib, gio, gplugin_dep, libsoup,
+                         libxml, gdk_pixbuf, gstreamer, gstreamer_app, json,
+                         sqlite3, math])
 
 install_headers(purple_coreheaders,
                 subdir : purple_include_base)

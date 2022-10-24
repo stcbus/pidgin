@@ -306,7 +306,6 @@ libpurple/tests/test_ui.c
 libpurple/tests/test_util.c
 libpurple/tests/test_whiteboard_manager.c
 libpurple/tests/test_xmlnode.c
-libpurple/upnp.c
 libpurple/util.c
 libpurple/version.c
 libpurple/win32/libc_interface.c

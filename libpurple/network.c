@@ -46,7 +46,6 @@
 #include "network.h"
 #include "prefs.h"
 #include "stun.h"
-#include "upnp.h"
 
 static gboolean force_online = FALSE;
 
@@ -134,12 +133,6 @@ purple_network_discover_my_ip(void)
 		return;
 	}
 
-	/* Attempt to get the IP from a NAT device using UPnP */
-	ip = purple_upnp_get_public_ip();
-	if (ip != NULL) {
-		return;
-	}
-
 	/* Attempt to get the IP from a NAT device using NAT-PMP */
 	ip = purple_pmp_get_public_ip();
 	if (ip != NULL) {
@@ -165,12 +158,6 @@ purple_network_get_my_ip_from_gio(GSocketConnection *sockconn)
 		stun = purple_stun_discover(NULL);
 		if ((stun != NULL) && (stun->status == PURPLE_STUN_STATUS_DISCOVERED)) {
 			return g_strdup(stun->publicip);
-		}
-
-		/* Attempt to get the IP from a NAT device using UPnP */
-		ip = purple_upnp_get_public_ip();
-		if (ip != NULL) {
-			return g_strdup(ip);
 		}
 
 		/* Attempt to get the IP from a NAT device using NAT-PMP */
@@ -325,11 +312,7 @@ purple_network_init(void)
 	purple_prefs_add_int   ("/purple/network/ports_range_start", 1024);
 	purple_prefs_add_int   ("/purple/network/ports_range_end", 2048);
 
-	if(purple_prefs_get_bool("/purple/network/map_ports") || purple_prefs_get_bool("/purple/network/auto_ip"))
-		purple_upnp_discover(NULL, NULL);
-
 	purple_pmp_init();
-	purple_upnp_init();
 
 	purple_network_set_stun_server(
 		purple_prefs_get_string("/purple/network/stun_server"));
@@ -342,9 +325,4 @@ purple_network_uninit(void)
 {
 	g_free(stun_ip);
 	g_free(turn_ip);
-
-	/* TODO: clean up remaining port mappings, note calling
-	 purple_upnp_remove_port_mapping from here doesn't quite work... */
-
-	purple_upnp_uninit();
 }
