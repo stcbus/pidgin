@@ -26,9 +26,6 @@
 
 G_BEGIN_DECLS
 
-/* sys/socket.h */
-int wpurple_getsockname (int socket, struct sockaddr *addr, socklen_t *lenptr);
-
 /* netdb.h */
 struct hostent* wpurple_gethostbyname(const char *name);
 

@@ -42,15 +42,6 @@
 # define S_ISDIR(m) (((m)&S_IFDIR)==S_IFDIR)
 #endif
 
-/* socket.h */
-int wpurple_getsockname(int socket, struct sockaddr *addr, socklen_t *lenptr) {
-        if(getsockname(socket, addr, lenptr) == SOCKET_ERROR) {
-                errno = WSAGetLastError();
-                return -1;
-        }
-        return 0;
-}
-
 /* fcntl.h */
 /* This is not a full implementation of fcntl. Update as needed.. */
 int wpurple_fcntl(int socket, int command, ...) {

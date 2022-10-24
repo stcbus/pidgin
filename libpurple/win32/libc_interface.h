@@ -45,10 +45,6 @@ G_BEGIN_DECLS
 #define F_OK 0
 #endif
 
-/* sys/socket.h */
-#define getsockname( socket, addr, lenptr ) \
-wpurple_getsockname( socket, addr, lenptr )
-
 /* fcntl.h */
 #define fcntl( fd, command, ... ) \
 wpurple_fcntl( fd, command, ##__VA_ARGS__ )
