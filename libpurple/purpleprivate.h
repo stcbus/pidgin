@@ -374,6 +374,21 @@ void purple_whiteboard_manager_startup(void);
  */
 void purple_whiteboard_manager_shutdown(void);
 
+/**
+ * purple_account_set_enabled_plain:
+ * @account: The instance.
+ * @enabled: Whether or not the account is enabled.
+ *
+ * This is a temporary method until we overhaul serialization of accounts.
+ *
+ * This method sets the enabled state of an account without any side effects.
+ * Its primary usage is when loading accounts from disk, as without this, the
+ * account attempts to connect immediately.
+ *
+ * Since: 3.0.0
+ */
+G_GNUC_INTERNAL void purple_account_set_enabled_plain(PurpleAccount *account, gboolean enabled);
+
 G_END_DECLS
 
 #endif /* PURPLE_PRIVATE_H */

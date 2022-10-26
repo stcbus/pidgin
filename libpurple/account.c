@@ -1007,6 +1007,20 @@ purple_account_class_init(PurpleAccountClass *klass)
 }
 
 /******************************************************************************
+ * Private API
+ *****************************************************************************/
+
+/* This is a temporary method that the deserializer can call to set the
+ * enabled property without bringing the account online.
+ */
+void
+purple_account_set_enabled_plain(PurpleAccount *account, gboolean enabled) {
+	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
+
+	account->enabled = enabled;
+}
+
+/******************************************************************************
  * Public API
  *****************************************************************************/
 PurpleAccount *

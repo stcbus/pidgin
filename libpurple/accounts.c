@@ -356,9 +356,10 @@ parse_account(PurpleXmlNode *node)
 		"id", id,
 		"username", name,
 		"protocol-id", protocol_id,
-		"enabled", enabled,
 		"require-password", require_password,
 		NULL);
+
+	purple_account_set_enabled_plain(ret, enabled);
 
 	g_free(id);
 	g_free(name);
