@@ -101,6 +101,63 @@ soup_message_set_request_body_from_bytes(SoupMessage *msg,
 	                         data, length);
 }
 
+static inline void
+soup_session_send_and_read_async_cancel_cb(GCancellable *cancellable,
+                                           gpointer data)
+{
+	GTask *task = data;
+	SoupSession *session = g_task_get_source_object(task);
+	SoupMessage *msg = g_task_get_task_data(task);
+
+	soup_session_cancel_message(session, msg, SOUP_STATUS_CANCELLED);
+}
+
+static inline void
+soup_session_send_and_read_sync_cb(SoupSession *session, SoupMessage *msg,
+                                   gpointer data)
+{
+	GTask *task = data;
+
+	if(SOUP_STATUS_IS_SUCCESSFUL(msg->status_code)) {
+		GBytes *bytes = g_bytes_new(msg->response_body->data,
+		                            msg->response_body->length);
+		g_task_return_pointer(task, bytes, (GDestroyNotify)g_bytes_unref);
+	} else {
+		g_task_return_new_error(task, SOUP_HTTP_ERROR, msg->status_code,
+		                        "SoupMessage returned failure: (%d) %s",
+		                        msg->status_code, msg->reason_phrase);
+	}
+
+	g_object_unref(task);
+}
+
+static inline GBytes *
+soup_session_send_and_read_finish(SoupSession *session, GAsyncResult *result,
+                                  GError **error)
+{
+	g_return_val_if_fail(SOUP_IS_SESSION(session), NULL);
+
+	return g_task_propagate_pointer(G_TASK(result), error);
+}
+
+static inline void
+soup_session_send_and_read_async(SoupSession *session, SoupMessage *msg,
+                                 gint priority, GCancellable *cancellable,
+                                 GAsyncReadyCallback cb, gpointer data)
+{
+	GTask *task = NULL;
+
+	task = g_task_new(session, cancellable, cb, data);
+	g_task_set_priority(task, priority);
+	g_task_set_task_data(task, g_object_ref(msg), g_object_unref);
+	g_cancellable_connect(cancellable,
+	                      G_CALLBACK(soup_session_send_and_read_async_cancel_cb),
+	                      g_object_ref(task), g_object_unref);
+
+	soup_session_queue_message(session, msg,
+	                           soup_session_send_and_read_sync_cb, task);
+}
+
 #endif /* SOUP_MAJOR_VERSION < 3 */
 
 #endif /* PURPLE_SOUPCOMPAT_H */
