@@ -115,17 +115,7 @@ else
 endif
 
 # Checks for header files.
-# AC_HEADER_SYS_WAIT:
-conf.set('HAVE_SYS_WAIT_H', compiler.has_header('sys/wait.h'))
 conf.set('HAVE_UNISTD_H', compiler.has_header('unistd.h'))
-
-foreach h : ['fcntl.h', 'stdint.h']
-	if compiler.has_header(h)
-		conf.set('HAVE_' + h.to_upper().underscorify(), true)
-	else
-		error(h + ' is required.')
-	endif
-endforeach
 
 # Checks for typedefs, structures, and compiler characteristics.
 time_t_size = compiler.sizeof('time_t',
@@ -134,8 +124,6 @@ time_t_size = compiler.sizeof('time_t',
 #include <time.h>
 ''')
 conf.set('SIZEOF_TIME_T', time_t_size)
-
-conf.set('WORDS_BIGENDIAN', host_machine.endian() != 'little')
 
 # Check for directories
 if IS_WIN32
@@ -516,22 +504,10 @@ endif
 #######################################################################
 # Check for Cyrus-SASL (for xmpp/irc)
 #######################################################################
-foreach func : ['snprintf']
-	conf.set('HAVE_' + func.to_upper(),
-	    compiler.has_function(func))
-endforeach
 sasl = dependency('libsasl2', version : '>= 2.0')
 
 #AC_MSG_CHECKING(for me pot o' gold)
 #AC_MSG_RESULT(no)
-foreach func : ['timegm']
-	conf.set('HAVE_' + func.to_upper(),
-	    compiler.has_function(func))
-endforeach
-foreach header : 'sgtty.h sys/cdefs.h sys/file.h sys/filio.h sys/msgbuf.h sys/select.h sys/wait.h termios.h'.split()
-	conf.set('HAVE_' + header.to_upper().underscorify(),
-	    compiler.has_header(header))
-endforeach
 
 # OpenBSD 6.7 and FreeBSD 12 require including sys/types.h before sys/sysctl.h.
 # NetBSD 9.0 doesn't care.
@@ -545,8 +521,6 @@ if host_machine.system() in ['freebsd', 'openbsd']
 	conf.set('HAVE_SYS_SOCKET_H',
 	    compiler.has_header('sys/socket.h'))
 endif
-
-#AC_VAR_TIMEZONE_EXTERNALS
 
 #######################################################################
 # Documentation
