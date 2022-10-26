@@ -411,26 +411,6 @@ void purple_account_set_status_attrs(PurpleAccount *account,
 	const char *status_id, gboolean active, GHashTable *attrs);
 
 /**
- * purple_account_get_silence_suppression:
- * @account: The account.
- *
- * Return whether silence suppression is used during voice call.
- *
- * Returns: %TRUE if suppression is used, or %FALSE if not.
- */
-gboolean purple_account_get_silence_suppression(PurpleAccount *account);
-
-/**
- * purple_account_set_silence_suppression:
- * @account: The account.
- * @value:   %TRUE if suppression should be used.
- *
- * Sets whether silence suppression is used during voice call.
- */
-void purple_account_set_silence_suppression(PurpleAccount *account,
-											gboolean value);
-
-/**
  * purple_account_clear_settings:
  * @account: The account.
  *

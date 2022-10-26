@@ -1546,20 +1546,6 @@ purple_account_set_status_attrs(PurpleAccount *account, const char *status_id,
 	purple_accounts_schedule_save();
 }
 
-gboolean
-purple_account_get_silence_suppression(PurpleAccount *account)
-{
-	return purple_account_get_bool(account, "silence-suppression", FALSE);
-}
-
-void
-purple_account_set_silence_suppression(PurpleAccount *account, gboolean value)
-{
-	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
-
-	purple_account_set_bool(account, "silence-suppression", value);
-}
-
 void
 purple_account_clear_settings(PurpleAccount *account)
 {
