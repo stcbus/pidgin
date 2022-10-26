@@ -28,10 +28,14 @@
 #include "iq.h"
 #include "oob.h"
 
+/* Number of bytes to read asynchronously per chunk. */
+#define JABBER_OOB_READ_SIZE (1024*1024)
+
 struct _JabberOOBXfer {
 	JabberStream *js;
 	gchar *iq_id;
 	gchar *url;
+	GCancellable *cancellable;
 	SoupMessage *msg;
 };
 
@@ -53,6 +57,100 @@ static void jabber_oob_xfer_end(PurpleXfer *xfer)
 
 	jabber_iq_send(iq);
 }
+
+static void
+jabber_oob_xfer_got_content_length(SoupMessage *msg, gpointer user_data)
+{
+	PurpleXfer *xfer = user_data;
+	SoupMessageHeaders *headers;
+	goffset total;
+
+	headers = soup_message_get_response_headers(msg);
+	total = soup_message_headers_get_content_length(headers);
+
+	purple_xfer_set_size(xfer, total);
+}
+
+#if SOUP_MAJOR_VERSION >= 3
+static void
+jabber_oob_xfer_writer(GObject *source, GAsyncResult *result, gpointer data) {
+	GInputStream *input = G_INPUT_STREAM(source);
+	PurpleXfer *xfer = data;
+	JabberOOBXfer *jox = JABBER_OOB_XFER(xfer);
+	GBytes *bytes = NULL;
+	GError *error = NULL;
+	gpointer buffer = NULL;
+	gsize size = 0;
+
+	bytes = g_input_stream_read_bytes_finish(input, result, &error);
+	if(bytes == NULL || error != NULL) {
+		purple_debug_error("jabber", "Error reading OOB data: %s",
+		                   error ? error->message : "unknown error");
+		purple_xfer_set_status(xfer, PURPLE_XFER_STATUS_CANCEL_REMOTE);
+		purple_xfer_end(xfer);
+		g_clear_pointer(&bytes, g_bytes_unref);
+		g_clear_object(&input);
+		jox->msg = NULL;
+		return;
+	}
+
+	buffer = g_bytes_unref_to_data(bytes, &size);
+
+	/* We've reached the end of the file. */
+	if(size == 0) {
+		purple_xfer_set_completed(xfer, TRUE);
+		purple_xfer_end(xfer);
+		g_clear_object(&input);
+		jox->msg = NULL;
+		return;
+	}
+
+	if (!purple_xfer_write_file(xfer, buffer, size)) {
+		purple_xfer_set_status(xfer, PURPLE_XFER_STATUS_CANCEL_LOCAL);
+		purple_xfer_end(xfer);
+		g_clear_object(&input);
+		jox->msg = NULL;
+		return;
+	}
+
+	/* Asynchronously read the next chunk of data. */
+	g_input_stream_read_bytes_async(input, JABBER_OOB_READ_SIZE,
+	                                G_PRIORITY_DEFAULT, jox->cancellable,
+	                                jabber_oob_xfer_writer, xfer);
+}
+
+static void
+jabber_oob_xfer_send_cb(GObject *source, GAsyncResult *result, gpointer data) {
+	PurpleXfer *xfer = data;
+	JabberOOBXfer *jox = JABBER_OOB_XFER(xfer);
+	GInputStream *input = NULL;
+	GError *error = NULL;
+
+	if(!SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(jox->msg))) {
+		purple_xfer_set_status(xfer, PURPLE_XFER_STATUS_CANCEL_REMOTE);
+		purple_xfer_end(xfer);
+		jox->msg = NULL;
+		return;
+	}
+
+	input = soup_session_send_finish(SOUP_SESSION(source), result, &error);
+	if(input == NULL || error != NULL) {
+		purple_debug_error("jabber", "Error sending OOB request: %s",
+		                   error ? error->message : "unknown error");
+		purple_xfer_set_status(xfer, PURPLE_XFER_STATUS_CANCEL_REMOTE);
+		purple_xfer_end(xfer);
+		g_clear_object(&input);
+		jox->msg = NULL;
+		return;
+	}
+
+	/* Asynchronously read an initial chunk of data. */
+	g_input_stream_read_bytes_async(input, JABBER_OOB_READ_SIZE,
+	                                G_PRIORITY_DEFAULT, jox->cancellable,
+	                                jabber_oob_xfer_writer, xfer);
+}
+
+#else /* SOUP_MAJOR_VERSION < 3 */
 
 static void
 jabber_oob_xfer_got(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
@@ -78,19 +176,6 @@ jabber_oob_xfer_got(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
 }
 
 static void
-jabber_oob_xfer_got_content_length(SoupMessage *msg, gpointer user_data)
-{
-	PurpleXfer *xfer = user_data;
-	SoupMessageHeaders *headers;
-	goffset total;
-
-	headers = soup_message_get_response_headers(msg);
-	total = soup_message_headers_get_content_length(headers);
-
-	purple_xfer_set_size(xfer, total);
-}
-
-static void
 jabber_oob_xfer_writer(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 {
 	PurpleXfer *xfer = user_data;
@@ -102,6 +187,7 @@ jabber_oob_xfer_writer(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 		                            SOUP_STATUS_IO_ERROR);
 	}
 }
+#endif
 
 static void jabber_oob_xfer_start(PurpleXfer *xfer)
 {
@@ -112,11 +198,16 @@ static void jabber_oob_xfer_start(PurpleXfer *xfer)
 	soup_message_add_header_handler(
 	        msg, "got-headers", "Content-Length",
 	        G_CALLBACK(jabber_oob_xfer_got_content_length), xfer);
+#if SOUP_MAJOR_VERSION >= 3
+	soup_session_send_async(jox->js->http_conns, msg, G_PRIORITY_DEFAULT,
+	                        jox->cancellable, jabber_oob_xfer_send_cb, xfer);
+#else
 	soup_message_body_set_accumulate(msg->response_body, FALSE);
 	g_signal_connect(msg, "got-chunk", G_CALLBACK(jabber_oob_xfer_writer),
 	                 xfer);
 	soup_session_queue_message(jox->js->http_conns, msg, jabber_oob_xfer_got,
 	                           xfer);
+#endif
 }
 
 static void jabber_oob_xfer_recv_error(PurpleXfer *xfer, const char *code) {
@@ -148,8 +239,13 @@ static void jabber_oob_xfer_recv_denied(PurpleXfer *xfer) {
 static void jabber_oob_xfer_recv_cancelled(PurpleXfer *xfer) {
 	JabberOOBXfer *jox = JABBER_OOB_XFER(xfer);
 
+#if SOUP_MAJOR_VERSION >= 3
+	g_cancellable_cancel(jox->cancellable);
+#else
 	soup_session_cancel_message(jox->js->http_conns, jox->msg,
 	                            SOUP_STATUS_CANCELLED);
+#endif
+
 	jabber_oob_xfer_recv_error(xfer, "404");
 }
 
@@ -201,7 +297,9 @@ void jabber_oob_parse(JabberStream *js, const char *from, JabberIqType type,
 
 static void
 jabber_oob_xfer_init(JabberOOBXfer *xfer) {
-
+#if SOUP_MAJOR_VERSION >= 3
+	xfer->cancellable = g_cancellable_new();
+#endif
 }
 
 static void
@@ -213,6 +311,10 @@ jabber_oob_xfer_finalize(GObject *obj) {
 
 	g_free(jox->iq_id);
 	g_free(jox->url);
+	if(jox->cancellable != NULL) {
+		g_cancellable_cancel(jox->cancellable);
+	}
+	g_clear_object(&jox->cancellable);
 
 	G_OBJECT_CLASS(jabber_oob_xfer_parent_class)->finalize(obj);
 }
