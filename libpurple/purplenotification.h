@@ -112,10 +112,10 @@ PurpleNotification *purple_notification_new_from_authorization_request(PurpleAut
 /**
  * purple_notification_new_from_connection_error:
  * @account: The [class@Purple.Account] that had the connection error.
- * @error_info: The [struct@Purple.ConnectionErrorInfo] for the error.
+ * @info: The [struct@Purple.ConnectionErrorInfo] for the error.
  *
- * Creates a new [class@Purple.Notification] for @account with the @error_info
- * for the connection. This helper will automatically fill out the notification
+ * Creates a new [class@Purple.Notification] for @account with the @info for
+ * the connection. This helper will automatically fill out the notification
  * according to the given parameters.
  *
  * Returns: (transfer full): The new notification.
