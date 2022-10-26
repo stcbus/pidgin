@@ -174,14 +174,6 @@ libpurple/protocols/novell/novell.c
 libpurple/protocols/sametime/im_mime.c
 libpurple/protocols/sametime/sametime.c
 libpurple/protocols/sametime/tests/test_sametime_im_mime.c
-libpurple/protocols/silc/buddy.c
-libpurple/protocols/silc/chat.c
-libpurple/protocols/silc/ft.c
-libpurple/protocols/silc/ops.c
-libpurple/protocols/silc/pk.c
-libpurple/protocols/silc/silc.c
-libpurple/protocols/silc/util.c
-libpurple/protocols/silc/wb.c
 libpurple/protocols/zephyr/ZAsyncLocate.c
 libpurple/protocols/zephyr/ZCkAuth.c
 libpurple/protocols/zephyr/ZCkIfNot.c

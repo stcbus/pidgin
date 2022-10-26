@@ -340,12 +340,6 @@ else
 	enable_avahi = avahi_client.found() and avahi_glib.found()
 endif
 
-
-#######################################################################
-# Check for SILC client includes and libraries
-#######################################################################
-silc = dependency('silcclient', version : '>= 1.1.1', required : get_option('silc'))
-
 #######################################################################
 # Check for Gadu-Gadu protocol library (libgadu)
 #######################################################################
@@ -370,7 +364,7 @@ endif
 
 
 DEFAULT_PRPLS = ['bonjour', 'demo', 'facebook', 'gg', 'irc', 'ircv3', 'jabber',
-                 'novell', 'null', 'sametime', 'silc', 'zephyr']
+                 'novell', 'null', 'sametime', 'zephyr']
 ALL_PRPLS = DEFAULT_PRPLS + ['null']
 
 dynamic_list = get_option('dynamic-prpls').split(',')
@@ -384,8 +378,6 @@ foreach prpl : dynamic_list
 	elif prpl == 'sametime' and not enable_meanwhile
 		# Do nothing.
 	elif prpl == 'bonjour' and not enable_avahi
-		# Do nothing.
-	elif prpl == 'silc' and not silc.found()
 		# Do nothing.
 	elif prpl == 'gg' and not libgadu.found()
 		# Do nothing.
@@ -406,7 +398,6 @@ DYNAMIC_JABBER = DYNAMIC_PRPLS.contains('jabber')
 DYNAMIC_NOVELL = DYNAMIC_PRPLS.contains('novell')
 DYNAMIC_NULL = DYNAMIC_PRPLS.contains('null')
 DYNAMIC_SAMETIME = DYNAMIC_PRPLS.contains('sametime')
-DYNAMIC_SILC = DYNAMIC_PRPLS.contains('silc')
 DYNAMIC_ZEPHYR = DYNAMIC_PRPLS.contains('zephyr')
 
 conf.set('HAVE_SYS_UTSNAME_H',

@@ -46,9 +46,6 @@ option('libgadu', type : 'feature',
 option('meanwhile', type : 'feature',
        description : 'compile with meanwhile')
 
-option('silc', type : 'feature',
-       description : 'compile with SILC plugin')
-
 option('zephyr', type : 'feature',
        description : 'compile Zephyr plugin against external libzephyr')
 
