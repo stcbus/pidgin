@@ -37,17 +37,11 @@ option('avahi', type : 'feature',
 option('dynamic-prpls', type : 'string', value: 'all',
        description : 'specify which protocols to build dynamically')
 
-option('krb4', type : 'boolean', value : false,
-       description : 'compile Zephyr plugin with Kerberos 4 support')
-
 option('libgadu', type : 'feature',
        description : 'compile with libgadu (required for GaduGadu support)')
 
 option('meanwhile', type : 'feature',
        description : 'compile with meanwhile')
-
-option('zephyr', type : 'feature',
-       description : 'compile Zephyr plugin against external libzephyr')
 
 ##############################################################################
 # Pidgin Options

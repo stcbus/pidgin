@@ -63,7 +63,7 @@ G_DECLARE_DERIVABLE_TYPE(PurpleProtocol, purple_protocol, PURPLE, PROTOCOL,
  * @OPT_PROTO_CHAT_TOPIC: Chat rooms have topics.<sbr/>
  *           IRC and XMPP support this.
  * @OPT_PROTO_NO_PASSWORD: Don't require passwords for sign-in.<sbr/>
- *           Zephyr doesn't require passwords, so there's no need for a
+ *           IRC doesn't require passwords, so there's no need for a
  *           password prompt.
  * @OPT_PROTO_MAIL_CHECK: Notify on new mail.<sbr/>
  *           MSN and Yahoo notify you when you have new mail.

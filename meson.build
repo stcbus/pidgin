@@ -364,7 +364,7 @@ endif
 
 
 DEFAULT_PRPLS = ['bonjour', 'demo', 'facebook', 'gg', 'irc', 'ircv3', 'jabber',
-                 'novell', 'null', 'sametime', 'zephyr']
+                 'novell', 'null', 'sametime']
 ALL_PRPLS = DEFAULT_PRPLS + ['null']
 
 dynamic_list = get_option('dynamic-prpls').split(',')
@@ -381,8 +381,6 @@ foreach prpl : dynamic_list
 		# Do nothing.
 	elif prpl == 'gg' and not libgadu.found()
 		# Do nothing.
-	elif prpl == 'zephyr' and IS_WIN32
-		# Do nothing.
 	else
 		DYNAMIC_PRPLS += [prpl]
 	endif
@@ -398,7 +396,6 @@ DYNAMIC_JABBER = DYNAMIC_PRPLS.contains('jabber')
 DYNAMIC_NOVELL = DYNAMIC_PRPLS.contains('novell')
 DYNAMIC_NULL = DYNAMIC_PRPLS.contains('null')
 DYNAMIC_SAMETIME = DYNAMIC_PRPLS.contains('sametime')
-DYNAMIC_ZEPHYR = DYNAMIC_PRPLS.contains('zephyr')
 
 conf.set('HAVE_SYS_UTSNAME_H',
     compiler.has_header('sys/utsname.h'))
@@ -525,49 +522,6 @@ foreach func : ['snprintf']
 endforeach
 sasl = dependency('libsasl2', version : '>= 2.0')
 
-#######################################################################
-# Check for external libzephyr
-#######################################################################
-ext_zephyr = dependency('zephyr', required : get_option('zephyr'))
-conf.set('LIBZEPHYR_EXT', ext_zephyr.found())
-
-#######################################################################
-# Check for Kerberos (for Zephyr)
-#######################################################################
-conf.set('ZEPHYR_INT32', 'long')
-#AC_SUBST(KRB4_CFLAGS)
-#AC_SUBST(KRB4_LDFLAGS)
-#AC_SUBST(KRB4_LIBS)
-kerberos = get_option('krb4')
-if kerberos
-	if kerberos != 'yes'
-#		KRB4_CFLAGS='-I${kerberos}/include'
-#		if test -d '$kerberos/include/kerberosIV' ; then
-#			KRB4_CFLAGS='$KRB4_CFLAGS -I${kerberos}/include/kerberosIV'
-#		fi
-#		KRB4_LDFLAGS='-L${kerberos}/lib'
-	elif run_command('test', '-d', '/usr/local/include/kerberosIV').returncode() == 0
-#		KRB4_CFLAGS='-I/usr/local/include/kerberosIV'
-	elif run_command('test', '-d', '/usr/include/kerberosIV').returncode() == 0
-#		KRB4_CFLAGS='-I/usr/include/kerberosIV'
-	endif
-	conf.set('ZEPHYR_USES_KERBEROS', true)
-
-#	AC_CHECK_LIB(krb4, krb_rd_req,
-#			[KRB4_LIBS='-lkrb4 -ldes425 -lkrb5 -lk5crypto -lcom_err'],
-#			[AC_CHECK_LIB(krb, krb_rd_req,
-#				[KRB4_LIBS='-lkrb -ldes'],
-#				[AC_MSG_ERROR([Kerberos 4 libraries not found])],
-#				-ldes)],
-#			-ldes425 -lkrb5 -lk5crypto -lcom_err)
-#	AC_CHECK_FUNCS(krb_set_key krb_rd_req krb_get_lrealm)
-#	AC_CHECK_FUNCS(krb_get_err_text krb_log)
-	krb4 = []
-endif
-if not kerberos
-	krb4 = []
-endif
-
 #AC_MSG_CHECKING(for me pot o' gold)
 #AC_MSG_RESULT(no)
 foreach func : ['timegm']
@@ -660,8 +614,6 @@ summary({
 summary({
     'Dynamic protocols': DYNAMIC_PRPLS,
     'Cyrus SASL support (IRC and XMPP)': sasl,
-    'External libzephyr': ext_zephyr,
-    'Use kerberos 4 with zephyr': kerberos,
 }, section: 'Protocol Support', bool_yn: true, list_sep: ', ')
 
 # TODO: Remove `.found()` once https://github.com/mesonbuild/meson/pull/10949

@@ -4,7 +4,7 @@ GenericName=Internet Messenger
 X-GNOME-FullName=Pidgin Internet Messenger
 Comment=Chat over IM.  Supports XMPP, IRC, and more
 # TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-Keywords=chat;talk;im;message;bonjour;gadu-gadu;irc;groupwise;jabber;sametime;simple;xmpp;zephyr
+Keywords=chat;talk;im;message;bonjour;gadu-gadu;irc;groupwise;jabber;sametime;simple;xmpp
 Exec=pidgin3 %U
 Icon=im.pidgin.Pidgin3
 StartupNotify=true
