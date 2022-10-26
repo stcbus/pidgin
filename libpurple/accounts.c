@@ -574,7 +574,7 @@ purple_accounts_restore_current_status(PurpleAccount *account,
 }
 
 void
-purple_accounts_restore_current_statuses() {
+purple_accounts_restore_current_statuses(void) {
 	PurpleAccountManager *manager = NULL;
 
 	/* If we're not connected to the Internet right now, we bail on this */

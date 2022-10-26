@@ -45,7 +45,7 @@ static int count = 0;
 /* API functions */
 
 NMUserRecord *
-nm_create_user_record()
+nm_create_user_record(void)
 {
 	NMUserRecord *user_record = g_new0(NMUserRecord, 1);
 

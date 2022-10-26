@@ -59,7 +59,7 @@ static void _add_folders(NMFolder * root, NMField * fields);
  *********************************************************************/
 
 NMContact *
-nm_create_contact()
+nm_create_contact(void)
 {
 	NMContact *contact = g_new0(NMContact, 1);
 

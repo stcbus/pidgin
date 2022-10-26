@@ -143,7 +143,7 @@ winpidgin_netconfig_changed_cb(GNetworkMonitor *monitor, gboolean available, gpo
 }
 
 static gboolean
-winpidgin_pwm_reconnect()
+winpidgin_pwm_reconnect(void)
 {
 	g_signal_handlers_disconnect_by_func(g_network_monitor_get_default,
 	                                     G_CALLBACK(winpidgin_netconfig_changed_cb),

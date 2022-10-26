@@ -38,7 +38,8 @@ static struct {
 	GntWidget *window;
 } pref_request;
 
-void finch_prefs_init()
+void
+finch_prefs_init(void)
 {
 	purple_prefs_add_none("/finch");
 
@@ -55,7 +56,8 @@ void finch_prefs_init()
 	purple_prefs_add_path("/finch/filelocations/last_save_folder", "");
 }
 
-void finch_prefs_update_old()
+void
+finch_prefs_update_old(void)
 {
 }
 
@@ -251,7 +253,8 @@ add_pref_group(PurpleRequestFields *fields, const char *title, Prefs *prefs)
 	}
 }
 
-void finch_prefs_show_all()
+void
+finch_prefs_show_all(void)
 {
 	PurpleRequestFields *fields;
 

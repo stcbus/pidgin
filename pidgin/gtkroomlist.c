@@ -453,7 +453,7 @@ static gboolean account_filter_func(PurpleAccount *account)
 }
 
 gboolean
-pidgin_roomlist_is_showable()
+pidgin_roomlist_is_showable(void)
 {
 	GList *c;
 	PurpleConnection *gc;

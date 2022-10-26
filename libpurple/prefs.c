@@ -386,7 +386,7 @@ static GMarkupParser prefs_parser = {
 };
 
 gboolean
-purple_prefs_load()
+purple_prefs_load(void)
 {
 	gchar *filename;
 	gchar *contents = NULL;
@@ -792,7 +792,7 @@ purple_prefs_remove(const char *name)
 }
 
 void
-purple_prefs_destroy()
+purple_prefs_destroy(void)
 {
 	purple_prefs_remove("/");
 }
@@ -1469,7 +1469,7 @@ purple_prefs_init(void)
 }
 
 void
-purple_prefs_uninit()
+purple_prefs_uninit(void)
 {
 	if (save_timer != 0)
 	{

@@ -26,7 +26,7 @@
  */
 
 GType
-purple_media_candidate_type_get_type()
+purple_media_candidate_type_get_type(void)
 {
 	static GType type = 0;
 	if (type == 0) {
@@ -59,7 +59,7 @@ purple_media_candidate_type_get_type()
  */
 
 GType
-purple_media_caps_get_type()
+purple_media_caps_get_type(void)
 {
 	static GType type = 0;
 	if (type == 0) {
@@ -97,7 +97,7 @@ purple_media_caps_get_type()
  */
 
 GType
-purple_media_info_type_get_type()
+purple_media_info_type_get_type(void)
 {
 	static GType type = 0;
 	if (type == 0) {
@@ -132,7 +132,7 @@ purple_media_info_type_get_type()
  */
 
 GType
-purple_media_network_protocol_get_type()
+purple_media_network_protocol_get_type(void)
 {
 	static GType type = 0;
 	if (type == 0) {
@@ -162,7 +162,7 @@ purple_media_network_protocol_get_type()
  */
 
 GType
-purple_media_session_type_get_type()
+purple_media_session_type_get_type(void)
 {
 	static GType type = 0;
 	if (type == 0) {
@@ -200,7 +200,7 @@ purple_media_session_type_get_type()
  */
 
 GType
-purple_media_state_get_type()
+purple_media_state_get_type(void)
 {
 	static GType type = 0;
 	if (type == 0) {

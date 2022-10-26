@@ -262,7 +262,8 @@ save_debug_win(GntWidget *w, GntTextView *tv)
 	gnt_widget_show(window);
 }
 
-void finch_debug_window_show()
+void
+finch_debug_window_show(void)
 {
 	GntWidget *wid, *box, *label;
 

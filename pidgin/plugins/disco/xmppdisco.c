@@ -78,8 +78,8 @@ struct xmpp_iq_cb_data
 };
 
 
-static char*
-generate_next_id()
+static char *
+generate_next_id(void)
 {
 	static guint32 index = 0;
 

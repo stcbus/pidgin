@@ -1951,7 +1951,8 @@ redraw_blist(const char *name, PurplePrefType type, gconstpointer val, gpointer 
 	draw_tooltip(ggblist);
 }
 
-void finch_blist_init()
+void
+finch_blist_init(void)
 {
 	color_available = gnt_style_get_color(NULL, "color-available");
 	if (!color_available)
@@ -2795,7 +2796,8 @@ create_menu(void)
 	gnt_menu_add_item(GNT_MENU(menu), ggblist->plugins);
 }
 
-void finch_blist_show()
+void
+finch_blist_show(void)
 {
 	blist_show(purple_blist_get_default());
 }
@@ -2892,7 +2894,8 @@ blist_show(PurpleBuddyList *list)
 	savedstatus_changed(purple_savedstatus_get_current(), NULL);
 }
 
-void finch_blist_uninit()
+void
+finch_blist_uninit(void)
 {
 }
 

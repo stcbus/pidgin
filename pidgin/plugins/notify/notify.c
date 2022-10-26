@@ -659,7 +659,7 @@ options_entry_cb(GtkWidget *widget, GdkEventFocus *evt, gpointer data)
 }
 
 static void
-apply_method()
+apply_method(void)
 {
 	GList *convs;
 
@@ -677,7 +677,7 @@ apply_method()
 }
 
 static void
-apply_notify()
+apply_notify(void)
 {
 	GList *convs = purple_conversations_get_all();
 

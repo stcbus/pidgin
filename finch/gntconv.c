@@ -1081,7 +1081,8 @@ static PurpleConversationUiOps conv_ui_ops = {
 	.has_focus = finch_conv_has_focus,
 };
 
-PurpleConversationUiOps *finch_conv_get_ui_ops()
+PurpleConversationUiOps *
+finch_conv_get_ui_ops(void)
 {
 	return &conv_ui_ops;
 }
@@ -1276,7 +1277,8 @@ users_command_cb(PurpleConversation *conv, const char *cmd, char **args, char **
 	return PURPLE_CMD_RET_OK;
 }
 
-void finch_conversation_init()
+void
+finch_conversation_init(void)
 {
 	color_message_send = gnt_style_get_color(NULL, "color-message-sent");
 	if (!color_message_send)
@@ -1383,7 +1385,8 @@ void finch_conversation_init()
 					G_CALLBACK(account_signing_off), NULL);
 }
 
-void finch_conversation_uninit()
+void
+finch_conversation_uninit(void)
 {
 	purple_signals_disconnect_by_handle(finch_conv_get_handle());
 }

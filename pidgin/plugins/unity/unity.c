@@ -52,7 +52,7 @@ static int attach_signals(PurpleConversation *conv);
 static void detach_signals(PurpleConversation *conv);
 
 static void
-update_launcher()
+update_launcher(void)
 {
 	guint count = 0;
 	GList *convs = NULL;
@@ -129,7 +129,7 @@ messaging_menu_remove_conversation(PurpleConversation *conv)
 }
 
 static void
-refill_messaging_menu()
+refill_messaging_menu(void)
 {
 	PurpleConversationManager *manager = NULL;
 	GList *convs;

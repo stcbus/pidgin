@@ -2031,7 +2031,8 @@ static void list_delete(void)
 	save_list();
 }
 
-static void save_list()
+static void
+save_list(void)
 {
 	GString *data;
 	GtkTreeIter iter;

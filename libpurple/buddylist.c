@@ -459,7 +459,8 @@ purple_blist_real_save_node(PurpleBuddyList *list, PurpleBlistNode *node)
 	purple_blist_real_schedule_save();
 }
 
-void purple_blist_schedule_save()
+void
+purple_blist_schedule_save(void)
 {
 	PurpleBuddyListClass *klass = NULL;
 
@@ -799,7 +800,7 @@ append_buddy(gpointer key, gpointer value, gpointer user_data)
 }
 
 GSList *
-purple_blist_get_buddies()
+purple_blist_get_buddies(void)
 {
 	PurpleBuddyListPrivate *priv;
 	GSList *buddies = NULL;
@@ -812,7 +813,8 @@ purple_blist_get_buddies()
 	return buddies;
 }
 
-void purple_blist_show()
+void
+purple_blist_show(void)
 {
 	PurpleBuddyListClass *klass = NULL;
 

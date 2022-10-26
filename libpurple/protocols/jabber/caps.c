@@ -638,7 +638,8 @@ const gchar* jabber_caps_get_own_hash(JabberStream *js)
 	return js->caps_hash;
 }
 
-void jabber_caps_broadcast_change()
+void
+jabber_caps_broadcast_change(void)
 {
 	PurpleAccountManager *manager = NULL;
 	GList *node, *accounts;

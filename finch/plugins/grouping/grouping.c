@@ -66,7 +66,8 @@ G_DEFINE_DYNAMIC_TYPE(FinchGroupingNode, finch_grouping_node,
  */
 static FinchGroupingNode *online, *offline;
 
-static gboolean on_offline_init()
+static gboolean
+on_offline_init(void)
 {
 	GntTree *tree = finch_blist_get_tree();
 
@@ -151,7 +152,8 @@ static FinchBlistManager on_offline =
  * Meebo-like Grouping.
  */
 static FinchGroupingNode meebo;
-static gboolean meebo_init()
+static gboolean
+meebo_init(void)
 {
 	GntTree *tree = finch_blist_get_tree();
 	if (!g_list_find(gnt_tree_get_rows(tree), &meebo)) {
@@ -187,14 +189,16 @@ static FinchBlistManager meebo_group =
 /**
  * No Grouping.
  */
-static gboolean no_group_init()
+static gboolean
+no_group_init(void)
 {
 	GntTree *tree = finch_blist_get_tree();
 	g_object_set(G_OBJECT(tree), "expander-level", 0, NULL);
 	return TRUE;
 }
 
-static gboolean no_group_uninit()
+static gboolean
+no_group_uninit(void)
 {
 	GntTree *tree = finch_blist_get_tree();
 	g_object_set(G_OBJECT(tree), "expander-level", 1, NULL);

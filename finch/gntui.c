@@ -74,7 +74,8 @@ finch_history_init(GError **error) {
 	return purple_history_manager_set_active(manager, id, error);
 }
 
-void finch_ui_init()
+void
+finch_ui_init(void)
 {
 	GError *error = NULL;
 
@@ -143,7 +144,8 @@ void finch_ui_init()
 #ifdef STANDALONE
 }
 
-void finch_ui_uninit()
+void
+finch_ui_uninit(void)
 {
 	purple_accounts_set_ui_ops(NULL);
 	finch_accounts_uninit();

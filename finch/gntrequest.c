@@ -821,16 +821,19 @@ static PurpleRequestUiOps uiops = {
 	.close_request = finch_close_request,
 };
 
-PurpleRequestUiOps *finch_request_get_ui_ops()
+PurpleRequestUiOps *
+finch_request_get_ui_ops(void)
 {
 	return &uiops;
 }
 
-void finch_request_init()
+void
+finch_request_init(void)
 {
 }
 
-void finch_request_uninit()
+void
+finch_request_uninit(void)
 {
 }
 

@@ -314,6 +314,6 @@ purple_core_get_ui_ops(void)
 }
 
 PurpleUiInfo *
-purple_core_get_ui_info() {
+purple_core_get_ui_info(void) {
 	return _core->ui_info;
 }

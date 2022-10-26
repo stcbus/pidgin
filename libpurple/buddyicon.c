@@ -1114,7 +1114,7 @@ purple_buddy_icons_get_cache_dir(void)
 }
 
 void *
-purple_buddy_icons_get_handle()
+purple_buddy_icons_get_handle(void)
 {
 	static int handle;
 
@@ -1122,7 +1122,7 @@ purple_buddy_icons_get_handle()
 }
 
 void
-purple_buddy_icons_init()
+purple_buddy_icons_init(void)
 {
 	account_cache = g_hash_table_new_full(
 		g_direct_hash, g_direct_equal,
@@ -1139,7 +1139,7 @@ purple_buddy_icons_init()
 }
 
 void
-purple_buddy_icons_uninit()
+purple_buddy_icons_uninit(void)
 {
 	purple_signals_disconnect_by_handle(purple_buddy_icons_get_handle());
 

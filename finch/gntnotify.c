@@ -406,17 +406,20 @@ static PurpleNotifyUiOps ops = {
 	.close_notify = finch_close_notify,
 };
 
-PurpleNotifyUiOps *finch_notify_get_ui_ops()
+PurpleNotifyUiOps *
+finch_notify_get_ui_ops(void)
 {
 	return &ops;
 }
 
-void finch_notify_init()
+void
+finch_notify_init(void)
 {
 	userinfo = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 }
 
-void finch_notify_uninit()
+void
+finch_notify_uninit(void)
 {
 	g_hash_table_destroy(userinfo);
 }

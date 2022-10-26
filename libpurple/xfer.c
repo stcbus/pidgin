@@ -2456,7 +2456,7 @@ purple_xfer_new(PurpleAccount *account, PurpleXferType type, const char *who)
  * File Transfer Subsystem API
  **************************************************************************/
 GList *
-purple_xfers_get_all()
+purple_xfers_get_all(void)
 {
 	return xfers;
 }

@@ -924,7 +924,7 @@ pidgin_debug_uninit(void)
 }
 
 void *
-pidgin_debug_get_handle() {
+pidgin_debug_get_handle(void) {
 	static int handle;
 
 	return &handle;

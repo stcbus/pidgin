@@ -788,7 +788,7 @@ purple_savedstatus_get_current(void)
 }
 
 PurpleSavedStatus *
-purple_savedstatus_get_default()
+purple_savedstatus_get_default(void)
 {
 	time_t creation_time;
 	PurpleSavedStatus *saved_status = NULL;
@@ -815,7 +815,7 @@ purple_savedstatus_get_default()
 }
 
 PurpleSavedStatus *
-purple_savedstatus_get_idleaway()
+purple_savedstatus_get_idleaway(void)
 {
 	time_t creation_time;
 	PurpleSavedStatus *saved_status = NULL;
@@ -844,7 +844,7 @@ purple_savedstatus_get_idleaway()
 }
 
 gboolean
-purple_savedstatus_is_idleaway()
+purple_savedstatus_is_idleaway(void)
 {
 	return purple_prefs_get_bool("/purple/savedstatus/isidleaway");
 }
@@ -898,7 +898,7 @@ purple_savedstatus_set_idleaway(gboolean idleaway) {
 }
 
 PurpleSavedStatus *
-purple_savedstatus_get_startup()
+purple_savedstatus_get_startup(void)
 {
 	time_t creation_time;
 	PurpleSavedStatus *saved_status = NULL;

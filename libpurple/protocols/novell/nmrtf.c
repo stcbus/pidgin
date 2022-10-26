@@ -215,7 +215,7 @@ NMRtfSymbol rtf_symbols[] = {
 int table_size = sizeof(rtf_symbols) / sizeof(NMRtfSymbol);
 
 NMRtfContext *
-nm_rtf_init()
+nm_rtf_init(void)
 {
 	NMRtfContext *ctx = g_new0(NMRtfContext, 1);
 	ctx->nextch_available = FALSE;

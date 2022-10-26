@@ -254,7 +254,7 @@ finch_xfer_dialog_new(void)
 }
 
 void
-finch_xfer_dialog_destroy()
+finch_xfer_dialog_destroy(void)
 {
 	gnt_widget_destroy(xfer_dialog->window);
 	g_free(xfer_dialog);
@@ -262,7 +262,7 @@ finch_xfer_dialog_destroy()
 }
 
 void
-finch_xfer_dialog_show()
+finch_xfer_dialog_show(void)
 {
 	if (xfer_dialog == NULL)
 		finch_xfer_dialog_new();

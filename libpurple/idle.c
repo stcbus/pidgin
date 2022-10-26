@@ -266,7 +266,7 @@ idle_reporting_cb(const char *name, PurplePrefType type, gconstpointer val, gpoi
 }
 
 void
-purple_idle_touch()
+purple_idle_touch(void)
 {
 	time(&last_active_time);
 	if (!no_away)
@@ -319,7 +319,7 @@ static gboolean _do_purple_idle_touch_cb(gpointer data)
 
 
 void
-purple_idle_init()
+purple_idle_init(void)
 {
 	purple_signal_connect(purple_conversations_get_handle(), "sent-im-msg",
 						purple_idle_get_handle(),
@@ -341,7 +341,7 @@ purple_idle_init()
 }
 
 void
-purple_idle_uninit()
+purple_idle_uninit(void)
 {
 	purple_signals_disconnect_by_handle(purple_idle_get_handle());
 	purple_prefs_disconnect_by_handle(purple_idle_get_handle());

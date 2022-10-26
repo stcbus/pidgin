@@ -118,12 +118,14 @@ static PurpleConnectionUiOps ops = {
 	.report_disconnect = finch_connection_report_disconnect,
 };
 
-PurpleConnectionUiOps *finch_connections_get_ui_ops()
+PurpleConnectionUiOps *
+finch_connections_get_ui_ops(void)
 {
 	return &ops;
 }
 
-void finch_connections_init()
+void
+finch_connections_init(void)
 {
 	PurpleAccountManager *manager = purple_account_manager_get_default();
 
@@ -134,7 +136,8 @@ void finch_connections_init()
 	g_signal_connect(manager, "removed", G_CALLBACK(account_removed_cb), NULL);
 }
 
-void finch_connections_uninit()
+void
+finch_connections_uninit(void)
 {
 	PurpleAccountManager *manager = purple_account_manager_get_default();
 

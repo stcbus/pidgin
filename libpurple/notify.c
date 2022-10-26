@@ -243,7 +243,7 @@ purple_notify_searchresults_button_add_labeled(PurpleNotifySearchResults *result
 
 
 PurpleNotifySearchResults *
-purple_notify_searchresults_new()
+purple_notify_searchresults_new(void)
 {
 	PurpleNotifySearchResults *rs = g_new0(PurpleNotifySearchResults, 1);
 
@@ -365,7 +365,7 @@ purple_notify_user_info_entry_destroy(PurpleNotifyUserInfoEntry *user_info_entry
 }
 
 PurpleNotifyUserInfo *
-purple_notify_user_info_new()
+purple_notify_user_info_new(void)
 {
 	PurpleNotifyUserInfo *user_info;
 

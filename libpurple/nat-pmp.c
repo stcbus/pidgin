@@ -168,7 +168,7 @@ is_default_route(struct sockaddr *sa, struct sockaddr *mask)
  * The return sockaddr_in must be g_free()'d when no longer needed
  */
 static struct sockaddr_in *
-default_gw()
+default_gw(void)
 {
 	int mib[6];
 	size_t needed;
@@ -264,7 +264,7 @@ default_gw()
  *		- The gateway errors in some other spectacular fashion
  */
 char *
-purple_pmp_get_public_ip()
+purple_pmp_get_public_ip(void)
 {
 	struct sockaddr_in addr, *gateway, *publicsockaddr = NULL;
 	struct timeval req_timeout;
@@ -529,7 +529,7 @@ purple_pmp_get_handle(void)
 }
 
 void
-purple_pmp_init()
+purple_pmp_init(void)
 {
 	g_signal_connect(g_network_monitor_get_default(),
 	                 "network-changed",
@@ -538,7 +538,7 @@ purple_pmp_init()
 }
 #else /* #ifdef NET_RT_DUMP */
 char *
-purple_pmp_get_public_ip()
+purple_pmp_get_public_ip(void)
 {
 	return NULL;
 }
@@ -556,7 +556,7 @@ purple_pmp_destroy_map(PurplePmpType type, unsigned short privateport)
 }
 
 void
-purple_pmp_init()
+purple_pmp_init(void)
 {
 
 }

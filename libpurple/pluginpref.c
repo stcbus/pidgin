@@ -47,7 +47,7 @@ struct _PurplePluginPref
 };
 
 PurplePluginPrefFrame *
-purple_plugin_pref_frame_new()
+purple_plugin_pref_frame_new(void)
 {
 	PurplePluginPrefFrame *frame;
 
@@ -84,7 +84,7 @@ purple_plugin_pref_frame_get_prefs(PurplePluginPrefFrame *frame)
 }
 
 PurplePluginPref *
-purple_plugin_pref_new()
+purple_plugin_pref_new(void)
 {
 	PurplePluginPref *pref;
 

@@ -182,7 +182,7 @@ purple_network_is_available(void)
 }
 
 void
-purple_network_force_online()
+purple_network_force_online(void)
 {
 	force_online = TRUE;
 }

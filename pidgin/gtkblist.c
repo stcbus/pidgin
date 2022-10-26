@@ -962,7 +962,7 @@ chat_account_filter_func(PurpleAccount *account)
 }
 
 gboolean
-pidgin_blist_joinchat_is_showable()
+pidgin_blist_joinchat_is_showable(void)
 {
 	GList *c;
 	PurpleConnection *gc;
@@ -2853,7 +2853,8 @@ pidgin_blist_node_is_contact_expanded(PurpleBlistNode *node) {
 	return pidgin_node->contact_expanded;
 }
 
-void pidgin_blist_setup_sort_methods()
+void
+pidgin_blist_setup_sort_methods(void)
 {
 	const char *id;
 
@@ -3760,7 +3761,7 @@ static gboolean autojoin_cb(PurpleConnection *gc, gpointer data)
 }
 
 void *
-pidgin_blist_get_handle() {
+pidgin_blist_get_handle(void) {
 	static int handle;
 
 	return &handle;
@@ -3904,7 +3905,8 @@ pidgin_buddy_list_class_init(PidginBuddyListClass *klass)
  * Buddy List sorting functions                                      *
  *********************************************************************/
 
-GList *pidgin_blist_get_sort_methods()
+GList *
+pidgin_blist_get_sort_methods(void)
 {
 	return pidgin_blist_sort_methods;
 }

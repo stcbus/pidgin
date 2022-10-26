@@ -781,7 +781,8 @@ reset_accounts_win(GntWidget *widget, gpointer null)
 	accounts.tree = NULL;
 }
 
-void finch_accounts_show_all()
+void
+finch_accounts_show_all(void)
 {
 	PurpleAccountManager *manager = NULL;
 	GList *iter;
@@ -889,7 +890,8 @@ account_abled_cb(PurpleAccount *account, gpointer user_data)
 			GPOINTER_TO_INT(user_data));
 }
 
-void finch_accounts_init()
+void
+finch_accounts_init(void)
 {
 	PurpleAccountManager *manager = NULL;
 	gpointer account_handle = NULL;
@@ -923,7 +925,8 @@ void finch_accounts_init()
 	}
 }
 
-void finch_accounts_uninit()
+void
+finch_accounts_uninit(void)
 {
 	if (accounts.window)
 		gnt_widget_destroy(accounts.window);

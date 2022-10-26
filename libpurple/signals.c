@@ -529,7 +529,7 @@ purple_signal_emit_vargs_return_1(void *instance, const char *signal,
 }
 
 void
-purple_signals_init()
+purple_signals_init(void)
 {
 	g_return_if_fail(instance_table == NULL);
 
@@ -539,7 +539,7 @@ purple_signals_init()
 }
 
 void
-purple_signals_uninit()
+purple_signals_uninit(void)
 {
 	g_return_if_fail(instance_table != NULL);
 

@@ -149,7 +149,8 @@ edit_savedstatus_cb(GntWidget *widget, gpointer null)
 	finch_savedstatus_edit(gnt_tree_get_selection_data(GNT_TREE(statuses.tree)));
 }
 
-void finch_savedstatus_show_all()
+void
+finch_savedstatus_show_all(void)
 {
 	GntWidget *window, *tree, *box, *button;
 	int widths[] = {25, 12, 35};
