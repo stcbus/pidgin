@@ -625,34 +625,39 @@ fb_api_json_chk(FbApi *api, gconstpointer data, gssize size, JsonNode **node)
 }
 
 static gboolean
-fb_api_http_chk(FbApi *api, SoupMessage *res, JsonNode **root)
+fb_api_http_chk(FbApi *api, SoupSession *session, GAsyncResult *result,
+                SoupMessage *msg, JsonNode **root)
 {
-	const gchar *data;
-	const gchar *msg;
+	GBytes *response_body = NULL;
+	const gchar *reason = NULL;
+	const gchar *data = NULL;
 	GError *err = NULL;
 	gint code;
-	gsize size;
+	gsize size = 0;
 
-	msg = soup_message_get_reason_phrase(res);
-	code = soup_message_get_status(res);
-	data = res->response_body->data;
-	size = res->response_body->length;
+	reason = soup_message_get_reason_phrase(msg);
+	code = soup_message_get_status(msg);
 
-	fb_util_debug(FB_UTIL_DEBUG_INFO, "HTTP Response (%p):", res);
-	if (msg != NULL) {
-		fb_util_debug(FB_UTIL_DEBUG_INFO, "  Response Error: %s (%d)", msg,
+	fb_util_debug(FB_UTIL_DEBUG_INFO, "HTTP Response (%p):", msg);
+	if (reason != NULL) {
+		fb_util_debug(FB_UTIL_DEBUG_INFO, "  Response Error: %s (%d)", reason,
 		              code);
 	} else {
 		fb_util_debug(FB_UTIL_DEBUG_INFO, "  Response Error: %d", code);
 	}
 
+	if (fb_http_error_chk(msg, &err) && (root == NULL)) {
+		return TRUE;
+	}
+
+	response_body = soup_session_send_and_read_finish(session, result, &err);
+	if(response_body != NULL) {
+		data = g_bytes_get_data(response_body, &size);
+	}
+
 	if (G_LIKELY(size > 0)) {
 		fb_util_debug(FB_UTIL_DEBUG_INFO, "  Response Data: %.*s",
 		              (gint) size, data);
-	}
-
-	if (fb_http_error_chk(res, &err) && (root == NULL)) {
-		return TRUE;
 	}
 
 	/* Rudimentary check to prevent wrongful error parsing */
@@ -675,7 +680,7 @@ fb_api_http_chk(FbApi *api, SoupMessage *res, JsonNode **root)
 static SoupMessage *
 fb_api_http_req(FbApi *api, const gchar *url, const gchar *name,
                 const gchar *method, FbHttpParams *params,
-                SoupSessionCallback callback)
+                GAsyncReadyCallback callback)
 {
 	gchar *data;
 	gchar *key;
@@ -726,7 +731,9 @@ fb_api_http_req(FbApi *api, const gchar *url, const gchar *name,
 		g_free(data);
 	}
 
-	soup_session_queue_message(api->cons, msg, callback, api);
+	g_object_set_data(G_OBJECT(msg), "facebook-api", api);
+	soup_session_send_and_read_async(api->cons, msg, G_PRIORITY_DEFAULT, NULL,
+	                                 callback, msg);
 
 	fb_util_debug(FB_UTIL_DEBUG_INFO, "HTTP Request (%p):", msg);
 	fb_util_debug(FB_UTIL_DEBUG_INFO, "  Request URL: %s", url);
@@ -736,7 +743,7 @@ fb_api_http_req(FbApi *api, const gchar *url, const gchar *name,
 
 static SoupMessage *
 fb_api_http_query(FbApi *api, gint64 query, JsonBuilder *builder,
-                  SoupSessionCallback hcb)
+                  GAsyncReadyCallback hcb)
 {
 	const gchar *name;
 	FbHttpParams *prms;
@@ -784,19 +791,22 @@ fb_api_http_query(FbApi *api, gint64 query, JsonBuilder *builder,
 }
 
 static void
-fb_api_cb_http_bool(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                    gpointer data)
-{
-	FbApi *api = data;
+fb_api_cb_http_bool(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
+	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, NULL)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
-	if (!purple_strequal(res->response_body->data, "true")) {
+	if (!json_node_get_boolean(root)) {
 		fb_api_error_literal(api, FB_API_ERROR,
 		                     _("Failed generic API operation"));
 	}
+
+	json_node_free(root);
 }
 
 static void
@@ -969,16 +979,16 @@ fb_api_connect_queue(FbApi *api)
 }
 
 static void
-fb_api_cb_seqid(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                gpointer data)
-{
+fb_api_cb_seqid(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *str;
-	FbApi *api = data;
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -1996,11 +2006,11 @@ fb_api_error_emit(FbApi *api, GError *error)
 }
 
 static void
-fb_api_cb_attach(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                 gpointer data)
-{
+fb_api_cb_attach(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *str;
-	FbApi *api = data;
 	FbApiMessage *msg;
 	FbJsonValues *values;
 	gchar *name;
@@ -2011,7 +2021,7 @@ fb_api_cb_attach(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 
 	static const gchar *imgexts[] = {".jpg", ".png", ".gif"};
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2026,7 +2036,7 @@ fb_api_cb_attach(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 		return;
 	);
 
-	msg = g_object_steal_data(G_OBJECT(res), "fb-api-msg");
+	msg = g_object_steal_data(G_OBJECT(soupmsg), "fb-api-msg");
 	str = fb_json_values_next_str(values, NULL);
 	name = g_ascii_strdown(str, -1);
 
@@ -2066,15 +2076,15 @@ fb_api_attach(FbApi *api, FbId aid, const gchar *msgid, FbApiMessage *msg)
 }
 
 static void
-fb_api_cb_auth(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-               gpointer data)
-{
-	FbApi *api = data;
+fb_api_cb_auth(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2133,18 +2143,18 @@ fb_api_user_icon_checksum(gchar *icon)
 }
 
 static void
-fb_api_cb_contact(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                  gpointer data)
-{
+fb_api_cb_contact(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *str;
-	FbApi *api = data;
 	FbApiUser user;
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *node;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2285,12 +2295,12 @@ fb_api_cb_contacts_parse_removed(FbApi *api, JsonNode *node, GSList *users)
 }
 
 static void
-fb_api_cb_contacts(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                   gpointer data)
-{
+fb_api_cb_contacts(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *cursor;
 	const gchar *delta_cursor;
-	FbApi *api = data;
 	FbJsonValues *values;
 	gboolean complete;
 	gboolean is_delta;
@@ -2301,7 +2311,7 @@ fb_api_cb_contacts(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 	JsonNode *croot;
 	JsonNode *node;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2597,12 +2607,12 @@ fb_api_cb_unread_parse_attach(FbApi *api, const gchar *mid, FbApiMessage *msg,
 }
 
 static void
-fb_api_cb_unread_msgs(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                      gpointer data)
-{
+fb_api_cb_unread_msgs(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *body;
 	const gchar *str;
-	FbApi *api = data;
 	FbApiMessage *dmsg;
 	FbApiMessage msg;
 	FbId id;
@@ -2615,7 +2625,7 @@ fb_api_cb_unread_msgs(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 	JsonNode *root;
 	JsonNode *xode;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2729,18 +2739,18 @@ fb_api_cb_unread_msgs(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 }
 
 static void
-fb_api_cb_unread(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                 gpointer data)
-{
+fb_api_cb_unread(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *id;
-	FbApi *api = data;
 	FbJsonValues *values;
 	GError *err = NULL;
 	gint64 count;
 	JsonBuilder *bldr;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2808,10 +2818,10 @@ fb_api_unread(FbApi *api)
 }
 
 static void
-fb_api_cb_sticker(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                  gpointer data)
-{
-	FbApi *api = data;
+fb_api_cb_sticker(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	FbApiMessage *msg;
 	FbJsonValues *values;
 	GError *err = NULL;
@@ -2819,7 +2829,7 @@ fb_api_cb_sticker(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 	JsonNode *node;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2835,7 +2845,7 @@ fb_api_cb_sticker(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 		return;
 	);
 
-	msg = g_object_steal_data(G_OBJECT(res), "fb-api-msg");
+	msg = g_object_steal_data(G_OBJECT(soupmsg), "fb-api-msg");
 	msg->flags |= FB_API_MESSAGE_FLAG_IMAGE;
 	msg->text = fb_json_values_next_str_dup(values, NULL);
 	msgs = g_slist_prepend(msgs, msg);
@@ -2937,16 +2947,16 @@ fb_api_thread_parse(FbApi *api, FbApiThread *thrd, JsonNode *root,
 }
 
 static void
-fb_api_cb_thread(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                 gpointer data)
-{
-	FbApi *api = data;
+fb_api_cb_thread(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	FbApiThread thrd;
 	GError *err = NULL;
 	JsonNode *node;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -2997,17 +3007,17 @@ fb_api_thread(FbApi *api, FbId tid)
 }
 
 static void
-fb_api_cb_thread_create(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                        gpointer data)
-{
+fb_api_cb_thread_create(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	const gchar *str;
-	FbApi *api = data;
 	FbId tid;
 	FbJsonValues *values;
 	GError *err = NULL;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
@@ -3127,10 +3137,10 @@ fb_api_thread_topic(FbApi *api, FbId tid, const gchar *topic)
 }
 
 static void
-fb_api_cb_threads(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
-                  gpointer data)
-{
-	FbApi *api = data;
+fb_api_cb_threads(GObject *source, GAsyncResult *result, gpointer data) {
+	SoupSession *session = SOUP_SESSION(source);
+	SoupMessage *soupmsg = data;
+	FbApi *api = g_object_get_data(G_OBJECT(soupmsg), "facebook-api");
 	FbApiThread *dthrd;
 	FbApiThread thrd;
 	GError *err = NULL;
@@ -3140,7 +3150,7 @@ fb_api_cb_threads(G_GNUC_UNUSED SoupSession *session, SoupMessage *res,
 	JsonArray *arr;
 	JsonNode *root;
 
-	if (!fb_api_http_chk(api, res, &root)) {
+	if (!fb_api_http_chk(api, session, result, soupmsg, &root)) {
 		return;
 	}
 
