@@ -38,8 +38,8 @@ static int tag_num = 0;
 static SoupSession *session = NULL;
 static GHashTable *tinyurl_cache = NULL;
 
-typedef struct
-{
+typedef struct {
+	SoupMessage *msg;
 	gchar *original_url;
 	PurpleConversation *conv;
 	gchar *tag;
@@ -194,21 +194,32 @@ static GList *extract_urls(const char *text)
 }
 
 static void
-url_fetched(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
-            gpointer _data)
-{
-	CbInfo *data = (CbInfo *)_data;
+url_fetched(GObject *source, GAsyncResult *result, gpointer user_data) {
+	CbInfo *data = (CbInfo *)user_data;
 	PurpleConversation *conv = data->conv;
 	PurpleConversationManager *manager;
 	GList *convs;
+	GBytes *response_body = NULL;
 	const gchar *url;
 
 	manager = purple_conversation_manager_get_default();
 	convs = purple_conversation_manager_get_all(manager);
 
-	if (SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(msg))) {
-		url = msg->response_body->data;
-		g_hash_table_insert(tinyurl_cache, data->original_url, g_strdup(url));
+	if(SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(data->msg))) {
+		response_body = soup_session_send_and_read_finish(SOUP_SESSION(source),
+		                                                  result, NULL);
+	}
+	if (response_body != NULL) {
+		gchar *tmp = NULL;
+		gsize size = 0;
+
+		/* Ensure URL is NUL-terminated. */
+		url = g_bytes_get_data(response_body, &size);
+		tmp = g_strndup(url, size);
+		url = tmp;
+
+		g_hash_table_insert(tinyurl_cache, data->original_url, tmp);
+		g_bytes_unref(response_body);
 	} else {
 		url = _("Error while querying TinyURL");
 		g_free(data->original_url);
@@ -349,8 +360,9 @@ process_urls(PurpleConversation *conv, GList *urls)
 			url = g_strdup_printf("%s%s", tinyurl_prefix,
 			                      purple_url_encode(original_url));
 		}
-		msg = soup_message_new("GET", url);
-		soup_session_queue_message(session, msg, url_fetched, cbdata);
+		cbdata->msg = msg = soup_message_new("GET", url);
+		soup_session_send_and_read_async(session, msg, G_PRIORITY_DEFAULT,
+		                                 NULL, url_fetched, cbdata);
 		gnt_text_view_append_text_with_tag((tv), _("\nFetching TinyURL..."),
 		                                   GNT_TEXT_FLAG_DIM, cbdata->tag);
 		if (i == 0)
@@ -381,33 +393,34 @@ tinyurl_notify_tinyuri(GntWidget *win, const gchar *url)
 }
 
 static void
-cancel_notify_fetch(GntWidget *win, SoupMessage *msg)
+tinyurl_notify_fetch_cb(GObject *source, GAsyncResult *result, gpointer data)
 {
-	soup_session_cancel_message(session, msg, SOUP_STATUS_CANCELLED);
-}
+	SoupMessage *msg = data;
+	GntWidget *win = NULL;
+	GBytes *response_body = NULL;
+	const gchar *tmp = NULL;
+	gsize size = 0;
+	gchar *url = NULL;
+	const gchar *original_url = NULL;
 
-static void
-tinyurl_notify_fetch_cb(G_GNUC_UNUSED SoupSession *session, SoupMessage *msg,
-                        gpointer _win)
-{
-	GntWidget *win = _win;
-	const gchar *url;
-	const gchar *original_url;
+	if(SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(msg))) {
+		response_body = soup_session_send_and_read_finish(SOUP_SESSION(source),
+		                                                  result, NULL);
+	}
 
-	if (!SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(msg))) {
+	if (response_body == NULL) {
 		return;
 	}
 
-	original_url = g_object_get_data(G_OBJECT(win), "gnttinyurl-original");
-	url = msg->response_body->data;
-	g_hash_table_insert(tinyurl_cache,
-		g_strdup(original_url), g_strdup(url));
+	win = g_object_get_data(G_OBJECT(msg), "gnttinyurl-window");
+	original_url = g_object_get_data(G_OBJECT(msg), "gnttinyurl-original");
+	tmp = g_bytes_get_data(response_body, &size);
+	url = g_strndup(tmp, size);
+	g_hash_table_insert(tinyurl_cache, g_strdup(original_url), url);
 
 	tinyurl_notify_tinyuri(win, url);
 
-	g_signal_handlers_disconnect_matched(G_OBJECT(win), G_SIGNAL_MATCH_FUNC, 0,
-	                                     0, NULL,
-	                                     G_CALLBACK(cancel_notify_fetch), NULL);
+	g_bytes_unref(response_body);
 }
 
 static void *
@@ -415,6 +428,7 @@ tinyurl_notify_uri(const char *uri)
 {
 	char *fullurl = NULL;
 	GntWidget *win;
+	GCancellable *cancellable = NULL;
 	SoupMessage *msg;
 	const gchar *tiny_url;
 	GSettings *settings = NULL;
@@ -449,16 +463,21 @@ tinyurl_notify_uri(const char *uri)
 
 	g_free(tinyurl_prefix);
 
-	g_object_set_data_full(G_OBJECT(win), "gnttinyurl-original", g_strdup(uri), g_free);
-
-	/* Store the SoupMessage and cancel that when the window is destroyed,
-	 * so that the callback does not try to use a non-existent window.
+	/* Make a cancellable and cancel it when the window is destroyed, so that
+	 * the callback does not try to use a non-existent window.
 	 */
+	cancellable = g_cancellable_new();
 	msg = soup_message_new("GET", fullurl);
-	soup_session_queue_message(session, msg, tinyurl_notify_fetch_cb, win);
+	g_object_set_data(G_OBJECT(msg), "gnttinyurl-window", win);
+	g_object_set_data_full(G_OBJECT(msg), "gnttinyurl-original", g_strdup(uri),
+	                       g_free);
+
+	soup_session_send_and_read_async(session, msg, G_PRIORITY_DEFAULT,
+	                                 cancellable, tinyurl_notify_fetch_cb, win);
+	g_signal_connect_object(win, "destroy", G_CALLBACK(g_cancellable_cancel),
+	                        cancellable, G_CONNECT_SWAPPED);
 	g_free(fullurl);
-	g_signal_connect(G_OBJECT(win), "destroy", G_CALLBACK(cancel_notify_fetch),
-	                 msg);
+	g_object_unref(cancellable);
 
 	return win;
 }
