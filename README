@@ -27,7 +27,7 @@ soon, if you have any suggestions on how to handle this, please let us know.
 You can quickly build Pidgin with the following commands:
 
 ```
-meson build
+meson setup build
 cd build
 ninja
 ninja install
@@ -38,10 +38,10 @@ There are quite a few options for the build that you can view by running
 running meson like the following:
 
 ```
-meson -Ddebug=true build
+meson setup -Ddebug=true build
 ```
 
-If you have already run `meson` you can use `meson configure`:
+If you have already run `meson setup` you can use `meson configure`:
 
 ```
 cd build
