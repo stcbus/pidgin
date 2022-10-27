@@ -43,6 +43,14 @@
 				"message": "Writing crazy patches!"
 			}
 		}]
+	}, {
+		"buddies": [{
+			"name": "Markus",
+			"status": {
+				"id": "extended_away",
+				"message": "Running all the things in valgrind..."
+			}
+		}]
 	}],
 	"Nymphs": [{
 		"buddies": [{

@@ -68,6 +68,13 @@ purple_demo_protocol_status_types(G_GNUC_UNUSED PurpleProtocol *protocol,
 		NULL);
 	status_types = g_list_append(status_types, type);
 
+	type = purple_status_type_new_with_attrs(
+		PURPLE_STATUS_EXTENDED_AWAY, "extended_away", NULL,
+		TRUE, TRUE, FALSE,
+		"message", _("Message"), purple_value_new(G_TYPE_STRING),
+		NULL);
+	status_types = g_list_append(status_types, type);
+
 	type = purple_status_type_new_full(
 		PURPLE_STATUS_OFFLINE, NULL, NULL,
 		TRUE, TRUE, FALSE);
