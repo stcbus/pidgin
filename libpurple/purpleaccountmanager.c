@@ -33,23 +33,60 @@ static guint signals[N_SIGNALS] = {0, };
 struct _PurpleAccountManager {
 	GObject parent;
 
-	GList *accounts;
+	GPtrArray *accounts;
 };
 
 static PurpleAccountManager *default_manager = NULL;
 
-G_DEFINE_TYPE(PurpleAccountManager, purple_account_manager, G_TYPE_OBJECT)
+/******************************************************************************
+ * GListModel Implementation
+ *****************************************************************************/
+static GType
+purple_account_get_item_type(G_GNUC_UNUSED GListModel *list) {
+	return PURPLE_TYPE_ACCOUNT;
+}
+
+static guint
+purple_account_get_n_items(GListModel *list) {
+	PurpleAccountManager *manager = PURPLE_ACCOUNT_MANAGER(list);
+
+	return manager->accounts->len;
+}
+
+static gpointer
+purple_account_get_item(GListModel *list, guint position) {
+	PurpleAccountManager *manager = PURPLE_ACCOUNT_MANAGER(list);
+	PurpleAccount *account = NULL;
+
+	if(position < manager->accounts->len) {
+		account = g_ptr_array_index(manager->accounts, position);
+		g_object_ref(account);
+	}
+
+	return account;
+}
+
+static void
+purple_account_manager_list_model_init(GListModelInterface *iface) {
+	iface->get_item_type = purple_account_get_item_type;
+	iface->get_n_items = purple_account_get_n_items;
+	iface->get_item = purple_account_get_item;
+}
 
 /******************************************************************************
  * GObject Implementation
  *****************************************************************************/
+G_DEFINE_TYPE_EXTENDED(PurpleAccountManager, purple_account_manager,
+                       G_TYPE_OBJECT, 0,
+                       G_IMPLEMENT_INTERFACE(G_TYPE_LIST_MODEL,
+                                             purple_account_manager_list_model_init))
+
 static void
 purple_account_manager_finalize(GObject *obj) {
 	PurpleAccountManager *manager = PURPLE_ACCOUNT_MANAGER(obj);
-	GList *l = NULL;
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		g_object_unref(l->data);
+	if(manager->accounts != NULL) {
+		g_ptr_array_free(manager->accounts, TRUE);
 	}
 
 	G_OBJECT_CLASS(purple_account_manager_parent_class)->finalize(obj);
@@ -57,6 +94,7 @@ purple_account_manager_finalize(GObject *obj) {
 
 static void
 purple_account_manager_init(PurpleAccountManager *manager) {
+	manager->accounts = g_ptr_array_new_full(0, (GDestroyNotify)g_object_unref);
 }
 
 static void
@@ -131,6 +169,11 @@ purple_account_manager_get_default(void) {
 	return default_manager;
 }
 
+GListModel *
+purple_account_manager_get_default_as_model(void) {
+	return G_LIST_MODEL(default_manager);
+}
+
 void
 purple_account_manager_add(PurpleAccountManager *manager,
                            PurpleAccount *account)
@@ -139,7 +182,7 @@ purple_account_manager_add(PurpleAccountManager *manager,
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
 	/* If the manager already knows about the account, we do nothing. */
-	if(g_list_find(manager->accounts, account) != NULL) {
+	if(g_ptr_array_find(manager->accounts, account, NULL)) {
 		return;
 	}
 
@@ -148,21 +191,27 @@ purple_account_manager_add(PurpleAccountManager *manager,
 	 * interfaces and the most likely to have configuration issues as it's a
 	 * new account.
 	 */
-	manager->accounts = g_list_prepend(manager->accounts, account);
+	g_ptr_array_insert(manager->accounts, 0, account);
 
 	purple_accounts_schedule_save();
 
 	g_signal_emit(manager, signals[SIG_ADDED], 0, account);
+	g_list_model_items_changed(G_LIST_MODEL(manager), 0, 0, 1);
 }
 
 void
 purple_account_manager_remove(PurpleAccountManager *manager,
                               PurpleAccount *account)
 {
+	guint index = 0;
+
 	g_return_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager));
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	manager->accounts = g_list_remove(manager->accounts, account);
+	if(g_ptr_array_find(manager->accounts, account, &index)) {
+		g_ptr_array_steal_index(manager->accounts, index);
+		g_list_model_items_changed(G_LIST_MODEL(manager), index, 1, 0);
+	}
 
 	purple_accounts_schedule_save();
 
@@ -175,20 +224,13 @@ purple_account_manager_remove(PurpleAccountManager *manager,
 }
 
 GList *
-purple_account_manager_get_all(PurpleAccountManager *manager) {
-	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
-
-	return manager->accounts;
-}
-
-GList *
 purple_account_manager_get_enabled(PurpleAccountManager *manager) {
-	GList *enabled = NULL, *l = NULL;
+	GList *enabled = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		PurpleAccount *account = PURPLE_ACCOUNT(l->data);
+	for(guint index = 0; index < manager->accounts->len; index++) {
+		PurpleAccount *account = g_ptr_array_index(manager->accounts, index);
 
 		if(purple_account_get_enabled(account)) {
 			enabled = g_list_append(enabled, account);
@@ -200,12 +242,12 @@ purple_account_manager_get_enabled(PurpleAccountManager *manager) {
 
 GList *
 purple_account_manager_get_disabled(PurpleAccountManager *manager) {
-	GList *disabled = NULL, *l = NULL;
+	GList *disabled = NULL;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		PurpleAccount *account = l->data;
+	for(guint index = 0; index < manager->accounts->len; index++) {
+		PurpleAccount *account = g_ptr_array_index(manager->accounts, index);
 
 		if(!purple_account_get_enabled(account)) {
 			disabled = g_list_append(disabled, account);
@@ -220,42 +262,31 @@ purple_account_manager_reorder(PurpleAccountManager *manager,
                                PurpleAccount *account,
                                guint new_index)
 {
-	GList *l = NULL;
-	gboolean found = FALSE;
 	guint index = 0;
 
 	g_return_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager));
 	g_return_if_fail(PURPLE_IS_ACCOUNT(account));
 
-	/* Iterate over the known accounts until we have found a matching account
-	 * or exhausted the list. For each iteration increment idx.
-	 */
-	for(l = manager->accounts; l != NULL; l = l->next, index++) {
-		if(PURPLE_ACCOUNT(l->data) == account) {
-			manager->accounts = g_list_delete_link(manager->accounts, l);
+	if(g_ptr_array_find(manager->accounts, account, &index)) {
+		g_ptr_array_steal_index(manager->accounts, index);
+		g_list_model_items_changed(G_LIST_MODEL(manager), index, 1, 0);
 
-			found = TRUE;
-
-			/* If new_index is greater than the current index, we need to
-			 * decrement new_index by 1 to account for the move as we'll be
-			 * inserting into a list with one less item.
-			 */
-			if(new_index > index) {
-				new_index--;
-			}
-
-			break;
+		/* If new_index is greater than the current index, we need to
+		 * decrement new_index by 1 to account for the move as we'll be
+		 * inserting into a list with one less item.
+		 */
+		if(new_index > index) {
+			new_index--;
 		}
-	}
-
-	if(!found) {
+	} else {
 		g_critical("Unregistered account (%s) found during reorder!",
 		           purple_account_get_username(account));
 		return;
 	}
 
 	/* Insert the account into its new position. */
-	manager->accounts = g_list_insert(manager->accounts, account, new_index);
+	g_ptr_array_insert(manager->accounts, new_index, account);
+	g_list_model_items_changed(G_LIST_MODEL(manager), new_index, 0, 1);
 
 	purple_accounts_schedule_save();
 }
@@ -264,13 +295,11 @@ PurpleAccount *
 purple_account_manager_find_by_id(PurpleAccountManager *manager,
                                   const gchar *id)
 {
-	GList *l = NULL;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
 	g_return_val_if_fail(id != NULL, NULL);
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		PurpleAccount *account = PURPLE_ACCOUNT(l->data);
+	for(guint index = 0; index < manager->accounts->len; index++) {
+		PurpleAccount *account = g_ptr_array_index(manager->accounts, index);
 
 		if(purple_strequal(purple_account_get_id(account), id)) {
 			return account;
@@ -284,14 +313,12 @@ PurpleAccount *
 purple_account_manager_find(PurpleAccountManager *manager,
                             const gchar *username, const gchar *protocol_id)
 {
-	GList *l;
-
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
 	g_return_val_if_fail(username != NULL, NULL);
 	g_return_val_if_fail(protocol_id != NULL, NULL);
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		PurpleAccount *account = PURPLE_ACCOUNT(l->data);
+	for(guint index = 0; index < manager->accounts->len; index++) {
+		PurpleAccount *account = g_ptr_array_index(manager->accounts, index);
 		gchar *normalized = NULL;
 		const gchar *existing_protocol_id = NULL;
 		const gchar *existing_username = NULL;
@@ -323,17 +350,15 @@ PurpleAccount *
 purple_account_manager_find_custom(PurpleAccountManager *manager,
                                    GEqualFunc func, gconstpointer data)
 {
-	GList *l;
+	guint index = 0;
 
 	g_return_val_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager), NULL);
 	g_return_val_if_fail(func != NULL, NULL);
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		PurpleAccount *account = PURPLE_ACCOUNT(l->data);
+	if(g_ptr_array_find_with_equal_func(manager->accounts, data, func, &index)) {
+		PurpleAccount *account = g_ptr_array_index(manager->accounts, index);
 
-		if(func(account, data)) {
-			return account;
-		}
+		return account;
 	}
 
 	return NULL;
@@ -344,12 +369,11 @@ purple_account_manager_foreach(PurpleAccountManager *manager,
                                PurpleAccountManagerForeachFunc callback,
                                gpointer data)
 {
-	GList *l = NULL;
-
 	g_return_if_fail(PURPLE_IS_ACCOUNT_MANAGER(manager));
 	g_return_if_fail(callback != NULL);
 
-	for(l = manager->accounts; l != NULL; l = l->next) {
-		callback(PURPLE_ACCOUNT(l->data), data);
+	for(guint index = 0; index < manager->accounts->len; index++) {
+		PurpleAccount *account = g_ptr_array_index(manager->accounts, index);
+		callback(account, data);
 	}
 }

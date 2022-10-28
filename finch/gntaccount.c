@@ -736,9 +736,9 @@ account_list_key_pressed_cb(GntWidget *widget, const char *text, gpointer null)
 {
 	GntTree *tree = GNT_TREE(widget);
 	PurpleAccountManager *manager = NULL;
+	GListModel *manager_model = NULL;
 	PurpleAccount *account = gnt_tree_get_selection_data(tree);
 	int move, pos, count;
-	GList *accounts;
 
 	if (!account)
 		return FALSE;
@@ -755,20 +755,28 @@ account_list_key_pressed_cb(GntWidget *widget, const char *text, gpointer null)
 	}
 
 	manager = purple_account_manager_get_default();
-	accounts = purple_account_manager_get_all(manager);
-	count = g_list_length(accounts);
-	pos = g_list_index(accounts, account);
-	pos = (move + pos + count + 1) % (count + 1);
-	if(pos >= 0) {
-		purple_account_manager_reorder(manager, account, pos);
+	manager_model = G_LIST_MODEL(manager);
+
+	count = g_list_model_get_n_items(manager_model);
+	for(pos = 0; pos < count; pos++) {
+		PurpleAccount *acct = g_list_model_get_item(manager_model, pos);
+		if(account == acct) {
+			pos = (move + pos + count + 1) % (count + 1);
+			purple_account_manager_reorder(manager, account, pos);
+			g_object_unref(acct);
+			break;
+		}
+		g_object_unref(acct);
 	}
 
 	/* I don't like this, but recreating the entire list seems to be
 	 * the easiest way of doing it */
 	gnt_tree_remove_all(tree);
-	accounts = purple_account_manager_get_all(manager);
-	for (; accounts; accounts = accounts->next)
-		account_add(accounts->data);
+	for(pos = 0; pos < count; pos++) {
+		PurpleAccount *account = g_list_model_get_item(manager_model, pos);
+		account_add(account);
+		g_object_unref(account);
+	}
 	gnt_tree_set_selected(tree, account);
 
 	return TRUE;
@@ -784,8 +792,8 @@ reset_accounts_win(GntWidget *widget, gpointer null)
 void
 finch_accounts_show_all(void)
 {
-	PurpleAccountManager *manager = NULL;
-	GList *iter;
+	GListModel *manager_model = NULL;
+	guint n_items = 0;
 	GntWidget *box, *button;
 
 	if (accounts.window) {
@@ -808,12 +816,12 @@ finch_accounts_show_all(void)
 	accounts.tree = gnt_tree_new_with_columns(2);
 	gnt_widget_set_has_border(accounts.tree, FALSE);
 
-	manager = purple_account_manager_get_default();
-	iter = purple_account_manager_get_all(manager);
-
-	for(; iter; iter = iter->next) {
-		PurpleAccount *account = iter->data;
+	manager_model = purple_account_manager_get_default_as_model();
+	n_items = g_list_model_get_n_items(manager_model);
+	for(guint index = 0; index < n_items; index++) {
+		PurpleAccount *account = g_list_model_get_item(manager_model, index);
 		account_add(account);
+		g_object_unref(account);
 	}
 
 	g_signal_connect(G_OBJECT(accounts.tree), "toggled", G_CALLBACK(account_toggled), NULL);
@@ -894,10 +902,12 @@ void
 finch_accounts_init(void)
 {
 	PurpleAccountManager *manager = NULL;
+	GListModel *manager_model = NULL;
 	gpointer account_handle = NULL;
-	GList *iter;
+	guint n_items = 0;
 
 	manager = purple_account_manager_get_default();
+	manager_model = G_LIST_MODEL(manager);
 	account_handle = purple_accounts_get_handle();
 
 	g_signal_connect(manager, "added", G_CALLBACK(account_added_callback),
@@ -911,14 +921,26 @@ finch_accounts_init(void)
 			finch_accounts_get_handle(),
 			G_CALLBACK(account_abled_cb), GINT_TO_POINTER(TRUE));
 
-	iter = purple_account_manager_get_all(manager);
-	if (iter) {
-		for (; iter; iter = iter->next) {
-			if (purple_account_get_enabled(iter->data))
+	n_items = g_list_model_get_n_items(manager_model);
+	if(n_items != 0) {
+		gboolean has_enabled_account = FALSE;
+
+		for(guint index = 0; index < n_items; index++) {
+			PurpleAccount *account = NULL;
+			account = g_list_model_get_item(manager_model, index);
+
+			if(purple_account_get_enabled(account)) {
+				has_enabled_account = TRUE;
+				g_object_unref(account);
 				break;
+			}
+
+			g_object_unref(account);
 		}
-		if (!iter)
+
+		if(!has_enabled_account) {
 			finch_accounts_show_all();
+		}
 	} else {
 		edit_account(NULL);
 		finch_accounts_show_all();

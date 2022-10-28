@@ -514,12 +514,22 @@ create_list_field(PurpleRequestField *field)
 	return ret;
 }
 
+static void
+add_account_to_combo(GntWidget *combo, PurpleAccount *account) {
+	char *text = NULL;
+
+	text = g_strdup_printf("%s (%s)",
+	                       purple_account_get_username(account),
+	                       purple_account_get_protocol_name(account));
+	gnt_combo_box_add_data(GNT_COMBO_BOX(combo), account, text);
+	g_free(text);
+}
+
 static GntWidget*
 create_account_field(PurpleRequestField *field)
 {
 	gboolean all;
 	PurpleAccount *def;
-	GList *list;
 	GntWidget *combo = gnt_combo_box_new();
 
 	all = purple_request_field_account_get_show_all(field);
@@ -529,29 +539,37 @@ create_account_field(PurpleRequestField *field)
 	}
 
 	if(all) {
-		PurpleAccountManager *manager = purple_account_manager_get_default();
-		list = purple_account_manager_get_all(manager);
+		GListModel *manager_model = NULL;
+		guint n_items = 0;
+
+		manager_model = purple_account_manager_get_default_as_model();
+		n_items = g_list_model_get_n_items(manager_model);
+		for(guint index = 0; index < n_items; index++) {
+			PurpleAccount *account;
+
+			account = g_list_model_get_item(manager_model, index);
+			add_account_to_combo(combo, account);
+
+			if(account == def) {
+				gnt_combo_box_set_selected(GNT_COMBO_BOX(combo), account);
+			}
+
+			g_object_unref(account);
+		}
 	} else {
-		list = purple_connections_get_all();
-	}
+		GList *list = purple_connections_get_all();
+		for(; list; list = list->next) {
+			PurpleAccount *account = NULL;
 
-	for(; list; list = list->next) {
-		PurpleAccount *account;
-		char *text;
-
-		if (all)
-			account = list->data;
-		else
 			account = purple_connection_get_account(list->data);
+			add_account_to_combo(combo, account);
 
-		text = g_strdup_printf("%s (%s)",
-				purple_account_get_username(account),
-				purple_account_get_protocol_name(account));
-		gnt_combo_box_add_data(GNT_COMBO_BOX(combo), account, text);
-		g_free(text);
-		if (account == def)
-			gnt_combo_box_set_selected(GNT_COMBO_BOX(combo), account);
+			if(account == def) {
+				gnt_combo_box_set_selected(GNT_COMBO_BOX(combo), account);
+			}
+		}
 	}
+
 	gnt_widget_set_size(combo, 20, 3); /* ew */
 	return combo;
 }

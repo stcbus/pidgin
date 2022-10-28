@@ -95,12 +95,15 @@ pidgin_mood_dialog_edit_cb(PurpleConnection *connection,
 
 		update_status_with_mood(account, mood, text);
 	} else {
-		PurpleAccountManager *manager = purple_account_manager_get_default();
-		GList *accounts = purple_account_manager_get_all(manager);
+		GListModel *manager_model = NULL;
+		guint n_items = 0;
 
-		for (; accounts ; accounts = g_list_delete_link(accounts, accounts)) {
-			PurpleAccount *account = (PurpleAccount *) accounts->data;
+		manager_model = purple_account_manager_get_default_as_model();
+		n_items = g_list_model_get_n_items(manager_model);
+		for(guint index = 0; index < n_items; index++) {
+			PurpleAccount *account = NULL;
 
+			account = g_list_model_get_item(manager_model, index);
 			connection = purple_account_get_connection(account);
 			if(PURPLE_IS_CONNECTION(connection)) {
 				PurpleConnectionFlags flags;
@@ -110,6 +113,8 @@ pidgin_mood_dialog_edit_cb(PurpleConnection *connection,
 					update_status_with_mood(account, mood, NULL);
 				}
 			}
+
+			g_object_unref(account);
 		}
 	}
 }

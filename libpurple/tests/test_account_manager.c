@@ -59,7 +59,6 @@ static void
 test_purple_account_manager_add_remove(void) {
 	PurpleAccount *account = NULL;
 	PurpleAccountManager *manager = NULL;
-	GList *accounts = NULL;
 	gboolean signal_called = FALSE;
 
 	account = purple_account_new("test", "test");
@@ -72,15 +71,13 @@ test_purple_account_manager_add_remove(void) {
 	                 G_CALLBACK(test_purple_account_manager_signal_called),
 	                 &signal_called);
 
-	accounts = purple_account_manager_get_all(manager);
-	g_assert_true(g_list_length(accounts) == 0);
+	g_assert_cmpuint(g_list_model_get_n_items(G_LIST_MODEL(manager)), ==, 0);
 
 	/* Add the account and verify that it was added and that the signal was
 	 * emitted.
 	 */
 	purple_account_manager_add(manager, account);
-	accounts = purple_account_manager_get_all(manager);
-	g_assert_true(g_list_length(accounts) == 1);
+	g_assert_cmpuint(g_list_model_get_n_items(G_LIST_MODEL(manager)), ==, 1);
 	g_assert_true(signal_called);
 
 	signal_called = FALSE;
@@ -89,8 +86,7 @@ test_purple_account_manager_add_remove(void) {
 	 * was emitted.
 	 */
 	purple_account_manager_remove(manager, account);
-	accounts = purple_account_manager_get_all(manager);
-	g_assert_true(g_list_length(accounts) == 0);
+	g_assert_cmpuint(g_list_model_get_n_items(G_LIST_MODEL(manager)), ==, 0);
 	g_assert_true(signal_called);
 
 	/* Cleanup */

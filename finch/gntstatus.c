@@ -491,12 +491,12 @@ popup_substatus(GntTree *tree, const char *key, EditStatus *edit)
 
 void finch_savedstatus_edit(PurpleSavedStatus *saved)
 {
-	PurpleAccountManager *manager = NULL;
+	GListModel *manager_model = NULL;
 	EditStatus *edit;
 	GntWidget *window, *box, *button, *entry, *combo, *label, *tree;
 	PurpleStatusPrimitive prims[] = {PURPLE_STATUS_AVAILABLE, PURPLE_STATUS_AWAY,
 		PURPLE_STATUS_INVISIBLE, PURPLE_STATUS_OFFLINE, PURPLE_STATUS_UNSET}, current;
-	GList *iter;
+	guint n_items = 0;
 	int i;
 
 	if (saved)
@@ -567,10 +567,12 @@ void finch_savedstatus_edit(PurpleSavedStatus *saved)
 	gnt_tree_set_col_width(GNT_TREE(tree), 1, 10);
 	gnt_tree_set_col_width(GNT_TREE(tree), 2, 30);
 
-	manager = purple_account_manager_get_default();
-	iter = purple_account_manager_get_all(manager);
-	for(; iter; iter = iter->next) {
-		add_substatus(edit, iter->data);
+	manager_model = purple_account_manager_get_default_as_model();
+	n_items = g_list_model_get_n_items(manager_model);
+	for(guint index = 0; index < n_items; index++) {
+		PurpleAccount *account = g_list_model_get_item(manager_model, index);
+		add_substatus(edit, account);
+		g_object_unref(account);
 	}
 
 	g_signal_connect(G_OBJECT(tree), "key_pressed", G_CALLBACK(popup_substatus), edit);

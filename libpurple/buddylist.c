@@ -361,10 +361,10 @@ accountprivacy_to_xmlnode(PurpleAccount *account)
 
 static PurpleXmlNode *
 blist_to_xmlnode(void) {
-	PurpleAccountManager *manager = purple_account_manager_get_default();
+	GListModel *manager_model = NULL;
+	guint n_items = 0;
 	PurpleXmlNode *node, *child, *grandchild;
 	PurpleBlistNode *gnode;
-	GList *cur;
 	const gchar *localized_default;
 
 	node = purple_xmlnode_new("purple");
@@ -394,11 +394,13 @@ blist_to_xmlnode(void) {
 
 	/* Write privacy settings */
 	child = purple_xmlnode_new_child(node, "privacy");
-	for(cur = purple_account_manager_get_all(manager); cur != NULL;
-	    cur = cur->next)
-	{
-		grandchild = accountprivacy_to_xmlnode(cur->data);
+	manager_model = purple_account_manager_get_default_as_model();
+	n_items = g_list_model_get_n_items(manager_model);
+	for(guint index = 0; index < n_items; index++) {
+		PurpleAccount *account = g_list_model_get_item(manager_model, index);
+		grandchild = accountprivacy_to_xmlnode(account);
 		purple_xmlnode_insert_child(child, grandchild);
+		g_object_unref(account);
 	}
 
 	return node;
@@ -745,18 +747,21 @@ purple_blist_set_ui(GType type)
 void
 purple_blist_boot(void)
 {
-	PurpleAccountManager *manager = NULL;
+	GListModel *manager_model = NULL;
 	PurpleBuddyList *gbl = g_object_new(buddy_list_type, NULL);
-	GList *l;
+	guint n_items = 0;
 
 	buddies_cache = g_hash_table_new_full(g_direct_hash, g_direct_equal,
 					 NULL, (GDestroyNotify)g_hash_table_destroy);
 
 	groups_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
-	manager = purple_account_manager_get_default();
-	for(l = purple_account_manager_get_all(manager); l != NULL; l = l->next) {
-		purple_blist_buddies_cache_add_account(PURPLE_ACCOUNT(l->data));
+	manager_model = purple_account_manager_get_default_as_model();
+	n_items = g_list_model_get_n_items(manager_model);
+	for(guint index = 0; index < n_items; index++) {
+		PurpleAccount *account = g_list_model_get_item(manager_model, index);
+		purple_blist_buddies_cache_add_account(account);
+		g_object_unref(account);
 	}
 
 	purplebuddylist = gbl;

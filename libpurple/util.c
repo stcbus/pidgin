@@ -933,19 +933,27 @@ purple_escape_filename(const char *str)
 
 void purple_util_set_current_song(const char *title, const char *artist, const char *album)
 {
-	PurpleAccountManager *manager = purple_account_manager_get_default();
-	GList *list = purple_account_manager_get_all(manager);
-	for (; list; list = list->next) {
+	GListModel *manager_model = NULL;
+	guint n_items = 0;
+
+	manager_model = purple_account_manager_get_default_as_model();
+	n_items = g_list_model_get_n_items(manager_model);
+	for(guint index = 0; index < n_items; index++) {
+		PurpleAccount *account = g_list_model_get_item(manager_model, index);
 		PurplePresence *presence;
 		PurpleStatus *tune;
-		PurpleAccount *account = list->data;
-		if (!purple_account_get_enabled(account))
+
+		if (!purple_account_get_enabled(account)) {
+			g_object_unref(account);
 			continue;
+		}
 
 		presence = purple_account_get_presence(account);
 		tune = purple_presence_get_status(presence, "tune");
-		if (!tune)
+		if (!tune) {
+			g_object_unref(account);
 			continue;
+		}
 		if (title) {
 			GHashTable *attributes = g_hash_table_new(g_str_hash, g_str_equal);
 
@@ -962,6 +970,8 @@ void purple_util_set_current_song(const char *title, const char *artist, const c
 		} else {
 			purple_status_set_active(tune, FALSE);
 		}
+
+		g_object_unref(account);
 	}
 }
 

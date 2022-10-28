@@ -66,6 +66,17 @@ typedef void (*PurpleAccountManagerForeachFunc)(PurpleAccount *account, gpointer
 PurpleAccountManager *purple_account_manager_get_default(void);
 
 /**
+ * purple_account_manager_get_default_as_model:
+ *
+ * Gets the default account manager for libpurple as a list model.
+ *
+ * Returns: (transfer none): The default account manager for libpurple.
+ *
+ * Since: 3.0.0
+ */
+GListModel *purple_account_manager_get_default_as_model(void);
+
+/**
  * purple_account_manager_add:
  * @manager: The account manager instance.
  * @account: (transfer full): The account to add.
@@ -98,19 +109,6 @@ void purple_account_manager_remove(PurpleAccountManager *manager, PurpleAccount 
  * Since: 3.0.0
  */
 void purple_account_manager_reorder(PurpleAccountManager *manager, PurpleAccount *account, guint new_index);
-
-/**
- * purple_account_manager_get_all:
- * @manager: The account manager instance.
- *
- * Gets the list of all accounts.
- *
- * Returns: (transfer none) (element-type PurpleAccount): The list of all
- *          accounts.
- *
- * Since: 3.0.0
- */
-GList *purple_account_manager_get_all(PurpleAccountManager *manager);
 
 /**
  * purple_account_manager_get_enabled:
