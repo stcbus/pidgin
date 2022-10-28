@@ -205,6 +205,8 @@ endif
 #######################################################################
 # Check for GLib (required)
 #######################################################################
+# Once we require >= 2.74.0, remove the hack in the if(TRUE) block in
+# libpurple/core.c.
 glib = dependency('glib-2.0', version : '>= 2.70.0')
 gio = dependency('gio-2.0')
 gobject = dependency('gobject-2.0')

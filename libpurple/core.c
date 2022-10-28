@@ -112,6 +112,15 @@ purple_core_init(PurpleUiInfo *ui_info) {
 
 	ops = purple_core_get_ui_ops();
 
+	/* This monster is to work around a bug that was fixed in glib 2.73.3. Once
+	 * we require glib 2.74.0 this should be removed.
+	 */
+	if(TRUE) {
+		char *path = g_build_filename(purple_config_dir(), "dummy.ini", NULL);
+		g_object_unref(g_keyfile_settings_backend_new(path, "/dummy/", NULL));
+		g_free(path);
+	}
+
 	/* The signals subsystem is important and should be first. */
 	purple_signals_init();
 
