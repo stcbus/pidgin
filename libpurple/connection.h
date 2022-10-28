@@ -298,6 +298,23 @@ PurpleProtocol *purple_connection_get_protocol(PurpleConnection *gc);
 const char *purple_connection_get_password(PurpleConnection *gc);
 
 /**
+ * purple_connection_set_password:
+ * @connection: The instance.
+ * @password: (nullable): The new password.
+ *
+ * Sets the password for @connection to @password.
+ *
+ * This will not change your password on the remote service. It just updates
+ * the password that the protocol should use when connecting.
+ *
+ * This is generally used by protocol plugins that support multiple
+ * authentication methods and need to prompt the user for a password.
+ *
+ * Since: 3.0.0
+ */
+void purple_connection_set_password(PurpleConnection *connection, const char *password);
+
+/**
  * purple_connection_get_active_chats:
  * @gc: The connection.
  *

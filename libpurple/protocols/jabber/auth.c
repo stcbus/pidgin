@@ -108,7 +108,10 @@ auth_old_pass_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 		                                               NULL, NULL, NULL);
 	}
 
-	/* Restart our connection */
+	/* Store the new password in our connection. */
+	purple_connection_set_password(gc, entry);
+
+	/* Restart our connection. */
 	jabber_auth_start_old(js);
 }
 
@@ -120,6 +123,44 @@ auth_no_pass_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 
 	/* Disable the account as the user has cancelled connecting */
 	purple_account_set_enabled(purple_connection_get_account(gc), FALSE);
+}
+
+static void
+auth_old_read_pass_cb(GObject *source, GAsyncResult *result, gpointer data) {
+	JabberStream *js = data;
+	PurpleCredentialManager *manager = PURPLE_CREDENTIAL_MANAGER(source);
+	GError *error = NULL;
+	char *password = NULL;
+
+	password = purple_credential_manager_read_password_finish(manager, result,
+	                                                          &error);
+	if(password == NULL || error != NULL) {
+		PurpleAccount *account = NULL;
+		const char *message = "unknown error";
+
+		if(error != NULL) {
+			message = error->message;
+		}
+
+		purple_debug_warning("jabber", "failed to read password from the "
+		                     "credential manager : %s", message);
+
+		g_clear_error(&error);
+
+		account = purple_connection_get_account(js->gc);
+		purple_account_request_password(account, G_CALLBACK(auth_old_pass_cb),
+		                                G_CALLBACK(auth_no_pass_cb),
+		                                js->gc);
+
+		return;
+	}
+
+	/* Save the password in the connection. */
+	purple_connection_set_password(js->gc, password);
+	purple_str_wipe(password);
+
+	/* Restart the authentication process. */
+	jabber_auth_start_old(js);
 }
 
 void
@@ -369,7 +410,13 @@ void jabber_auth_start_old(JabberStream *js)
 	 */
 
 	if (!purple_connection_get_password(js->gc)) {
-		purple_account_request_password(account, G_CALLBACK(auth_old_pass_cb), G_CALLBACK(auth_no_pass_cb), js->gc);
+		PurpleCredentialManager *manager = NULL;
+
+		manager = purple_credential_manager_get_default();
+
+		purple_credential_manager_read_password_async(manager, account, NULL,
+		                                              auth_old_read_pass_cb,
+		                                              js);
 		return;
 	}
 	iq = jabber_iq_new_query(js, JABBER_IQ_GET, "jabber:iq:auth");

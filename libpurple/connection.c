@@ -342,6 +342,22 @@ purple_connection_get_password(PurpleConnection *connection) {
 	return priv->password;
 }
 
+void
+purple_connection_set_password(PurpleConnection *connection,
+                               const char *password)
+{
+	PurpleConnectionPrivate *priv = NULL;
+
+	g_return_if_fail(PURPLE_IS_CONNECTION(connection));
+
+	priv = purple_connection_get_instance_private(connection);
+
+	purple_str_wipe(priv->password);
+	priv->password = g_strdup(password);
+
+	g_object_notify_by_pspec(G_OBJECT(connection), properties[PROP_PASSWORD]);
+}
+
 GSList *
 purple_connection_get_active_chats(PurpleConnection *connection) {
 	PurpleConnectionPrivate *priv = NULL;
@@ -673,8 +689,8 @@ purple_connection_set_property(GObject *obj, guint param_id,
 			priv->account = g_value_get_object(value);
 			break;
 		case PROP_PASSWORD:
-			g_free(priv->password);
-			priv->password = g_value_dup_string(value);
+			purple_connection_set_password(connection,
+			                               g_value_get_string(value));
 			break;
 		case PROP_DISPLAY_NAME:
 			purple_connection_set_display_name(connection,
@@ -867,7 +883,7 @@ purple_connection_class_init(PurpleConnectionClass *klass) {
 	properties[PROP_PASSWORD] = g_param_spec_string(
 		"password", "Password",
 		"The password used for connection.", NULL,
-		G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	properties[PROP_DISPLAY_NAME] = g_param_spec_string(
 		"display-name", "Display name",

@@ -182,6 +182,45 @@ auth_no_pass_cb(PurpleConnection *gc, PurpleRequestFields *fields)
 	purple_account_set_enabled(account, FALSE);
 }
 
+static void
+auth_pass_read_cb(GObject *source, GAsyncResult *result, gpointer data) {
+	JabberStream *js = data;
+	PurpleCredentialManager *manager = PURPLE_CREDENTIAL_MANAGER(source);
+	GError *error = NULL;
+	char *password = NULL;
+
+	password = purple_credential_manager_read_password_finish(manager, result,
+	                                                          &error);
+	if(password == NULL || error != NULL) {
+		PurpleAccount *account = NULL;
+		const char *message = "unknown error";
+
+		if(error != NULL) {
+			message = error->message;
+		}
+
+		purple_debug_warning("jabber", "failed to read password from the "
+		                     "credential manager : %s", message);
+
+		g_clear_error(&error);
+
+		account = purple_connection_get_account(js->gc);
+		purple_account_request_password(account, G_CALLBACK(auth_pass_cb),
+		                                G_CALLBACK(auth_no_pass_cb),
+		                                js->gc);
+
+		return;
+	}
+
+	js->sasl_password = password;
+
+	/* Rebuild our callbacks as we now have a password to offer */
+	jabber_sasl_build_callbacks(js);
+
+	/* Restart our negotiation */
+	start_cyrus_wrapper(js);
+}
+
 static gboolean remove_current_mech(JabberStream *js) {
 	char *pos;
 	if ((pos = strstr(js->sasl_mechs->str, js->current_mech))) {
@@ -254,7 +293,14 @@ jabber_auth_start_cyrus(JabberStream *js, PurpleXmlNode **reply, char **error)
 				 */
 
 				if (!js->sasl_password) {
-					purple_account_request_password(account, G_CALLBACK(auth_pass_cb), G_CALLBACK(auth_no_pass_cb), js->gc);
+					PurpleCredentialManager *manager = NULL;
+
+					manager = purple_credential_manager_get_default();
+					purple_credential_manager_read_password_async(manager,
+					                                              account,
+					                                              NULL,
+					                                              auth_pass_read_cb,
+					                                              js);
 					return JABBER_SASL_STATE_CONTINUE;
 
 				/* If we've got a password, but aren't sending
