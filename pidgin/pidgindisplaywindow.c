@@ -55,6 +55,7 @@ struct _PidginDisplayWindow {
 
 	GtkWidget *stack;
 
+	GtkWidget *contact_list;
 	GtkWidget *notification_list;
 
 	GtkTreePath *conversation_path;
@@ -449,6 +450,13 @@ pidgin_display_window_init(PidginDisplayWindow *window) {
 	/* Add our toplevels to the tree store. */
 	gtk_tree_store_append(window->model, &iter, NULL);
 	gtk_tree_store_set(window->model, &iter,
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, window->contact_list,
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_NAME, "__contacts__",
+	                   PIDGIN_DISPLAY_WINDOW_COLUMN_MARKUP, _("Contacts"),
+	                   -1);
+
+	gtk_tree_store_append(window->model, &iter, NULL);
+	gtk_tree_store_set(window->model, &iter,
 	                   PIDGIN_DISPLAY_WINDOW_COLUMN_OBJECT, window->notification_list,
 	                   PIDGIN_DISPLAY_WINDOW_COLUMN_NAME, "__notifications__",
 	                   PIDGIN_DISPLAY_WINDOW_COLUMN_MARKUP, _("Notifications"),
@@ -508,6 +516,8 @@ pidgin_display_window_class_init(PidginDisplayWindowClass *klass) {
 
 	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     stack);
+	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
+	                                     contact_list);
 	gtk_widget_class_bind_template_child(widget_class, PidginDisplayWindow,
 	                                     notification_list);
 

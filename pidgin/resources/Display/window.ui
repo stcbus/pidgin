@@ -108,6 +108,19 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
               <object class="AdwViewStack" id="stack">
                 <child>
                   <object class="AdwViewStackPage">
+                    <property name="name">__contacts__</property>
+                    <property name="child">
+                      <object class="AdwStatusPage" id="contact_list">
+                        <property name="icon-name">system-users-symbolic</property>
+                        <property name="title" translatable="1">Contacts</property>
+                        <property name="description" translatable="1">This is just a placeholder until we build the new ContactList widget.</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+
+                <child>
+                  <object class="AdwViewStackPage">
                     <property name="name">__notifications__</property>
                     <property name="child">
                       <object class="GtkScrolledWindow">
