@@ -353,6 +353,9 @@ Then rerun this Meson build
 endif
 
 
+DEFAULT_PRPLS = ['bonjour', 'facebook', 'gg', 'irc', 'jabber', 'novell',
+                 'null', 'oscar', 'sametime', 'silc', 'simple', 'zephyr']
+ALL_PRPLS = DEFAULT_PRPLS + ['null']
 DEFAULT_PRPLS = ['bonjour', 'demo', 'facebook', 'gg', 'irc', 'ircv3', 'jabber',
                  'novell', 'sametime']
 
@@ -383,6 +386,8 @@ DYNAMIC_IRC = DYNAMIC_PRPLS.contains('irc')
 DYNAMIC_IRCV3 = DYNAMIC_PRPLS.contains('ircv3')
 DYNAMIC_JABBER = DYNAMIC_PRPLS.contains('jabber')
 DYNAMIC_NOVELL = DYNAMIC_PRPLS.contains('novell')
+DYNAMIC_NULL = DYNAMIC_PRPLS.contains('null')
+DYNAMIC_OSCAR = DYNAMIC_PRPLS.contains('oscar') or DYNAMIC_PRPLS.contains('aim') or DYNAMIC_PRPLS.contains('icq')
 DYNAMIC_SAMETIME = DYNAMIC_PRPLS.contains('sametime')
 
 conf.set('HAVE_SYS_UTSNAME_H',
